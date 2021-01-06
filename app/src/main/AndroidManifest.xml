@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.videostreamtest">
+
+    <!-- Android 11 and higher: Packages which are used from other installed apps -->
+    <queries>
+        <package android:name="com.dsi.ant.plugins.antplus" />
+    </queries>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- Android TV Features -->
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
+    <application
+        android:allowBackup="true"
+        android:banner="@drawable/route_utrechtse_heuvelrug"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+        <!-- if memory issues then > android:largeHeap="true" -->
+        <!-- METADATA -->
+        <meta-data
+            android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+            android:value="com.google.android.exoplayer2.ext.cast.DefaultCastOptionsProvider" />
+        <!-- END METADATA -->
+        <!-- START ACTIVITIES -->
+        <!-- PHONE -->
+        <activity
+            android:name=".ui.phone.settings.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ui.phone.videoplayer.VideoplayerActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_videoplayer"
+            android:theme="@style/AppTheme.Fullscreen" />
+        <activity
+            android:name=".ui.phone.videoplayer.advanced.AdvancedVideoPlayerActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.Fullscreen" />
+        <activity android:name=".ui.phone.catalog.CatalogActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- TV  //TODO becomes TV User Interfaces -->
+        <activity
+            android:name=".ui.tv.login.LoginActivityTv"
+            android:label="@string/title_activity_login_tv"
+            android:theme="@style/AppTheme.NoActionBar">
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+<!--                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />-->
+<!--            </intent-filter>-->
+        </activity>
+        <!-- END ACTIVITIES -->
+
+        <!-- SERVICES -->
+        <service
+            android:name=".service.ant.AntPlusService"
+            android:icon="@drawable/ic_launcher_background"
+            android:label="AntplusService" />
+    </application>
+
+</manifest>

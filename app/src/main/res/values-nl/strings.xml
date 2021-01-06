@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FitStream</string>
+    <string name="prompt_email">E-mail</string>
+    <string name="prompt_password">Wachtwoord</string>
+    <string name="action_sign_in">Registreer</string>
+    <string name="action_sign_in_short">Inloggen</string>
+    <string name="welcome">Welkom!</string>
+    <string name="invalid_username">Gebruikersnaam ongeldig</string>
+    <string name="invalid_password">Wachtwoord dient minimaal 5 karakters te bevatten.</string>
+    <string name="login_failed">Inloggen mislukt</string>
+    <string name="next">Volgende</string>
+    <string name="previous">Vorige</string>
+    <string name="sample_list_dialog_title">Toevoegen samples</string>
+    <string name="title_activity_catalog">Catalogus</string>
+    <string name="dummy_button">Toon catalogus</string>
+    <string name="title_activity_videoplayer">VideoPlayer</string>
+    <string name="title_activity_settings">Instellingen</string>
+</resources>
