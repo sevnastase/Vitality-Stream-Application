@@ -35,8 +35,6 @@ public class SettingsAntPlusBroadcastReceiver extends BroadcastReceiver {
             Log.d(TAG, "Action: " + intent.getAction() + "\n");
             Log.d(TAG, "Intent cadence received: "+rpmReceived+"\n");
 
-            SettingsActivity.getInstance().updateTheTextView(""+rpmReceived);
-
             return intent.getAction();
         }
 

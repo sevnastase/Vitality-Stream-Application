@@ -1,20 +1,11 @@
 package com.videostreamtest.ui.phone.catalog;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.text.InputFilter;
-import android.text.Spannable;
 import android.text.Spanned;
-import android.util.Log;
-import android.view.Display;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -28,7 +19,6 @@ import com.videostreamtest.R;
 public class ApiKeyDialogFragment extends DialogFragment {
 
     private CatalogViewModel catalogViewModel;
-
 
     @Nullable
     @Override

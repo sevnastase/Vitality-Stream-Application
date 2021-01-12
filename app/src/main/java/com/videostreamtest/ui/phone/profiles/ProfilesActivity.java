@@ -3,6 +3,7 @@ package com.videostreamtest.ui.phone.profiles;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,22 +14,28 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
+import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.Profile;
 import com.videostreamtest.ui.phone.login.LoginActivity;
+import com.videostreamtest.ui.phone.settings.SettingsDialogFragment;
 import com.videostreamtest.workers.ProfileServiceWorker;
 
 public class ProfilesActivity extends AppCompatActivity {
-
+    private FloatingActionButton connectButton;
     private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_overview);
+
+        //Write log for stating antplus status and version
+        Log.d("ANTPLUS_SETTINGS", "Version number: "+ AntPluginPcc.getInstalledPluginsVersionNumber(getApplicationContext()));
 
         //retrieve API key
         SharedPreferences myPreferences = getApplication().getSharedPreferences("app",0);
@@ -42,8 +49,19 @@ public class ProfilesActivity extends AppCompatActivity {
             //Koppel de recyclerView aan de layout xml
             recyclerView = findViewById(R.id.recyclerview_profiles);
             recyclerView.setHasFixedSize(true);
+            //Maak lineaire layoutmanager en zet deze op horizontaal
+            LinearLayoutManager layoutManager
+                    = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
             //Zet de layoutmanager erin
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            recyclerView.setLayoutManager(layoutManager);
+
+            connectButton = findViewById(R.id.settings_button);
+            connectButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    new SettingsDialogFragment().show(getSupportFragmentManager(), "SettingsDialogFragment");
+                }
+            });
 
             loadProfiles(apiKey);
         }
