@@ -2,6 +2,7 @@ package com.videostreamtest.ui.phone.catalog;
 
 import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc;
 import com.videostreamtest.R;
+import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.settings.SettingsActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoPlayerConfig;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
@@ -39,12 +40,12 @@ public class CatalogActivity extends AppCompatActivity {
 
         catalogViewModel = new ViewModelProvider(this).get(CatalogViewModel.class);
         if (catalogViewModel.getApiKey().getValue() == null ) {
-            new ApiKeyDialogFragment().show(getSupportFragmentManager(), "ApiKeyDialogFragment");
+//            new ApiKeyDialogFragment().show(getSupportFragmentManager(), "ApiKeyDialogFragment");
+//            Intent loginActivity = new Intent(getApplicationContext(), LoginActivity.class);
+//            startActivity(loginActivity);
         }
 
         catalogViewModel.getApiKey().observe(this, observer -> {
-            //TODO: Check if APIKEY is valid, else show ApiKeyDialogFragment
-
             Log.d(this.getClass().getSimpleName(), "ApiKey :: "+catalogViewModel.getApiKey().getValue());
         });
 

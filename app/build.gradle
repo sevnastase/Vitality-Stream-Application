@@ -29,6 +29,7 @@ android {
 ext {
     exoplayer_version = "2.7.0"
     workmanager_version = "2.4.0"
+    leanback_version = "1.0.0"
 }
 
 dependencies {
@@ -41,6 +42,18 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
+    //RestCallFramework
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
+
+    //Jackson Databind for mapping objects
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.1'
+
+    // TV-implementation
+    implementation "androidx.leanback:leanback:$leanback_version"
+    // leanback-preference is an add-on that provides a settings UI for TV apps.
+    implementation "androidx.leanback:leanback-preference:$leanback_version"
+
+    //VideoPlayer
     implementation "com.google.android.exoplayer:exoplayer-core:$exoplayer_version"
     implementation "com.google.android.exoplayer:exoplayer-smoothstreaming:$exoplayer_version"
     implementation "com.google.android.exoplayer:exoplayer-dash:$exoplayer_version"

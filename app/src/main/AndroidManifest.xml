@@ -40,6 +40,21 @@
             android:label="@string/title_activity_settings"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
+            android:name=".ui.phone.login.LoginActivity"
+            android:label="@string/title_activity_login"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ui.phone.profiles.ProfilesActivity"
+            android:label="@string/title_activity_fullscreen"
+            android:theme="@style/AppTheme.NoActionBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".ui.phone.videoplayer.VideoplayerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_videoplayer"
@@ -50,20 +65,14 @@
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.Fullscreen" />
-        <activity android:name=".ui.phone.catalog.CatalogActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <activity android:name=".ui.phone.catalog.CatalogActivity" />
 
         <!-- TV  //TODO becomes TV User Interfaces -->
         <activity
             android:name=".ui.tv.login.LoginActivityTv"
             android:label="@string/title_activity_login_tv"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.Leanback.Browse">
 <!--            <intent-filter>-->
 <!--                <action android:name="android.intent.action.MAIN" />-->
 <!--                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />-->

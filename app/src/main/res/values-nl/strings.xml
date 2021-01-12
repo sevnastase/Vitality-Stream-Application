@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">FitStream</string>
-    <string name="prompt_email">E-mail</string>
+    <string name="prompt_email">E-mail / Gebruikersnaam</string>
     <string name="prompt_password">Wachtwoord</string>
-    <string name="action_sign_in">Registreer</string>
+    <string name="action_sign_in">Inloggen</string>
     <string name="action_sign_in_short">Inloggen</string>
     <string name="welcome">Welkom!</string>
     <string name="invalid_username">Gebruikersnaam ongeldig</string>
@@ -16,4 +16,5 @@
     <string name="dummy_button">Toon catalogus</string>
     <string name="title_activity_videoplayer">VideoPlayer</string>
     <string name="title_activity_settings">Instellingen</string>
+    <string name="action_register_user">Registreer</string>
 </resources>

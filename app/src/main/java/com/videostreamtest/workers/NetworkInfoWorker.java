@@ -51,8 +51,10 @@ public class NetworkInfoWorker extends Worker {
             }
         } catch (UnknownHostException e) {
             Log.e(TAG, e.getLocalizedMessage());
+            return Result.failure();
         } catch (IOException e) {
             Log.e(TAG, e.getLocalizedMessage());
+            return Result.failure();
         }
 
         return Result.success(output);
