@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,6 +21,8 @@ import com.videostreamtest.workers.RestServiceWorker;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private ProgressBar progressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,6 +33,7 @@ public class LoginActivity extends AppCompatActivity {
         final Button registerButton = findViewById(R.id.registerButton);
         final EditText username = findViewById(R.id.username);
         final EditText password = findViewById(R.id.password);
+        progressBar = findViewById(R.id.loading);
 
         loginButton.setOnClickListener(new View.OnClickListener(){
                @Override
@@ -68,11 +72,14 @@ public class LoginActivity extends AppCompatActivity {
                     if( workInfo.getState() != null &&
                             workInfo.getState() == WorkInfo.State.SUCCEEDED ) {
 
+                        progressBar.setVisibility(View.VISIBLE);
+
                         final String result = workInfo.getOutputData().getString("result");
                         if (result.equalsIgnoreCase("unauthorized")) {
                             Toast.makeText(getApplicationContext(),
                                     "Failed to login!",
                                     Toast.LENGTH_LONG).show();
+                            progressBar.setVisibility(View.GONE);
                         } else {
                             //Put ApiKey in sharedpreferences
                             SharedPreferences myPreferences = getApplication().getSharedPreferences("app",0);

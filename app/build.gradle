@@ -48,6 +48,9 @@ dependencies {
     //Jackson Databind for mapping objects
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.1'
 
+    //Picasso image library
+    implementation 'com.squareup.picasso:picasso:2.71828'
+
     // TV-implementation
     implementation "androidx.leanback:leanback:$leanback_version"
     // leanback-preference is an add-on that provides a settings UI for TV apps.
