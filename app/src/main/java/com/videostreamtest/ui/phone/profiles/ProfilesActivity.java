@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,7 +20,6 @@ import com.videostreamtest.R;
 import com.videostreamtest.data.model.Profile;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.workers.ProfileServiceWorker;
-import com.videostreamtest.workers.RestServiceWorker;
 
 public class ProfilesActivity extends AppCompatActivity {
 

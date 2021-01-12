@@ -11,7 +11,7 @@ import androidx.work.WorkerParameters;
 import com.videostreamtest.service.database.DatabaseRestService;
 
 public class ProfileServiceWorker extends Worker {
-    private static final String TAG = RestServiceWorker.class.getSimpleName();
+    private static final String TAG = ProfileServiceWorker.class.getSimpleName();
 
     public ProfileServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);

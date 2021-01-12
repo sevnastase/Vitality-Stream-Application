@@ -17,7 +17,7 @@ import androidx.work.WorkManager;
 
 import com.videostreamtest.R;
 import com.videostreamtest.ui.phone.profiles.ProfilesActivity;
-import com.videostreamtest.workers.RestServiceWorker;
+import com.videostreamtest.workers.LoginServiceWorker;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -56,7 +56,7 @@ public class LoginActivity extends AppCompatActivity {
         networkData.putString("username", username);
         networkData.putString("password", password);
 
-        OneTimeWorkRequest sendPingRequest = new OneTimeWorkRequest.Builder(RestServiceWorker.class)
+        OneTimeWorkRequest sendPingRequest = new OneTimeWorkRequest.Builder(LoginServiceWorker.class)
                 .setInputData(networkData.build())
                 .addTag("login")
                 .build();

@@ -9,10 +9,10 @@ import androidx.work.WorkerParameters;
 
 import com.videostreamtest.service.database.DatabaseRestService;
 
-public class RestServiceWorker extends Worker {
-    private static final String TAG = RestServiceWorker.class.getSimpleName();
+public class LoginServiceWorker extends Worker {
+    private static final String TAG = LoginServiceWorker.class.getSimpleName();
 
-    public RestServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+    public LoginServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
 
