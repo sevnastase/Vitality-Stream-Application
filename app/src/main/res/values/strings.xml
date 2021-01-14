@@ -11,7 +11,7 @@
     <string name="login_failed">"Login failed"</string>
     <string name="sample_list_dialog_title">Add samples</string>
     <string name="title_activity_catalog">CatalogActivity</string>
-    <string name="dummy_button">Show catalog</string>
+    <string name="dummy_button">Quick stop</string>
     <string name="dummy_content" translatable="false">FitStream</string>
     <string name="title_activity_videoplayer">FullscreenActivity</string>
     <string name="title_activity_settings">SettingsActivity</string>

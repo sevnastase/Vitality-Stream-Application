@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -65,10 +66,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         public boolean onTouch(View view, MotionEvent motionEvent) {
             switch (motionEvent.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-//                    Intent catalogActivity = new Intent(getApplicationContext(), CatalogActivity.class);
-//                    startActivity(catalogActivity);
+                    releasePlayer();
                     finish();
-
                     break;
                 case MotionEvent.ACTION_UP:
 //                    view.performClick();
@@ -139,6 +138,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private void setUp() {
         initializePlayer();
+        getSelectedVideoUri();
         if (videoUri == null) {
             return;
         }
@@ -177,7 +177,6 @@ public class VideoplayerActivity extends AppCompatActivity {
             playerView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN );
             //Set player on playerview
             playerView.setPlayer(player);
-
         }
     }
 
@@ -215,6 +214,12 @@ public class VideoplayerActivity extends AppCompatActivity {
             player.setPlayWhenReady(true);
             player.getPlaybackState();
         }
+    }
+
+    private void getSelectedVideoUri() {
+        SharedPreferences myPreferences = getSharedPreferences("app",0);
+        final String movieUri = myPreferences.getString("selectedMovieUrl", null);
+        this.videoUri = movieUri;
     }
 
 }

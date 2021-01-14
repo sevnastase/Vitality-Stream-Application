@@ -14,9 +14,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Route Utrechtse Heuvelrug"
-        app:layout_constraintBottom_toTopOf="@+id/imageButton"
+        app:layout_constraintBottom_toTopOf="@+id/movieLength"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/movieLength"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:text="23km"
+        android:textColor="#FFFFEE"
+        app:layout_constraintBottom_toTopOf="@+id/imageButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/movieTitle" />
 
     <ImageButton
         android:id="@+id/routeImageCoverButton"
@@ -29,5 +40,5 @@
         android:background="@null"
         android:src="@drawable/route_utrechtse_heuvelrug"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/movieTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/movieLength" />
 </androidx.constraintlayout.widget.ConstraintLayout>

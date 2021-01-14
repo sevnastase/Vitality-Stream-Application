@@ -13,7 +13,7 @@
     <string name="previous">Vorige</string>
     <string name="sample_list_dialog_title">Toevoegen samples</string>
     <string name="title_activity_catalog">Catalogus</string>
-    <string name="dummy_button">Toon catalogus</string>
+    <string name="dummy_button">Snel stoppen</string>
     <string name="title_activity_videoplayer">VideoPlayer</string>
     <string name="title_activity_settings">Instellingen</string>
     <string name="action_register_user">Registreer</string>

@@ -19,6 +19,7 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
 
     private ImageButton movieCoverImage;
     private TextView movieTitle;
+    private TextView movieLength;
 
     public AvailableMediaViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -27,11 +28,15 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
     public void bind(Movie movie, int position) {
         movieCoverImage = itemView.findViewById(R.id.routeImageCoverButton);
         movieTitle = itemView.findViewById(R.id.movieTitle);
+        movieLength = itemView.findViewById(R.id.movieLength);
 
         //Set Title
         movieTitle.setTextSize(20);
         movieTitle.setTextColor(Color.WHITE);
         movieTitle.setText(movie.getMovieTitle());
+
+        movieLength.setTextColor(Color.WHITE);
+        movieLength.setText(movie.getMovieLength()/1000+" km");
 
         //Set Cover
         Picasso.get()

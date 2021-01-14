@@ -15,7 +15,7 @@
 <!--        android:id="@+id/fullscreen_content"-->
 <!--        android:layout_width="match_parent"-->
 <!--        android:layout_height="match_parent"-->
-<!--        android:gravity="center"-->
+<!--        android:gravity="top"-->
 <!--        android:keepScreenOn="true"-->
 <!--        android:text="@string/dummy_content"-->
 <!--        android:textColor="?attr/fullscreenTextColor"-->
@@ -51,6 +51,32 @@
             android:layout_gravity="bottom|center_horizontal"
             android:orientation="horizontal"
             tools:ignore="UselessParent">
+
+            <TextView
+                android:id="@+id/movieTitle"
+                android:text="Movie Title"
+                android:textColor="#FFFFEE"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingRight="15dp"/>
+
+            <TextView
+                android:id="@+id/movieRpm"
+                android:text="RPM"
+                android:textColor="#FFFFEE"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingRight="5dp"/>
+            <TextView
+                android:id="@+id/actualRpm"
+                android:text="0"
+                android:textColor="#FFFFEE"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingRight="15dp"/>
 
             <Button
                 android:id="@+id/dummy_button"
