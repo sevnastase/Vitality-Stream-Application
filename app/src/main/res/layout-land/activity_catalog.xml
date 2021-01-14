@@ -9,28 +9,14 @@
     android:background="@drawable/profile_overview_background"
     tools:context=".ui.phone.catalog.CatalogActivity">
 
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment_container_view"
-        android:name="com.videostreamtest.ui.phone.catalog.MovieFragment"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerview_available_media"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageButton
-        android:id="@+id/imageButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="120dp"
-        android:adjustViewBounds="true"
-        android:contentDescription="Route"
-        android:cropToPadding="true"
-        android:onClick="playSelectedVideo"
-        android:src="@drawable/route_utrechtse_heuvelrug"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_container_view" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
@@ -39,7 +25,8 @@
         android:layout_marginStart="732dp"
         android:layout_marginTop="4dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageButton"
-        app:srcCompat="@android:drawable/ic_menu_manage" />
+        app:layout_constraintTop_toBottomOf="@+id/recyclerview_available_media"
+        app:srcCompat="@android:drawable/ic_menu_manage"
+        android:visibility="gone"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

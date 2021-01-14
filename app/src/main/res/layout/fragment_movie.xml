@@ -4,10 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="top"
     tools:context=".ui.phone.catalog.MovieFragment">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/movieTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Route Utrechtse Heuvelrug"
@@ -16,14 +17,15 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
-        android:id="@+id/routeImageButton"
+        android:id="@+id/routeImageCoverButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:adjustViewBounds="true"
         android:contentDescription="Route"
         android:cropToPadding="true"
+        android:background="@null"
         android:src="@drawable/route_utrechtse_heuvelrug"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/movieTitle" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,12 +1,15 @@
 package com.videostreamtest.ui.phone.catalog;
 
-import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.videostreamtest.R;
-import com.videostreamtest.ui.phone.login.LoginActivity;
+import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.ui.phone.settings.SettingsActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoPlayerConfig;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.videostreamtest.workers.AvailableMediaServiceWorker;
 
 import android.app.DownloadManager;
 import android.content.Intent;
@@ -15,13 +18,19 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkInfo;
+import androidx.work.WorkManager;
 
 public class CatalogActivity extends AppCompatActivity {
      private CatalogViewModel catalogViewModel;
+     private RecyclerView availableMediaRecyclerView;
 
     @Override
     protected void onRestart() {
@@ -39,18 +48,22 @@ public class CatalogActivity extends AppCompatActivity {
         setContentView(R.layout.activity_catalog);
 
         catalogViewModel = new ViewModelProvider(this).get(CatalogViewModel.class);
-        if (catalogViewModel.getApiKey().getValue() == null ) {
-//            new ApiKeyDialogFragment().show(getSupportFragmentManager(), "ApiKeyDialogFragment");
-//            Intent loginActivity = new Intent(getApplicationContext(), LoginActivity.class);
-//            startActivity(loginActivity);
-        }
-
         catalogViewModel.getApiKey().observe(this, observer -> {
             Log.d(this.getClass().getSimpleName(), "ApiKey :: "+catalogViewModel.getApiKey().getValue());
         });
 
-        FloatingActionButton fab = findViewById(R.id.fab);
+        availableMediaRecyclerView = findViewById(R.id.recyclerview_available_media);
+        availableMediaRecyclerView.setHasFixedSize(true);
+        //Maak lineaire layoutmanager en zet deze op horizontaal
+        LinearLayoutManager layoutManager
+                = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        //Zet de layoutmanager erin
+        availableMediaRecyclerView.setLayoutManager(layoutManager);
 
+        getAvailableMedia(catalogViewModel.getApiKey().getValue());
+
+
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -65,6 +78,46 @@ public class CatalogActivity extends AppCompatActivity {
         final Intent videoPlayer = new Intent(getApplicationContext(), VideoplayerActivity.class);
         startActivity(videoPlayer);
         finish();
+    }
+
+    public void getAvailableMedia(final String apikey) {
+        Data.Builder networkData = new Data.Builder();
+        networkData.putString("apikey", apikey);
+
+        OneTimeWorkRequest routeMoviesRequest = new OneTimeWorkRequest.Builder(AvailableMediaServiceWorker.class)
+                .setInputData(networkData.build())
+                .addTag("available-movies")
+                .build();
+
+        WorkManager
+                .getInstance(this)
+                .enqueue(routeMoviesRequest);
+
+        WorkManager.getInstance(this)
+                .getWorkInfoByIdLiveData(routeMoviesRequest.getId())
+                .observe(this, workInfo -> {
+
+                    if( workInfo.getState() != null &&
+                            workInfo.getState() == WorkInfo.State.SUCCEEDED ) {
+
+                        final String result = workInfo.getOutputData().getString("movie-list");
+
+                        try {
+                            final ObjectMapper objectMapper = new ObjectMapper();
+                            Movie movieList[] = objectMapper.readValue(result, Movie[].class);
+                            //pass profiles to adapter
+                            AvailableMediaAdapter availableMediaAdapter = new AvailableMediaAdapter(movieList);
+                            //set adapter to recyclerview
+                            availableMediaRecyclerView.setAdapter(availableMediaAdapter);
+                            //set recyclerview visible
+                            availableMediaRecyclerView.setVisibility(View.VISIBLE);
+                        } catch (JsonMappingException e) {
+                            e.printStackTrace();
+                        } catch (JsonProcessingException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
     }
 
     //TODO: When a networkspeed is too low to stream, possible to download video locally first.

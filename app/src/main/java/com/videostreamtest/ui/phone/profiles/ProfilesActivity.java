@@ -52,6 +52,8 @@ public class ProfilesActivity extends AppCompatActivity {
             //Maak lineaire layoutmanager en zet deze op horizontaal
             LinearLayoutManager layoutManager
                     = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+            //Grid Layout
+//            GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 4, GridLayoutManager.HORIZONTAL, false);
             //Zet de layoutmanager erin
             recyclerView.setLayoutManager(layoutManager);
 

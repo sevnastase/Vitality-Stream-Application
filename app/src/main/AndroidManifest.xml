@@ -58,13 +58,13 @@
             android:name=".ui.phone.videoplayer.VideoplayerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_videoplayer"
-            android:theme="@style/AppTheme.Fullscreen" />
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ui.phone.videoplayer.advanced.AdvancedVideoPlayerActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
             android:label="@string/app_name"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.Fullscreen" />
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".ui.phone.catalog.CatalogActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar"/>

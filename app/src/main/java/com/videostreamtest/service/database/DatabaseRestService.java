@@ -60,4 +60,17 @@ public class DatabaseRestService {
         }
     }
 
+    public String getAvailableMovies(final String apikey) {
+        final String routeMoviesUrl = url+"/route/movies";
+        final Request request = new Request.Builder()
+                .url(routeMoviesUrl)
+                .addHeader("api-key", apikey)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            return response.body().string();
+        } catch (IOException exception) {
+            return "failed";
+        }
+    }
+
 }
