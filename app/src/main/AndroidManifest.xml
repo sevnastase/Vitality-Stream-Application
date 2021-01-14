@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.videostreamtest">
-
     <!-- Android 11 and higher: Packages which are used from other installed apps -->
     <queries>
         <package android:name="com.dsi.ant.plugins.antplus" />
     </queries>
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-
-    <!-- Android TV Features -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> <!-- Android TV Features -->
     <uses-feature
         android:name="android.software.leanback"
         android:required="false" />
@@ -27,12 +24,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
+
         <!-- if memory issues then > android:largeHeap="true" -->
         <!-- METADATA -->
         <meta-data
             android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
-            android:value="com.google.android.exoplayer2.ext.cast.DefaultCastOptionsProvider" />
-        <!-- END METADATA -->
+            android:value="com.google.android.exoplayer2.ext.cast.DefaultCastOptionsProvider" /> <!-- END METADATA -->
         <!-- START ACTIVITIES -->
         <!-- PHONE -->
         <activity
@@ -46,7 +43,7 @@
         <activity
             android:name=".ui.phone.profiles.ProfilesActivity"
             android:label="@string/title_activity_fullscreen"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -65,9 +62,12 @@
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".ui.phone.catalog.CatalogActivity"
+        <activity
+            android:name=".ui.phone.catalog.CatalogActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".ui.phone.result.ResultActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
 
         <!-- TV  //TODO becomes TV User Interfaces -->
         <activity
@@ -75,13 +75,12 @@
             android:label="@string/title_activity_login_tv"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.Leanback.Browse">
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
-<!--                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />-->
-<!--            </intent-filter>-->
-        </activity>
-        <!-- END ACTIVITIES -->
 
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+            <!-- <category android:name="android.intent.category.LEANBACK_LAUNCHER" /> -->
+            <!-- </intent-filter> -->
+        </activity> <!-- END ACTIVITIES -->
         <!-- SERVICES -->
         <service
             android:name=".service.ant.AntPlusService"

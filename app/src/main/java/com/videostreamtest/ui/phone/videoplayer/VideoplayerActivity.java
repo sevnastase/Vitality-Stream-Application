@@ -1,5 +1,6 @@
 package com.videostreamtest.ui.phone.videoplayer;
 
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -34,6 +35,7 @@ import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.videostreamtest.R;
 import com.videostreamtest.service.ant.AntPlusBroadcastReceiver;
+import com.videostreamtest.ui.phone.result.ResultActivity;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -112,7 +114,8 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     public void startResultScreen() {
         // Build result screen
-        //TODO
+        final Intent resultScreen = new Intent(getApplicationContext(), ResultActivity.class);
+        startActivity(resultScreen);
         //Release player and finish activity
         releasePlayer();
         finish();
