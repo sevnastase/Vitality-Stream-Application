@@ -63,15 +63,15 @@
 
             <TextView
                 android:id="@+id/movieRpm"
-                android:text="RPM"
+                android:text="RPM: 60"
                 android:textColor="#FFFFEE"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:paddingRight="5dp"/>
             <TextView
-                android:id="@+id/actualRpm"
-                android:text="0"
+                android:id="@+id/movieDistance"
+                android:text="Distance: 1337 m"
                 android:textColor="#FFFFEE"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

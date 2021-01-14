@@ -1,25 +1,16 @@
 package com.videostreamtest.ui.phone.videoplayer;
 
-import android.annotation.SuppressLint;
-
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
 
-import com.google.android.gms.cast.framework.CastButtonFactory;
-import com.google.android.gms.cast.framework.CastContext;
-import com.videostreamtest.R;
-import com.videostreamtest.service.ant.AntPlusBroadcastReceiver;
-import com.videostreamtest.ui.phone.catalog.CatalogActivity;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -39,12 +30,18 @@ import com.google.android.exoplayer2.upstream.DefaultAllocator;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.google.android.gms.cast.framework.CastButtonFactory;
+import com.google.android.gms.cast.framework.CastContext;
+import com.videostreamtest.R;
+import com.videostreamtest.service.ant.AntPlusBroadcastReceiver;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
 public class VideoplayerActivity extends AppCompatActivity {
+
+    private static VideoplayerActivity thisInstance;
 
     private View mContentView;
     private View mControlsView;
@@ -82,6 +79,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        thisInstance = this;
         setContentView(R.layout.activity_videoplayer);
 
 //        castContext = CastContext.getSharedInstance(this);
@@ -91,6 +89,9 @@ public class VideoplayerActivity extends AppCompatActivity {
         playerView = findViewById(R.id.playerView);
 
         findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+        TextView movieTitle = findViewById(R.id.movieTitle);
+        SharedPreferences myPreferences = getSharedPreferences("app",0);
+        movieTitle.setText(myPreferences.getString("selectedMovieTitle","Title not found"));
 
         setUp();
     }
@@ -103,6 +104,18 @@ public class VideoplayerActivity extends AppCompatActivity {
         // created, to briefly hint to the user that UI controls
         // are available.
 //        delayedHide(100);
+    }
+
+    public static VideoplayerActivity getInstance() {
+        return thisInstance;
+    }
+
+    public void startResultScreen() {
+        // Build result screen
+        //TODO
+        //Release player and finish activity
+        releasePlayer();
+        finish();
     }
 
     @Override
@@ -193,6 +206,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         player.prepare(videoSource);
         player.setPlayWhenReady(true);
         player.addListener(new VideoPlayerEventListener());
+
     }
 
     private void releasePlayer() {

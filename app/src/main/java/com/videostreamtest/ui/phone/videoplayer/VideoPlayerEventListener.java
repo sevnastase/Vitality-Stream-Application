@@ -8,6 +8,7 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 
 public class VideoPlayerEventListener implements Player.EventListener {
+
     @Override
     public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
 
@@ -31,14 +32,13 @@ public class VideoPlayerEventListener implements Player.EventListener {
 //                spinnerVideoDetails.setVisibility(View.VISIBLE);
                 break;
             case Player.STATE_ENDED:
-                // Activate the force enable
+                VideoplayerActivity.getInstance().startResultScreen();
                 break;
             case Player.STATE_IDLE:
 
                 break;
             case Player.STATE_READY:
 //                spinnerVideoDetails.setVisibility(View.GONE);
-
                 break;
             default:
                 // status = PlaybackStatus.IDLE;
