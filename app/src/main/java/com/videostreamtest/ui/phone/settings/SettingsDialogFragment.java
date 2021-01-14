@@ -18,8 +18,6 @@ import androidx.fragment.app.DialogFragment;
 import com.videostreamtest.R;
 import com.videostreamtest.service.ant.AntPlusService;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
 
 public class SettingsDialogFragment extends DialogFragment {
     private static SettingsDialogFragment thisSettingsDialogFragment;
@@ -95,14 +93,6 @@ public class SettingsDialogFragment extends DialogFragment {
                 toggleAntService();
             }
         });
-//        Button apikeyButton = view.findViewById(R.id.apikey_enter_button);
-//
-//        apikeyButton.setOnClickListener(v -> {
-//            if(inputText.getText().length() > 0 ) {
-//
-//                dismiss();
-//            }
-//        });
     }
 
     private void toggleAntService() {
