@@ -36,7 +36,7 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
         //Set Cover
         Picasso.get()
                 .load(movie.getMovieImagepath())
-                .resize(450, 150)
+                .resize(225, 302)
                 .placeholder(R.drawable.cast_album_art_placeholder)
                 .error(R.drawable.cast_ic_notification_disconnect)
                 .into(movieCoverImage);

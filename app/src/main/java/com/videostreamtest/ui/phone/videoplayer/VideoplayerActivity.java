@@ -15,6 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.google.android.gms.cast.framework.CastButtonFactory;
+import com.google.android.gms.cast.framework.CastContext;
 import com.videostreamtest.R;
 import com.videostreamtest.service.ant.AntPlusBroadcastReceiver;
 import com.videostreamtest.ui.phone.catalog.CatalogActivity;
@@ -45,8 +46,9 @@ import com.google.android.exoplayer2.util.Util;
 public class VideoplayerActivity extends AppCompatActivity {
 
     private View mContentView;
-
     private View mControlsView;
+
+    private CastContext castContext;
 
     private PlayerView playerView;
     private SimpleExoPlayer player;
@@ -63,8 +65,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         public boolean onTouch(View view, MotionEvent motionEvent) {
             switch (motionEvent.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    Intent catalogActivity = new Intent(getApplicationContext(), CatalogActivity.class);
-                    startActivity(catalogActivity);
+//                    Intent catalogActivity = new Intent(getApplicationContext(), CatalogActivity.class);
+//                    startActivity(catalogActivity);
                     finish();
 
                     break;
@@ -81,8 +83,9 @@ public class VideoplayerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_videoplayer);
+
+//        castContext = CastContext.getSharedInstance(this);
 
         mControlsView = findViewById(R.id.fullscreen_content_controls);
 //        mContentView = findViewById(R.id.fullscreen_content);
