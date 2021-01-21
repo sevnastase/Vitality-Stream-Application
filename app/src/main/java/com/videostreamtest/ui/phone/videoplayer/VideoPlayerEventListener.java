@@ -1,5 +1,7 @@
 package com.videostreamtest.ui.phone.videoplayer;
 
+import android.util.Log;
+
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
@@ -32,6 +34,7 @@ public class VideoPlayerEventListener implements Player.EventListener {
 //                spinnerVideoDetails.setVisibility(View.VISIBLE);
                 break;
             case Player.STATE_ENDED:
+                Log.d("VideoPlayerActivity", "STATE_ENDED RECORDED");
                 VideoplayerActivity.getInstance().startResultScreen();
                 break;
             case Player.STATE_IDLE:

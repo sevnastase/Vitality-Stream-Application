@@ -32,6 +32,34 @@
         android:fitsSystemWindows="true"
         app:repeat_toggle_modes="all|one" />
 
+    <LinearLayout
+        android:id="@+id/status_dialog_videoplayer"
+        style="@style/Widget.AppTheme.ButtonBar.Fullscreen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|center_horizontal"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        tools:ignore="UselessParent">
+        <TextView
+            android:id="@+id/status_dialog_title"
+            android:text="Placeholder Title"
+            android:textColor="#FFFFEE"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingRight="15dp"
+            android:paddingLeft="30dp" />
+        <ImageButton
+            android:id="@+id/status_dialog_finished_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <Button
+            android:id="@+id/status_dialog_return_home_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
 <!--    <com.google.android.exoplayer2.ui.SimpleExoPlayerView-->
 <!--        android:layout_width="match_parent"-->
 <!--        android:layout_height="match_parent" />-->
@@ -59,7 +87,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:paddingRight="15dp"/>
+                android:paddingRight="15dp"
+                android:paddingLeft="30dp" />
 
             <TextView
                 android:id="@+id/movieRpm"
@@ -78,13 +107,13 @@
                 android:layout_weight="1"
                 android:paddingRight="15dp"/>
 
-            <Button
-                android:id="@+id/dummy_button"
-                style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/dummy_button" />
+<!--            <Button-->
+<!--                android:id="@+id/dummy_button"-->
+<!--                style="?android:attr/buttonBarButtonStyle"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:text="@string/dummy_button" />-->
 
         </LinearLayout>
 

@@ -35,7 +35,9 @@ import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.videostreamtest.R;
 import com.videostreamtest.service.ant.AntPlusBroadcastReceiver;
+import com.videostreamtest.service.ant.AntPlusService;
 import com.videostreamtest.ui.phone.result.ResultActivity;
+import com.videostreamtest.utils.RpmVectorLookupTable;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -45,15 +47,14 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private static VideoplayerActivity thisInstance;
 
-    private View mContentView;
-    private View mControlsView;
-
     private CastContext castContext;
 
     private PlayerView playerView;
     private SimpleExoPlayer player;
     private String videoUri = VideoPlayerConfig.DEFAULT_VIDEO_URL;
     private AntPlusBroadcastReceiver antPlusBroadcastReceiver;
+
+    private TextView rpmValue;
 
     /**
      * Touch listener to use for in-layout UI controls to delay hiding the
@@ -65,6 +66,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         public boolean onTouch(View view, MotionEvent motionEvent) {
             switch (motionEvent.getAction()) {
                 case MotionEvent.ACTION_DOWN:
+                    Intent antService = new Intent(getApplicationContext(), AntPlusService.class);
+                    stopService(antService);
                     releasePlayer();
                     finish();
                     break;
@@ -86,12 +89,13 @@ public class VideoplayerActivity extends AppCompatActivity {
 
 //        castContext = CastContext.getSharedInstance(this);
 
-        mControlsView = findViewById(R.id.fullscreen_content_controls);
-//        mContentView = findViewById(R.id.fullscreen_content);
         playerView = findViewById(R.id.playerView);
+        rpmValue = findViewById(R.id.movieRpm);
 
-        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
-        TextView movieTitle = findViewById(R.id.movieTitle);
+
+//        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+
+        final TextView movieTitle = findViewById(R.id.movieTitle);
         SharedPreferences myPreferences = getSharedPreferences("app",0);
         movieTitle.setText(myPreferences.getString("selectedMovieTitle","Title not found"));
 
@@ -112,7 +116,30 @@ public class VideoplayerActivity extends AppCompatActivity {
         return thisInstance;
     }
 
+    public void updateVideoPlayerScreen(int rpm) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                rpmValue.setText("RPM: "+rpm);
+            }
+        });
+    }
+
+    public void updateVideoPlayerParams(int rpm) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //Setting the speed of the player based on our cadence rpm reading
+                PlaybackParameters playbackParameters  = new PlaybackParameters(RpmVectorLookupTable.getPlaybackspeed(rpm), PlaybackParameters.DEFAULT.pitch);
+                player.setPlaybackParameters(playbackParameters);
+            }
+        });
+    }
+
     public void startResultScreen() {
+        //Stop Ant+ service
+        final Intent antplusService = new Intent(getApplicationContext(), AntPlusService.class);
+        stopService(antplusService);
         // Build result screen
         final Intent resultScreen = new Intent(getApplicationContext(), ResultActivity.class);
         startActivity(resultScreen);
@@ -161,7 +188,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         buildMediaSource(Uri.parse(videoUri));
 
         //Register the antplus data broadcast receiver
-        antPlusBroadcastReceiver = new AntPlusBroadcastReceiver(player);
+        antPlusBroadcastReceiver = new AntPlusBroadcastReceiver();
 
         IntentFilter filter = new IntentFilter("com.fitstream.ANTDATA");
         this.registerReceiver(antPlusBroadcastReceiver, filter);
