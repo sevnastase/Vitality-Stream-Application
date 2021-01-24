@@ -31,20 +31,22 @@ public class VideoPlayerEventListener implements Player.EventListener {
         switch (playbackState) {
 
             case Player.STATE_BUFFERING:
-//                spinnerVideoDetails.setVisibility(View.VISIBLE);
                 break;
             case Player.STATE_ENDED:
                 Log.d("VideoPlayerActivity", "STATE_ENDED RECORDED");
-                VideoplayerActivity.getInstance().startResultScreen();
+                VideoplayerActivity.getInstance().showFinishScreen();
+//                VideoplayerActivity.getInstance().startResultScreen();
                 break;
             case Player.STATE_IDLE:
-
                 break;
             case Player.STATE_READY:
-//                spinnerVideoDetails.setVisibility(View.GONE);
+                if (playWhenReady) {
+                    Log.d("VideoPlayerActivity", "STATE_READY RECORDED :: PLAY");
+                } else {
+                    Log.d("VideoPlayerActivity", "STATE_READY RECORDED :: PAUSE");
+                }
                 break;
             default:
-                // status = PlaybackStatus.IDLE;
                 break;
         }
 

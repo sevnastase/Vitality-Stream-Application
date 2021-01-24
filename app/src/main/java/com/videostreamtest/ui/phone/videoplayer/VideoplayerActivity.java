@@ -3,11 +3,18 @@ package com.videostreamtest.ui.phone.videoplayer;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -54,7 +61,12 @@ public class VideoplayerActivity extends AppCompatActivity {
     private String videoUri = VideoPlayerConfig.DEFAULT_VIDEO_URL;
     private AntPlusBroadcastReceiver antPlusBroadcastReceiver;
 
+    private LinearLayout statusDialog;
+
     private TextView rpmValue;
+    private int[] lastRpmMeasurements = new int[5];
+    private int currentMeasurementIteration = 0;
+    private boolean routePaused = false;
 
     /**
      * Touch listener to use for in-layout UI controls to delay hiding the
@@ -92,24 +104,54 @@ public class VideoplayerActivity extends AppCompatActivity {
         playerView = findViewById(R.id.playerView);
         rpmValue = findViewById(R.id.movieRpm);
 
-
-//        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+        statusDialog = findViewById(R.id.status_dialog_videoplayer);
 
         final TextView movieTitle = findViewById(R.id.movieTitle);
         SharedPreferences myPreferences = getSharedPreferences("app",0);
         movieTitle.setText(myPreferences.getString("selectedMovieTitle","Title not found"));
 
         setUp();
+
+        //Pause screen init
+        final Button backToOverview = findViewById(R.id.status_dialog_return_home_button);
+        backToOverview.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                releasePlayer();
+                finish();
+            }
+        });
+
+        // START TEST CODE PAUSE SCREEN
+//        Runnable showPauseScreen = new Runnable() {
+//            public void run() {
+//                updateVideoPlayerScreen(0);
+//                updateVideoPlayerScreen(0);
+//                updateVideoPlayerScreen(0);
+//                updateVideoPlayerScreen(0);
+//                updateVideoPlayerScreen(0);
+//
+//                updateVideoPlayerParams(0);
+//
+//                Runnable hidePauseScreen = new Runnable() {
+//                    public void run() {
+//                        updateVideoPlayerScreen(60);
+//                        updateVideoPlayerScreen(60);
+//                        updateVideoPlayerScreen(60);
+//
+//                        updateVideoPlayerParams(60);
+//                    }
+//                };
+//                new Handler(Looper.getMainLooper()).postDelayed( hidePauseScreen, 8000 );
+//            }
+//        };
+//        new Handler(Looper.getMainLooper()).postDelayed( showPauseScreen, 8000 );
+        // END TEST CODE
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
-//        delayedHide(100);
     }
 
     public static VideoplayerActivity getInstance() {
@@ -120,7 +162,13 @@ public class VideoplayerActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                updateLastCadenceMeasurement(rpm);
                 rpmValue.setText("RPM: "+rpm);
+                if (getAverageCadenceMeasurements() == 0 && !routePaused) {
+                    togglePauseScreen();
+                } else {
+                    togglePauseScreen();
+                }
             }
         });
     }
@@ -134,6 +182,42 @@ public class VideoplayerActivity extends AppCompatActivity {
                 player.setPlaybackParameters(playbackParameters);
             }
         });
+    }
+
+    public void togglePauseScreen() {
+        final TextView pauseTitle = findViewById(R.id.status_dialog_title);
+        pauseTitle.setText("Pauze");
+        final TextView pauseMessage = findViewById(R.id.status_dialog_message);
+        pauseMessage.setText("Trap door om verder te gaan.");
+        final ImageButton finishFlag = findViewById(R.id.status_dialog_finished_image);
+        finishFlag.setVisibility(View.GONE);
+
+        player.setPlayWhenReady(!player.getPlayWhenReady());
+        player.getPlaybackState();
+        playerView.hideController();
+        toggleStatusScreen();
+    }
+
+    public void showFinishScreen() {
+        final TextView message = findViewById(R.id.status_dialog_title);
+        message.setText("Finish!");
+        final TextView pauseMessage = findViewById(R.id.status_dialog_message);
+        pauseMessage.setText("");
+
+        final ImageButton finishFlag = findViewById(R.id.status_dialog_finished_image);
+        finishFlag.setBackground(getDrawable(R.drawable.finish_alpha));
+        finishFlag.setVisibility(View.VISIBLE);
+
+        toggleStatusScreen();
+        playerView.hideController();
+    }
+
+    private void toggleStatusScreen() {
+        if(statusDialog.getVisibility() == View.GONE) {
+            statusDialog.setVisibility(View.VISIBLE);
+        } else {
+            statusDialog.setVisibility(View.GONE);
+        }
     }
 
     public void startResultScreen() {
@@ -179,6 +263,29 @@ public class VideoplayerActivity extends AppCompatActivity {
         releasePlayer();
     }
 
+    private void updateLastCadenceMeasurement(final int rpm){
+        if (currentMeasurementIteration < lastRpmMeasurements.length) {
+            lastRpmMeasurements[currentMeasurementIteration] = rpm;
+            currentMeasurementIteration++;
+        } else {
+            currentMeasurementIteration = 0;
+            lastRpmMeasurements[currentMeasurementIteration] = rpm;
+            currentMeasurementIteration++;
+        }
+    }
+
+    private int getAverageCadenceMeasurements() {
+        int total = 0;
+        for (int measurementIndex = 0; measurementIndex < lastRpmMeasurements.length; measurementIndex++) {
+            total += lastRpmMeasurements[measurementIndex];
+        }
+        if (total > 0) {
+            return total / lastRpmMeasurements.length;
+        } else {
+            return 0;
+        }
+    }
+
     private void setUp() {
         initializePlayer();
         getSelectedVideoUri();
@@ -192,6 +299,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         IntentFilter filter = new IntentFilter("com.fitstream.ANTDATA");
         this.registerReceiver(antPlusBroadcastReceiver, filter);
+        playerView.hideController();
     }
 
     private void initializePlayer() {
@@ -217,7 +325,8 @@ public class VideoplayerActivity extends AppCompatActivity {
             // Set speed of the video (hence buffering /streaming speed )
             PlaybackParameters playbackParameters  = new PlaybackParameters(1.0f, PlaybackParameters.DEFAULT.pitch);
             player.setPlaybackParameters(playbackParameters);
-            playerView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN );
+
+            playerView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
             //Set player on playerview
             playerView.setPlayer(player);
         }

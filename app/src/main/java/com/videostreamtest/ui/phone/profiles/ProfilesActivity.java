@@ -1,5 +1,7 @@
 package com.videostreamtest.ui.phone.profiles;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -40,15 +42,15 @@ public class ProfilesActivity extends AppCompatActivity {
         if (AntPlusService.isAntPlusDevicePresent(getApplicationContext())) {
             checkForSystemApprovalAntPlusService();
         } else {
-//            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//            builder.setMessage("Ant+ device not found!").setTitle("Ant+ plugin error");
-//            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-//                @Override
-//                public void onClick(DialogInterface dialog, int id) {
-//                    dialog.dismiss();
-//                }
-//            });
-//            builder.show();
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Ant+ device not found!").setTitle("Ant+ plugin error");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                    dialog.dismiss();
+                }
+            });
+            builder.show();
         }
 
         //retrieve API key

@@ -34,30 +34,42 @@
 
     <LinearLayout
         android:id="@+id/status_dialog_videoplayer"
-        style="@style/Widget.AppTheme.ButtonBar.Fullscreen"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|center_horizontal"
-        android:orientation="horizontal"
+        android:background="@drawable/imagebutton_blue_border"
+        android:backgroundTint="@color/black_overlay"
+        android:orientation="vertical"
         android:visibility="gone"
+        android:padding="15dp"
         tools:ignore="UselessParent">
         <TextView
             android:id="@+id/status_dialog_title"
             android:text="Placeholder Title"
             android:textColor="#FFFFEE"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:paddingRight="15dp"
-            android:paddingLeft="30dp" />
+            android:textAlignment="center"/>
+        <TextView
+            android:id="@+id/status_dialog_message"
+            android:text="Placeholder message"
+            android:textColor="#FFFFEE"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAlignment="center"/>
         <ImageButton
             android:id="@+id/status_dialog_finished_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"/>
         <Button
             android:id="@+id/status_dialog_return_home_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Terug naar overzicht"
+            android:textAlignment="center"/>
     </LinearLayout>
 
 <!--    <com.google.android.exoplayer2.ui.SimpleExoPlayerView-->

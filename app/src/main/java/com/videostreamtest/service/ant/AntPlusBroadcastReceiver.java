@@ -8,18 +8,14 @@ import android.util.Log;
 
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.RpmVectorLookupTable;
-import com.google.android.exoplayer2.PlaybackParameters;
-import com.google.android.exoplayer2.SimpleExoPlayer;
 
 public class AntPlusBroadcastReceiver extends BroadcastReceiver {
     private static final String TAG = AntPlusBroadcastReceiver.class.getSimpleName();
 
-    private int[] lastRpmMeasurements = new int[5];
-
     @Override
     public void onReceive(Context context, Intent intent) {
         final PendingResult pendingResult = goAsync();
-        Task asyncTask = new Task(pendingResult, intent);
+        final Task asyncTask = new Task(pendingResult, intent);
         asyncTask.execute();
     }
 
