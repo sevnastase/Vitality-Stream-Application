@@ -22,7 +22,6 @@ import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.Profile;
 import com.videostreamtest.service.ant.AntPlusService;
@@ -30,28 +29,12 @@ import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.workers.ProfileServiceWorker;
 
 public class ProfilesActivity extends AppCompatActivity {
-    private RecyclerView recyclerView;
+   private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_overview);
-
-        //Write log for stating antplus status and version
-        Log.d("ANTPLUS_SETTINGS", "Version number: "+ AntPluginPcc.getInstalledPluginsVersionNumber(getApplicationContext()));
-        if (AntPlusService.isAntPlusDevicePresent(getApplicationContext())) {
-            checkForSystemApprovalAntPlusService();
-        } else {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Ant+ device not found!").setTitle("Ant+ plugin error");
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int id) {
-                    dialog.dismiss();
-                }
-            });
-            builder.show();
-        }
 
         //retrieve API key
         SharedPreferences myPreferences = getApplication().getSharedPreferences("app",0);
@@ -62,6 +45,22 @@ public class ProfilesActivity extends AppCompatActivity {
             startActivity(loginActivity);
             finish();
         } else {
+            //Write log for stating antplus status and version
+            Log.d("ANTPLUS_SETTINGS", "Version number: "+ AntPluginPcc.getInstalledPluginsVersionNumber(getApplicationContext()));
+            if (AntPlusService.isAntPlusDevicePresent(getApplicationContext())) {
+                checkForSystemApprovalAntPlusService();
+            } else {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage("Ant+ device not found!").setTitle("Ant+ plugin error");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+                builder.show();
+            }
+
             //Koppel de recyclerView aan de layout xml
             recyclerView = findViewById(R.id.recyclerview_profiles);
             recyclerView.setHasFixedSize(true);
@@ -83,6 +82,7 @@ public class ProfilesActivity extends AppCompatActivity {
         Runnable stopAntPlusService = () -> stopService(antPlusService);
         new Handler(Looper.getMainLooper()).postDelayed( stopAntPlusService, 8000 );
     }
+
     private void loadProfiles(final String apikey) {
         Data.Builder networkData = new Data.Builder();
         networkData.putString("apikey", apikey);
