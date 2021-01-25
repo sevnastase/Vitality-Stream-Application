@@ -42,6 +42,10 @@ public class ProfileViewHolder extends RecyclerView.ViewHolder {
                 .error(R.drawable.cast_ic_notification_disconnect)
                 .into(profileImageButton);
 
+        //init right size because of border
+        drawSelectionborder();
+        undrawSelectionborder();
+
         final View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
