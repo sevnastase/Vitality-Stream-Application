@@ -15,7 +15,8 @@
 
     <LinearLayout
         android:id="@+id/login_overlay"
-        android:background="@color/black_overlay"
+        android:background="@drawable/imagebutton_blue_border"
+        android:backgroundTint="@color/black_overlay"
         android:layout_width="500dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
