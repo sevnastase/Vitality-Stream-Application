@@ -1,9 +1,12 @@
 package com.videostreamtest.ui.phone.profiles;
 
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,10 +19,14 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileViewHolder>{
     final static String TAG = ProfileAdapter.class.getSimpleName();
 
     private Profile[] profiles;
+    // Start with first item selected
+    private int selectedItem = 0;
 
-    public ProfileAdapter(Profile[] profiles) {
+    public ProfileAdapter(final Profile[] profiles) {
         this.profiles = profiles;
+        Log.d(TAG, "Call ProfileAdapter");
     }
+
 
     @NonNull
     @Override
@@ -35,6 +42,13 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileViewHolder>{
     @Override
     public void onBindViewHolder(@NonNull ProfileViewHolder holder, int position) {
         Log.d(TAG, "Position: "+position);
+        if(selectedItem == position) {
+            ImageButton profileImageButton = holder.itemView.findViewById(R.id.profile_avatar);
+            profileImageButton.setFocusableInTouchMode(true);
+            profileImageButton.setFocusable(true);
+            profileImageButton.requestFocus();
+        }
+        holder.itemView.setSelected(selectedItem == position);
         if (profiles.length > 0) {
             holder.bind(profiles[position], position);
         }
@@ -44,4 +58,11 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileViewHolder>{
     public int getItemCount() {
         return profiles.length;
     }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        Log.d(TAG, "ADAPTER ATTACHED TO RECYCLERVIEW");
+    }
+
 }

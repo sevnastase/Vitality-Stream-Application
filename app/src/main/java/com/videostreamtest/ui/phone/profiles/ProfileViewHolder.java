@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.view.KeyEvent;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -19,6 +19,8 @@ import com.videostreamtest.data.model.Profile;
 import com.videostreamtest.ui.phone.catalog.CatalogActivity;
 
 public class ProfileViewHolder extends RecyclerView.ViewHolder {
+    final static String TAG = ProfileViewHolder.class.getSimpleName();
+
     private ImageButton profileImageButton;
     private TextView profileName;
 
@@ -31,6 +33,7 @@ public class ProfileViewHolder extends RecyclerView.ViewHolder {
         profileName.setTextSize(20);
         profileName.setTextColor(Color.WHITE);
         profileName.setText(profile.getProfileName());
+        Log.d(TAG, "START_BINDING: ThisItem: "+getAdapterPosition()+" isFocused: "+itemView.isFocused() + " isSelected: "+itemView.isSelected());
 
         profileImageButton = itemView.findViewById(R.id.profile_avatar);
         Picasso.get()
@@ -39,17 +42,27 @@ public class ProfileViewHolder extends RecyclerView.ViewHolder {
                 .error(R.drawable.cast_ic_notification_disconnect)
                 .into(profileImageButton);
 
-        if (position == 0) {
-            final Drawable border = itemView.getContext().getDrawable(R.drawable.imagebutton_blue_border);
-            profileImageButton.setBackground(border);
-            profileImageButton.setAlpha(1.0f);
-        }
-        profileImageButton.setOnKeyListener(new View.OnKeyListener() {
+        final View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
             @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                return false;
+            public void onFocusChange(View v, boolean hasFocus) {
+                Log.d(TAG, "ThisItem: "+getAdapterPosition()+" hasFocus: "+hasFocus);
+                itemView.setSelected(true);
+                if (hasFocus) {
+                    drawSelectionborder();
+                } else {
+                    undrawSelectionborder();
+                }
             }
-        });
+        };
+
+        profileImageButton.setOnFocusChangeListener(focusChangeListener);
+
+        if (itemView.isSelected() ) {
+            drawSelectionborder();
+        } else {
+            undrawSelectionborder();
+        }
+
         profileImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -60,11 +73,24 @@ public class ProfileViewHolder extends RecyclerView.ViewHolder {
                 editor.putInt("profileId", profile.getProfileId());
                 editor.commit();
 
+                profileImageButton.requestFocus();
+
                 Intent catalog = new Intent(itemView.getContext(), CatalogActivity.class);
                 itemView.getContext().startActivity(catalog);
                 Toast.makeText(itemView.getContext(), "Profile "+profile.getProfileName()+" loading", Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void drawSelectionborder() {
+        final Drawable border = itemView.getContext().getDrawable(R.drawable.imagebutton_blue_border);
+        profileImageButton.setBackground(border);
+        profileImageButton.setAlpha(1.0f);
+    }
+
+    private void undrawSelectionborder() {
+        profileImageButton.setBackground(null);
+        profileImageButton.setAlpha(0.7f);
     }
 
 }

@@ -49,16 +49,6 @@ public class ProfilesActivity extends AppCompatActivity {
             Log.d("ANTPLUS_SETTINGS", "Version number: "+ AntPluginPcc.getInstalledPluginsVersionNumber(getApplicationContext()));
             if (AntPlusService.isAntPlusDevicePresent(getApplicationContext())) {
                 checkForSystemApprovalAntPlusService();
-            } else {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage("Ant+ device not found!").setTitle("Ant+ plugin error");
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.dismiss();
-                    }
-                });
-                builder.show();
             }
 
             //Koppel de recyclerView aan de layout xml
