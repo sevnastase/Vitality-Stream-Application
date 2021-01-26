@@ -69,8 +69,8 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
                     itemView.getContext().startService(antplusService);
 
                     AlertDialog startPaddlingMessage = new AlertDialog.Builder(itemView.getContext()).create();
-                    startPaddlingMessage.setMessage("Please start paddling slowly for the sensor to connect.");
-                    startPaddlingMessage.setTitle("Please start slowly");
+                    startPaddlingMessage.setMessage(itemView.getContext().getString(R.string.pre_video_message));
+                    startPaddlingMessage.setTitle(itemView.getContext().getString(R.string.pre_video_title));
                     startPaddlingMessage.show();
 
                     Runnable dismissStartPaddlingMessage = new Runnable() {
@@ -86,8 +86,8 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
 
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
-                    builder.setMessage("Ant+ device not found!").setTitle("Ant+ plugin error");
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    builder.setMessage(itemView.getContext().getString(R.string.ant_error_message)).setTitle(itemView.getContext().getString(R.string.ant_error_title));
+                    builder.setPositiveButton(itemView.getContext().getString(R.string.positive_button), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int id) {
                             dialog.dismiss();

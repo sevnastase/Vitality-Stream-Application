@@ -81,7 +81,7 @@ public class ProfileViewHolder extends RecyclerView.ViewHolder {
 
                 Intent catalog = new Intent(itemView.getContext(), CatalogActivity.class);
                 itemView.getContext().startActivity(catalog);
-                Toast.makeText(itemView.getContext(), "Profile "+profile.getProfileName()+" loading", Toast.LENGTH_LONG).show();
+                Toast.makeText(itemView.getContext(), toString().format(itemView.getContext().getString(R.string.loading_profile_message), profile.getProfileName()), Toast.LENGTH_LONG).show();
             }
         });
     }

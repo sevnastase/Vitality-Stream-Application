@@ -45,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
         registerButton.setOnClickListener(new View.OnClickListener(){
                @Override
                public void onClick(View v) {
-                    Toast.makeText(getApplicationContext(), "Unlocks later", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), getString(R.string.under_construction), Toast.LENGTH_LONG).show();
                }
            }
         );
@@ -77,7 +77,7 @@ public class LoginActivity extends AppCompatActivity {
                         final String result = workInfo.getOutputData().getString("result");
                         if (result.equalsIgnoreCase("unauthorized")) {
                             Toast.makeText(getApplicationContext(),
-                                    "Failed to login!",
+                                    getString(R.string.failed_login),
                                     Toast.LENGTH_LONG).show();
                             progressBar.setVisibility(View.GONE);
                         } else {

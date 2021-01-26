@@ -162,12 +162,18 @@ public class VideoplayerActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                //Update the measurements with the latest sensor data
                 updateLastCadenceMeasurement(rpm);
+                //Update the on-screen data
                 rpmValue.setText("RPM: "+rpm);
+                //If the average measurement is 0 and the route is not paused then pause and show pause screen
                 if (getAverageCadenceMeasurements() == 0 && !routePaused) {
                     togglePauseScreen();
                 } else {
-                    togglePauseScreen();
+                    //If the route is paused and the average measurement is higher then 0 then unpause en remove pause screen
+                    if (routePaused && getAverageCadenceMeasurements() > 0) {
+                        togglePauseScreen();
+                    }
                 }
             }
         });
@@ -177,18 +183,21 @@ public class VideoplayerActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                //Setting the speed of the player based on our cadence rpm reading
-                PlaybackParameters playbackParameters  = new PlaybackParameters(RpmVectorLookupTable.getPlaybackspeed(rpm), PlaybackParameters.DEFAULT.pitch);
-                player.setPlaybackParameters(playbackParameters);
+                //If the route is not paused then pass params to the videoplayer
+                if(!routePaused) {
+                    //Setting the speed of the player based on our cadence rpm reading
+                    PlaybackParameters playbackParameters = new PlaybackParameters(RpmVectorLookupTable.getPlaybackspeed(rpm), PlaybackParameters.DEFAULT.pitch);
+                    player.setPlaybackParameters(playbackParameters);
+                }
             }
         });
     }
 
     public void togglePauseScreen() {
         final TextView pauseTitle = findViewById(R.id.status_dialog_title);
-        pauseTitle.setText("Pauze");
+        pauseTitle.setText(getString(R.string.pause_screen_title));
         final TextView pauseMessage = findViewById(R.id.status_dialog_message);
-        pauseMessage.setText("Trap door om verder te gaan.");
+        pauseMessage.setText(getString(R.string.pause_screen_message));
         final ImageButton finishFlag = findViewById(R.id.status_dialog_finished_image);
         finishFlag.setVisibility(View.GONE);
 
@@ -200,7 +209,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     public void showFinishScreen() {
         final TextView message = findViewById(R.id.status_dialog_title);
-        message.setText("Finish!");
+        message.setText(getString(R.string.finish_screen_title));
         final TextView pauseMessage = findViewById(R.id.status_dialog_message);
         pauseMessage.setText("");
 

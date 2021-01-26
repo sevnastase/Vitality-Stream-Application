@@ -29,4 +29,15 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
     <string name="action_register_user">Register</string>
+    <string name="failed_login">Failed to login!</string>
+    <string name="under_construction">Unlocks later</string>
+    <string name="loading_profile_message">Profile %s loading</string>
+    <string name="pre_video_message">Please start paddling slowly for the sensor to connect.</string>
+    <string name="pre_video_title">Please start slowly</string>
+    <string name="ant_error_message">Ant+ device not found!</string>
+    <string name="ant_error_title">Ant+ plugin error</string>
+    <string name="positive_button">Ok</string>
+    <string name="pause_screen_title">Pause</string>
+    <string name="pause_screen_message">Start paddling if you want to continue</string>
+    <string name="finish_screen_title">Finish!</string>
 </resources>
