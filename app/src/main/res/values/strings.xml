@@ -40,4 +40,5 @@
     <string name="pause_screen_title">Pause</string>
     <string name="pause_screen_message">Start paddling if you want to continue</string>
     <string name="finish_screen_title">Finish!</string>
+    <string name="pause_screen_button_text">Back to overview</string>
 </resources>

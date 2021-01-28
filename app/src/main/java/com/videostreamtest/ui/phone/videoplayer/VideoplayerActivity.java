@@ -110,6 +110,12 @@ public class VideoplayerActivity extends AppCompatActivity {
         SharedPreferences myPreferences = getSharedPreferences("app",0);
         movieTitle.setText(myPreferences.getString("selectedMovieTitle","Title not found"));
 
+        updateLastCadenceMeasurement(66);
+        updateLastCadenceMeasurement(66);
+        updateLastCadenceMeasurement(66);
+        updateLastCadenceMeasurement(66);
+        updateLastCadenceMeasurement(66);
+
         setUp();
 
         //Pause screen init
@@ -201,6 +207,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         final ImageButton finishFlag = findViewById(R.id.status_dialog_finished_image);
         finishFlag.setVisibility(View.GONE);
 
+        routePaused = !routePaused;
         player.setPlayWhenReady(!player.getPlayWhenReady());
         player.getPlaybackState();
         playerView.hideController();

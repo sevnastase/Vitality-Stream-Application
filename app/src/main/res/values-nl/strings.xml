@@ -28,4 +28,5 @@
     <string name="pause_screen_title">Pauze</string>
     <string name="pause_screen_message">Ga verder met fietsen om door te gaan</string>
     <string name="finish_screen_title">Finish!</string>
+    <string name="pause_screen_button_text">Terug naar overzicht</string>
 </resources>
