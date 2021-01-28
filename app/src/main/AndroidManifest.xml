@@ -32,13 +32,9 @@
         <meta-data
             android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
             android:value="com.google.android.exoplayer2.ext.cast.DefaultCastOptionsProvider" /> <!-- END METADATA -->
+
         <!-- START ACTIVITIES -->
         <!-- PHONE -->
-        <activity
-            android:name=".ui.phone.settings.SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".ui.phone.login.LoginActivity"
             android:label="@string/title_activity_login"

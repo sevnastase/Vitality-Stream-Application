@@ -5,10 +5,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.Movie;
-import com.videostreamtest.ui.phone.settings.SettingsActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoPlayerConfig;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.videostreamtest.workers.AvailableMediaServiceWorker;
 
 import android.app.DownloadManager;
@@ -61,16 +59,6 @@ public class CatalogActivity extends AppCompatActivity {
         availableMediaRecyclerView.setLayoutManager(layoutManager);
 
         getAvailableMedia(catalogViewModel.getApiKey().getValue());
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent settingsActivity = new Intent(getApplicationContext(), SettingsActivity.class);
-                startActivity(settingsActivity);
-            }
-        });
-
     }
 
     public void playSelectedVideo(View view) {
