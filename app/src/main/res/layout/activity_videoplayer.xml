@@ -68,7 +68,7 @@
             android:id="@+id/status_dialog_return_home_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Terug naar overzicht"
+            android:text="@string/pause_screen_button_text"
             android:textAlignment="center"/>
     </LinearLayout>
 
