@@ -84,7 +84,7 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
             @Override
             public void onClick(View v) {
                 //Check if ANT+ plugin is installed and available on Android device
-                if (!AntPlusService.isAntPlusDevicePresent(v.getContext().getApplicationContext())) {
+                if (AntPlusService.isAntPlusDevicePresent(v.getContext().getApplicationContext())) {
                     //Write values to params
                     SharedPreferences myPreferences = v.getContext().getSharedPreferences("app",0);
                     SharedPreferences.Editor editor = myPreferences.edit();
@@ -96,8 +96,8 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
                     movieCoverImage.requestFocus();
 
                     //Start AntPlus service to connect with garmin cadence sensor
-//                    Intent antplusService = new Intent(itemView.getContext().getApplicationContext(), AntPlusService.class);
-//                    itemView.getContext().startService(antplusService);
+                    Intent antplusService = new Intent(itemView.getContext().getApplicationContext(), AntPlusService.class);
+                    itemView.getContext().startService(antplusService);
 
                     AlertDialog startPaddlingMessage = new AlertDialog.Builder(itemView.getContext()).create();
                     startPaddlingMessage.setMessage(itemView.getContext().getString(R.string.pre_video_message));

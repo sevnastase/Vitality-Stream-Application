@@ -11,11 +11,14 @@ import com.videostreamtest.workers.AvailableMediaServiceWorker;
 
 import android.app.DownloadManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -47,8 +50,14 @@ public class CatalogActivity extends AppCompatActivity {
 
         catalogViewModel = new ViewModelProvider(this).get(CatalogViewModel.class);
         catalogViewModel.getApiKey().observe(this, observer -> {
-            Log.d(this.getClass().getSimpleName(), "ApiKey :: "+catalogViewModel.getApiKey().getValue());
+            Log.d(this.getClass().getSimpleName(), "ApiKey found! ");//+catalogViewModel.getApiKey().getValue());
         });
+
+        final TextView profileName = findViewById(R.id.current_loaded_profile);
+        SharedPreferences myPreferences = getSharedPreferences("app",0);
+        profileName.setTextSize(20);
+        profileName.setTextColor(Color.WHITE);
+        profileName.setText(myPreferences.getString("profileName", ""));
 
         availableMediaRecyclerView = findViewById(R.id.recyclerview_available_media);
         availableMediaRecyclerView.setHasFixedSize(true);

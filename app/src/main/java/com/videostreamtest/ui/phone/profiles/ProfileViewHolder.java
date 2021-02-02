@@ -74,6 +74,7 @@ public class ProfileViewHolder extends RecyclerView.ViewHolder {
                 SharedPreferences myPreferences = v.getContext().getSharedPreferences("app",0);
                 SharedPreferences.Editor editor = myPreferences.edit();
                 editor.putString("profileKey", profile.getProfileKey());
+                editor.putString("profileName", profile.getProfileName());
                 editor.putInt("profileId", profile.getProfileId());
                 editor.commit();
 
