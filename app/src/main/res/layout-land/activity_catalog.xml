@@ -9,13 +9,34 @@
     android:background="@drawable/profile_overview_background"
     tools:context=".ui.phone.catalog.CatalogActivity">
 
-    <TextView
-        android:id="@+id/current_loaded_profile"
+    <LinearLayout
+        android:id="@+id/overlay_profile_information"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:layout_gravity="center|center_horizontal"
+        android:background="@drawable/imagebutton_blue_border"
+        android:backgroundTint="@color/black_overlay"
+        android:orientation="horizontal"
+        android:padding="10dp"
         android:layout_margin="25dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        tools:ignore="UselessParent">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="1dp"
+            android:src="@drawable/profile_small"/>
+        <TextView
+            android:id="@+id/current_loaded_profile"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_margin="5dp"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview_available_media"
