@@ -5,8 +5,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -21,6 +23,7 @@ import com.videostreamtest.service.ant.AntPlusService;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 
 public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
+    final static String TAG = AvailableMediaViewHolder.class.getSimpleName();
 
     private ImageButton movieCoverImage;
     private TextView movieTitle;
@@ -51,22 +54,50 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
                 .error(R.drawable.cast_ic_notification_disconnect)
                 .into(movieCoverImage);
 
+        //init right size because of border
+        selectMedia();
+        unselectMedia();
+
+        final View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                Log.d(TAG, "ThisItem: "+getAdapterPosition()+" hasFocus: "+hasFocus);
+                itemView.setSelected(true);
+                if (hasFocus) {
+                    selectMedia();
+                } else {
+                    unselectMedia();
+                }
+            }
+        };
+
+        movieCoverImage.setOnFocusChangeListener(focusChangeListener);
+
+        if (movieCoverImage.isSelected()) {
+           selectMedia();
+        } else {
+            unselectMedia();
+        }
+
         //Set onclick on imagebutton
         movieCoverImage.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 //Check if ANT+ plugin is installed and available on Android device
-                if (AntPlusService.isAntPlusDevicePresent(v.getContext().getApplicationContext())) {
+                if (!AntPlusService.isAntPlusDevicePresent(v.getContext().getApplicationContext())) {
                     //Write values to params
                     SharedPreferences myPreferences = v.getContext().getSharedPreferences("app",0);
                     SharedPreferences.Editor editor = myPreferences.edit();
                     editor.putString("selectedMovieUrl", movie.getMovieUrl());
                     editor.putString("selectedMovieTitle", movie.getMovieTitle());
+                    editor.putFloat("selectedMovieTotalDistance", movie.getMovieLength());
                     editor.commit();
 
+                    movieCoverImage.requestFocus();
+
                     //Start AntPlus service to connect with garmin cadence sensor
-                    Intent antplusService = new Intent(itemView.getContext().getApplicationContext(), AntPlusService.class);
-                    itemView.getContext().startService(antplusService);
+//                    Intent antplusService = new Intent(itemView.getContext().getApplicationContext(), AntPlusService.class);
+//                    itemView.getContext().startService(antplusService);
 
                     AlertDialog startPaddlingMessage = new AlertDialog.Builder(itemView.getContext()).create();
                     startPaddlingMessage.setMessage(itemView.getContext().getString(R.string.pre_video_message));
@@ -97,6 +128,16 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
                 }
             }
         });
+    }
 
+    public void selectMedia() {
+        final Drawable border = itemView.getContext().getDrawable(R.drawable.imagebutton_blue_border);
+        movieCoverImage.setBackground(border);
+        movieCoverImage.setAlpha(1.0f);
+    }
+
+    public void unselectMedia() {
+        movieCoverImage.setBackground(null);
+        movieCoverImage.setAlpha(0.7f);
     }
 }
