@@ -3,12 +3,9 @@ package com.videostreamtest.ui.phone.videoplayer;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,31 +16,19 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.DefaultRenderersFactory;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
+import com.google.android.exoplayer2.source.MediaSourceFactory;
 import com.google.android.exoplayer2.ui.PlayerView;
-import com.google.android.exoplayer2.upstream.BandwidthMeter;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultAllocator;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.util.Util;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.videostreamtest.R;
 import com.videostreamtest.service.ant.AntPlusBroadcastReceiver;
 import com.videostreamtest.service.ant.AntPlusService;
 import com.videostreamtest.ui.phone.result.ResultActivity;
+import com.videostreamtest.utils.DistanceLookupTable;
 import com.videostreamtest.utils.RpmVectorLookupTable;
 
 /**
@@ -51,6 +36,8 @@ import com.videostreamtest.utils.RpmVectorLookupTable;
  * status bar and navigation/system bar) with user interaction.
  */
 public class VideoplayerActivity extends AppCompatActivity {
+
+    private static final String TAG = VideoplayerActivity.class.getSimpleName();
 
     private static VideoplayerActivity thisInstance;
 
@@ -63,9 +50,14 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private LinearLayout statusDialog;
 
+    private boolean kioskmode = false;
+
     private TextView rpmValue;
     private int[] lastRpmMeasurements = new int[5];
     private int currentMeasurementIteration = 0;
+
+    private float totalMetersRoute = 0;
+
     private boolean routePaused = false;
 
     /**
@@ -109,6 +101,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         final TextView movieTitle = findViewById(R.id.movieTitle);
         SharedPreferences myPreferences = getSharedPreferences("app",0);
         movieTitle.setText(myPreferences.getString("selectedMovieTitle","Title not found"));
+        totalMetersRoute = myPreferences.getFloat("selectedMovieTotalDistance", 0f);
 
         updateLastCadenceMeasurement(66);
         updateLastCadenceMeasurement(66);
@@ -158,20 +151,46 @@ public class VideoplayerActivity extends AppCompatActivity {
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
+
+        if (kioskmode) {
+            Handler handler = new Handler();
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (player != null) {
+                        //progressbar.setProgress((int) ((exoPlayer.getCurrentPosition()*100)/exoPlayer.getDuration()));
+                        rpmValue.setText(toString().format(getString(R.string.video_screen_rpm), 60));
+                        updateDistanceText();
+                        handler.postDelayed(this::run, 1000);
+                    }
+                }
+            };
+            handler.postDelayed(runnable, 0);
+        }
     }
 
     public static VideoplayerActivity getInstance() {
         return thisInstance;
     }
 
+    public void updateSeekbar() {
+        int currentProgresss = (int) (player.getCurrentPosition() * 1.0f / player.getDuration() * 100);
+    }
+
     public void updateVideoPlayerScreen(int rpm) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                //Update the measurements with the latest sensor data
+                //First update the measurements with the latest sensor data
                 updateLastCadenceMeasurement(rpm);
-                //Update the on-screen data
-                rpmValue.setText("RPM: "+rpm);
+
+                /* Update the on-screen data */
+                //Update RPM
+                rpmValue.setText(toString().format(getString(R.string.video_screen_rpm), rpm));
+                //Update distance
+                updateDistanceText();
+
+                /* Pause mechanism  */
                 //If the average measurement is 0 and the route is not paused then pause and show pause screen
                 if (getAverageCadenceMeasurements() == 0 && !routePaused) {
                     togglePauseScreen();
@@ -228,14 +247,6 @@ public class VideoplayerActivity extends AppCompatActivity {
         playerView.hideController();
     }
 
-    private void toggleStatusScreen() {
-        if(statusDialog.getVisibility() == View.GONE) {
-            statusDialog.setVisibility(View.VISIBLE);
-        } else {
-            statusDialog.setVisibility(View.GONE);
-        }
-    }
-
     public void startResultScreen() {
         //Stop Ant+ service
         final Intent antplusService = new Intent(getApplicationContext(), AntPlusService.class);
@@ -279,6 +290,21 @@ public class VideoplayerActivity extends AppCompatActivity {
         releasePlayer();
     }
 
+    private void toggleStatusScreen() {
+        if(statusDialog.getVisibility() == View.GONE) {
+            statusDialog.setVisibility(View.VISIBLE);
+        } else {
+            statusDialog.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateDistanceText() {
+        final TextView distance = findViewById(R.id.movieDistance);
+        final float mps = DistanceLookupTable.getMeterPerSecond(totalMetersRoute, player.getDuration()/1000);
+        final int currentMetersDone = (int)(mps * (player.getCurrentPosition() / 1000));
+        distance.setText(toString().format(getString(R.string.video_screen_distance), currentMetersDone));
+    }
+
     private void updateLastCadenceMeasurement(final int rpm){
         if (currentMeasurementIteration < lastRpmMeasurements.length) {
             lastRpmMeasurements[currentMeasurementIteration] = rpm;
@@ -320,23 +346,9 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private void initializePlayer() {
         if (player == null) {
-            // 1. Create a default TrackSelector
-            LoadControl loadControl = new DefaultLoadControl(
-                    new DefaultAllocator(true, 16),
-                    VideoPlayerConfig.MIN_BUFFER_DURATION,
-                    VideoPlayerConfig.MAX_BUFFER_DURATION,
-                    VideoPlayerConfig.MIN_PLAYBACK_START_BUFFER,
-                    VideoPlayerConfig.MIN_PLAYBACK_RESUME_BUFFER, -1, true);
-
-            BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
-            TrackSelection.Factory videoTrackSelectionFactory =
-                    new AdaptiveTrackSelection.Factory(bandwidthMeter);
-            TrackSelector trackSelector =
-                    new DefaultTrackSelector(videoTrackSelectionFactory);
-            // 2. Create the player
-            player =
-                    ExoPlayerFactory.newSimpleInstance(new DefaultRenderersFactory(this), trackSelector,
-                            loadControl);
+            // Create the player
+            final MediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(this);
+            player = new SimpleExoPlayer.Builder(this).setMediaSourceFactory(mediaSourceFactory).build();
 
             // Set speed of the video (hence buffering /streaming speed )
             PlaybackParameters playbackParameters  = new PlaybackParameters(1.0f, PlaybackParameters.DEFAULT.pitch);
@@ -349,19 +361,11 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void buildMediaSource(Uri mUri) {
-        // Measures bandwidth during playback. Can be null if not required.
-        DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
-        // Produces DataSource instances through which media data is loaded.
-        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this,
-                Util.getUserAgent(this, getString(R.string.app_name)), bandwidthMeter);
-        // This is the MediaSource representing the media to be played.
-        MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                .createMediaSource(mUri);
-        // Prepare the player with the source.
-        player.prepare(videoSource);
+        final MediaItem mediaItem = MediaItem.fromUri(mUri);
+        player.setMediaItem(mediaItem);
+        player.prepare();
         player.setPlayWhenReady(true);
         player.addListener(new VideoPlayerEventListener());
-
     }
 
     private void releasePlayer() {

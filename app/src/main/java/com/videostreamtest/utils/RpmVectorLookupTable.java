@@ -3,6 +3,9 @@ package com.videostreamtest.utils;
 import java.util.HashMap;
 
 public class RpmVectorLookupTable {
+    private final static float pi = 3.14f;
+    private final static float radiusWheelMeters = 1.0f;
+    private final static float defaultSpeedKmh = 25.0f;
 
     //Lookuptable based on (Key, Value) as in (RPM, playbackspeed)
     final static HashMap<Integer, Float> lookupTable = new HashMap<>();
@@ -12,13 +15,22 @@ public class RpmVectorLookupTable {
         return lookupTable.get(rpm);
     }
 
-    //Now calculated for a movie recorded at an average speed of 25 kmh
-    private final static void calculateLookupTable() {
-        final float pi = 3.14f;
-        final float kmh = 25.0f;
-        final float radiusWheelMeters = 1.0f;
+    public final static float getPlaybackspeed(int rpm, float recordedSpeedKmh) {
+        RpmVectorLookupTable.calculateLookupTable(recordedSpeedKmh);
+        return lookupTable.get(rpm);
+    }
 
-        final float normalPlaybackspeedRpm = (25 / (3*pi*radiusWheelMeters)) * kmh;
+    public final static float getDistanceSingleRpm(){
+        return (2*pi) * radiusWheelMeters;
+    }
+
+    //Calculated for a movie recorded with a default average speed of 25 kmh
+    private final static void calculateLookupTable() {
+        calculateLookupTable(defaultSpeedKmh);
+    }
+
+    private final static void calculateLookupTable(final float recordedSpeedKmh) {
+        final float normalPlaybackspeedRpm = (25 / (3*pi*radiusWheelMeters)) * recordedSpeedKmh;
         final float playbackSpeedPerRpm = 1.0f / normalPlaybackspeedRpm;
 
         for ( int rpm = 0; rpm < 256; rpm++ ) {
