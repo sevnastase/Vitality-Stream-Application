@@ -41,6 +41,6 @@
     <string name="pause_screen_message">Start paddling if you want to continue</string>
     <string name="finish_screen_title">Finish!</string>
     <string name="pause_screen_button_text">Back to overview</string>
-    <string name="video_screen_distance">Distance: %d</string>
+    <string name="video_screen_distance">Distance: %d meter</string>
     <string name="video_screen_rpm">RPM: %d</string>
 </resources>

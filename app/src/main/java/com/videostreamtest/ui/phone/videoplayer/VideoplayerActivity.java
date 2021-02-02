@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
@@ -299,10 +300,12 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void updateDistanceText() {
-        final TextView distance = findViewById(R.id.movieDistance);
-        final float mps = DistanceLookupTable.getMeterPerSecond(totalMetersRoute, player.getDuration()/1000);
-        final int currentMetersDone = (int)(mps * (player.getCurrentPosition() / 1000));
-        distance.setText(toString().format(getString(R.string.video_screen_distance), currentMetersDone));
+        if (player != null) {
+            final TextView distance = findViewById(R.id.movieDistance);
+            final float mps = DistanceLookupTable.getMeterPerSecond(totalMetersRoute, player.getDuration() / 1000);
+            final int currentMetersDone = (int) (mps * (player.getCurrentPosition() / 1000));
+            distance.setText(toString().format(getString(R.string.video_screen_distance), currentMetersDone));
+        }
     }
 
     private void updateLastCadenceMeasurement(final int rpm){
