@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.Data;
@@ -64,8 +65,9 @@ public class CatalogActivity extends AppCompatActivity {
         //Maak lineaire layoutmanager en zet deze op horizontaal
         LinearLayoutManager layoutManager
                 = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this,4);
         //Zet de layoutmanager erin
-        availableMediaRecyclerView.setLayoutManager(layoutManager);
+        availableMediaRecyclerView.setLayoutManager(gridLayoutManager);
 
         getAvailableMedia(catalogViewModel.getApiKey().getValue());
     }
