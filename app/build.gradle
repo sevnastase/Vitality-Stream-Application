@@ -8,8 +8,8 @@ android {
         applicationId "com.videostreamtest"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 19
-        versionName "1.0.19"
+        versionCode 24
+        versionName "1.0.24"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -27,7 +27,7 @@ android {
 }
 
 ext {
-    exoplayer_version = "2.7.0"
+    exoplayer_version = "2.12.0"
     workmanager_version = "2.4.0"
     leanback_version = "1.0.0"
 }
@@ -68,6 +68,8 @@ dependencies {
 
     //WorkManager support for Background tasks/Scheduling
     implementation "androidx.work:work-runtime:$workmanager_version"
+    //Fix for conflicting ListenableFuture with JetPack WorkManager and ExoPlayer 2.12x
+    implementation 'com.google.guava:guava:29.0-android'
 
     implementation 'androidx.navigation:navigation-fragment:2.2.2'
     implementation 'androidx.navigation:navigation-ui:2.2.2'
