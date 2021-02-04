@@ -32,7 +32,7 @@
     <string name="failed_login">Failed to login!</string>
     <string name="under_construction">Unlocks later</string>
     <string name="loading_profile_message">Profile %s loading</string>
-    <string name="pre_video_message">Please start paddling slowly for the sensor to connect.</string>
+    <string name="pre_video_message">Please start paddling</string>
     <string name="pre_video_title">Please start slowly</string>
     <string name="ant_error_message">Ant+ device not found!</string>
     <string name="ant_error_title">Ant+ plugin error</string>

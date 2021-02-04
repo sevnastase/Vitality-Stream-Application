@@ -22,6 +22,44 @@
 <!--        android:textSize="50sp"-->
 <!--        android:textStyle="bold" />-->
 
+    <RelativeLayout
+        android:id="@+id/loading_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+        <ImageView
+            android:id="@+id/image_loading_screen"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:background="@drawable/loadingbackground" />
+
+        <RelativeLayout
+            android:id="@+id/loading_view_notification_overlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:background="@drawable/imagebutton_blue_border"
+            android:backgroundTint="@color/black_overlay"
+            android:layout_centerInParent="true">
+
+            <TextView
+                android:textSize="20dp"
+                android:textColor="#FFFFFF"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pre_video_message"/>
+
+            <ProgressBar
+                android:layout_marginTop="35dp"
+                style="?android:attr/progressBarStyleLarge"
+                android:id="@+id/progressbar_loading_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                />
+        </RelativeLayout>
+    </RelativeLayout>
+
     <com.google.android.exoplayer2.ui.PlayerView
         android:id="@+id/playerView"
         android:layout_width="match_parent"
@@ -30,7 +68,8 @@
         android:background="@color/black_overlay"
         android:keepScreenOn="true"
         android:fitsSystemWindows="true"
-        app:repeat_toggle_modes="all|one" />
+        app:repeat_toggle_modes="all|one"
+        android:visibility="gone"/>
 
     <LinearLayout
         android:id="@+id/status_dialog_videoplayer"
@@ -81,6 +120,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/black_overlay"
         android:fitsSystemWindows="true">
 
         <LinearLayout
@@ -90,7 +130,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
             android:orientation="horizontal"
-            tools:ignore="UselessParent">
+            tools:ignore="UselessParent"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/movieTitle"

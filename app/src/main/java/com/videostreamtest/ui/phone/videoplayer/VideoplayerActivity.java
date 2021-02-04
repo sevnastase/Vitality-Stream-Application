@@ -6,19 +6,23 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.source.MediaSourceFactory;
@@ -46,10 +50,14 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private PlayerView playerView;
     private SimpleExoPlayer player;
+    private boolean isPreparing = false;
     private String videoUri = VideoPlayerConfig.DEFAULT_VIDEO_URL;
     private AntPlusBroadcastReceiver antPlusBroadcastReceiver;
 
     private LinearLayout statusDialog;
+    private LinearLayout statusBar;
+    private RelativeLayout loadingView;
+    private int minSecondsLoadingView = 7;
 
     private boolean kioskmode = false;
 
@@ -98,6 +106,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         rpmValue = findViewById(R.id.movieRpm);
 
         statusDialog = findViewById(R.id.status_dialog_videoplayer);
+        loadingView = findViewById(R.id.loading_view);
+        statusBar = findViewById(R.id.fullscreen_content_controls);
 
         final TextView movieTitle = findViewById(R.id.movieTitle);
         SharedPreferences myPreferences = getSharedPreferences("app",0);
@@ -152,6 +162,8 @@ public class VideoplayerActivity extends AppCompatActivity {
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
+
+        waitUntilVideoIsReady();
 
         if (kioskmode) {
             Handler handler = new Handler();
@@ -299,6 +311,35 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
     }
 
+    private void playVideo() {
+        playerView.setVisibility(View.VISIBLE);
+        statusBar.setVisibility(View.VISIBLE);
+        loadingView.setVisibility(View.GONE);
+        player.play();
+        playerView.hideController();
+    }
+
+    private void waitUntilVideoIsReady() {
+        Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
+            int currentSecond = 0;
+            @Override
+            public void run() {
+                if (player != null) {
+                    if ( (currentSecond >= minSecondsLoadingView) && (player.getPlaybackState() == Player.STATE_READY)) {
+                        playVideo();
+                    } else {
+                        Log.d(TAG, "CurrentSecondWaiting: "+currentSecond);
+                        Log.d(TAG, "Player State: "+player.getPlaybackState());
+                        currentSecond++;
+                        handler.postDelayed(this::run, 1000);
+                    }
+                }
+            }
+        };
+        handler.postDelayed(runnable, 0);
+    }
+
     private void updateDistanceText() {
         if (player != null) {
             final TextView distance = findViewById(R.id.movieDistance);
@@ -331,20 +372,22 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
     }
 
-    private void setUp() {
+    public void setUp() {
         initializePlayer();
         getSelectedVideoUri();
         if (videoUri == null) {
             return;
         }
-        buildMediaSource(Uri.parse(videoUri));
+        prepareMediaSource(Uri.parse(videoUri));
+        startSensorDataReceiver();
+    }
 
+    private void startSensorDataReceiver() {
         //Register the antplus data broadcast receiver
         antPlusBroadcastReceiver = new AntPlusBroadcastReceiver();
 
         IntentFilter filter = new IntentFilter("com.fitstream.ANTDATA");
         this.registerReceiver(antPlusBroadcastReceiver, filter);
-        playerView.hideController();
     }
 
     private void initializePlayer() {
@@ -363,12 +406,22 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
     }
 
-    private void buildMediaSource(Uri mUri) {
+    private void prepareMediaSource(Uri mUri) {
         final MediaItem mediaItem = MediaItem.fromUri(mUri);
         player.setMediaItem(mediaItem);
+        Log.d(TAG,"Player preparing!");
         player.prepare();
-        player.setPlayWhenReady(true);
+
         player.addListener(new VideoPlayerEventListener());
+        player.addListener(new Player.EventListener()
+        {
+            @Override
+            public void onPlaybackStateChanged(int state) {
+                if (state == ExoPlayer.STATE_READY) {
+                    Log.d(TAG,"Player ready to start playing!");
+                }
+            }
+        });
     }
 
     private void releasePlayer() {
