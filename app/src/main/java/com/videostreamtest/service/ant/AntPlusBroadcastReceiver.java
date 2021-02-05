@@ -35,9 +35,17 @@ public class AntPlusBroadcastReceiver extends BroadcastReceiver {
 
             Log.d(TAG, "Action: " + intent.getAction() + "\n");
             Log.d(TAG, "Intent cadence received: "+rpmReceived+"\n");
-            Log.d(TAG, "Intent playbackspeed set: "+ RpmVectorLookupTable.getPlaybackspeed(rpmReceived)+"\n");
 
             VideoplayerActivity.getInstance().updateVideoPlayerScreen(rpmReceived);
+
+            /* ONLY FOR VIDEO SPEED!
+             * When the rpm is above 0 ( there is activity) ) and
+             * when rpm is below minimum speed of 35
+             * set rpm on minimum speed of 35
+             */
+            if (rpmReceived > 0 && rpmReceived < 35) {
+                rpmReceived = 35;
+            }
             VideoplayerActivity.getInstance().updateVideoPlayerParams(rpmReceived);
 
             return intent.getAction();
