@@ -35,7 +35,6 @@ public class VideoPlayerEventListener implements Player.EventListener {
             case Player.STATE_ENDED:
                 Log.d("VideoPlayerActivity", "STATE_ENDED RECORDED");
                 VideoplayerActivity.getInstance().showFinishScreen();
-//                VideoplayerActivity.getInstance().startResultScreen();
                 break;
             case Player.STATE_IDLE:
                 break;

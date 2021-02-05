@@ -5,17 +5,13 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.Movie;
-import com.videostreamtest.ui.phone.videoplayer.VideoPlayerConfig;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.workers.AvailableMediaServiceWorker;
 
-import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -116,18 +112,5 @@ public class CatalogActivity extends AppCompatActivity {
                         }
                     }
                 });
-    }
-
-    //TODO: When a networkspeed is too low to stream, possible to download video locally first.
-    private void downloadVideo(  ) {
-        DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-        Uri uri = Uri.parse(VideoPlayerConfig.DEFAULT_VIDEO_URL);
-
-        DownloadManager.Request request = new DownloadManager.Request(uri);
-        request.setTitle("My Video");
-        request.setDescription("Downloading");//request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,"game-of-life");
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        downloadManager.enqueue(request);
     }
 }

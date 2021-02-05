@@ -90,6 +90,7 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
                     SharedPreferences.Editor editor = myPreferences.edit();
                     editor.putString("selectedMovieUrl", movie.getMovieUrl());
                     editor.putString("selectedMovieTitle", movie.getMovieTitle());
+                    editor.putInt("selectedMovieId", movie.getId());
                     editor.putFloat("selectedMovieTotalDistance", movie.getMovieLength());
                     editor.commit();
 

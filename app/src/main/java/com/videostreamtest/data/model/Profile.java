@@ -1,5 +1,8 @@
 package com.videostreamtest.data.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Profile {
     private Integer profileId;
     private String profileImgPath;

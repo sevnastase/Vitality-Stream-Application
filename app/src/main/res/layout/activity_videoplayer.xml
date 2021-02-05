@@ -80,6 +80,7 @@
         android:backgroundTint="@color/black_overlay"
         android:orientation="vertical"
         android:visibility="gone"
+        android:layout_weight="1"
         android:padding="15dp"
         tools:ignore="UselessParent">
         <TextView
@@ -123,53 +124,78 @@
         android:background="@color/black_overlay"
         android:fitsSystemWindows="true">
 
-        <LinearLayout
-            android:id="@+id/fullscreen_content_controls"
+        <RelativeLayout
+            android:id="@+id/route_content_overview"
             style="@style/Widget.AppTheme.ButtonBar.Fullscreen"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
-            android:orientation="horizontal"
-            tools:ignore="UselessParent"
-            android:visibility="gone">
+            android:gravity="center_horizontal"
+            android:layout_centerVertical="true"
+            android:orientation="vertical"
+            android:visibility="gone" >
 
-            <TextView
-                android:id="@+id/movieTitle"
-                android:text="Movie Title"
-                android:textColor="#FFFFEE"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/route_content_informationlabels"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:paddingRight="15dp"
-                android:paddingLeft="30dp" />
+                android:orientation="horizontal"
+                android:padding="5dp"
+                tools:ignore="UselessParent"
+                >
 
-            <TextView
-                android:id="@+id/movieRpm"
-                android:text="@string/video_screen_rpm"
-                android:textColor="#FFFFEE"
-                android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/movieTitle"
+                    android:text="Movie Title"
+                    android:textColor="#FFFFEE"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingRight="15dp"
+                    android:paddingLeft="30dp" />
+
+                <TextView
+                    android:id="@+id/movieRpm"
+                    android:text="@string/video_screen_rpm"
+                    android:textColor="#FFFFEE"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingRight="5dp"/>
+                <TextView
+                    android:id="@+id/movieDistance"
+                    android:text="@string/video_screen_distance"
+                    android:textColor="#FFFFEE"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingRight="15dp"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/route_layout_content_movieparts"
+                style="@style/Widget.AppTheme.ButtonBar.Fullscreen"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:paddingRight="5dp"/>
-            <TextView
-                android:id="@+id/movieDistance"
-                android:text="@string/video_screen_distance"
-                android:textColor="#FFFFEE"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:paddingRight="15dp"/>
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_centerHorizontal="true"
+                tools:ignore="UselessParent" >
 
-<!--            <Button-->
-<!--                android:id="@+id/dummy_button"-->
-<!--                style="?android:attr/buttonBarButtonStyle"-->
-<!--                android:layout_width="0dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_weight="1"-->
-<!--                android:text="@string/dummy_button" />-->
 
-        </LinearLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerview_route_content_movieparts"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal"
+                    tools:ignore="UselessParent" />
+            </LinearLayout>
 
+        </RelativeLayout>
     </FrameLayout>
 
 </FrameLayout>

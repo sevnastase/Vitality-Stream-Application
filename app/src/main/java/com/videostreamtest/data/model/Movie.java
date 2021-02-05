@@ -1,14 +1,19 @@
 package com.videostreamtest.data.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Movie {
     private Integer id;
     private String movieTitle;
     private Integer movieLength;
     private String movieUrl; // e.g. /streams/{vodId}.mp4
     private String movieImagepath;
+    private String movieRouteinfoPath;
     //Speeds are in Kmh
     private Integer recordedSpeed;
     private Integer minimalSpeed;
+    private Integer recordedFps;
 
     public Integer getId() {
         return id;
@@ -50,6 +55,14 @@ public class Movie {
         this.movieImagepath = movieImagepath;
     }
 
+    public String getMovieRouteinfoPath() {
+        return movieRouteinfoPath;
+    }
+
+    public void setMovieRouteinfoPath(String movieRouteinfoPath) {
+        this.movieRouteinfoPath = movieRouteinfoPath;
+    }
+
     public Integer getRecordedSpeed() {
         return recordedSpeed;
     }
@@ -64,5 +77,13 @@ public class Movie {
 
     public void setMinimalSpeed(Integer minimalSpeed) {
         this.minimalSpeed = minimalSpeed;
+    }
+
+    public Integer getRecordedFps() {
+        return recordedFps;
+    }
+
+    public void setRecordedFps(Integer recordedFps) {
+        this.recordedFps = recordedFps;
     }
 }

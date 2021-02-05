@@ -1,5 +1,8 @@
 package com.videostreamtest.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ResultApiKey {
     private String apiKey;
 

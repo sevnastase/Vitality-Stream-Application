@@ -8,18 +8,27 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkInfo;
+import androidx.work.WorkManager;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
@@ -30,11 +39,13 @@ import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.videostreamtest.R;
+import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.service.ant.AntPlusBroadcastReceiver;
 import com.videostreamtest.service.ant.AntPlusService;
 import com.videostreamtest.ui.phone.result.ResultActivity;
 import com.videostreamtest.utils.DistanceLookupTable;
 import com.videostreamtest.utils.RpmVectorLookupTable;
+import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -51,11 +62,16 @@ public class VideoplayerActivity extends AppCompatActivity {
     private PlayerView playerView;
     private SimpleExoPlayer player;
 
-    private String videoUri = VideoPlayerConfig.DEFAULT_VIDEO_URL;
+    private RecyclerView routePartsRecyclerview;
+
+    private String videoUri = "http://46.101.137.215:5080/WebRTCApp/streams/989942527862373986107078.mp4";
+    private int movieId = 0;
+    private String accountKey;
+
     private AntPlusBroadcastReceiver antPlusBroadcastReceiver;
 
     private LinearLayout statusDialog;
-    private LinearLayout statusBar;
+    private RelativeLayout statusBar;
     private RelativeLayout loadingView;
     private int minSecondsLoadingView = 7;
     private boolean isLoading = true;
@@ -70,31 +86,6 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private boolean routePaused = false;
 
-    /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
-     */
-    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            switch (motionEvent.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    Intent antService = new Intent(getApplicationContext(), AntPlusService.class);
-                    stopService(antService);
-                    releasePlayer();
-                    finish();
-                    break;
-                case MotionEvent.ACTION_UP:
-//                    view.performClick();
-                    break;
-                default:
-                    break;
-            }
-            return false;
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -108,12 +99,23 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         statusDialog = findViewById(R.id.status_dialog_videoplayer);
         loadingView = findViewById(R.id.loading_view);
-        statusBar = findViewById(R.id.fullscreen_content_controls);
+        statusBar = findViewById(R.id.route_content_overview);
 
         final TextView movieTitle = findViewById(R.id.movieTitle);
         SharedPreferences myPreferences = getSharedPreferences("app",0);
         movieTitle.setText(myPreferences.getString("selectedMovieTitle","Title not found"));
+        movieId = myPreferences.getInt("selectedMovieId",0);
         totalMetersRoute = myPreferences.getFloat("selectedMovieTotalDistance", 0f);
+
+        accountKey = myPreferences.getString("apiKey", null);
+
+        //init recyclerview of route parts
+        routePartsRecyclerview = findViewById(R.id.recyclerview_route_content_movieparts);
+        routePartsRecyclerview.setHasFixedSize(true);
+        //Maak lineaire layoutmanager en zet deze op horizontaal
+        LinearLayoutManager layoutManager
+                = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        routePartsRecyclerview.setLayoutManager(layoutManager);
 
         updateLastCadenceMeasurement(66);
         updateLastCadenceMeasurement(66);
@@ -122,6 +124,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         updateLastCadenceMeasurement(66);
 
         setUp();
+
 
         //Pause screen init
         final Button backToOverview = findViewById(R.id.status_dialog_return_home_button);
@@ -260,8 +263,32 @@ public class VideoplayerActivity extends AppCompatActivity {
         finishFlag.setBackground(getDrawable(R.drawable.finish_alpha));
         finishFlag.setVisibility(View.VISIBLE);
 
+        LinearLayout routeParts = findViewById(R.id.route_layout_content_movieparts);
+        routeParts.setVisibility(View.GONE);
+
         toggleStatusScreen();
+        playerView.setUseController(false);
         playerView.hideController();
+    }
+
+    public void goToFrameNumber(int frameNumber) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (player.isCurrentWindowSeekable()) {
+                    long positionSecond = 0;
+                    player.pause();
+                    playerView.hideController();
+                    if (frameNumber > 30) {
+                        positionSecond = frameNumber / 30;
+                        player.seekTo(positionSecond*1000);
+                    } else {
+                        player.seekTo(0);
+                    }
+                    player.play();
+                }
+            }
+        });
     }
 
     public void startResultScreen() {
@@ -378,13 +405,14 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
     }
 
-    public void setUp() {
+    private void setUp() {
         initializePlayer();
         getSelectedVideoUri();
         if (videoUri == null) {
             return;
         }
         prepareMediaSource(Uri.parse(videoUri));
+        initializeRouteParts(accountKey, movieId);
         startSensorDataReceiver();
     }
 
@@ -400,7 +428,9 @@ public class VideoplayerActivity extends AppCompatActivity {
         if (player == null) {
             // Create the player
             final MediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(this);
-            player = new SimpleExoPlayer.Builder(this).setMediaSourceFactory(mediaSourceFactory).build();
+            //DefaultLoadControl.Builder.setPrioritizeTimeOverSizeThresholds(true)
+            DefaultLoadControl defaultLoadControl = new DefaultLoadControl.Builder().setPrioritizeTimeOverSizeThresholds(true).build();
+            player = new SimpleExoPlayer.Builder(this).setLoadControl(defaultLoadControl).setMediaSourceFactory(mediaSourceFactory).build();
 
             // Set speed of the video (hence buffering /streaming speed )
             PlaybackParameters playbackParameters  = new PlaybackParameters(1.0f, PlaybackParameters.DEFAULT.pitch);
@@ -410,6 +440,47 @@ public class VideoplayerActivity extends AppCompatActivity {
             //Set player on playerview
             playerView.setPlayer(player);
         }
+    }
+
+    public void initializeRouteParts(final String apikey, final int movieId) {
+        Data.Builder networkData = new Data.Builder();
+        networkData.putString("apikey", apikey);
+        networkData.putInt("movieId", movieId);
+
+        OneTimeWorkRequest routeMoviepartsRequest = new OneTimeWorkRequest.Builder(AvailableRoutePartsServiceWorker.class)
+                .setInputData(networkData.build())
+                .addTag("available-movieparts")
+                .build();
+
+        WorkManager
+                .getInstance(this)
+                .enqueue(routeMoviepartsRequest);
+
+        WorkManager.getInstance(this)
+                .getWorkInfoByIdLiveData(routeMoviepartsRequest.getId())
+                .observe(this, workInfo -> {
+
+                    if( workInfo.getState() != null &&
+                            workInfo.getState() == WorkInfo.State.SUCCEEDED ) {
+
+                        final String result = workInfo.getOutputData().getString("movieparts-list");
+
+                        try {
+                            final ObjectMapper objectMapper = new ObjectMapper();
+                            MoviePart movieParts[] = objectMapper.readValue(result, MoviePart[].class);
+                            //pass profiles to adapter
+                            RoutePartsAdapter availableRoutePartsAdapter = new RoutePartsAdapter(movieParts);
+                            //set adapter to recyclerview
+                            routePartsRecyclerview.setAdapter(availableRoutePartsAdapter);
+                            //set recyclerview visible
+                            routePartsRecyclerview.setVisibility(View.VISIBLE);
+                        } catch (JsonMappingException e) {
+                            e.printStackTrace();
+                        } catch (JsonProcessingException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
     }
 
     private void prepareMediaSource(Uri mUri) {
