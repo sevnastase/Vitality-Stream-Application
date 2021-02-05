@@ -20,7 +20,7 @@
     <string name="failed_login">Inloggen mislukt!</string>
     <string name="under_construction">Binnenkort beschikbaar.</string>
     <string name="loading_profile_message">Profiel van %s ingeladen</string>
-    <string name="pre_video_message">Begin met fietsen</string>
+    <string name="pre_video_message">Begin met trappen</string>
     <string name="pre_video_title">Begin rustig aan</string>
     <string name="ant_error_message">Sensor apparaat niet gevonden!</string>
     <string name="ant_error_title">Sensor fout</string>

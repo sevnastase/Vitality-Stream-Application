@@ -50,7 +50,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private PlayerView playerView;
     private SimpleExoPlayer player;
-    private boolean isPreparing = false;
+
     private String videoUri = VideoPlayerConfig.DEFAULT_VIDEO_URL;
     private AntPlusBroadcastReceiver antPlusBroadcastReceiver;
 
@@ -58,6 +58,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     private LinearLayout statusBar;
     private RelativeLayout loadingView;
     private int minSecondsLoadingView = 7;
+    private boolean isLoading = true;
 
     private boolean kioskmode = false;
 
@@ -204,13 +205,16 @@ public class VideoplayerActivity extends AppCompatActivity {
                 updateDistanceText();
 
                 /* Pause mechanism  */
-                //If the average measurement is 0 and the route is not paused then pause and show pause screen
-                if (getAverageCadenceMeasurements() == 0 && !routePaused) {
-                    togglePauseScreen();
-                } else {
-                    //If the route is paused and the average measurement is higher then 0 then unpause en remove pause screen
-                    if (routePaused && getAverageCadenceMeasurements() > 0) {
+                //Only show pause screen while the video is playing
+                if (!isLoading) {
+                    //If the average measurement is 0 and the route is not paused then pause and show pause screen
+                    if (getAverageCadenceMeasurements() == 0 && !routePaused) {
                         togglePauseScreen();
+                    } else {
+                        //If the route is paused and the average measurement is higher then 0 then unpause en remove pause screen
+                        if (routePaused && getAverageCadenceMeasurements() > 0) {
+                            togglePauseScreen();
+                        }
                     }
                 }
             }
@@ -327,8 +331,10 @@ public class VideoplayerActivity extends AppCompatActivity {
             public void run() {
                 if (player != null) {
                     if ( (currentSecond >= minSecondsLoadingView) && (player.getPlaybackState() == Player.STATE_READY)) {
+                        isLoading = false;
                         playVideo();
                     } else {
+                        isLoading = true;
                         Log.d(TAG, "CurrentSecondWaiting: "+currentSecond);
                         Log.d(TAG, "Player State: "+player.getPlaybackState());
                         currentSecond++;
