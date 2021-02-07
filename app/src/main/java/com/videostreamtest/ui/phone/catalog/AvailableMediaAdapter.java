@@ -34,12 +34,14 @@ public class AvailableMediaAdapter extends RecyclerView.Adapter<AvailableMediaVi
 
     @Override
     public void onBindViewHolder(@NonNull AvailableMediaViewHolder holder, int position) {
+        //Activate Focuslistener on selected movie
         if(selectedMovie == position) {
             ImageButton routeImagecover = holder.itemView.findViewById(R.id.routeImageCoverButton);
             routeImagecover.setFocusableInTouchMode(true);
             routeImagecover.setFocusable(true);
             routeImagecover.requestFocus();
         }
+        //Mark itemView as selected of selected movie
         holder.itemView.setSelected(selectedMovie == position);
         if (movieList.length > 0) {
             holder.bind(movieList[position], position);
