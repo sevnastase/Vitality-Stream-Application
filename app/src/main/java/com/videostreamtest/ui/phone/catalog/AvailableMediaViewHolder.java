@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -21,6 +19,7 @@ import com.videostreamtest.R;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.service.ant.AntPlusService;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
+import com.videostreamtest.utils.ApplicationSettings;
 
 public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
     final static String TAG = AvailableMediaViewHolder.class.getSimpleName();
@@ -84,7 +83,7 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
             @Override
             public void onClick(View v) {
                 //Check if ANT+ plugin is installed and available on Android device
-                if (AntPlusService.isAntPlusDevicePresent(v.getContext().getApplicationContext())) {
+                if (AntPlusService.isAntPlusDevicePresent(v.getContext().getApplicationContext()) || ApplicationSettings.DEVELOPER_MODE) {
                     //Write values to params
                     SharedPreferences myPreferences = v.getContext().getSharedPreferences("app",0);
                     SharedPreferences.Editor editor = myPreferences.edit();
@@ -96,9 +95,11 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
 
                     movieCoverImage.requestFocus();
 
-                    //Start AntPlus service to connect with garmin cadence sensor
-                    Intent antplusService = new Intent(itemView.getContext().getApplicationContext(), AntPlusService.class);
-                    itemView.getContext().startService(antplusService);
+                    if (!ApplicationSettings.DEVELOPER_MODE) {
+                        //Start AntPlus service to connect with garmin cadence sensor
+                        Intent antplusService = new Intent(itemView.getContext().getApplicationContext(), AntPlusService.class);
+                        itemView.getContext().startService(antplusService);
+                    }
 
                     final Intent videoPlayer = new Intent(itemView.getContext(), VideoplayerActivity.class);
                     itemView.getContext().startActivity(videoPlayer);

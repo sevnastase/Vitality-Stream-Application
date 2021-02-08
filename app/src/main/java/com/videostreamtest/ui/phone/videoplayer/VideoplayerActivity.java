@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
@@ -43,6 +42,7 @@ import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.service.ant.AntPlusBroadcastReceiver;
 import com.videostreamtest.service.ant.AntPlusService;
 import com.videostreamtest.ui.phone.result.ResultActivity;
+import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.DistanceLookupTable;
 import com.videostreamtest.utils.RpmVectorLookupTable;
 import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
@@ -63,6 +63,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     private SimpleExoPlayer player;
 
     private RecyclerView routePartsRecyclerview;
+    private RoutePartsAdapter availableRoutePartsAdapter;
 
     private String videoUri = "http://46.101.137.215:5080/WebRTCApp/streams/989942527862373986107078.mp4";
     private int movieId = 0;
@@ -75,8 +76,6 @@ public class VideoplayerActivity extends AppCompatActivity {
     private RelativeLayout loadingView;
     private int minSecondsLoadingView = 7;
     private boolean isLoading = true;
-
-    private boolean kioskmode = false;
 
     private TextView rpmValue;
     private int[] lastRpmMeasurements = new int[5];
@@ -169,7 +168,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         waitUntilVideoIsReady();
 
-        if (kioskmode) {
+        if (ApplicationSettings.DEVELOPER_MODE) {
             Handler handler = new Handler();
             Runnable runnable = new Runnable() {
                 @Override
@@ -239,6 +238,9 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     public void togglePauseScreen() {
+        //Set new state of videoplayer
+        routePaused = !routePaused;
+
         final TextView pauseTitle = findViewById(R.id.status_dialog_title);
         pauseTitle.setText(getString(R.string.pause_screen_title));
         final TextView pauseMessage = findViewById(R.id.status_dialog_message);
@@ -246,7 +248,16 @@ public class VideoplayerActivity extends AppCompatActivity {
         final ImageButton finishFlag = findViewById(R.id.status_dialog_finished_image);
         finishFlag.setVisibility(View.GONE);
 
-        routePaused = !routePaused;
+        if (routePaused) {
+            LinearLayout routeParts = findViewById(R.id.route_layout_content_movieparts);
+            routeParts.setVisibility(View.GONE);
+            Button backToOverview = findViewById(R.id.status_dialog_return_home_button);
+            backToOverview.requestFocus();
+        } else {
+            LinearLayout routeParts = findViewById(R.id.route_layout_content_movieparts);
+            routeParts.setVisibility(View.VISIBLE);
+        }
+
         player.setPlayWhenReady(!player.getPlayWhenReady());
         player.getPlaybackState();
         playerView.hideController();
@@ -266,6 +277,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         LinearLayout routeParts = findViewById(R.id.route_layout_content_movieparts);
         routeParts.setVisibility(View.GONE);
 
+        finishFlag.requestFocus();
+
         toggleStatusScreen();
         playerView.setUseController(false);
         playerView.hideController();
@@ -277,15 +290,24 @@ public class VideoplayerActivity extends AppCompatActivity {
             public void run() {
                 if (player.isCurrentWindowSeekable()) {
                     long positionSecond = 0;
+
+                    playerView.setVisibility(View.GONE);
+                    statusBar.setVisibility(View.GONE);
+                    TextView loadingMessage = findViewById(R.id.loading_message);
+                    loadingMessage.setText(getString(R.string.loading_message));
+                    loadingView.setVisibility(View.VISIBLE);
                     player.pause();
                     playerView.hideController();
+
                     if (frameNumber > 30) {
                         positionSecond = frameNumber / 30;
                         player.seekTo(positionSecond*1000);
                     } else {
                         player.seekTo(0);
                     }
-                    player.play();
+
+                    waitUntilVideoIsReady(3);
+                    setFocusOnCurrentRoutePart();
                 }
             }
         });
@@ -350,7 +372,20 @@ public class VideoplayerActivity extends AppCompatActivity {
         playerView.hideController();
     }
 
+    private void setFocusOnCurrentRoutePart() {
+        if(availableRoutePartsAdapter != null) {
+            int currentPositionS = (int)(player.getCurrentPosition() / 1000);
+            int currentFrameNumber = currentPositionS * 30;
+            availableRoutePartsAdapter.setSelectedMoviePart(currentFrameNumber);
+            routePartsRecyclerview.getAdapter().notifyDataSetChanged();
+        }
+    }
+
     private void waitUntilVideoIsReady() {
+        waitUntilVideoIsReady(this.minSecondsLoadingView);
+    }
+
+    private void waitUntilVideoIsReady(final int minSecondsLoadingView) {
         Handler handler = new Handler();
         Runnable runnable = new Runnable() {
             int currentSecond = 0;
@@ -469,7 +504,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                             final ObjectMapper objectMapper = new ObjectMapper();
                             MoviePart movieParts[] = objectMapper.readValue(result, MoviePart[].class);
                             //pass profiles to adapter
-                            RoutePartsAdapter availableRoutePartsAdapter = new RoutePartsAdapter(movieParts);
+                            availableRoutePartsAdapter = new RoutePartsAdapter(movieParts);
                             //set adapter to recyclerview
                             routePartsRecyclerview.setAdapter(availableRoutePartsAdapter);
                             //set recyclerview visible

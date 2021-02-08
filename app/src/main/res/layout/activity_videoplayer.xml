@@ -43,6 +43,7 @@
             android:layout_centerInParent="true">
 
             <TextView
+                android:id="@+id/loading_message"
                 android:textSize="20dp"
                 android:textColor="#FFFFFF"
                 android:layout_width="wrap_content"

@@ -1,8 +1,10 @@
 package com.videostreamtest.ui.phone.videoplayer;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,8 +17,25 @@ public class RoutePartsAdapter extends RecyclerView.Adapter<RoutePartsViewHolder
     final static String TAG = RoutePartsAdapter.class.getSimpleName();
     private MoviePart[] movieParts;
 
+    private int selectedMoviePart = 0;
+
     public RoutePartsAdapter(MoviePart[] movieParts) {
         this.movieParts = movieParts;
+    }
+
+    public void setSelectedMoviePart(final int frameNumber) {
+        int position = 0;
+        //movieparts array moet er zijn en gevuld
+        if (movieParts != null && movieParts.length > 0) {
+            //Loop door de parts heen
+            for (int moviePartIndex = 0;moviePartIndex < movieParts.length; moviePartIndex++) {
+                //check of het framenummer in deze serie past
+                if (frameNumber >= movieParts[moviePartIndex].getFrameNumber()) {
+                    position = moviePartIndex;
+                }
+            }
+        }
+        this.selectedMoviePart = position;
     }
 
     @NonNull
@@ -32,6 +51,14 @@ public class RoutePartsAdapter extends RecyclerView.Adapter<RoutePartsViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull RoutePartsViewHolder holder, int position) {
+        Log.d(TAG, "Binding routeparts");
+        if (selectedMoviePart == position) {
+            ImageButton routePartCover = holder.itemView.findViewById(R.id.routepart_cover_button);
+            routePartCover.setFocusableInTouchMode(true);
+            routePartCover.setFocusable(true);
+            routePartCover.requestFocus();
+        }
+        holder.itemView.setSelected(selectedMoviePart==position);
         if (movieParts.length > 0) {
             holder.bind(movieParts[position], position);
         }
