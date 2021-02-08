@@ -43,8 +43,8 @@ public class AntPlusBroadcastReceiver extends BroadcastReceiver {
              * when rpm is below minimum speed of 35
              * set rpm on minimum speed of 35
              */
-            if (rpmReceived > 0 && rpmReceived < 35) {
-                rpmReceived = 35;
+            if (rpmReceived > 0 && rpmReceived < 40) {
+                rpmReceived = 40;
             }
             VideoplayerActivity.getInstance().updateVideoPlayerParams(rpmReceived);
 
