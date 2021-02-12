@@ -70,7 +70,7 @@ public class ProfilesActivity extends AppCompatActivity {
         Intent antPlusService = new Intent(getApplicationContext(), AntPlusService.class);
         startService(antPlusService);
         Runnable stopAntPlusService = () -> stopService(antPlusService);
-        new Handler(Looper.getMainLooper()).postDelayed( stopAntPlusService, 8000 );
+        new Handler(Looper.getMainLooper()).postDelayed( stopAntPlusService, 4000 );
     }
 
     private void loadProfiles(final String apikey) {

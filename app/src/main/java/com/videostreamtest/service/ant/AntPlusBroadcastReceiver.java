@@ -32,21 +32,33 @@ public class AntPlusBroadcastReceiver extends BroadcastReceiver {
         @Override
         protected String doInBackground(String... strings) {
             int rpmReceived = intent.getIntExtra("bc_service_lastvalue", 0);
+            String antDeviceStatus = intent.getStringExtra("bc_service_status");
+
+            if(antDeviceStatus == null) {
+                antDeviceStatus = "Active";
+            }
+            Log.d(TAG, "ServiceStatus: "+antDeviceStatus);
 
             Log.d(TAG, "Action: " + intent.getAction() + "\n");
             Log.d(TAG, "Intent cadence received: "+rpmReceived+"\n");
 
-            VideoplayerActivity.getInstance().updateVideoPlayerScreen(rpmReceived);
+            VideoplayerActivity.getInstance().updateDeviceStatusField(antDeviceStatus);
 
-            /* ONLY FOR VIDEO SPEED!
-             * When the rpm is above 0 ( there is activity) ) and
-             * when rpm is below minimum speed of 35
-             * set rpm on minimum speed of 35
-             */
-            if (rpmReceived > 0 && rpmReceived < 40) {
-                rpmReceived = 40;
+            if (antDeviceStatus.toLowerCase().contains("dead")) {
+                VideoplayerActivity.getInstance().setDeadDeviceParams();
+            } else {
+                VideoplayerActivity.getInstance().updateVideoPlayerScreen(rpmReceived);
+
+                /* ONLY FOR VIDEO SPEED!
+                 * When the rpm is above 0 ( there is activity) ) and
+                 * when rpm is below minimum speed of 35
+                 * set rpm on minimum speed of 35
+                 */
+                if (rpmReceived > 0 && rpmReceived < 40) {
+                    rpmReceived = 40;
+                }
+                VideoplayerActivity.getInstance().updateVideoPlayerParams(rpmReceived);
             }
-            VideoplayerActivity.getInstance().updateVideoPlayerParams(rpmReceived);
 
             return intent.getAction();
         }

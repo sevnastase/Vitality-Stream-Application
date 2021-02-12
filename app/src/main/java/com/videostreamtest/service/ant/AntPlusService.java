@@ -90,15 +90,19 @@ public class AntPlusService extends Service {
                 Log.d(TAG, result.getDeviceName() + ": "+ initialDeviceState);
                 subscribeToEvents();
             } else if (resultCode == RequestAccessResult.USER_CANCELLED) {
-                Log.d(TAG, "BikeCadence Closed: " + resultCode);
+                Log.d(TAG, "BikeCadence Closed: " + resultCode + " DeviceState( "+initialDeviceState.name()+" )");
             } else {
                 Log.d(TAG, "BikeCadence state changed: " + initialDeviceState + ", resultCode: "+ resultCode);
             }
 
             //send broadcast
-            Intent i = new Intent("com.fitstream.ANTDATA");
-            i.putExtra("bc_service_status", initialDeviceState.toString() + "\n("+resultCode+")");
-            sendBroadcast(i);
+            Intent lastServiceStatusIntent = new Intent("com.fitstream.ANTDATA");
+            lastServiceStatusIntent.putExtra("bc_service_status", initialDeviceState.toString() + "\n("+resultCode+")");
+            sendBroadcast(lastServiceStatusIntent);
+
+            if (initialDeviceState == DeviceState.DEAD) {
+                stopSelf();
+            }
         }
 
         private void subscribeToEvents() {
@@ -111,7 +115,7 @@ public class AntPlusService extends Service {
                     //Set last received cadence value
                     lastCadence = calculatedCadence.intValue();
                     
-                    // send broadcast about device status
+                    // send broadcast about sensor value
                     Intent broadcastIntent = new Intent("com.fitstream.ANTDATA");
                     broadcastIntent.putExtra("bc_service_lastvalue", calculatedCadence.intValue());
 //                    broadcastIntent.putExtra("bc_service_channel", bcPcc.getAntDeviceNumber());
@@ -150,7 +154,7 @@ public class AntPlusService extends Service {
 
             // If ant device is dead
             if ( newDeviceState == DeviceState.DEAD ) {
-                bsdPcc = null;
+                bcPcc = null;
             }
         }
     }
@@ -209,8 +213,12 @@ public class AntPlusService extends Service {
             hrReleaseHandle.close();
         }
 
-        Log.d(TAG, "Requesting ANT+ access...");
+        Log.d(TAG, "Initial request for ANT+ access...");
+        requestDeviceAccess();
+    }
 
+    private void requestDeviceAccess() {
+        Log.d(TAG, "Requesting ANT+ access...");
         //Start cadence sensor search
         bcReleaseHandle = AntPlusBikeCadencePcc.requestAccess(
                 this,

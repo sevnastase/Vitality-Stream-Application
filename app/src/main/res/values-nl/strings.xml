@@ -32,4 +32,6 @@
     <string name="video_screen_distance">Afstand: %d meter</string>
     <string name="video_screen_rpm">TPM: %d</string>
     <string name="loading_message">Blijf trappen</string>
+    <string name="dead_device_screen_title">Sensor niet verbonden</string>
+    <string name="dead_device_screen_message">Kon geen connectie maken met sensor. Herstart de film en probeer het opnieuw.</string>
 </resources>

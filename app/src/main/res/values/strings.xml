@@ -44,4 +44,6 @@
     <string name="video_screen_distance">Distance: %d meter</string>
     <string name="video_screen_rpm">RPM: %d</string>
     <string name="loading_message">Keep paddling</string>
+    <string name="dead_device_screen_title">Sensor not connected</string>
+    <string name="dead_device_screen_message">Could not connect to sensor. Please restart the movie and try again.</string>
 </resources>

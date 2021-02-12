@@ -47,6 +47,8 @@ import com.videostreamtest.utils.DistanceLookupTable;
 import com.videostreamtest.utils.RpmVectorLookupTable;
 import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
 
+import org.w3c.dom.Text;
+
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
@@ -122,6 +124,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         updateLastCadenceMeasurement(66);
         updateLastCadenceMeasurement(66);
 
+        updateVideoPlayerScreen(0);
+
         setUp();
 
 
@@ -193,6 +197,16 @@ public class VideoplayerActivity extends AppCompatActivity {
         int currentProgresss = (int) (player.getCurrentPosition() * 1.0f / player.getDuration() * 100);
     }
 
+    public void updateDeviceStatusField(String text) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                TextView deviceStatusField = findViewById(R.id.antDeviceStatusField);
+                deviceStatusField.setText("AntDeviceStatus: "+text);
+            }
+        });
+    }
+
     public void updateVideoPlayerScreen(int rpm) {
         runOnUiThread(new Runnable() {
             @Override
@@ -235,6 +249,39 @@ public class VideoplayerActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public void setDeadDeviceParams() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                updateVideoPlayerScreen(0);
+                updateDistanceText(true);
+                toggleDeadDeviceScreen();
+            }
+        });
+    }
+
+    public void toggleDeadDeviceScreen() {
+        Log.d(TAG, "Show Dead Device Display");
+        final TextView pauseTitle = findViewById(R.id.status_dialog_title);
+        pauseTitle.setText(getString(R.string.dead_device_screen_title));
+        final TextView pauseMessage = findViewById(R.id.status_dialog_message);
+        pauseMessage.setText(getString(R.string.dead_device_screen_message));
+        final ImageButton finishFlag = findViewById(R.id.status_dialog_finished_image);
+        finishFlag.setVisibility(View.GONE);
+
+        LinearLayout routeParts = findViewById(R.id.route_layout_content_movieparts);
+        routeParts.setVisibility(View.GONE);
+        Button backToOverview = findViewById(R.id.status_dialog_return_home_button);
+        backToOverview.requestFocus();
+
+        player.setPlayWhenReady(false);
+        player.pause();
+        player.getPlaybackState();
+        playerView.hideController();
+        playerView.setUseController(false);
+        toggleStatusScreen();
     }
 
     public void togglePauseScreen() {
@@ -408,13 +455,27 @@ public class VideoplayerActivity extends AppCompatActivity {
         handler.postDelayed(runnable, 0);
     }
 
-    private void updateDistanceText() {
-        if (player != null) {
-            final TextView distance = findViewById(R.id.movieDistance);
-            final float mps = DistanceLookupTable.getMeterPerSecond(totalMetersRoute, player.getDuration() / 1000);
-            final int currentMetersDone = (int) (mps * (player.getCurrentPosition() / 1000));
-            distance.setText(toString().format(getString(R.string.video_screen_distance), currentMetersDone));
+    private void updateDistanceText(final boolean isDeadDevice) {
+        final TextView distance = findViewById(R.id.movieDistance);
+        if (isDeadDevice) {
+            distance.setText(toString().format(getString(R.string.video_screen_distance), 0));
+        } else {
+            if (player != null) {
+                final float mps = DistanceLookupTable.getMeterPerSecond(totalMetersRoute, player.getDuration() / 1000);
+                final int currentMetersDone = (int) (mps * (player.getCurrentPosition() / 1000));
+                distance.setText(toString().format(getString(R.string.video_screen_distance), currentMetersDone));
+            }
+            else {
+                distance.setText(toString().format(getString(R.string.video_screen_distance), 0));
+            }
         }
+    }
+
+    /**
+     * Default value isDeadDevice = false
+     */
+    private void updateDistanceText() {
+        updateDistanceText(false);
     }
 
     private void updateLastCadenceMeasurement(final int rpm){
