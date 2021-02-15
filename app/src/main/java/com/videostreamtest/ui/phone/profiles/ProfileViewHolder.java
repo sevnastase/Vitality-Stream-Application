@@ -33,7 +33,6 @@ public class ProfileViewHolder extends RecyclerView.ViewHolder {
         profileName.setTextSize(20);
         profileName.setTextColor(Color.WHITE);
         profileName.setText(profile.getProfileName());
-        Log.d(TAG, "START_BINDING: ThisItem: "+getAdapterPosition()+" isFocused: "+itemView.isFocused() + " isSelected: "+itemView.isSelected());
 
         profileImageButton = itemView.findViewById(R.id.profile_avatar);
         Picasso.get()
@@ -49,7 +48,6 @@ public class ProfileViewHolder extends RecyclerView.ViewHolder {
         final View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                Log.d(TAG, "ThisItem: "+getAdapterPosition()+" hasFocus: "+hasFocus);
                 itemView.setSelected(true);
                 if (hasFocus) {
                     drawSelectionborder();

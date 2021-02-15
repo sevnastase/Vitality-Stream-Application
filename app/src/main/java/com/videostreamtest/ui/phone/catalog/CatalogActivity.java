@@ -14,6 +14,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -61,7 +62,7 @@ public class CatalogActivity extends AppCompatActivity {
         //Maak lineaire layoutmanager en zet deze op horizontaal
         LinearLayoutManager layoutManager
                 = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this,4);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this,5);
         //Zet de layoutmanager erin
         availableMediaRecyclerView.setLayoutManager(gridLayoutManager);
 
@@ -101,6 +102,10 @@ public class CatalogActivity extends AppCompatActivity {
                             Movie movieList[] = objectMapper.readValue(result, Movie[].class);
                             //pass profiles to adapter
                             AvailableMediaAdapter availableMediaAdapter = new AvailableMediaAdapter(movieList);
+
+                            final ImageView routeInfoView = findViewById(R.id.select_route_info_screen);
+                            availableMediaAdapter.setRouteInfoView(routeInfoView);
+
                             //set adapter to recyclerview
                             availableMediaRecyclerView.setAdapter(availableMediaAdapter);
                             //set recyclerview visible

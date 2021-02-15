@@ -6,39 +6,39 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:layout_gravity="top"
-    android:padding="15dp"
+    android:padding="10dp"
     tools:context=".ui.phone.catalog.MovieFragment">
 
-    <TextView
-        android:id="@+id/movieTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Route Utrechtse Heuvelrug"
-        app:layout_constraintBottom_toTopOf="@+id/movieLength"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+<!--    <TextView-->
+<!--        android:id="@+id/movieTitle"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="Route Utrechtse Heuvelrug"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/movieLength"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
 
     <TextView
         android:id="@+id/movieLength"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="15dp"
+        android:layout_marginStart="1dp"
         android:text="23km"
         android:textColor="#FFFFEE"
         app:layout_constraintBottom_toTopOf="@+id/routeImageCoverButton"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/movieTitle" />
+        android:visibility="gone"/>
 
     <ImageButton
         android:id="@+id/routeImageCoverButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_margin="10dp"
         android:adjustViewBounds="true"
         android:contentDescription="Route"
         android:cropToPadding="true"
         android:background="@null"
         android:src="@drawable/route_utrechtse_heuvelrug"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/movieLength" />
+        app:layout_constraintTop_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

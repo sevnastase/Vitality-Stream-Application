@@ -1,6 +1,7 @@
 package com.videostreamtest.ui.phone.catalog;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +10,7 @@ import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -24,31 +26,36 @@ import com.videostreamtest.utils.ApplicationSettings;
 public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
     final static String TAG = AvailableMediaViewHolder.class.getSimpleName();
 
+    private ImageView routeinfo;
+
     private ImageButton movieCoverImage;
-    private TextView movieTitle;
+//    private TextView movieTitle;
     private TextView movieLength;
 
     public AvailableMediaViewHolder(@NonNull View itemView) {
         super(itemView);
     }
 
-    public void bind(Movie movie, int position) {
+    public void bind(Movie movie, int position, ImageView routeinfo) {
+        this.routeinfo = routeinfo;
+
         movieCoverImage = itemView.findViewById(R.id.routeImageCoverButton);
-        movieTitle = itemView.findViewById(R.id.movieTitle);
+//        movieTitle = itemView.findViewById(R.id.movieTitle);
         movieLength = itemView.findViewById(R.id.movieLength);
 
         //Set Title
-        movieTitle.setTextSize(20);
-        movieTitle.setTextColor(Color.WHITE);
-        movieTitle.setText(movie.getMovieTitle());
+//        movieTitle.setTextSize(20);
+//        movieTitle.setTextColor(Color.WHITE);
+//        movieTitle.setText(movie.getMovieTitle());
 
         movieLength.setTextColor(Color.WHITE);
-        movieLength.setText(movie.getMovieLength()/1000+" km");
+//        movieLength.setText(movie.getMovieLength()/1000+" km");
+        movieLength.setText("");
 
         //Set Cover
         Picasso.get()
                 .load(movie.getMovieImagepath())
-                .resize(225, 302)
+                .resize(180, 242)
                 .placeholder(R.drawable.cast_album_art_placeholder)
                 .error(R.drawable.cast_ic_notification_disconnect)
                 .into(movieCoverImage);
@@ -60,10 +67,19 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
         final View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                Log.d(TAG, "ThisItem: "+getAdapterPosition()+" hasFocus: "+hasFocus);
                 itemView.setSelected(true);
                 if (hasFocus) {
                     selectMedia();
+                    if (routeinfo != null) {
+                        //Set Route Info
+                        Picasso.get()
+                                .load(movie.getMovieRouteinfoPath())
+//                                .resize(750, 372)
+                                .placeholder(R.drawable.routeinfo_placeholder)
+                                .error(R.drawable.cast_ic_notification_disconnect)
+                                .fit()
+                                .into(routeinfo);
+                    }
                 } else {
                     unselectMedia();
                 }
@@ -74,6 +90,15 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
 
         if (movieCoverImage.isSelected()) {
            selectMedia();
+            if (routeinfo != null) {
+                //Set Route Info
+                Picasso.get()
+                        .load(movie.getMovieRouteinfoPath())
+                        .resize(750, 372)
+                        .placeholder(R.drawable.routeinfo_placeholder)
+                        .error(R.drawable.cast_ic_notification_disconnect)
+                        .into(routeinfo);
+            }
         } else {
             unselectMedia();
         }
@@ -116,6 +141,28 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
                 }
             }
         });
+    }
+
+    /**
+     * This method converts device specific pixels to density independent pixels.
+     *
+     * @param px      A value in px (pixels) unit. Which we need to convert into db
+     * @param context Context to get resources and device specific display metrics
+     * @return A float value to represent dp equivalent to px value
+     */
+    public float convertPxToDp(Context context, float px) {
+        return px / context.getResources().getDisplayMetrics().density;
+    }
+
+    /**
+     * This method converts dp unit to equivalent pixels, depending on device density.
+     *
+     * @param dp      A value in dp (density independent pixels) unit. Which we need to convert into pixels
+     * @param context Context to get resources and device specific display metrics
+     * @return A float value to represent px equivalent to dp depending on device density
+     */
+    public float convertDpToPx(Context context, float dp) {
+        return dp * context.getResources().getDisplayMetrics().density;
     }
 
     public void selectMedia() {

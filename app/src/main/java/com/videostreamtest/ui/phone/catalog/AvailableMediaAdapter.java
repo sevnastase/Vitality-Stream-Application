@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,8 +18,14 @@ public class AvailableMediaAdapter extends RecyclerView.Adapter<AvailableMediaVi
 
     private int selectedMovie = 0;
 
+    private ImageView routeInfoView;
+
     public AvailableMediaAdapter(Movie[] movieList) {
         this.movieList = movieList;
+    }
+
+    public void setRouteInfoView(final ImageView routeInfoView) {
+        this.routeInfoView = routeInfoView;
     }
 
     @NonNull
@@ -44,7 +51,7 @@ public class AvailableMediaAdapter extends RecyclerView.Adapter<AvailableMediaVi
         //Mark itemView as selected of selected movie
         holder.itemView.setSelected(selectedMovie == position);
         if (movieList.length > 0) {
-            holder.bind(movieList[position], position);
+            holder.bind(movieList[position], position, routeInfoView);
         }
     }
 
