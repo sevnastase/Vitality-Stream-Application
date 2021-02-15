@@ -47,8 +47,6 @@ import com.videostreamtest.utils.DistanceLookupTable;
 import com.videostreamtest.utils.RpmVectorLookupTable;
 import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
 
-import org.w3c.dom.Text;
-
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.

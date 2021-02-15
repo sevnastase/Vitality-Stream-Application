@@ -1,9 +1,10 @@
 package com.videostreamtest.ui.phone.profiles;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -28,13 +29,21 @@ import com.videostreamtest.service.ant.AntPlusService;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.workers.ProfileServiceWorker;
 
+import java.util.HashMap;
+import java.util.Iterator;
+
 public class ProfilesActivity extends AppCompatActivity {
-   private RecyclerView recyclerView;
+    private static final String TAG = ProfilesActivity.class.getSimpleName();
+
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_overview);
+
+        //Enumerate usb devices in console
+        enumerateUsbDevices();
 
         //retrieve API key
         SharedPreferences myPreferences = getApplication().getSharedPreferences("app",0);
@@ -66,11 +75,21 @@ public class ProfilesActivity extends AppCompatActivity {
         }
     }
 
+    private void enumerateUsbDevices() {
+        final UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        final HashMap<String, UsbDevice> deviceList = manager.getDeviceList();
+        Iterator<UsbDevice> deviceIterator = deviceList.values().iterator();
+        while(deviceIterator.hasNext()){
+            UsbDevice device = deviceIterator.next();
+            Log.d(TAG, "USB :: VENDOR_ID : "+ device.getVendorId() +" : PRODUCT_ID : "+device.getProductId()+" : PRODUCT_NAME : " + device.getProductName());
+        }
+    }
+
     private void checkForSystemApprovalAntPlusService() {
         Intent antPlusService = new Intent(getApplicationContext(), AntPlusService.class);
         startService(antPlusService);
         Runnable stopAntPlusService = () -> stopService(antPlusService);
-        new Handler(Looper.getMainLooper()).postDelayed( stopAntPlusService, 4000 );
+        new Handler(Looper.getMainLooper()).postDelayed( stopAntPlusService, 2000 );
     }
 
     private void loadProfiles(final String apikey) {
