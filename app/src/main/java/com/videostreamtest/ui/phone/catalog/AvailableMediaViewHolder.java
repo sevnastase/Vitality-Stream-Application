@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -26,7 +27,8 @@ import com.videostreamtest.utils.ApplicationSettings;
 public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
     final static String TAG = AvailableMediaViewHolder.class.getSimpleName();
 
-    private ImageView routeinfo;
+    private ImageView routeInfoImageView;
+    private LinearLayout routeInfoTextLayoutBlock;
 
     private ImageButton movieCoverImage;
 //    private TextView movieTitle;
@@ -36,8 +38,9 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
         super(itemView);
     }
 
-    public void bind(Movie movie, int position, ImageView routeinfo) {
-        this.routeinfo = routeinfo;
+    public void bind(Movie movie, int position, ImageView routeInfoImageView, LinearLayout routeInfoTextLayoutBlock) {
+        this.routeInfoImageView = routeInfoImageView;
+        this.routeInfoTextLayoutBlock =routeInfoTextLayoutBlock;
 
         movieCoverImage = itemView.findViewById(R.id.routeImageCoverButton);
 //        movieTitle = itemView.findViewById(R.id.movieTitle);
@@ -70,16 +73,7 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
                 itemView.setSelected(true);
                 if (hasFocus) {
                     selectMedia();
-                    if (routeinfo != null) {
-                        //Set Route Info
-                        Picasso.get()
-                                .load(movie.getMovieRouteinfoPath())
-//                                .resize(750, 372)
-                                .placeholder(R.drawable.routeinfo_placeholder)
-                                .error(R.drawable.cast_ic_notification_disconnect)
-                                .fit()
-                                .into(routeinfo);
-                    }
+                    setSelectedRouteInfo(movie);
                 } else {
                     unselectMedia();
                 }
@@ -90,15 +84,7 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
 
         if (movieCoverImage.isSelected()) {
            selectMedia();
-            if (routeinfo != null) {
-                //Set Route Info
-                Picasso.get()
-                        .load(movie.getMovieRouteinfoPath())
-                        .resize(750, 372)
-                        .placeholder(R.drawable.routeinfo_placeholder)
-                        .error(R.drawable.cast_ic_notification_disconnect)
-                        .into(routeinfo);
-            }
+            setSelectedRouteInfo(movie);
         } else {
             unselectMedia();
         }
@@ -143,6 +129,40 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
         });
     }
 
+    public void setSelectedRouteInfo(final Movie movie) {
+        if (routeInfoImageView != null) {
+            //Set Route Info
+            Picasso.get()
+                    .load(movie.getMovieRouteinfoPath())
+//                    .resize(150, 150)
+                    .fit()
+                    .placeholder(R.drawable.placeholder_map)
+                    .error(R.drawable.cast_ic_notification_disconnect)
+                    .into(routeInfoImageView);
+        }
+        if(routeInfoTextLayoutBlock != null) {
+            TextView title = routeInfoTextLayoutBlock.findViewById(R.id.selected_route_title);
+            TextView distance = routeInfoTextLayoutBlock.findViewById(R.id.selected_route_distance);
+            title.setText(movie.getMovieTitle());
+            float meters = movie.getMovieLength();
+            int km = (int) (meters / 1000f);
+            int hectometers = (int) ((meters - ( km * 1000f)) / 100f);
+            distance.setText(toString().format(itemView.getContext().getString(R.string.catalog_screen_distance), km, hectometers));
+            Log.d(TAG, "Test");
+        }
+    }
+
+    public void selectMedia() {
+        final Drawable border = itemView.getContext().getDrawable(R.drawable.imagebutton_blue_border);
+        movieCoverImage.setBackground(border);
+        movieCoverImage.setAlpha(1.0f);
+    }
+
+    public void unselectMedia() {
+        movieCoverImage.setBackground(null);
+        movieCoverImage.setAlpha(0.7f);
+    }
+
     /**
      * This method converts device specific pixels to density independent pixels.
      *
@@ -163,16 +183,5 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
      */
     public float convertDpToPx(Context context, float dp) {
         return dp * context.getResources().getDisplayMetrics().density;
-    }
-
-    public void selectMedia() {
-        final Drawable border = itemView.getContext().getDrawable(R.drawable.imagebutton_blue_border);
-        movieCoverImage.setBackground(border);
-        movieCoverImage.setAlpha(1.0f);
-    }
-
-    public void unselectMedia() {
-        movieCoverImage.setBackground(null);
-        movieCoverImage.setAlpha(0.7f);
     }
 }

@@ -38,18 +38,66 @@
             android:layout_height="wrap_content" />
     </LinearLayout>
 
-    <ImageView
-        android:layout_width="500dp"
-        android:layout_height="248dp"
-        android:id="@+id/select_route_info_screen"
-        android:layout_margin="2dp"
-        android:background="@drawable/imagebutton_blue_border"
-        android:backgroundTint="@color/cardview_light_background"
-        android:src="@drawable/routeinfo_placeholder"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/overlay_profile_information"
+    <LinearLayout
+        android:id="@+id/overlay_route_information"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
-        />
+        app:layout_constraintStart_toEndOf="@id/overlay_profile_information"
+        app:layout_constraintBottom_toTopOf="@id/recyclerview_available_media"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_gravity="center|center_horizontal"
+        android:background="@drawable/imagebutton_blue_border"
+        android:backgroundTint="@color/black_overlay"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="5dp"
+        android:layout_marginTop="5dp"
+        tools:ignore="UselessParent">
+
+        <LinearLayout
+            android:id="@+id/selected_route_text_information"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/selected_route_title"
+                android:text=""
+                android:textColor="#FFFFFF"
+                android:textSize="24dp"
+                android:textStyle="bold"
+                android:layout_marginBottom="5dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/selected_route_distance"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/selected_route_distance"
+                android:text=""
+                android:textColor="#FFFFFF"
+                android:textSize="20dp"
+                android:layout_marginBottom="5dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/selected_route_infomap_two"/>
+
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/selected_route_infomap_two"
+            android:src="@drawable/placeholder_map"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="5dp"
+            />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview_available_media"
@@ -61,18 +109,32 @@
         android:scrollbarThumbVertical="@drawable/scrollbar_shape"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/overlay_profile_information"
-        app:layout_constraintTop_toBottomOf="@id/select_route_info_screen"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/overlay_route_information" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="732dp"
-        android:layout_marginTop="4dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/recyclerview_available_media"
-        app:srcCompat="@android:drawable/ic_menu_manage"
-        android:visibility="gone"/>
+<!--    <TextView-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:id="@+id/selected_route_distance_"-->
+<!--        android:text="Distance: 25.7 km"-->
+<!--        android:textColor="#FFFFFF"-->
+<!--        android:textSize="20dp"-->
+<!--        android:layout_marginBottom="25dp"-->
+<!--        android:layout_marginStart="25dp"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/selected_route_infomap"-->
+<!--        android:visibility="gone"/>-->
+
+<!--    <ImageView-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:id="@+id/selected_route_infomap"-->
+<!--        android:src="@drawable/placeholder_map"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        android:layout_marginBottom="25dp"-->
+<!--        android:layout_marginStart="25dp"-->
+<!--        android:visibility="gone"-->
+<!--        />-->
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

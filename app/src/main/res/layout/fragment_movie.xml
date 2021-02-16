@@ -33,12 +33,12 @@
         android:id="@+id/routeImageCoverButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_margin="5dp"
         android:adjustViewBounds="true"
         android:contentDescription="Route"
         android:cropToPadding="true"
         android:background="@null"
-        android:src="@drawable/route_utrechtse_heuvelrug"
+        android:src="@drawable/scenery_placeholder"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,10 +6,12 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -46,6 +48,8 @@ import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.DistanceLookupTable;
 import com.videostreamtest.utils.RpmVectorLookupTable;
 import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
+
+import org.w3c.dom.Text;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -85,6 +89,8 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private boolean routePaused = false;
 
+    private Chronometer chronometer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,6 +112,9 @@ public class VideoplayerActivity extends AppCompatActivity {
         movieId = myPreferences.getInt("selectedMovieId",0);
         totalMetersRoute = myPreferences.getFloat("selectedMovieTotalDistance", 0f);
 
+        final TextView totalDistanceText = findViewById(R.id.movieplayer_total_distance);
+        totalDistanceText.setText(String.format(getString(R.string.video_screen_total_distance), (int)totalMetersRoute));
+
         accountKey = myPreferences.getString("apiKey", null);
 
         //init recyclerview of route parts
@@ -126,6 +135,8 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         setUp();
 
+        chronometer = findViewById(R.id.stopwatch_current_ride);
+        chronometer.setFormat(getString(R.string.videoplayer_chronometer_message));
 
         //Pause screen init
         final Button backToOverview = findViewById(R.id.status_dialog_return_home_button);
@@ -294,11 +305,13 @@ public class VideoplayerActivity extends AppCompatActivity {
         finishFlag.setVisibility(View.GONE);
 
         if (routePaused) {
+            chronometer.stop();
             LinearLayout routeParts = findViewById(R.id.route_layout_content_movieparts);
             routeParts.setVisibility(View.GONE);
             Button backToOverview = findViewById(R.id.status_dialog_return_home_button);
             backToOverview.requestFocus();
         } else {
+            chronometer.start();
             LinearLayout routeParts = findViewById(R.id.route_layout_content_movieparts);
             routeParts.setVisibility(View.VISIBLE);
         }
@@ -310,6 +323,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     public void showFinishScreen() {
+        chronometer.stop();
         final TextView message = findViewById(R.id.status_dialog_title);
         message.setText(getString(R.string.finish_screen_title));
         final TextView pauseMessage = findViewById(R.id.status_dialog_message);
@@ -335,6 +349,8 @@ public class VideoplayerActivity extends AppCompatActivity {
             public void run() {
                 if (player.isCurrentWindowSeekable()) {
                     long positionSecond = 0;
+
+                    chronometer.stop();
 
                     playerView.setVisibility(View.GONE);
                     statusBar.setVisibility(View.GONE);
@@ -415,6 +431,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         loadingView.setVisibility(View.GONE);
         player.play();
         playerView.hideController();
+        chronometer.setBase(SystemClock.elapsedRealtime());
+        chronometer.start();
     }
 
     private void setFocusOnCurrentRoutePart() {

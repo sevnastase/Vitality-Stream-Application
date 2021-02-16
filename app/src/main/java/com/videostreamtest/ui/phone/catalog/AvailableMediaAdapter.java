@@ -5,6 +5,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,14 +20,19 @@ public class AvailableMediaAdapter extends RecyclerView.Adapter<AvailableMediaVi
 
     private int selectedMovie = 0;
 
-    private ImageView routeInfoView;
+    private ImageView routeInfoImageView;
+    private LinearLayout routeInfoTextLayoutBlock;
 
     public AvailableMediaAdapter(Movie[] movieList) {
         this.movieList = movieList;
     }
 
-    public void setRouteInfoView(final ImageView routeInfoView) {
-        this.routeInfoView = routeInfoView;
+    public void setRouteInfoImageView(final ImageView routeInfoImageView) {
+        this.routeInfoImageView = routeInfoImageView;
+    }
+
+    public void setRouteInfoTextView(final LinearLayout routeInfoTextLayoutBlock) {
+        this.routeInfoTextLayoutBlock = routeInfoTextLayoutBlock;
     }
 
     @NonNull
@@ -51,7 +58,7 @@ public class AvailableMediaAdapter extends RecyclerView.Adapter<AvailableMediaVi
         //Mark itemView as selected of selected movie
         holder.itemView.setSelected(selectedMovie == position);
         if (movieList.length > 0) {
-            holder.bind(movieList[position], position, routeInfoView);
+            holder.bind(movieList[position], position, routeInfoImageView, routeInfoTextLayoutBlock);
         }
     }
 

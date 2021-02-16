@@ -14,7 +14,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -66,6 +68,18 @@ public class CatalogActivity extends AppCompatActivity {
         //Zet de layoutmanager erin
         availableMediaRecyclerView.setLayoutManager(gridLayoutManager);
 
+        ViewTreeObserver viewTreeObserver = availableMediaRecyclerView.getViewTreeObserver();
+        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int width  = gridLayoutManager.getWidth();
+                int height = gridLayoutManager.getHeight();
+
+                final LinearLayout routeInfoChart = findViewById(R.id.overlay_route_information);
+                routeInfoChart.setMinimumWidth(width);
+            }
+        });
+
         getAvailableMedia(catalogViewModel.getApiKey().getValue());
     }
 
@@ -103,8 +117,10 @@ public class CatalogActivity extends AppCompatActivity {
                             //pass profiles to adapter
                             AvailableMediaAdapter availableMediaAdapter = new AvailableMediaAdapter(movieList);
 
-                            final ImageView routeInfoView = findViewById(R.id.select_route_info_screen);
-                            availableMediaAdapter.setRouteInfoView(routeInfoView);
+                            final ImageView imageView = findViewById(R.id.selected_route_infomap_two);
+                            availableMediaAdapter.setRouteInfoImageView(imageView);
+                            final LinearLayout selectedRouteTextLayoutBlock = findViewById(R.id.selected_route_text_information);
+                            availableMediaAdapter.setRouteInfoTextView(selectedRouteTextLayoutBlock);
 
                             //set adapter to recyclerview
                             availableMediaRecyclerView.setAdapter(availableMediaAdapter);
