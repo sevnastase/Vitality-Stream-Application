@@ -27,6 +27,8 @@ import com.videostreamtest.utils.ApplicationSettings;
 public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
     final static String TAG = AvailableMediaViewHolder.class.getSimpleName();
 
+    private CatalogRecyclerViewClickListener catalogRecyclerViewClickListener;
+
     private ImageView routeInfoImageView;
     private LinearLayout routeInfoTextLayoutBlock;
 
@@ -34,8 +36,9 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
 //    private TextView movieTitle;
     private TextView movieLength;
 
-    public AvailableMediaViewHolder(@NonNull View itemView) {
+    public AvailableMediaViewHolder(@NonNull View itemView, CatalogRecyclerViewClickListener catalogRecyclerViewClickListener) {
         super(itemView);
+        this.catalogRecyclerViewClickListener = catalogRecyclerViewClickListener;
     }
 
     public void bind(Movie movie, int position, ImageView routeInfoImageView, LinearLayout routeInfoTextLayoutBlock) {
@@ -68,12 +71,16 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
         unselectMedia();
 
         final View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
+
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 itemView.setSelected(true);
                 if (hasFocus) {
                     selectMedia();
                     setSelectedRouteInfo(movie);
+                    if(catalogRecyclerViewClickListener != null) {
+                        catalogRecyclerViewClickListener.recyclerViewListClicked(itemView, position);
+                    }
                 } else {
                     unselectMedia();
                 }
@@ -82,9 +89,10 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
 
         movieCoverImage.setOnFocusChangeListener(focusChangeListener);
 
-        if (movieCoverImage.isSelected()) {
+        Log.d(TAG, "itemView Selected: "+itemView.isSelected() + " Position: "+position+ " movieCoverImage Focus: "+movieCoverImage.isFocused() );
+        if (itemView.isSelected()) {
            selectMedia();
-            setSelectedRouteInfo(movie);
+           setSelectedRouteInfo(movie);
         } else {
             unselectMedia();
         }
@@ -134,21 +142,23 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
             //Set Route Info
             Picasso.get()
                     .load(movie.getMovieRouteinfoPath())
-//                    .resize(150, 150)
                     .fit()
                     .placeholder(R.drawable.placeholder_map)
-                    .error(R.drawable.cast_ic_notification_disconnect)
+                    .error(R.drawable.placeholder_map)
                     .into(routeInfoImageView);
         }
         if(routeInfoTextLayoutBlock != null) {
             TextView title = routeInfoTextLayoutBlock.findViewById(R.id.selected_route_title);
             TextView distance = routeInfoTextLayoutBlock.findViewById(R.id.selected_route_distance);
-            title.setText(movie.getMovieTitle());
+
+            title.setText(toString().format(itemView.getContext().getString(R.string.catalog_selected_route_title), movie.getMovieTitle()));
+
             float meters = movie.getMovieLength();
             int km = (int) (meters / 1000f);
-            int hectometers = (int) ((meters - ( km * 1000f)) / 100f);
+            int hectometers = (int) ((meters - (km * 1000f)) / 100f);
             distance.setText(toString().format(itemView.getContext().getString(R.string.catalog_screen_distance), km, hectometers));
-            Log.d(TAG, "Test");
+
+            title.setVisibility(View.VISIBLE);
         }
     }
 

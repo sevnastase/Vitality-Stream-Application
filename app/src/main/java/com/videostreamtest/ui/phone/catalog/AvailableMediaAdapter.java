@@ -23,8 +23,14 @@ public class AvailableMediaAdapter extends RecyclerView.Adapter<AvailableMediaVi
     private ImageView routeInfoImageView;
     private LinearLayout routeInfoTextLayoutBlock;
 
+    private CatalogRecyclerViewClickListener catalogRecyclerViewClickListener;
+
     public AvailableMediaAdapter(Movie[] movieList) {
         this.movieList = movieList;
+    }
+
+    public void setCatalogRecyclerViewClickListener(CatalogRecyclerViewClickListener catalogRecyclerViewClickListener) {
+        this.catalogRecyclerViewClickListener = catalogRecyclerViewClickListener;
     }
 
     public void setRouteInfoImageView(final ImageView routeInfoImageView) {
@@ -43,7 +49,7 @@ public class AvailableMediaAdapter extends RecyclerView.Adapter<AvailableMediaVi
         //Haal de fragment op waar de recylerview  mee gevuld gaat worden
         View view = layoutInflater.inflate(R.layout.fragment_movie, parent, false);
         //retourneer de holder die de koppeling maakt aan de hierboven geselecteerde view
-        return new AvailableMediaViewHolder(view);
+        return new AvailableMediaViewHolder(view, catalogRecyclerViewClickListener);
     }
 
     @Override

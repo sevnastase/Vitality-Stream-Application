@@ -29,9 +29,10 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
-public class CatalogActivity extends AppCompatActivity {
+public class CatalogActivity extends AppCompatActivity implements CatalogRecyclerViewClickListener {
      private CatalogViewModel catalogViewModel;
      private RecyclerView availableMediaRecyclerView;
+     private GridLayoutManager gridLayoutManager;
 
     @Override
     protected void onRestart() {
@@ -61,10 +62,11 @@ public class CatalogActivity extends AppCompatActivity {
 
         availableMediaRecyclerView = findViewById(R.id.recyclerview_available_media);
         availableMediaRecyclerView.setHasFixedSize(true);
+
         //Maak lineaire layoutmanager en zet deze op horizontaal
         LinearLayoutManager layoutManager
                 = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this,5);
+        gridLayoutManager = new GridLayoutManager(this,5);
         //Zet de layoutmanager erin
         availableMediaRecyclerView.setLayoutManager(gridLayoutManager);
 
@@ -122,6 +124,8 @@ public class CatalogActivity extends AppCompatActivity {
                             final LinearLayout selectedRouteTextLayoutBlock = findViewById(R.id.selected_route_text_information);
                             availableMediaAdapter.setRouteInfoTextView(selectedRouteTextLayoutBlock);
 
+                            availableMediaAdapter.setCatalogRecyclerViewClickListener(this);
+
                             //set adapter to recyclerview
                             availableMediaRecyclerView.setAdapter(availableMediaAdapter);
                             //set recyclerview visible
@@ -133,5 +137,10 @@ public class CatalogActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    @Override
+    public void recyclerViewListClicked(View v, int position) {
+        availableMediaRecyclerView.getLayoutManager().scrollToPosition(position);
     }
 }

@@ -51,6 +51,7 @@
         android:backgroundTint="@color/black_overlay"
         android:orientation="horizontal"
         android:gravity="center"
+        app:layout_constraintVertical_weight="5"
         android:padding="5dp"
         android:layout_marginTop="5dp"
         tools:ignore="UselessParent">
@@ -64,10 +65,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/selected_route_title"
-                android:text=""
+                android:text="PlaceholderPlace"
                 android:textColor="#FFFFFF"
                 android:textSize="24dp"
                 android:textStyle="bold"
+                android:visibility="invisible"
                 android:layout_marginBottom="5dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toTopOf="@id/selected_route_distance"/>
@@ -102,14 +104,14 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview_available_media"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="350dp"
         android:layout_gravity="center"
         android:scrollbars="vertical"
-        android:scrollbarTrackVertical="@drawable/scrollbar_shape"
         android:scrollbarThumbVertical="@drawable/scrollbar_shape"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/overlay_profile_information"
-        app:layout_constraintTop_toBottomOf="@id/overlay_route_information" />
+        app:layout_constraintTop_toBottomOf="@id/overlay_route_information"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 <!--    <TextView-->
 <!--        android:layout_width="wrap_content"-->
