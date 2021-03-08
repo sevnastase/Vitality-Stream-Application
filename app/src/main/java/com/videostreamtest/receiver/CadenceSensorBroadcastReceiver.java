@@ -1,4 +1,4 @@
-package com.videostreamtest.service.ant;
+package com.videostreamtest.receiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,11 +6,11 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.videostreamtest.constants.CadenceSensorConstants;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
-import com.videostreamtest.utils.RpmVectorLookupTable;
 
-public class AntPlusBroadcastReceiver extends BroadcastReceiver {
-    private static final String TAG = AntPlusBroadcastReceiver.class.getSimpleName();
+public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
+    private static final String TAG = CadenceSensorBroadcastReceiver.class.getSimpleName();
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -31,20 +31,20 @@ public class AntPlusBroadcastReceiver extends BroadcastReceiver {
 
         @Override
         protected String doInBackground(String... strings) {
-            int rpmReceived = intent.getIntExtra("bc_service_lastvalue", 0);
-            String antDeviceStatus = intent.getStringExtra("bc_service_status");
+            int rpmReceived = intent.getIntExtra(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, 0);
+            String serviceStatus = intent.getStringExtra(CadenceSensorConstants.BIKE_CADENCE_STATUS);
 
-            if(antDeviceStatus == null) {
-                antDeviceStatus = "Active";
+            if(serviceStatus == null) {
+                serviceStatus = "Active";
             }
-            Log.d(TAG, "ServiceStatus: "+antDeviceStatus);
+            Log.d(TAG, "ServiceStatus: "+serviceStatus);
 
             Log.d(TAG, "Action: " + intent.getAction() + "\n");
             Log.d(TAG, "Intent cadence received: "+rpmReceived+"\n");
 
-            VideoplayerActivity.getInstance().updateDeviceStatusField(antDeviceStatus);
+            VideoplayerActivity.getInstance().updateDeviceStatusField(serviceStatus);
 
-            if (antDeviceStatus.toLowerCase().contains("dead")) {
+            if (serviceStatus.toLowerCase().contains("dead")) {
                 VideoplayerActivity.getInstance().setDeadDeviceParams();
             } else {
                 VideoplayerActivity.getInstance().updateVideoPlayerScreen(rpmReceived);

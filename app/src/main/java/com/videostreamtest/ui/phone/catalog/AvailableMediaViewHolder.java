@@ -21,6 +21,7 @@ import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.service.ant.AntPlusService;
+import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 
@@ -101,37 +102,51 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
         movieCoverImage.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                //Check if ANT+ plugin is installed and available on Android device
-                if (AntPlusService.isAntPlusDevicePresent(v.getContext().getApplicationContext()) || ApplicationSettings.DEVELOPER_MODE) {
-                    //Write values to params
-                    SharedPreferences myPreferences = v.getContext().getSharedPreferences("app",0);
-                    SharedPreferences.Editor editor = myPreferences.edit();
-                    editor.putString("selectedMovieUrl", movie.getMovieUrl());
-                    editor.putString("selectedMovieTitle", movie.getMovieTitle());
-                    editor.putInt("selectedMovieId", movie.getId());
-                    editor.putFloat("selectedMovieTotalDistance", movie.getMovieLength());
-                    editor.commit();
+                //Write values to params
+                SharedPreferences myPreferences = v.getContext().getSharedPreferences("app",0);
+                SharedPreferences.Editor editor = myPreferences.edit();
+                editor.putString("selectedMovieUrl", movie.getMovieUrl());
+                editor.putString("selectedMovieTitle", movie.getMovieTitle());
+                editor.putInt("selectedMovieId", movie.getId());
+                editor.putFloat("selectedMovieTotalDistance", movie.getMovieLength());
+                editor.commit();
 
-                    movieCoverImage.requestFocus();
+                movieCoverImage.requestFocus();
 
-                    if (!ApplicationSettings.DEVELOPER_MODE) {
-                        //Start AntPlus service to connect with garmin cadence sensor
-                        Intent antplusService = new Intent(itemView.getContext().getApplicationContext(), AntPlusService.class);
-                        itemView.getContext().startService(antplusService);
+                boolean abortEarly = false;
+
+                if (!ApplicationSettings.DEVELOPER_MODE) {
+                    switch (ApplicationSettings.SELECTED_COMMUNICATION_DEVICE) {
+                        case ANT_PLUS:
+                            //Check if ANT+ plugin is installed and available on Android device
+                            if (AntPlusService.isAntPlusDevicePresent(v.getContext().getApplicationContext())) {
+                                //Start AntPlus service to connect with cadence sensor
+                                Intent antplusService = new Intent(itemView.getContext().getApplicationContext(), AntPlusService.class);
+                                itemView.getContext().startService(antplusService);
+                            } else {
+                                abortEarly = true;
+                                AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
+                                builder.setMessage(itemView.getContext().getString(R.string.ant_error_message)).setTitle(itemView.getContext().getString(R.string.ant_error_title));
+                                builder.setPositiveButton(itemView.getContext().getString(R.string.positive_button), new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                                builder.show();
+                            }
+                            break;
+                        case BLE:
+                            //Start BLE service to connect with cadence sensor
+                            Intent bleService = new Intent(itemView.getContext().getApplicationContext(), BleService.class);
+                            itemView.getContext().startService(bleService);
+                        default:
                     }
+                }
 
+                if (!abortEarly) {
                     final Intent videoPlayer = new Intent(itemView.getContext(), VideoplayerActivity.class);
                     itemView.getContext().startActivity(videoPlayer);
-                } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
-                    builder.setMessage(itemView.getContext().getString(R.string.ant_error_message)).setTitle(itemView.getContext().getString(R.string.ant_error_title));
-                    builder.setPositiveButton(itemView.getContext().getString(R.string.positive_button), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.dismiss();
-                        }
-                    });
-                    builder.show();
                 }
             }
         });

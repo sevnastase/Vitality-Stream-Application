@@ -22,6 +22,8 @@ import com.dsi.ant.plugins.antplus.pcc.defines.EventFlag;
 import com.dsi.ant.plugins.antplus.pcc.defines.RequestAccessResult;
 import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc;
 import com.dsi.ant.plugins.antplus.pccbase.PccReleaseHandle;
+import com.videostreamtest.constants.CadenceSensorConstants;
+import com.videostreamtest.utils.ApplicationSettings;
 
 import java.math.BigDecimal;
 import java.util.EnumSet;
@@ -96,9 +98,7 @@ public class AntPlusService extends Service {
             }
 
             //send broadcast
-            Intent lastServiceStatusIntent = new Intent("com.fitstream.ANTDATA");
-            lastServiceStatusIntent.putExtra("bc_service_status", initialDeviceState.toString() + "\n("+resultCode+")");
-            sendBroadcast(lastServiceStatusIntent);
+            broadcastData(CadenceSensorConstants.BIKE_CADENCE_STATUS, initialDeviceState.toString() + "\n("+resultCode+")");
 
             if (initialDeviceState == DeviceState.DEAD) {
                 stopSelf();
@@ -116,10 +116,8 @@ public class AntPlusService extends Service {
                     lastCadence = calculatedCadence.intValue();
                     
                     // send broadcast about sensor value
-                    Intent broadcastIntent = new Intent("com.fitstream.ANTDATA");
-                    broadcastIntent.putExtra("bc_service_lastvalue", calculatedCadence.intValue());
+                    broadcastData(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, calculatedCadence.intValue());
 //                    broadcastIntent.putExtra("bc_service_channel", bcPcc.getAntDeviceNumber());
-                    sendBroadcast(broadcastIntent);
                 }
             });
         }
@@ -140,7 +138,7 @@ public class AntPlusService extends Service {
                 extraName = "bsd_service_status";
                 Log.d(TAG, "Speed sensor onDeviceStateChange: "+newDeviceState);
             } else if ( type == AntSensorType.CyclingCadence ) {
-                extraName = "bc_service_status";
+                extraName = CadenceSensorConstants.BIKE_CADENCE_STATUS;
                 Log.d(TAG, "Cadence sensor onDeviceStateChange: "+newDeviceState);
             } else if( type == AntSensorType.HeartRate ) {
                 extraName = "hr_service_status";
@@ -148,9 +146,7 @@ public class AntPlusService extends Service {
             }
 
             // send broadcast about device status
-            Intent broadcastIntent = new Intent("com.fitstream.ANTDATA");
-            broadcastIntent.putExtra(extraName, newDeviceState.name());
-            sendBroadcast(broadcastIntent);
+            broadcastData(extraName, newDeviceState.name());
 
             // If ant device is dead
             if ( newDeviceState == DeviceState.DEAD ) {
@@ -230,8 +226,27 @@ public class AntPlusService extends Service {
         );
 
         //Send initial state for UI
-        Intent initialAntDeviceSearchAction = new Intent("com.fitstream.ANTDATA");
-        initialAntDeviceSearchAction.putExtra("bc_service_status", "SEARCHING");
-        sendBroadcast(initialAntDeviceSearchAction);
+        broadcastData(CadenceSensorConstants.BIKE_CADENCE_STATUS, "SEARCHING");
+    }
+
+    /**
+     * Broadcast data with key/value pair of String:String
+     * @param key String
+     * @param value String
+     */
+    private void broadcastData(final String key, final String value) {
+        Intent broadcastIntent = new Intent(ApplicationSettings.COMMUNICATION_INTENT_FILTER);
+        broadcastIntent.putExtra(key, value);
+        sendBroadcast(broadcastIntent);
+    }
+    /**
+     * Broadcast data with key/value pair of String:int
+     * @param key String
+     * @param value String
+     */
+    private void broadcastData(final String key, final int value) {
+        Intent broadcastIntent = new Intent(ApplicationSettings.COMMUNICATION_INTENT_FILTER);
+        broadcastIntent.putExtra(key, value);
+        sendBroadcast(broadcastIntent);
     }
 }

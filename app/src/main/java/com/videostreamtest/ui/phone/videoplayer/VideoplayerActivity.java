@@ -41,15 +41,14 @@ import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.MoviePart;
-import com.videostreamtest.service.ant.AntPlusBroadcastReceiver;
+import com.videostreamtest.receiver.CadenceSensorBroadcastReceiver;
 import com.videostreamtest.service.ant.AntPlusService;
+import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.ui.phone.result.ResultActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.DistanceLookupTable;
 import com.videostreamtest.utils.RpmVectorLookupTable;
 import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
-
-import org.w3c.dom.Text;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -73,13 +72,14 @@ public class VideoplayerActivity extends AppCompatActivity {
     private int movieId = 0;
     private String accountKey;
 
-    private AntPlusBroadcastReceiver antPlusBroadcastReceiver;
+    private CadenceSensorBroadcastReceiver cadenceSensorBroadcastReceiver;
 
     private LinearLayout statusDialog;
     private RelativeLayout statusBar;
     private RelativeLayout loadingView;
     private int minSecondsLoadingView = 7;
     private boolean isLoading = true;
+    private boolean sensorConnected = false;
 
     private TextView rpmValue;
     private int[] lastRpmMeasurements = new int[5];
@@ -206,7 +206,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         int currentProgresss = (int) (player.getCurrentPosition() * 1.0f / player.getDuration() * 100);
     }
 
-    public void updateDeviceStatusField(String text) {
+    public void updateDeviceStatusField(final String text) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -222,6 +222,9 @@ public class VideoplayerActivity extends AppCompatActivity {
             public void run() {
                 //First update the measurements with the latest sensor data
                 updateLastCadenceMeasurement(rpm);
+
+                //Boolean to unlock video because sensor is connected
+                sensorConnected = rpm>0;
 
                 /* Update the on-screen data */
                 //Update RPM
@@ -375,9 +378,11 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     public void startResultScreen() {
+
         //Stop Ant+ service
         final Intent antplusService = new Intent(getApplicationContext(), AntPlusService.class);
         stopService(antplusService);
+
         // Build result screen
         final Intent resultScreen = new Intent(getApplicationContext(), ResultActivity.class);
         startActivity(resultScreen);
@@ -413,7 +418,8 @@ public class VideoplayerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        this.unregisterReceiver(antPlusBroadcastReceiver);
+        stopSensorService();
+        this.unregisterReceiver(cadenceSensorBroadcastReceiver);
         releasePlayer();
     }
 
@@ -455,7 +461,9 @@ public class VideoplayerActivity extends AppCompatActivity {
             @Override
             public void run() {
                 if (player != null) {
-                    if ( (currentSecond >= minSecondsLoadingView) && (player.getPlaybackState() == Player.STATE_READY)) {
+                    //TODO: Check if cadence values are above 0 which means sensor is receiving accurate measurements
+                    if ( (currentSecond >= minSecondsLoadingView) && (player.getPlaybackState() == Player.STATE_READY)
+                     && (sensorConnected) ) {
                         isLoading = false;
                         playVideo();
                     } else {
@@ -529,11 +537,10 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void startSensorDataReceiver() {
-        //Register the antplus data broadcast receiver
-        antPlusBroadcastReceiver = new AntPlusBroadcastReceiver();
-
-        IntentFilter filter = new IntentFilter("com.fitstream.ANTDATA");
-        this.registerReceiver(antPlusBroadcastReceiver, filter);
+        //Register the cadence sensor data broadcast receiver
+        cadenceSensorBroadcastReceiver = new CadenceSensorBroadcastReceiver();
+        IntentFilter filter = new IntentFilter(ApplicationSettings.COMMUNICATION_INTENT_FILTER);
+        this.registerReceiver(cadenceSensorBroadcastReceiver, filter);
     }
 
     private void initializePlayer() {
@@ -638,6 +645,20 @@ public class VideoplayerActivity extends AppCompatActivity {
         SharedPreferences myPreferences = getSharedPreferences("app",0);
         final String movieUri = myPreferences.getString("selectedMovieUrl", null);
         this.videoUri = movieUri;
+    }
+
+    private void stopSensorService() {
+        switch(ApplicationSettings.SELECTED_COMMUNICATION_DEVICE) {
+            case ANT_PLUS:
+                final Intent antplusService = new Intent(getApplicationContext(), AntPlusService.class);
+                stopService(antplusService);
+                break;
+            case BLE:
+                final Intent bleService = new Intent(getApplicationContext(), BleService.class);
+                stopService(bleService);
+                break;
+            default:
+        }
     }
 
 }

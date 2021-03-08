@@ -4,12 +4,17 @@
     <!-- Android 11 and higher: Packages which are used from other installed apps -->
     <queries>
         <package android:name="com.dsi.ant.plugins.antplus" />
+        <package android:name="com.dsi.ant" />
     </queries>
+
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
-    <!-- Android TV Features -->
+    <!-- Android Features -->
     <uses-feature
         android:name="android.software.leanback"
         android:required="false" />
@@ -17,6 +22,7 @@
         android:name="android.hardware.touchscreen"
         android:required="false" />
     <uses-feature android:name="android.hardware.usb.host" />
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
 
     <application
         android:allowBackup="true"
@@ -25,7 +31,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
         android:usesCleartextTraffic="true"
         android:largeHeap="true">
         <!-- if memory issues then > android:largeHeap="true" -->
@@ -54,14 +60,22 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
 
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+                <action android:name="com.dsi.ant.server.USB_PERMISSION" />
             </intent-filter>
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_device_filter" />
         </activity>
         <activity
             android:name=".ui.phone.videoplayer.VideoplayerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_videoplayer"
             android:screenOrientation="landscape"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+                <action android:name="com.dsi.ant.server.USB_PERMISSION" />
+            </intent-filter>
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_device_filter" />
+        </activity>
         <activity
             android:name=".ui.phone.catalog.CatalogActivity"
             android:label="@string/app_name"
@@ -88,6 +102,10 @@
             android:name=".service.ant.AntPlusService"
             android:icon="@drawable/ic_launcher_background"
             android:label="AntplusService" />
+        <service
+            android:name=".service.ble.BleService"
+            android:icon="@drawable/ic_launcher_background"
+            android:label="BleService" />
     </application>
 
 </manifest>

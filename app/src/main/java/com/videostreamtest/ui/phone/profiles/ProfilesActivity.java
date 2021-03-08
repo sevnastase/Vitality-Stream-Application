@@ -3,6 +3,9 @@ package com.videostreamtest.ui.phone.profiles;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
@@ -10,6 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,7 +30,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.Profile;
 import com.videostreamtest.service.ant.AntPlusService;
+import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.ui.phone.login.LoginActivity;
+import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.ProfileServiceWorker;
 
 import java.util.HashMap;
@@ -42,6 +48,8 @@ public class ProfilesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_overview);
 
+        Log.d(this.getClass().getSimpleName(), "Density: "+this.getResources().getDisplayMetrics());
+
         //Enumerate usb devices in console
         enumerateUsbDevices();
 
@@ -54,11 +62,47 @@ public class ProfilesActivity extends AppCompatActivity {
             startActivity(loginActivity);
             finish();
         } else {
-            //Write log for stating antplus status and version
-            Log.d("ANTPLUS_SETTINGS", "Version number: "+ AntPluginPcc.getInstalledPluginsVersionNumber(getApplicationContext()));
-            if (AntPlusService.isAntPlusDevicePresent(getApplicationContext())) {
-                checkForSystemApprovalAntPlusService();
+            switch (ApplicationSettings.SELECTED_COMMUNICATION_DEVICE) {
+                case ANT_PLUS:
+                    //Write log for stating antplus status and version
+                    Log.d("ANTPLUS_SETTINGS", "Version number: "+ AntPluginPcc.getInstalledPluginsVersionNumber(getApplicationContext()));
+                    if (AntPlusService.isAntPlusDevicePresent(getApplicationContext())) {
+                        checkForSystemApprovalAntPlusService();
+                    }
+                    break;
+                case BLE:
+//                    startBleService();
+                    break;
+                default:
             }
+
+            final Button signoutButton = findViewById(R.id.logout_button);
+            signoutButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                        SharedPreferences sp = getApplication().getSharedPreferences("app",0);
+                        SharedPreferences.Editor editor = sp.edit();
+                        editor.clear();
+                        editor.commit();
+                        finish();
+                }
+            });
+
+            signoutButton.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (hasFocus) {
+                        final Drawable border = v.getContext().getDrawable(R.drawable.imagebutton_blue_border);
+                        signoutButton.setBackground(border);
+                    } else {
+                        signoutButton.setBackground(null);
+                    }
+                }
+            });
+
+            /**
+             * Link Recyclerview en laad profielen
+             */
 
             //Koppel de recyclerView aan de layout xml
             recyclerView = findViewById(R.id.recyclerview_profiles);
@@ -73,6 +117,20 @@ public class ProfilesActivity extends AppCompatActivity {
 
             loadProfiles(apiKey);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        final Intent bleService = new Intent(getApplicationContext(), BleService.class);
+        stopService(bleService);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        final Intent bleService = new Intent(getApplicationContext(), BleService.class);
+        stopService(bleService);
     }
 
     private void enumerateUsbDevices() {
@@ -90,6 +148,12 @@ public class ProfilesActivity extends AppCompatActivity {
         startService(antPlusService);
         Runnable stopAntPlusService = () -> stopService(antPlusService);
         new Handler(Looper.getMainLooper()).postDelayed( stopAntPlusService, 2000 );
+    }
+
+    public void startBleService()
+    {
+        Intent bleService = new Intent(this, BleService.class);
+        startService(bleService);
     }
 
     private void loadProfiles(final String apikey) {

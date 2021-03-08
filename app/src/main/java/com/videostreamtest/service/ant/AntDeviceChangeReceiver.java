@@ -9,9 +9,11 @@ import androidx.annotation.Nullable;
 
 import com.dsi.ant.plugins.antplus.pcc.defines.DeviceState;
 import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc;
+import com.videostreamtest.constants.CadenceSensorConstants;
+import com.videostreamtest.utils.ApplicationSettings;
 
 public class AntDeviceChangeReceiver extends Service implements AntPluginPcc.IDeviceStateChangeReceiver {
-    private static final String TAG = AntPlusService.class.getSimpleName();
+    private static final String TAG = AntDeviceChangeReceiver.class.getSimpleName();
 
     private AntSensorType antSensorType;
 
@@ -27,7 +29,7 @@ public class AntDeviceChangeReceiver extends Service implements AntPluginPcc.IDe
             extraName = "bsd_service_status";
             Log.d(TAG, "Speed sensor onDeviceStateChange: "+newDeviceState);
         } else if ( antSensorType == AntSensorType.CyclingCadence ) {
-            extraName = "bc_service_status";
+            extraName = CadenceSensorConstants.BIKE_CADENCE_STATUS;
             Log.d(TAG, "Cadence sensor onDeviceStateChange: "+newDeviceState);
         } else if( antSensorType == AntSensorType.HeartRate ) {
             extraName = "hr_service_status";
@@ -35,7 +37,7 @@ public class AntDeviceChangeReceiver extends Service implements AntPluginPcc.IDe
         }
 
         // send broadcast about device status
-        Intent broadcastIntent = new Intent("com.fitstream.ANTDATA");
+        Intent broadcastIntent = new Intent(ApplicationSettings.COMMUNICATION_INTENT_FILTER);
         broadcastIntent.putExtra(extraName, newDeviceState.name());
         sendBroadcast(broadcastIntent);
 
