@@ -463,7 +463,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                 if (player != null) {
                     //TODO: Check if cadence values are above 0 which means sensor is receiving accurate measurements
                     if ( (currentSecond >= minSecondsLoadingView) && (player.getPlaybackState() == Player.STATE_READY)
-                     && (sensorConnected) ) {
+                     && (sensorConnected || ApplicationSettings.DEVELOPER_MODE) ) {
                         isLoading = false;
                         playVideo();
                     } else {

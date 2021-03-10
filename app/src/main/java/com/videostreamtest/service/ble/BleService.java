@@ -70,6 +70,8 @@ public class BleService extends Service {
     // last wheel and crank (speed/cadence) information to send to CSCProfile
     private long cumulativeWheelRevolution = 0;
     private long cumulativeCrankRevolution = 0;
+    private float crankRevolution = 0;
+    private long lastCumulativeCrankRevolution = 0;
     private int lastWheelEventTime = 0;
     private int lastCrankEventTime = 0;
     private int lastCumCrankEventTime = 0;
@@ -91,7 +93,7 @@ public class BleService extends Service {
     // for onCreate() failure case
     private boolean initialised = false;
 
-    private int cadenceMeasurements[] = new int[10];
+    private int cadenceMeasurements[] = new int[8];
     private int cadenceMeasurementIndex = 0;
 
     // Various callback methods defined by the BLE API.
@@ -193,8 +195,15 @@ public class BleService extends Service {
 
                     if (characteristic.getIntValue(format, 0) >= 2) {
                         Log.d(TAG, "CHARACTERISTIC VALUE BYTE ARRAY LENGTH: "+characteristic.getValue().length);
+
                         int cumulativeRotations = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 1);
-                        Log.d(TAG, "CUMULATIVE CRANK EVENTS :: "+characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 1));
+                        if (lastCumulativeCrankRevolution > 0) {
+                            crankRevolution = cumulativeRotations - lastCumulativeCrankRevolution ;
+                        }
+                        lastCumulativeCrankRevolution = cumulativeRotations;
+
+                        Log.d(TAG, "CUMULATIVE CRANK EVENTS :: "+cumulativeRotations);
+                        Log.d(TAG, "LAST SUCCESIVE CRANK EVENT(S) :: "+crankRevolution);
 
                         int cumulativeEventTime = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 3);
                         if (lastCumCrankEventTime == 0) {
@@ -203,16 +212,29 @@ public class BleService extends Service {
                         {
                             lastCrankEventTime = cumulativeEventTime - lastCumCrankEventTime;
                             lastCumCrankEventTime = cumulativeEventTime;
-                            if (lastCrankEventTime > 0) {
-                                float cyclesPerMilliSecond = 1 / Float.valueOf(""+lastCrankEventTime);
+
+                            Log.d(TAG, "LAST SUCCESIVE CRANK EVENTTIME(S) :: "+lastCrankEventTime);
+                            if (crankRevolution >0 && lastCrankEventTime > 0) {
+                                float cyclesPerMilliSecond = crankRevolution / Float.valueOf(""+lastCrankEventTime);
                                 float cyclesPerSecond = cyclesPerMilliSecond * 1000;
                                 float cyclesPerMinute = cyclesPerSecond * 60;
-                                lastCadence = (int) cyclesPerMinute;
+                                lastCadence = (int)cyclesPerMinute;
                             } else {
+                                Log.d(TAG, " CRANK REVOLUTION :: " + crankRevolution + " LAST CRANK EVENT TIME :: "+lastCrankEventTime);
                                 lastCadence = 0;
                             }
+
+//                            if (lastCrankEventTime > 0) {
+//                                float cyclesPerMilliSecond = 1 / Float.valueOf(""+lastCrankEventTime);
+//                                float cyclesPerSecond = cyclesPerMilliSecond * 1000;
+//                                float cyclesPerMinute = cyclesPerSecond * 60;
+//                                lastCadence = (int) cyclesPerMinute;
+//                            } else {
+//                                lastCadence = 0;
+//                            }
+
                             updateCadenceMeasurementList(lastCadence);
-                            broadcastData(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, getMeasuredCadence());
+                            broadcastData(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, getLastMeasuredCadenceValue());
                         }
                     }
                 }
@@ -385,6 +407,17 @@ public class BleService extends Service {
         cadenceMeasurementIndex++;
     }
 
+    private boolean isSensorHalted()
+    {
+        int cumulativeMeasurements = 0;
+        for (int measurement: cadenceMeasurements) {
+            if (measurement > 0) {
+                cumulativeMeasurements++;
+            }
+        }
+        return (cumulativeMeasurements < 2);
+    }
+
     private int getMeasuredCadence() {
         int cadence = 0;
         int cumulativeMeasurements = 0;
@@ -401,6 +434,38 @@ public class BleService extends Service {
         }
 
         return cadence / cumulativeMeasurements;
+    }
+
+    private int getLastMeasuredCadenceValue() {
+        int cadenceValue = 0;
+
+        //Set starting point to get last value above 0
+        int measurementIndex = cadenceMeasurementIndex;
+        if (measurementIndex == 0) {
+            measurementIndex = cadenceMeasurements.length -1;
+        } else {
+            measurementIndex = cadenceMeasurementIndex -1;
+        }
+
+        for (int cIndex = 0; cIndex < cadenceMeasurements.length; cIndex++ ) {
+            if (cadenceValue > 0) {
+                break;
+            }
+            if (cadenceMeasurements[measurementIndex] > 0 ) {
+                cadenceValue = cadenceMeasurements[measurementIndex];
+            }
+            if (measurementIndex == 0){
+                measurementIndex = cadenceMeasurements.length -1;
+            } else {
+                measurementIndex--;
+            }
+        }
+
+        if (isSensorHalted()) {
+            return 0;
+        } else {
+            return cadenceValue;
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

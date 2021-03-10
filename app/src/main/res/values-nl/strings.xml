@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">FitStream</string>
+    <string name="app_name">Praxtour</string>
     <string name="prompt_email">E-mail / Gebruikersnaam</string>
     <string name="prompt_password">Wachtwoord</string>
     <string name="action_sign_in">Inloggen</string>
@@ -12,10 +12,10 @@
     <string name="next">Volgende</string>
     <string name="previous">Vorige</string>
     <string name="sample_list_dialog_title">Toevoegen samples</string>
-    <string name="title_activity_catalog">Catalogus</string>
+    <string name="title_activity_catalog">Praxtour</string>
     <string name="dummy_button">Snel stoppen</string>
-    <string name="title_activity_videoplayer">VideoPlayer</string>
-    <string name="title_activity_settings">Instellingen</string>
+    <string name="title_activity_videoplayer">Praxtour</string>
+    <string name="title_activity_settings">Praxtour</string>
     <string name="action_register_user">Registreer</string>
     <string name="failed_login">Inloggen mislukt!</string>
     <string name="under_construction">Binnenkort beschikbaar.</string>
