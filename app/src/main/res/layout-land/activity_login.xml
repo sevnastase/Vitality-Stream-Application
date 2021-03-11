@@ -106,6 +106,13 @@
                 android:nextFocusLeft="@id/login"/>
 
         </LinearLayout>
+        <TextView
+            android:id="@+id/information_dialog_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:layout_gravity="center"
+            android:text="@string/login_information_dialog"/>
     </LinearLayout>
 
     <ProgressBar

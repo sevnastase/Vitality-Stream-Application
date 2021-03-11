@@ -42,7 +42,22 @@
         <!-- END METADATA -->
 
         <!-- START ACTIVITIES -->
-        <!-- PHONE -->
+        <!-- PLATFORM -->
+        <activity
+            android:name=".ui.phone.splash.SplashActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@style/SplashScreenTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+                <action android:name="com.dsi.ant.server.USB_PERMISSION" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".ui.phone.login.LoginActivity"
             android:label="@string/title_activity_login"
@@ -54,10 +69,10 @@
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+<!--                <action android:name="android.intent.action.MAIN" />-->
 
-                <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />-->
 
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
                 <action android:name="com.dsi.ant.server.USB_PERMISSION" />

@@ -38,4 +38,5 @@
     <string name="video_screen_total_distance">Totale afstand: %d meter</string>
     <string name="videoplayer_chronometer_message">Tijd: %s</string>
     <string name="catalog_selected_route_title">%s</string>
+    <string name="login_information_dialog">Voor meer informatie ga naar de website praxtour.com</string>
 </resources>

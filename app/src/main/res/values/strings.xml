@@ -50,4 +50,5 @@
     <string name="video_screen_total_distance">Total distance: %d meter</string>
     <string name="videoplayer_chronometer_message">Time: %s</string>
     <string name="catalog_selected_route_title">%s</string>
+    <string name="login_information_dialog">For more information go to our website praxtour.com</string>
 </resources>
