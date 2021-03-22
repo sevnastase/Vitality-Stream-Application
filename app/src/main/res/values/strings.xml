@@ -63,4 +63,5 @@
     <string name="productpicker_signout_button_text">Signout</string>
     <string name="profile_add_form_next_button_text">Next</string>
     <string name="profile_add_form_action_label">Add profile</string>
+    <string name="login_action_password_forgotten">Password forgotten?</string>
 </resources>

@@ -51,4 +51,5 @@
     <string name="productpicker_signout_button_text">Uitloggen</string>
     <string name="profile_add_form_next_button_text">Volgende</string>
     <string name="profile_add_form_action_label">Profiel toevoegen</string>
+    <string name="login_action_password_forgotten">Wachtwoord vergeten?</string>
 </resources>
