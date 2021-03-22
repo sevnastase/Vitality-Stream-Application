@@ -86,4 +86,60 @@ public class DatabaseRestService {
         }
     }
 
+    public String writeLog(final String apikey, final String logRule, final String logType, final String profileName) {
+        final String writeLogUrl = url+"/log/add";
+        final String json = "{\n" +
+                "    \"profileName\" : \""+profileName+"\",\n" +
+                "    \"logRule\" : \""+logRule+"\",\n" +
+                "    \"logType\" : \""+logType+"\"\n" +
+                "}";
+        RequestBody body = RequestBody.create(json, JSON);
+        final Request request = new Request.Builder()
+                .url(writeLogUrl)
+                .addHeader("api-key", apikey)
+                .post(body)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            return response.body().string();
+        } catch (IOException exception) {
+            return "failed";
+        }
+    }
+
+    public String addProfile(final String apikey, final String profileName, final String imgPath) {
+        final String writeLogUrl = url+"/users/current/profile/add";
+        final String json = "{\n" +
+                "    \"profilename\" : \""+profileName+"\",\n" +
+                "    \"imgpath\" : \""+imgPath+"\"\n" +
+                "}";
+        RequestBody body = RequestBody.create(json, JSON);
+        final Request request = new Request.Builder()
+                .url(writeLogUrl)
+                .addHeader("api-key", apikey)
+                .post(body)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            return response.body().string();
+        } catch (IOException exception) {
+            return "failed";
+        }
+    }
+
+    public String getCustomerProducts(final String apikey) {
+        final String getActiveProductsUrl = url+"/users/current/subscriptions";
+        final Request request = new Request.Builder()
+                .url(getActiveProductsUrl)
+                .addHeader("api-key", apikey)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            return response.body().string();
+        } catch (IOException exception) {
+            return "failed";
+        }
+    }
+
+    public String downloadMovie(final String apiKey, final Integer movieId) {
+        return "failed";
+    }
+
 }

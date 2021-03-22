@@ -18,6 +18,7 @@ import androidx.work.WorkManager;
 
 import com.videostreamtest.R;
 import com.videostreamtest.ui.phone.profiles.ProfilesActivity;
+import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.workers.LoginServiceWorker;
 
 public class LoginActivity extends AppCompatActivity {
@@ -89,9 +90,10 @@ public class LoginActivity extends AppCompatActivity {
                             SharedPreferences.Editor editor = myPreferences.edit();
                             editor.putString("apiKey", result);
                             editor.commit();
-                            // Start profile overview
-                            Intent profileOverview = new Intent(getApplicationContext(), ProfilesActivity.class);
-                            startActivity(profileOverview);
+
+                            //Start splash screen which contains product start information
+                            Intent splashScreenActivity = new Intent(getApplicationContext(), SplashActivity.class);
+                            startActivity(splashScreenActivity);
                             finish();
                         }
 

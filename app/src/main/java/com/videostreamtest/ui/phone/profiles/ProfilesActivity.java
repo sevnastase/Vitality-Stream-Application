@@ -3,8 +3,6 @@ package com.videostreamtest.ui.phone.profiles;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
@@ -16,6 +14,7 @@ import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.Data;
@@ -35,17 +34,35 @@ import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.ProfileServiceWorker;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
 public class ProfilesActivity extends AppCompatActivity {
     private static final String TAG = ProfilesActivity.class.getSimpleName();
 
+    private static ProfilesActivity thisInstance;
+
+    private String apiKey;
     private RecyclerView recyclerView;
+
+    public static ProfilesActivity getInstance() {
+        return thisInstance;
+    }
+
+    public void notifyDataSet() {
+        if (recyclerView.getAdapter() != null) {
+            loadProfiles(apiKey);
+            recyclerView.getAdapter().notifyDataSetChanged();
+        } else {
+            Log.d(TAG, "No adapter found!");
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        thisInstance = this;
         setContentView(R.layout.activity_profile_overview);
 
         Log.d(this.getClass().getSimpleName(), "Density: "+this.getResources().getDisplayMetrics());
@@ -55,7 +72,7 @@ public class ProfilesActivity extends AppCompatActivity {
 
         //retrieve API key
         SharedPreferences myPreferences = getApplication().getSharedPreferences("app",0);
-        String apiKey = myPreferences.getString("apiKey", "unauthorized");
+        apiKey = myPreferences.getString("apiKey", "unauthorized");
 
         if (apiKey == null || apiKey.isEmpty() || apiKey.equalsIgnoreCase("unauthorized")) {
             Intent loginActivity = new Intent(getApplicationContext(), LoginActivity.class);
@@ -107,13 +124,6 @@ public class ProfilesActivity extends AppCompatActivity {
             //Koppel de recyclerView aan de layout xml
             recyclerView = findViewById(R.id.recyclerview_profiles);
             recyclerView.setHasFixedSize(true);
-            //Maak lineaire layoutmanager en zet deze op horizontaal
-            LinearLayoutManager layoutManager
-                    = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-            //Grid Layout
-//            GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 4, GridLayoutManager.HORIZONTAL, false);
-            //Zet de layoutmanager erin
-            recyclerView.setLayoutManager(layoutManager);
 
             loadProfiles(apiKey);
         }
@@ -181,16 +191,40 @@ public class ProfilesActivity extends AppCompatActivity {
                         try {
                             final ObjectMapper objectMapper = new ObjectMapper();
                             Profile profiles[] = objectMapper.readValue(result, Profile[].class);
+                            //Check if there are profiles else show add profile form
+                            if (profiles.length <1) {
+                                startActivity(new Intent(this, AddProfileActivity.class));
+                                finish();
+                            }
+
+                            //Add profile button
+                            Profile addprofile = new Profile();
+                            addprofile.setProfileName("Add profile");
+                            addprofile.setProfileImgPath("http://188.166.100.139:8080/api/dist/img/buttons/add_profile_button.png");
+                            addprofile.setProfileKey("new-profile");
+
+                            profiles = Arrays.copyOf(profiles, profiles.length+1);
+                            profiles[profiles.length -1] = addprofile;
+
                             //pass profiles to adapter
                             ProfileAdapter profileAdapter = new ProfileAdapter(profiles);
                             //set adapter to recyclerview
                             recyclerView.setAdapter(profileAdapter);
                             //set recyclerview visible
                             recyclerView.setVisibility(View.VISIBLE);
-                        } catch (JsonMappingException e) {
-                            e.printStackTrace();
-                        } catch (JsonProcessingException e) {
-                            e.printStackTrace();
+
+                            //For UI alignment in center with less then 5 products
+                            int spanCount = 5;
+                            if (profiles.length < 5) {
+                                spanCount = profiles.length;
+                            }
+                            //Grid Layout met een max 5 kolommen breedte
+                            final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, spanCount);
+                            recyclerView.setLayoutManager(gridLayoutManager);
+                        } catch (JsonMappingException jsonMappingException) {
+                            Log.e(TAG, jsonMappingException.getLocalizedMessage());
+                        } catch (JsonProcessingException jsonProcessingException) {
+                            Log.e(TAG, jsonProcessingException.getLocalizedMessage());
                         }
                     }
                 });

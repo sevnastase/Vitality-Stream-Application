@@ -51,4 +51,16 @@
     <string name="videoplayer_chronometer_message">Time: %s</string>
     <string name="catalog_selected_route_title">%s</string>
     <string name="login_information_dialog">For more information go to our website praxtour.com</string>
+    <string name="catalog_no_movies_warning">No movies found for this account!</string>
+    <string name="profile_add_form_warning">Form not valid!</string>
+    <string name="profile_add_form_error">Failed to create profile.</string>
+    <string name="products_none_available_warning">No products are available for this account!</string>
+    <string name="new_profile_form_title">New Profile</string>
+    <string name="new_profile_form_choose_avatar">Choose Avatar</string>
+    <string name="new_profile_form_enter_name">Insert Name</string>
+    <string name="profile_add_form_enter_profile_name_hint">Enter profile name...</string>
+    <string name="profile_add_form_confirm_button_text">Confirm and add profile</string>
+    <string name="productpicker_signout_button_text">Signout</string>
+    <string name="profile_add_form_next_button_text">Next</string>
+    <string name="profile_add_form_action_label">Add profile</string>
 </resources>

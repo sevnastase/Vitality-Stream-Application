@@ -3,6 +3,7 @@ package com.videostreamtest.ui.phone.catalog;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
@@ -18,6 +19,7 @@ import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -30,9 +32,10 @@ import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
 public class CatalogActivity extends AppCompatActivity implements CatalogRecyclerViewClickListener {
-     private CatalogViewModel catalogViewModel;
-     private RecyclerView availableMediaRecyclerView;
-     private GridLayoutManager gridLayoutManager;
+    private final static String TAG = CatalogActivity.class.getSimpleName();
+    private CatalogViewModel catalogViewModel;
+    private RecyclerView availableMediaRecyclerView;
+    private GridLayoutManager gridLayoutManager;
 
     @Override
     protected void onRestart() {
@@ -53,6 +56,14 @@ public class CatalogActivity extends AppCompatActivity implements CatalogRecycle
         catalogViewModel.getApiKey().observe(this, observer -> {
             Log.d(this.getClass().getSimpleName(), "ApiKey found! ");//+catalogViewModel.getApiKey().getValue());
         });
+
+        final ImageView countryFlagView = findViewById(R.id.selected_route_country);
+        Picasso.get()
+                .load("http://188.166.100.139:8080/api/dist/img/flags/NL.jpg")
+                .fit()
+                .placeholder(R.drawable.flag_placeholder)
+                .error(R.drawable.flag_placeholder)
+                .into(countryFlagView);
 
         final TextView profileName = findViewById(R.id.current_loaded_profile);
         SharedPreferences myPreferences = getSharedPreferences("app",0);
@@ -116,24 +127,30 @@ public class CatalogActivity extends AppCompatActivity implements CatalogRecycle
                         try {
                             final ObjectMapper objectMapper = new ObjectMapper();
                             Movie movieList[] = objectMapper.readValue(result, Movie[].class);
-                            //pass profiles to adapter
-                            AvailableMediaAdapter availableMediaAdapter = new AvailableMediaAdapter(movieList);
 
-                            final ImageView imageView = findViewById(R.id.selected_route_infomap_two);
-                            availableMediaAdapter.setRouteInfoImageView(imageView);
-                            final LinearLayout selectedRouteTextLayoutBlock = findViewById(R.id.selected_route_text_information);
-                            availableMediaAdapter.setRouteInfoTextView(selectedRouteTextLayoutBlock);
+                            if (movieList.length >0) {
+                                //pass profiles to adapter
+                                AvailableMediaAdapter availableMediaAdapter = new AvailableMediaAdapter(movieList);
 
-                            availableMediaAdapter.setCatalogRecyclerViewClickListener(this);
+                                final ImageView imageView = findViewById(R.id.selected_route_infomap_two);
+                                availableMediaAdapter.setRouteInfoImageView(imageView);
+                                final LinearLayout selectedRouteTextLayoutBlock = findViewById(R.id.selected_route_text_information);
+                                availableMediaAdapter.setRouteInfoTextView(selectedRouteTextLayoutBlock);
 
-                            //set adapter to recyclerview
-                            availableMediaRecyclerView.setAdapter(availableMediaAdapter);
-                            //set recyclerview visible
-                            availableMediaRecyclerView.setVisibility(View.VISIBLE);
-                        } catch (JsonMappingException e) {
-                            e.printStackTrace();
-                        } catch (JsonProcessingException e) {
-                            e.printStackTrace();
+                                availableMediaAdapter.setCatalogRecyclerViewClickListener(this);
+
+                                //set adapter to recyclerview
+                                availableMediaRecyclerView.setAdapter(availableMediaAdapter);
+                                //set recyclerview visible
+                                availableMediaRecyclerView.setVisibility(View.VISIBLE);
+                            } else {
+                                Toast.makeText(this, getString(R.string.catalog_no_movies_warning), Toast.LENGTH_LONG).show();
+                                finish();
+                            }
+                        } catch (JsonMappingException jsonMappingException) {
+                            Log.e(TAG, jsonMappingException.getLocalizedMessage());
+                        } catch (JsonProcessingException jsonProcessingException) {
+                            Log.e(TAG, jsonProcessingException.getLocalizedMessage());
                         }
                     }
                 });

@@ -64,6 +64,16 @@
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
+            android:name=".ui.phone.productpicker.ProductPickerActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ui.phone.profiles.AddProfileActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
             android:name=".ui.phone.profiles.ProfilesActivity"
             android:label="@string/title_activity_fullscreen"
             android:screenOrientation="landscape"
@@ -121,6 +131,20 @@
             android:name=".service.ble.BleService"
             android:icon="@drawable/ic_launcher_background"
             android:label="BleService" />
+
+        <receiver android:name=".receiver.OnBootCompletedBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED"
+            android:directBootAware="true">
+            <intent-filter>
+                <!-- REGISTER TO RECEIVE BOOT_COMPLETED EVENTS -->
+                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.REBOOT"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

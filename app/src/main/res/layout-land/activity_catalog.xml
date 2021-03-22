@@ -61,13 +61,26 @@
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
+            <!--     Strakke zwarte lijn om de vlag met rechte lijnen ( geen afrondingen )       -->
+            <!--     imagebutton_blue_border kopieren en op basis daarvan       -->
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/selected_route_country"
+                android:src="@drawable/flag_placeholder"
+                android:background="@drawable/image_black_border"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/selected_route_title"
                 android:text="PlaceholderPlace"
                 android:textColor="#FFFFFF"
-                android:textSize="24dp"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 android:visibility="invisible"
                 android:layout_marginBottom="5dp"
@@ -80,7 +93,7 @@
                 android:id="@+id/selected_route_distance"
                 android:text=""
                 android:textColor="#FFFFFF"
-                android:textSize="20dp"
+                android:textSize="20sp"
                 android:layout_marginBottom="5dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toTopOf="@id/selected_route_infomap_two"/>
@@ -99,6 +112,7 @@
             android:layout_marginStart="10dp"
             android:layout_marginEnd="5dp"
             />
+
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

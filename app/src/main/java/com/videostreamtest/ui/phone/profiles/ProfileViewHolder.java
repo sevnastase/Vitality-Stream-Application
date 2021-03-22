@@ -65,24 +65,36 @@ public class ProfileViewHolder extends RecyclerView.ViewHolder {
             undrawSelectionborder();
         }
 
-        profileImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Get sharedPreferences
-                SharedPreferences myPreferences = v.getContext().getSharedPreferences("app",0);
-                SharedPreferences.Editor editor = myPreferences.edit();
-                editor.putString("profileKey", profile.getProfileKey());
-                editor.putString("profileName", profile.getProfileName());
-                editor.putInt("profileId", profile.getProfileId());
-                editor.commit();
+        if (profile.getProfileKey().equals("new-profile")) {
+            profileImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    profileImageButton.requestFocus();
 
-                profileImageButton.requestFocus();
+                    Intent addProfile = new Intent(itemView.getContext(), AddProfileActivity.class);
+                    itemView.getContext().startActivity(addProfile);
+                }
+            });
+        } else {
+            profileImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //Get sharedPreferences
+                    SharedPreferences myPreferences = v.getContext().getSharedPreferences("app", 0);
+                    SharedPreferences.Editor editor = myPreferences.edit();
+                    editor.putString("profileKey", profile.getProfileKey());
+                    editor.putString("profileName", profile.getProfileName());
+                    editor.putInt("profileId", profile.getProfileId());
+                    editor.commit();
 
-                Intent catalog = new Intent(itemView.getContext(), CatalogActivity.class);
-                itemView.getContext().startActivity(catalog);
-                Toast.makeText(itemView.getContext(), toString().format(itemView.getContext().getString(R.string.loading_profile_message), profile.getProfileName()), Toast.LENGTH_LONG).show();
-            }
-        });
+                    profileImageButton.requestFocus();
+
+                    Intent catalog = new Intent(itemView.getContext(), CatalogActivity.class);
+                    itemView.getContext().startActivity(catalog);
+                    Toast.makeText(itemView.getContext(), toString().format(itemView.getContext().getString(R.string.loading_profile_message), profile.getProfileName()), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
     }
 
     private void drawSelectionborder() {

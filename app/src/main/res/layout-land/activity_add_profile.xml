@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:layout_centerVertical="true"
+    android:background="@drawable/profile_overview_background">
+
+    <!-- LineairLayout vertical -->
+    <LinearLayout
+        android:id="@+id/profile_form_overlay"
+        android:background="@drawable/imagebutton_blue_border"
+        android:backgroundTint="@color/black_overlay"
+        android:layout_width="500dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!--  TextView for Title form      -->
+        <TextView
+            android:id="@+id/profile_add_form_title"
+            android:textColor="#FFFFFF"
+            android:textSize="36sp"
+            android:textStyle="bold"
+            android:text="@string/new_profile_form_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- Add fragmentcontainer -->
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/profile_add_form_nav_host"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+
+            app:defaultNavHost="true"
+            app:navGraph="@navigation/nav_graph" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

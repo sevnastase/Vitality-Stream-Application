@@ -2,7 +2,22 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/nav_graph">
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/enterProfileNameFragment">
 <!--    app:startDestination="@id/First2Fragment"-->
 
+    <fragment
+        android:id="@+id/enterProfileNameFragment"
+        android:name="com.videostreamtest.ui.phone.profiles.EnterProfileNameFragment"
+        android:label="fragment_enter_profile_name"
+        tools:layout="@layout/fragment_enter_profile_name" >
+        <action
+            android:id="@+id/action_enterProfileNameFragment_to_enterProfileAvatarFragment"
+            app:destination="@id/enterProfileAvatarFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/enterProfileAvatarFragment"
+        android:name="com.videostreamtest.ui.phone.profiles.EnterProfileAvatarFragment"
+        android:label="fragment_enter_profile_avatar"
+        tools:layout="@layout/fragment_enter_profile_avatar" />
 </navigation>

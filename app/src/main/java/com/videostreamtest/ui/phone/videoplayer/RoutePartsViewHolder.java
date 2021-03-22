@@ -30,7 +30,7 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
                 .load(moviePart.getMoviepartImagepath())
                 .resize(130, 70)
                 .placeholder(R.drawable.placeholder_movieparts)
-                .error(R.drawable.cast_ic_notification_disconnect)
+                .error(R.drawable.placeholder_movieparts)
                 .into(moviePartCoverImage);
 
         initBorders();
