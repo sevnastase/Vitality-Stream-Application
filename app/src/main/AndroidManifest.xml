@@ -7,12 +7,25 @@
         <package android:name="com.dsi.ant" />
     </queries>
 
+    <!-- REQUIRED FOR CONSTRAINT OF INTERNET   -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- REQUIRED FOR SENSORS    -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
+    <!-- REQUIRED FOR STREAMING VARIANT   -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- REQUIRED FOR STANDALONE VARIANT   -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <!-- REQUIRED FOR ON_BOOT_COMPLETED RECEIVER   -->
+    <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- Android Features -->
     <uses-feature
@@ -68,6 +81,9 @@
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".ui.phone.productview.ProductActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".ui.phone.profiles.AddProfileActivity"
             android:label="@string/app_name"
@@ -108,7 +124,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".ui.phone.result.ResultActivity"
             android:screenOrientation="landscape"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"/>
 
         <!-- TV  //TODO becomes TV User Interfaces -->
         <activity

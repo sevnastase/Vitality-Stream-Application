@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/route_content_overview"
+    style="@style/Widget.AppTheme.ButtonBar.Fullscreen"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom|center_horizontal"
+    android:gravity="center_horizontal"
+    android:layout_centerVertical="true"
+    android:orientation="vertical" >
+
+
+    <!--  Layout for labels and routeparts    -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <LinearLayout
+            android:id="@+id/route_content_informationlabels"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/statusbar_praxfilm_movie_title"
+                android:text="Movie Title"
+                android:textColor="#FFFFEE"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingRight="15dp"
+                android:paddingLeft="30dp" />
+
+            <TextView
+                android:id="@+id/statusbar_praxfilm_movie_speed"
+                android:text="@string/video_screen_rpm"
+                android:textColor="#FFFFEE"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingRight="5dp"/>
+
+            <Chronometer
+                android:id="@+id/statusbar_praxfilm_stopwatch_current_ride"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFEE"
+                android:paddingRight="15dp"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+        android:id="@+id/route_layout_content_movieparts"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_centerHorizontal="true">
+
+            <!--  Seekbar for future outlining with progressbar  -->
+            <SeekBar
+                android:id="@+id/statusbar_praxfilm_digital_twin_seekbar_movie"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:layout_marginBottom="20dp"
+                android:progressDrawable="@android:color/holo_blue_light"
+                android:thumb="@android:color/holo_blue_dark"
+                android:thumbOffset="0dp"
+                android:splitTrack="false"
+                android:visibility="gone"/>
+
+            <SeekBar
+                android:id="@+id/statusbar_praxfilm_seekbar_movie"
+                android:layout_width="800dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="35dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginEnd="15dp"
+                android:progressDrawable="@drawable/praxfilm_progress_drawable"
+                android:thumb="@drawable/bicycle_thumb_praxfilm"
+                android:thumbOffset="0dp"
+                android:splitTrack="false" />
+            <!--     Speed buttons   -->
+            <LinearLayout
+                android:id="@+id/statusbar_praxfilm_volume_buttons_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
+                <TextView
+                    android:id="@+id/statusbar_praxfilm_volume_indicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    android:textSize="24sp" />
+                <ImageButton
+                    android:id="@+id/statusbar_praxfilm_volume_button_up"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:background="@null"
+                    android:src="@drawable/plus_small"/>
+                <ImageButton
+                    android:id="@+id/statusbar_praxfilm_volume_button_down"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@null"
+                    android:src="@drawable/minus_small"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

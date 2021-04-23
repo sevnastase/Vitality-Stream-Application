@@ -1,6 +1,7 @@
 package com.videostreamtest.data.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.videostreamtest.config.entity.Routefilm;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Movie {
@@ -8,8 +9,11 @@ public class Movie {
     private String movieTitle;
     private Integer movieLength;
     private String movieUrl; // e.g. /streams/{vodId}.mp4
+    private long movieFileSize;
     private String movieImagepath;
+    private long sceneryFileSize;
     private String movieRouteinfoPath;
+    private long mapFileSize;
     //Speeds are in Kmh
     private Integer recordedSpeed;
     private Integer minimalSpeed;
@@ -63,6 +67,30 @@ public class Movie {
         this.movieRouteinfoPath = movieRouteinfoPath;
     }
 
+    public long getMovieFileSize() {
+        return movieFileSize;
+    }
+
+    public void setMovieFileSize(long movieFileSize) {
+        this.movieFileSize = movieFileSize;
+    }
+
+    public long getSceneryFileSize() {
+        return sceneryFileSize;
+    }
+
+    public void setSceneryFileSize(long sceneryFileSize) {
+        this.sceneryFileSize = sceneryFileSize;
+    }
+
+    public long getMapFileSize() {
+        return mapFileSize;
+    }
+
+    public void setMapFileSize(long mapFileSize) {
+        this.mapFileSize = mapFileSize;
+    }
+
     public Integer getRecordedSpeed() {
         return recordedSpeed;
     }
@@ -85,5 +113,23 @@ public class Movie {
 
     public void setRecordedFps(Integer recordedFps) {
         this.recordedFps = recordedFps;
+    }
+
+    public static Movie fromRoutefilm(final Routefilm routefilm) {
+        Movie movieDto = new Movie();
+        movieDto.setId(routefilm.getMovieId());
+        movieDto.setMinimalSpeed(routefilm.getMinimalSpeed());
+        movieDto.setMovieImagepath(routefilm.getMovieImagepath());
+        movieDto.setMovieLength(routefilm.getMovieLength());
+        movieDto.setMovieImagepath(routefilm.getMovieImagepath());
+        movieDto.setMovieRouteinfoPath(routefilm.getMovieRouteinfoPath());
+        movieDto.setMovieTitle(routefilm.getMovieTitle());
+        movieDto.setMovieUrl(routefilm.getMovieUrl());
+        movieDto.setRecordedFps(routefilm.getRecordedFps());
+        movieDto.setRecordedSpeed(routefilm.getRecordedSpeed());
+        movieDto.setMovieFileSize(routefilm.getMovieFileSize());
+        movieDto.setMapFileSize(routefilm.getMapFileSize());
+        movieDto.setSceneryFileSize(routefilm.getSceneryFileSize());
+        return movieDto;
     }
 }

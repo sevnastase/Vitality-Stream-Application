@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
+import com.videostreamtest.config.db.PraxtourDatabase;
+import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.data.model.Profile;
 import com.videostreamtest.ui.phone.catalog.CatalogActivity;
 
@@ -90,6 +92,9 @@ public class ProfileViewHolder extends RecyclerView.ViewHolder {
                     profileImageButton.requestFocus();
 
                     Intent catalog = new Intent(itemView.getContext(), CatalogActivity.class);
+                    catalog.putExtra("profileName", profile.getProfileName());
+                    catalog.putExtra("profileKey", profile.getProfileKey());
+                    catalog.putExtra("profileId", profile.getProfileId());
                     itemView.getContext().startActivity(catalog);
                     Toast.makeText(itemView.getContext(), toString().format(itemView.getContext().getString(R.string.loading_profile_message), profile.getProfileName()), Toast.LENGTH_LONG).show();
                 }

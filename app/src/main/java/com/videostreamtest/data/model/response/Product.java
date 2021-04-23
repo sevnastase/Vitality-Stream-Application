@@ -1,5 +1,8 @@
 package com.videostreamtest.data.model.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Product {
     private Integer id;
     private String productName;
@@ -7,6 +10,7 @@ public class Product {
     private Integer defaultSettingsId;
     private Integer blocked =0;
     private Integer supportStreaming =0;
+    private String communicationType = "RPM";
 
     public Integer getId() {
         return id;
@@ -54,5 +58,25 @@ public class Product {
 
     public void setSupportStreaming(Integer supportStreaming) {
         this.supportStreaming = supportStreaming;
+    }
+
+    public String getCommunicationType() {
+        return communicationType;
+    }
+
+    public void setCommunicationType(String communicationType) {
+        this.communicationType = communicationType;
+    }
+
+    public static Product fromProductEntity(final com.videostreamtest.config.entity.Product productEntity) {
+        Product product = new Product();
+        product.setId(productEntity.getUid());
+        product.setCommunicationType(productEntity.getCommunicationType());
+        product.setProductName(productEntity.getProductName());
+        product.setProductLogoButtonPath(productEntity.getProductLogoButtonPath());
+        product.setBlocked(productEntity.getBlocked());
+        product.setSupportStreaming(productEntity.getSupportStreaming());
+        product.setDefaultSettingsId(productEntity.getDefaultSettingsId());
+        return product;
     }
 }

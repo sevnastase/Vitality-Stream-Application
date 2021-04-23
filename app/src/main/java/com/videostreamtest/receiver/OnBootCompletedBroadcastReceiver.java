@@ -3,10 +3,12 @@ package com.videostreamtest.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 
+import com.videostreamtest.R;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 
@@ -36,7 +38,9 @@ public class OnBootCompletedBroadcastReceiver extends BroadcastReceiver {
                     if (Settings.canDrawOverlays(context)) {
                         Log.e(this.getClass().getSimpleName(), "Value SplashActivity 1: true");
                     } else {
-                        Log.e(this.getClass().getSimpleName(), "Value SplashActivity 1: false");
+                        Log.e(this.getClass().getSimpleName(), "Value SplashActivity 1: "+Settings.canDrawOverlays(context));
+                        Log.e(this.getClass().getSimpleName(), "Value SplashActivity 2: "+Build.VERSION.SDK_INT);
+                        Log.e(this.getClass().getSimpleName(), "Value SplashActivity 2: "+context.getString(R.string.app_name));
                     }
                 }
             }

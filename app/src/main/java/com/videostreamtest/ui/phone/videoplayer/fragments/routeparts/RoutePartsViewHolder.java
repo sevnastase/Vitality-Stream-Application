@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.videoplayer;
+package com.videostreamtest.ui.phone.videoplayer.fragments.routeparts;
 
 import android.graphics.drawable.Drawable;
 import android.util.Log;
@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.MoviePart;
+import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 
 public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
 

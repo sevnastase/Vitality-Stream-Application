@@ -1,6 +1,7 @@
 package com.videostreamtest.workers;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
@@ -8,30 +9,80 @@ import androidx.work.ListenableWorker;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import com.videostreamtest.service.database.DatabaseRestService;
+import com.videostreamtest.config.dao.ConfigurationDao;
+import com.videostreamtest.config.dao.ProductDao;
+import com.videostreamtest.config.db.PraxtourDatabase;
+import com.videostreamtest.data.model.response.Product;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.GET;
+import retrofit2.http.Header;
+
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_URL;
 
 public class ActiveProductsServiceWorker extends Worker {
+    private static final String TAG = ActiveProductsServiceWorker.class.getSimpleName();
 
     public ActiveProductsServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
 
+    public interface PraxCloud {
+        @GET("/api/users/current/subscriptions")
+        Call<List<Product>> getActiveProducts(@Header("api-key") String accountToken);
+    }
+
     @NonNull
     @Override
-    public Result doWork() {
+    public ListenableWorker.Result doWork() {
         //Get Input
         final String apikey = getInputData().getString("apikey");
         //Pre-define output
         Data output = new Data.Builder().build();
-        //Define which services you need
-        final DatabaseRestService databaseRestService = new DatabaseRestService();
-        //Execute some actions
-        final String result = databaseRestService.getCustomerProducts(apikey);
-        //Store outcome in the output data model
-        output = new Data.Builder()
-                .putString("product-list", result)
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(PRAXCLOUD_URL)
+                .addConverterFactory(GsonConverterFactory.create())
                 .build();
-        //Return result with data output
-        return ListenableWorker.Result.success(output);
+
+        PraxCloud praxCloud = retrofit.create(PraxCloud.class);
+        Call<List<Product>> call = praxCloud.getActiveProducts(apikey);
+        List<Product> activeProducts = new ArrayList<>();
+        try {
+            activeProducts = call.execute().body();
+        } catch (IOException ioException) {
+            Log.e(TAG, ioException.getLocalizedMessage());
+        }
+        Log.d(TAG, "ActiveProducts Count RetroFit :: "+activeProducts.size());
+
+        //Update local room database with the newest products based on cloud configuration
+        final ProductDao productDao = PraxtourDatabase.getDatabase(getApplicationContext()).productDao();
+        if (activeProducts.size() > 0) {
+            for (final Product externalProduct : activeProducts) {
+                final com.videostreamtest.config.entity.Product tmpProduct = new com.videostreamtest.config.entity.Product();
+                tmpProduct.setUid(externalProduct.getId());
+                tmpProduct.setAccountToken(apikey);
+                tmpProduct.setDefaultSettingsId(externalProduct.getDefaultSettingsId());
+                tmpProduct.setSupportStreaming(externalProduct.getSupportStreaming());
+                tmpProduct.setProductName(externalProduct.getProductName());
+                tmpProduct.setProductLogoButtonPath(externalProduct.getProductLogoButtonPath());
+                tmpProduct.setBlocked(externalProduct.getBlocked());
+                tmpProduct.setCommunicationType(externalProduct.getCommunicationType());
+
+                productDao.insert(tmpProduct);
+            }
+        }
+
+        //Update curent config with product count
+        final ConfigurationDao configurationDao = PraxtourDatabase.getDatabase(getApplicationContext()).configurationDao();
+        configurationDao.updateProductCountCurrentConfiguration(activeProducts.size());
+
+        return ListenableWorker.Result.success();
     }
 }

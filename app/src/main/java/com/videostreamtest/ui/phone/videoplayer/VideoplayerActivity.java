@@ -1,33 +1,25 @@
 package com.videostreamtest.ui.phone.videoplayer;
 
+
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Chronometer;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.work.Data;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkInfo;
-import androidx.work.WorkManager;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
@@ -39,31 +31,39 @@ import com.google.android.exoplayer2.source.MediaSourceFactory;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
+import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
-import com.videostreamtest.data.model.MoviePart;
+import com.videostreamtest.data.model.Movie;
+import com.videostreamtest.data.model.response.Product;
+import com.videostreamtest.enums.CommunicationDevice;
+import com.videostreamtest.enums.CommunicationType;
 import com.videostreamtest.receiver.CadenceSensorBroadcastReceiver;
 import com.videostreamtest.service.ant.AntPlusService;
 import com.videostreamtest.service.ble.BleService;
+import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
+import com.videostreamtest.ui.phone.helpers.ProductHelper;
 import com.videostreamtest.ui.phone.result.ResultActivity;
+import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFilmStatusBarFragment;
+import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFitStatusBarFragment;
+import com.videostreamtest.ui.phone.videoplayer.fragments.PraxSpinStatusBarFragment;
+import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
+import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
-import com.videostreamtest.utils.DistanceLookupTable;
 import com.videostreamtest.utils.RpmVectorLookupTable;
-import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
 
 /**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
+ * Full-screen videoplayer activity
  */
 public class VideoplayerActivity extends AppCompatActivity {
-
     private static final String TAG = VideoplayerActivity.class.getSimpleName();
+    private VideoPlayerViewModel videoPlayerViewModel;
 
     private static VideoplayerActivity thisInstance;
 
     private CastContext castContext;
 
     private PlayerView playerView;
-    private SimpleExoPlayer player;
+    private SimpleExoPlayer videoPlayer;
 
     private RecyclerView routePartsRecyclerview;
     private RoutePartsAdapter availableRoutePartsAdapter;
@@ -71,59 +71,161 @@ public class VideoplayerActivity extends AppCompatActivity {
     private String videoUri = "http://46.101.137.215:5080/WebRTCApp/streams/989942527862373986107078.mp4";
     private int movieId = 0;
     private String accountKey;
+    private Movie selectedMovie;
+    private Product selectedProduct;
+    private CommunicationType communicationType;
+    private CommunicationDevice communicationDevice;
 
     private CadenceSensorBroadcastReceiver cadenceSensorBroadcastReceiver;
 
     private LinearLayout statusDialog;
-    private RelativeLayout statusBar;
     private RelativeLayout loadingView;
+
     private int minSecondsLoadingView = 7;
     private boolean isLoading = true;
     private boolean sensorConnected = false;
 
-    private TextView rpmValue;
     private int[] lastRpmMeasurements = new int[5];
     private int currentMeasurementIteration = 0;
 
-    private float totalMetersRoute = 0;
-
     private boolean routePaused = false;
 
-    private Chronometer chronometer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         thisInstance = this;
         setContentView(R.layout.activity_videoplayer);
+        videoPlayerViewModel = new ViewModelProvider(this).get(VideoPlayerViewModel.class);
 
 //        castContext = CastContext.getSharedInstance(this);
 
         playerView = findViewById(R.id.playerView);
-        rpmValue = findViewById(R.id.movieRpm);
 
         statusDialog = findViewById(R.id.status_dialog_videoplayer);
         loadingView = findViewById(R.id.loading_view);
-        statusBar = findViewById(R.id.route_content_overview);
 
-        final TextView movieTitle = findViewById(R.id.movieTitle);
-        SharedPreferences myPreferences = getSharedPreferences("app",0);
-        movieTitle.setText(myPreferences.getString("selectedMovieTitle","Title not found"));
-        movieId = myPreferences.getInt("selectedMovieId",0);
-        totalMetersRoute = myPreferences.getFloat("selectedMovieTotalDistance", 0f);
+        final Bundle arguments = getIntent().getExtras();
+        if (arguments != null) {
+            selectedMovie = new GsonBuilder().create().fromJson(arguments.getString("movieObject", "{}"), Movie.class);
+            videoUri = selectedMovie.getMovieUrl();//NOT IMPORTANT AS WE"VE GOT THE MOVIE OBJECT
 
-        final TextView totalDistanceText = findViewById(R.id.movieplayer_total_distance);
-        totalDistanceText.setText(String.format(getString(R.string.video_screen_total_distance), (int)totalMetersRoute));
+            //TODO: Set product configuration
+            selectedProduct = new GsonBuilder().create().fromJson(arguments.getString("productObject", "{}"), Product.class);
+            communicationDevice = ConfigurationHelper.getCommunicationDevice(arguments.getString("communication_device"));
 
-        accountKey = myPreferences.getString("apiKey", null);
+            Log.d(TAG, "productObject :: " + selectedProduct.getProductName());
 
-        //init recyclerview of route parts
-        routePartsRecyclerview = findViewById(R.id.recyclerview_route_content_movieparts);
-        routePartsRecyclerview.setHasFixedSize(true);
-        //Maak lineaire layoutmanager en zet deze op horizontaal
-        LinearLayoutManager layoutManager
-                = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        routePartsRecyclerview.setLayoutManager(layoutManager);
+            if (selectedProduct.getProductName().contains("PraxFit")) {
+                /*
+                //INPUT SETTINGS
+                CommunicationDevice.BLE (by default, per database te wijzigen naar ANT)
+                CommunicationType.RPM (based on rpm realtime)
+                */
+                this.communicationType = ProductHelper.getCommunicationType(selectedProduct.getCommunicationType());
+
+                videoPlayerViewModel.setSelectedMovie(selectedMovie);
+
+                /*
+                //BALK OPBOUWEN DOOR GEBRUIK FRAGMENTS
+                Rij 1: Tonen Filmtitel, gereden tijd, huidig rpm, gereden afstand, nog te rijden afstand, Volume.
+                Rij 2: T1 - T6 routeparts laden
+                 */
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .setReorderingAllowed(true)
+                        .replace(R.id.videoplayer_framelayout_statusbar, PraxFitStatusBarFragment.class, null)
+                        .commit();
+
+            }
+            if (selectedProduct.getProductName().contains("PraxFilm")) {
+                /*
+                //INPUT SETTINGS
+                CommunicationDevice.BLE (by default, per database te wijzigen naar ANT)
+                CommunicationType.Active (based on activity of sensor, not adjusting speed in any kind)
+
+                //BALK OPBOUWEN
+                Rij 1: Tonen Filmtitel, verstreken(gereden) tijd, volume
+                Rij 2: progressie balk (versleepbaar)
+                 */
+                this.communicationType = ProductHelper.getCommunicationType(selectedProduct.getCommunicationType());
+                videoPlayerViewModel.setSelectedMovie(selectedMovie);
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .setReorderingAllowed(true)
+                        .replace(R.id.videoplayer_framelayout_statusbar, PraxFilmStatusBarFragment.class, null)
+                        .commit();
+
+                videoPlayerViewModel.getVolumeLevel().observe(this, volumeLevel -> {
+                    if (videoPlayer != null) {
+                        Log.d(TAG, "VOLUMELEVEL :: "+volumeLevel);
+                        videoPlayer.setVolume(volumeLevel);
+                    }
+                });
+            }
+            if (selectedProduct.getProductName().contains("PraxSpin")) {
+                /*
+                Set default playing speed to 18 km/h
+                Each step is 2 km/h harder or slower
+                //INPUT SETTINGS
+                CommunicationDevice.NONE
+                CommunicationType.NONE (based on activity of sensor, not adjusting speed in any kind)
+
+                //BALK OPBOUWEN
+                Rij 1: Tonen Filmtitel, gereden tijd, gereden afstand, nog te rijden afstand, gem.snelheid (+/- optie).
+                Rij 2: T1 - T6 routeparts laden
+                 */
+                this.communicationType = ProductHelper.getCommunicationType(selectedProduct.getCommunicationType());
+                videoPlayerViewModel.setSelectedMovie(selectedMovie);
+
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .setReorderingAllowed(true)
+                        .replace(R.id.videoplayer_framelayout_statusbar, PraxSpinStatusBarFragment.class, null)
+                        .commit();
+
+                //Pass movie details with a second based timer
+                Handler praxSpinHandler = new Handler();
+                Runnable runnableMovieDetails = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (videoPlayer != null) {
+                            videoPlayerViewModel.setMovieSpendDurationSeconds(videoPlayer.getCurrentPosition());
+                            videoPlayerViewModel.setMovieTotalDurationSeconds(videoPlayer.getDuration());
+
+                            praxSpinHandler.postDelayed(this::run, 1000);
+                        }
+                    }
+                };
+                praxSpinHandler.postDelayed(runnableMovieDetails, 0);
+
+                videoPlayerViewModel.getKmhData().observe(this, kmhData ->{
+                    if (kmhData != null && videoPlayer != null) {
+                        Log.d(TAG, "SOUND PLAYER :: " + videoPlayer.getVolume());
+                        Log.d(TAG, "SOUND DEVICE :: " + videoPlayer.getDeviceVolume());
+                        Log.d(TAG, "MIN SOUND DEVICE :: " + videoPlayer.getDeviceInfo().minVolume);
+                        Log.d(TAG, "MAX SOUND DEVICE :: " + videoPlayer.getDeviceInfo().maxVolume);
+                        // Set speed of the video (hence buffering /streaming speed )
+                        PlaybackParameters playbackParameters  = new PlaybackParameters(RpmVectorLookupTable.getPlayBackSpeedFromKmh(kmhData), PlaybackParameters.DEFAULT.pitch);
+                        videoPlayer.setPlaybackParameters(playbackParameters);
+                    }
+                });
+            }
+        } else {
+            //INCOMING FROM CatalogActivity.java
+            SharedPreferences myPreferences = getSharedPreferences("app", 0);
+            selectedMovie = new GsonBuilder().create().fromJson(myPreferences.getString("selectedMovieObject", "{}"), Movie.class);
+            videoUri = selectedMovie.getMovieUrl();
+            videoPlayerViewModel.setSelectedMovie(selectedMovie);
+            communicationType = CommunicationType.RPM;
+            communicationDevice = ApplicationSettings.SELECTED_COMMUNICATION_DEVICE;
+
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .setReorderingAllowed(true)
+                    .replace(R.id.videoplayer_framelayout_statusbar, PraxFitStatusBarFragment.class, null)
+                    .commit();
+        }
 
         updateLastCadenceMeasurement(66);
         updateLastCadenceMeasurement(66);
@@ -134,9 +236,6 @@ public class VideoplayerActivity extends AppCompatActivity {
         updateVideoPlayerScreen(0);
 
         setUp();
-
-        chronometer = findViewById(R.id.stopwatch_current_ride);
-        chronometer.setFormat(getString(R.string.videoplayer_chronometer_message));
 
         //Pause screen init
         final Button backToOverview = findViewById(R.id.status_dialog_return_home_button);
@@ -186,10 +285,12 @@ public class VideoplayerActivity extends AppCompatActivity {
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    if (player != null) {
+                    if (videoPlayer != null) {
                         //progressbar.setProgress((int) ((exoPlayer.getCurrentPosition()*100)/exoPlayer.getDuration()));
-                        rpmValue.setText(toString().format(getString(R.string.video_screen_rpm), 60));
-                        updateDistanceText();
+                        videoPlayerViewModel.setRpmData(60);//new Random().nextInt(80));
+                        videoPlayerViewModel.setMovieSpendDurationSeconds(videoPlayer.getCurrentPosition());
+                        videoPlayerViewModel.setMovieTotalDurationSeconds(videoPlayer.getDuration());
+
                         handler.postDelayed(this::run, 1000);
                     }
                 }
@@ -203,17 +304,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     public void updateSeekbar() {
-        int currentProgresss = (int) (player.getCurrentPosition() * 1.0f / player.getDuration() * 100);
-    }
-
-    public void updateDeviceStatusField(final String text) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                TextView deviceStatusField = findViewById(R.id.antDeviceStatusField);
-                deviceStatusField.setText("AntDeviceStatus: "+text);
-            }
-        });
+        int currentProgresss = (int) (videoPlayer.getCurrentPosition() * 1.0f / videoPlayer.getDuration() * 100);
     }
 
     public void updateVideoPlayerScreen(int rpm) {
@@ -223,17 +314,37 @@ public class VideoplayerActivity extends AppCompatActivity {
                 //First update the measurements with the latest sensor data
                 updateLastCadenceMeasurement(rpm);
 
-                //Boolean to unlock video because sensor is connected
-                sensorConnected = rpm>0;
+                if (videoPlayer != null) {
+                    videoPlayerViewModel.setMovieSpendDurationSeconds(videoPlayer.getCurrentPosition());
+                    videoPlayerViewModel.setMovieTotalDurationSeconds(videoPlayer.getDuration());
+                }
 
-                /* Update the on-screen data */
-                //Update RPM
-                rpmValue.setText(toString().format(getString(R.string.video_screen_rpm), rpm));
-                //Update distance
-                updateDistanceText();
+                /* Update the on-screen data based on CommunicationType */
+                switch (communicationType) {
+                    case RPM:
+                        //Boolean to unlock video because sensor is connected
+                        sensorConnected = rpm>0;
+                        //Update RPM
+                        videoPlayerViewModel.setRpmData(rpm);
+                        Log.d(TAG, communicationType.name()+" ACTIVATED NOW<<");
+                        break;
+                    case ACTIVE:
+                        //Boolean to unlock video because sensor is connected
+                        sensorConnected = rpm>0;
+                        //Update RPM
+                        videoPlayerViewModel.setRpmData(rpm);
+                        Log.d(TAG, communicationType.name()+" ACTIVATED NOW<<");
+                        break;
+                    case NONE:
+                        sensorConnected = true;
+                        Log.d(TAG, communicationType.name()+" ACTIVATED NOW<<");
+                        break;
+                    default:
+                }
+                Log.d(TAG, "RPM: "+rpm+" sensorConnected: "+sensorConnected);
 
                 /* Pause mechanism  */
-                //Only show pause screen while the video is playing
+                //Only show pause screen while the video is not in loading state
                 if (!isLoading) {
                     //If the average measurement is 0 and the route is not paused then pause and show pause screen
                     if (getAverageCadenceMeasurements() == 0 && !routePaused) {
@@ -255,9 +366,22 @@ public class VideoplayerActivity extends AppCompatActivity {
             public void run() {
                 //If the route is not paused then pass params to the videoplayer
                 if(!routePaused) {
-                    //Setting the speed of the player based on our cadence rpm reading
-                    PlaybackParameters playbackParameters = new PlaybackParameters(RpmVectorLookupTable.getPlaybackspeed(rpm), PlaybackParameters.DEFAULT.pitch);
-                    player.setPlaybackParameters(playbackParameters);
+                    /* Update the video player */
+                    switch (communicationType) {
+                        case RPM:
+                            //Set the speed of the player based on our cadence rpm reading
+                            PlaybackParameters playbackRpmParameters = new PlaybackParameters(RpmVectorLookupTable.getPlaybackspeed(rpm), PlaybackParameters.DEFAULT.pitch);
+                            videoPlayer.setPlaybackParameters(playbackRpmParameters);
+
+                            break;
+                        case ACTIVE:
+
+                            break;
+                        case NONE:
+                            // This clause will never be executed as there is no rpm data
+                            break;
+                        default:
+                    }
                 }
             }
         });
@@ -268,7 +392,6 @@ public class VideoplayerActivity extends AppCompatActivity {
             @Override
             public void run() {
                 updateVideoPlayerScreen(0);
-                updateDistanceText(true);
                 toggleDeadDeviceScreen();
             }
         });
@@ -283,14 +406,13 @@ public class VideoplayerActivity extends AppCompatActivity {
         final ImageButton finishFlag = findViewById(R.id.status_dialog_finished_image);
         finishFlag.setVisibility(View.GONE);
 
-        LinearLayout routeParts = findViewById(R.id.route_layout_content_movieparts);
-        routeParts.setVisibility(View.GONE);
+        videoPlayerViewModel.setStatusbarVisible(false);
         Button backToOverview = findViewById(R.id.status_dialog_return_home_button);
         backToOverview.requestFocus();
 
-        player.setPlayWhenReady(false);
-        player.pause();
-        player.getPlaybackState();
+        videoPlayer.setPlayWhenReady(false);
+        videoPlayer.pause();
+        videoPlayer.getPlaybackState();
         playerView.hideController();
         playerView.setUseController(false);
         toggleStatusScreen();
@@ -308,25 +430,21 @@ public class VideoplayerActivity extends AppCompatActivity {
         finishFlag.setVisibility(View.GONE);
 
         if (routePaused) {
-            chronometer.stop();
-            LinearLayout routeParts = findViewById(R.id.route_layout_content_movieparts);
-            routeParts.setVisibility(View.GONE);
+            videoPlayerViewModel.setStatusbarVisible(false);
             Button backToOverview = findViewById(R.id.status_dialog_return_home_button);
             backToOverview.requestFocus();
         } else {
-            chronometer.start();
-            LinearLayout routeParts = findViewById(R.id.route_layout_content_movieparts);
-            routeParts.setVisibility(View.VISIBLE);
+            videoPlayerViewModel.setStatusbarVisible(true);
         }
 
-        player.setPlayWhenReady(!player.getPlayWhenReady());
-        player.getPlaybackState();
+        videoPlayer.setPlayWhenReady(!videoPlayer.getPlayWhenReady());
+        videoPlayer.getPlaybackState();
         playerView.hideController();
         toggleStatusScreen();
     }
 
     public void showFinishScreen() {
-        chronometer.stop();
+        videoPlayerViewModel.setPlayerPaused(true);
         final TextView message = findViewById(R.id.status_dialog_title);
         message.setText(getString(R.string.finish_screen_title));
         final TextView pauseMessage = findViewById(R.id.status_dialog_message);
@@ -350,31 +468,43 @@ public class VideoplayerActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (player.isCurrentWindowSeekable()) {
+                if (videoPlayer.isCurrentWindowSeekable()) {
                     long positionSecond = 0;
 
-                    chronometer.stop();
-
+                    videoPlayerViewModel.setStatusbarVisible(false);
                     playerView.setVisibility(View.GONE);
-                    statusBar.setVisibility(View.GONE);
+
                     TextView loadingMessage = findViewById(R.id.loading_message);
                     loadingMessage.setText(getString(R.string.loading_message));
                     loadingView.setVisibility(View.VISIBLE);
-                    player.pause();
+                    videoPlayer.pause();
                     playerView.hideController();
 
                     if (frameNumber > 30) {
                         positionSecond = frameNumber / 30;
-                        player.seekTo(positionSecond*1000);
+                        videoPlayer.seekTo(positionSecond*1000);
                     } else {
-                        player.seekTo(0);
+                        videoPlayer.seekTo(0);
                     }
 
                     waitUntilVideoIsReady(3);
-                    setFocusOnCurrentRoutePart();
+//                    setFocusOnCurrentRoutePart(); //MOVE TO FRAGMENT (DISPLAY WHEN NECESSARY)
                 }
             }
         });
+    }
+
+    public void setVolumeHigher() {
+        if (videoPlayer != null) {
+            float currentVolume = videoPlayer.getVolume();
+            videoPlayer.setVolume(currentVolume+0.1f);
+        }
+    }
+    public void setVolumeLower() {
+        if (videoPlayer != null) {
+            float currentVolume = videoPlayer.getVolume();
+            videoPlayer.setVolume(currentVolume-0.1f);
+        }
     }
 
     public void startResultScreen() {
@@ -419,7 +549,11 @@ public class VideoplayerActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         stopSensorService();
-        this.unregisterReceiver(cadenceSensorBroadcastReceiver);
+        try {
+            this.unregisterReceiver(cadenceSensorBroadcastReceiver);
+        } catch (IllegalArgumentException illegalArgumentException) {
+            Log.e(TAG, illegalArgumentException.getLocalizedMessage());
+        }
         releasePlayer();
     }
 
@@ -433,17 +567,16 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private void playVideo() {
         playerView.setVisibility(View.VISIBLE);
-        statusBar.setVisibility(View.VISIBLE);
         loadingView.setVisibility(View.GONE);
-        player.play();
+        videoPlayerViewModel.setStatusbarVisible(true);
+        videoPlayer.play();
         playerView.hideController();
-        chronometer.setBase(SystemClock.elapsedRealtime());
-        chronometer.start();
     }
 
+    //TODO: implement later in fragment if needed
     private void setFocusOnCurrentRoutePart() {
         if(availableRoutePartsAdapter != null) {
-            int currentPositionS = (int)(player.getCurrentPosition() / 1000);
+            int currentPositionS = (int)(videoPlayer.getCurrentPosition() / 1000);
             int currentFrameNumber = currentPositionS * 30;
             availableRoutePartsAdapter.setSelectedMoviePart(currentFrameNumber);
             routePartsRecyclerview.getAdapter().notifyDataSetChanged();
@@ -460,16 +593,15 @@ public class VideoplayerActivity extends AppCompatActivity {
             int currentSecond = 0;
             @Override
             public void run() {
-                if (player != null) {
-                    //TODO: Check if cadence values are above 0 which means sensor is receiving accurate measurements
-                    if ( (currentSecond >= minSecondsLoadingView) && (player.getPlaybackState() == Player.STATE_READY)
+                if (videoPlayer != null) {
+                    if ( (currentSecond >= minSecondsLoadingView) && (videoPlayer.getPlaybackState() == Player.STATE_READY)
                      && (sensorConnected || ApplicationSettings.DEVELOPER_MODE) ) {
                         isLoading = false;
                         playVideo();
                     } else {
                         isLoading = true;
                         Log.d(TAG, "CurrentSecondWaiting: "+currentSecond);
-                        Log.d(TAG, "Player State: "+player.getPlaybackState());
+                        Log.d(TAG, "Player State: "+ videoPlayer.getPlaybackState());
                         currentSecond++;
                         handler.postDelayed(this::run, 1000);
                     }
@@ -477,29 +609,6 @@ public class VideoplayerActivity extends AppCompatActivity {
             }
         };
         handler.postDelayed(runnable, 0);
-    }
-
-    private void updateDistanceText(final boolean isDeadDevice) {
-        final TextView distance = findViewById(R.id.movieDistance);
-        if (isDeadDevice) {
-            distance.setText(toString().format(getString(R.string.video_screen_distance), 0));
-        } else {
-            if (player != null) {
-                final float mps = DistanceLookupTable.getMeterPerSecond(totalMetersRoute, player.getDuration() / 1000);
-                final int currentMetersDone = (int) (mps * (player.getCurrentPosition() / 1000));
-                distance.setText(toString().format(getString(R.string.video_screen_distance), currentMetersDone));
-            }
-            else {
-                distance.setText(toString().format(getString(R.string.video_screen_distance), 0));
-            }
-        }
-    }
-
-    /**
-     * Default value isDeadDevice = false
-     */
-    private void updateDistanceText() {
-        updateDistanceText(false);
     }
 
     private void updateLastCadenceMeasurement(final int rpm){
@@ -526,14 +635,34 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void setUp() {
+        startSensorService();
         initializePlayer();
-        getSelectedVideoUri();
         if (videoUri == null) {
             return;
         }
         prepareMediaSource(Uri.parse(videoUri));
-        initializeRouteParts(accountKey, movieId);
-        startSensorDataReceiver();
+
+        if (communicationType != CommunicationType.NONE) {
+            startSensorDataReceiver();
+        }
+    }
+
+    private void startSensorService() {
+        if (!ApplicationSettings.DEVELOPER_MODE) {
+            switch (communicationDevice) {
+                case ANT_PLUS:
+                    //Start AntPlus service to connect with cadence sensor
+                    Intent antplusService = new Intent(getApplicationContext(), AntPlusService.class);
+                    startService(antplusService);
+                    break;
+                case BLE:
+                    //Start BLE service to connect with cadence sensor
+                    Intent bleService = new Intent(getApplicationContext(), BleService.class);
+                    startService(bleService);
+                default:
+                    //NONE
+            }
+        }
     }
 
     private void startSensorDataReceiver() {
@@ -544,72 +673,34 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void initializePlayer() {
-        if (player == null) {
+        if (videoPlayer == null) {
             // Create the player
             final MediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(this);
             //DefaultLoadControl.Builder.setPrioritizeTimeOverSizeThresholds(true)
             DefaultLoadControl defaultLoadControl = new DefaultLoadControl.Builder().setPrioritizeTimeOverSizeThresholds(true).build();
-            player = new SimpleExoPlayer.Builder(this).setLoadControl(defaultLoadControl).setMediaSourceFactory(mediaSourceFactory).build();
+            videoPlayer = new SimpleExoPlayer.Builder(this).setLoadControl(defaultLoadControl).setMediaSourceFactory(mediaSourceFactory).build();
 
             // Set speed of the video (hence buffering /streaming speed )
             PlaybackParameters playbackParameters  = new PlaybackParameters(1.0f, PlaybackParameters.DEFAULT.pitch);
-            player.setPlaybackParameters(playbackParameters);
+            videoPlayer.setPlaybackParameters(playbackParameters);
+
+            //Set hardware sound to maximum
+            videoPlayer.setDeviceVolume(videoPlayer.getDeviceInfo().maxVolume);
 
             playerView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
             //Set player on playerview
-            playerView.setPlayer(player);
+            playerView.setPlayer(videoPlayer);
         }
-    }
-
-    public void initializeRouteParts(final String apikey, final int movieId) {
-        Data.Builder networkData = new Data.Builder();
-        networkData.putString("apikey", apikey);
-        networkData.putInt("movieId", movieId);
-
-        OneTimeWorkRequest routeMoviepartsRequest = new OneTimeWorkRequest.Builder(AvailableRoutePartsServiceWorker.class)
-                .setInputData(networkData.build())
-                .addTag("available-movieparts")
-                .build();
-
-        WorkManager
-                .getInstance(this)
-                .enqueue(routeMoviepartsRequest);
-
-        WorkManager.getInstance(this)
-                .getWorkInfoByIdLiveData(routeMoviepartsRequest.getId())
-                .observe(this, workInfo -> {
-
-                    if( workInfo.getState() != null &&
-                            workInfo.getState() == WorkInfo.State.SUCCEEDED ) {
-
-                        final String result = workInfo.getOutputData().getString("movieparts-list");
-
-                        try {
-                            final ObjectMapper objectMapper = new ObjectMapper();
-                            MoviePart movieParts[] = objectMapper.readValue(result, MoviePart[].class);
-                            //pass profiles to adapter
-                            availableRoutePartsAdapter = new RoutePartsAdapter(movieParts);
-                            //set adapter to recyclerview
-                            routePartsRecyclerview.setAdapter(availableRoutePartsAdapter);
-                            //set recyclerview visible
-                            routePartsRecyclerview.setVisibility(View.VISIBLE);
-                        } catch (JsonMappingException e) {
-                            e.printStackTrace();
-                        } catch (JsonProcessingException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
     }
 
     private void prepareMediaSource(Uri mUri) {
         final MediaItem mediaItem = MediaItem.fromUri(mUri);
-        player.setMediaItem(mediaItem);
+        videoPlayer.setMediaItem(mediaItem);
         Log.d(TAG,"Player preparing!");
-        player.prepare();
+        videoPlayer.prepare();
 
-        player.addListener(new VideoPlayerEventListener());
-        player.addListener(new Player.EventListener()
+        videoPlayer.addListener(new VideoPlayerEventListener());
+        videoPlayer.addListener(new Player.EventListener()
         {
             @Override
             public void onPlaybackStateChanged(int state) {
@@ -621,34 +712,28 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void releasePlayer() {
-        if (player != null) {
-            player.release();
-            player = null;
+        if (videoPlayer != null) {
+            videoPlayer.release();
+            videoPlayer = null;
         }
     }
 
     private void pausePlayer() {
-        if (player != null) {
-            player.setPlayWhenReady(false);
-            player.getPlaybackState();
+        if (videoPlayer != null) {
+            videoPlayer.setPlayWhenReady(false);
+            videoPlayer.getPlaybackState();
         }
     }
 
     private void resumePlayer() {
-        if (player != null) {
-            player.setPlayWhenReady(true);
-            player.getPlaybackState();
+        if (videoPlayer != null) {
+            videoPlayer.setPlayWhenReady(true);
+            videoPlayer.getPlaybackState();
         }
     }
 
-    private void getSelectedVideoUri() {
-        SharedPreferences myPreferences = getSharedPreferences("app",0);
-        final String movieUri = myPreferences.getString("selectedMovieUrl", null);
-        this.videoUri = movieUri;
-    }
-
     private void stopSensorService() {
-        switch(ApplicationSettings.SELECTED_COMMUNICATION_DEVICE) {
+        switch(communicationDevice) {
             case ANT_PLUS:
                 final Intent antplusService = new Intent(getApplicationContext(), AntPlusService.class);
                 stopService(antplusService);

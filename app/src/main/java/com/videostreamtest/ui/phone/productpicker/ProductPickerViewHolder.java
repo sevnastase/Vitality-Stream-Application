@@ -1,6 +1,8 @@
 package com.videostreamtest.ui.phone.productpicker;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -9,9 +11,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
+import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
+import com.videostreamtest.ui.phone.productview.ProductActivity;
 
 public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
 
@@ -80,9 +85,16 @@ public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
         //Set onclick on imagebutton
         productButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 productButton.requestFocus();
-                Toast.makeText(itemView.getContext(), product.getProductName()+" :: Not yet implemented!", Toast.LENGTH_LONG).show();
+
+                Bundle arguments = new Bundle();
+                arguments.putString("product_object", new GsonBuilder().create().toJson(product, Product.class));
+
+                Intent productView = new Intent(view.getContext(), ProductActivity.class);
+                productView.putExtras(arguments);
+
+                view.getContext().startActivity(productView);
             }
         });
     }

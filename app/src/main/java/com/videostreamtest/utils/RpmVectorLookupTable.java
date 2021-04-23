@@ -24,6 +24,10 @@ public class RpmVectorLookupTable {
         return (2*pi) * radiusWheelMeters;
     }
 
+    public static float getPlayBackSpeedFromKmh(final int kmh) {
+        return kmh / defaultSpeedKmh;
+    }
+
     //Calculated for a movie recorded with a default average speed of 25 kmh
     private final static void calculateLookupTable() {
         calculateLookupTable(defaultSpeedKmh);

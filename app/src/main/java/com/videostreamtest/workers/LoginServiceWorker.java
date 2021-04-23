@@ -30,7 +30,7 @@ public class LoginServiceWorker extends Worker {
         final String result = databaseRestService.loginUser(username, password);
         //Store outcome in the output data model
         output = new Data.Builder()
-                .putString("result", result)
+                .putString("apikey", result)
                 .build();
         //Return result with data output
         return Result.success(output);

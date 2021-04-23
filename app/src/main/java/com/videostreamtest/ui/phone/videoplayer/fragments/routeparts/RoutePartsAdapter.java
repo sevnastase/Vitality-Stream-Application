@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.videoplayer;
+package com.videostreamtest.ui.phone.videoplayer.fragments.routeparts;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,8 +10,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
+import com.videostreamtest.config.entity.Routepart;
 import com.videostreamtest.data.model.MoviePart;
-import com.videostreamtest.ui.phone.catalog.AvailableMediaViewHolder;
+
+import java.util.List;
 
 public class RoutePartsAdapter extends RecyclerView.Adapter<RoutePartsViewHolder>{
     final static String TAG = RoutePartsAdapter.class.getSimpleName();
@@ -21,6 +23,15 @@ public class RoutePartsAdapter extends RecyclerView.Adapter<RoutePartsViewHolder
 
     public RoutePartsAdapter(MoviePart[] movieParts) {
         this.movieParts = movieParts;
+    }
+
+    public RoutePartsAdapter(List<Routepart> routeparts) {
+        if (routeparts.size()>0) {
+            movieParts = new MoviePart[routeparts.size()];
+            for (int partIndex = 0; partIndex<routeparts.size();partIndex++) {
+                movieParts[partIndex] = MoviePart.fromRoutepartEntity(routeparts.get(partIndex));
+            }
+        }
     }
 
     public void setSelectedMoviePart(final int frameNumber) {

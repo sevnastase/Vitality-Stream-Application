@@ -42,7 +42,7 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
             Log.d(TAG, "Action: " + intent.getAction() + "\n");
             Log.d(TAG, "Intent cadence received: "+rpmReceived+"\n");
 
-            VideoplayerActivity.getInstance().updateDeviceStatusField(serviceStatus);
+//            VideoplayerActivity.getInstance().updateDeviceStatusField(serviceStatus);
 
             if (serviceStatus.toLowerCase().contains("dead")) {
                 VideoplayerActivity.getInstance().setDeadDeviceParams();

@@ -8,9 +8,10 @@ import androidx.work.Data;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import java.io.IOException;
+import java.math.BigInteger;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.URL;
 
 public class NetworkInfoWorker extends Worker {
 
@@ -23,40 +24,27 @@ public class NetworkInfoWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-
-        final String ipAddress = getInputData().getString("ipAddress");
         Data output = new Data.Builder().build();
-        try {
-            InetAddress geek = InetAddress.getByName(ipAddress);
-            Log.d(TAG, "Sending Ping Request to " + ipAddress);
-            if (geek.isReachable(100)) {
-                Log.d(TAG, "Host is easily reachable");
-                output = new Data.Builder()
-                        .putString("ping_result", "Less or equal to 100 ms")
-                        .putString("ping_value", "100")
-                        .build();
-            } else if (geek.isReachable(700)) {
-                Log.d(TAG, "Host is slowly reachable");
-                output = new Data.Builder()
-                        .putString("ping_result", "Less or equal to 1000 ms")
-                        .putString("ping_value", "700")
-                        .build();
-            }
-            else {
-                Log.d(TAG, "Sorry ! We can't reach to this host");
-                output = new Data.Builder()
-                        .putString("ping_result", "Longer than 1000 ms (very slow)")
-                        .putString("ping_value", "1000+")
-                        .build();
-            }
-        } catch (UnknownHostException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-            return Result.failure();
-        } catch (IOException e) {
-            Log.e(TAG, e.getLocalizedMessage());
+        if (isInternetAvailable()) {
+            Log.d(TAG, "Internetconnection available.");
+            output = new Data.Builder()
+                    .putString("connection_result", "connected")
+                    .build();
+        } else {
+            Log.e(TAG, "Internetconnection failed.");
             return Result.failure();
         }
 
         return Result.success(output);
+    }
+
+    public boolean isInternetAvailable() {
+        try {
+            InetAddress ipAddr = InetAddress.getByName("praxtour.com");
+            //You can replace it with your name
+            return !ipAddr.equals("");
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

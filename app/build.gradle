@@ -8,8 +8,8 @@ android {
         applicationId "com.videostreamtest"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 55
-        versionName "1.0.55"
+        versionCode 57
+        versionName "1.0.57"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -30,6 +30,7 @@ ext {
     exoplayer_version = "2.12.0"
     workmanager_version = "2.4.0"
     leanback_version = "1.0.0"
+    roomVersion = "2.2.5"
 }
 
 dependencies {
@@ -44,10 +45,20 @@ dependencies {
 
     //RestCallFramework
     implementation("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    // https://mvnrepository.com/artifact/com.squareup.retrofit2/converter-gson
+    implementation group: 'com.squareup.retrofit2', name: 'converter-gson', version: '2.9.0'
+
     //Jackson Databind for mapping objects
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.1'
     //Picasso image library
     implementation 'com.squareup.picasso:picasso:2.71828'
+
+    // Room components
+    implementation "androidx.room:room-runtime:$roomVersion"
+    annotationProcessor "androidx.room:room-compiler:$roomVersion"
+    androidTestImplementation "androidx.room:room-testing:$roomVersion"
+
     //EventBus for leaner implemenation of event driven communication
 //    implementation 'org.greenrobot:eventbus:3.2.0'
 

@@ -1,5 +1,8 @@
 package com.videostreamtest.data.model.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Result {
     private Integer statusCode;
     private String statusMessage;

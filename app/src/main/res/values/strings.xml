@@ -64,4 +64,6 @@
     <string name="profile_add_form_next_button_text">Next</string>
     <string name="profile_add_form_action_label">Add profile</string>
     <string name="login_action_password_forgotten">Password forgotten?</string>
+    <string name="catalog_download_status_message">Download status: %,.2f percent</string>
+    <string name="catalog_already_downloading_message">Movie is still downloading.</string>
 </resources>

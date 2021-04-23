@@ -1,14 +1,5 @@
 package com.videostreamtest.ui.phone.catalog;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.squareup.picasso.Picasso;
-import com.videostreamtest.R;
-import com.videostreamtest.data.model.Movie;
-import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
-import com.videostreamtest.workers.AvailableMediaServiceWorker;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -31,11 +22,27 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.squareup.picasso.Picasso;
+import com.videostreamtest.R;
+import com.videostreamtest.config.entity.Profile;
+import com.videostreamtest.config.entity.Routefilm;
+import com.videostreamtest.data.model.Movie;
+import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
+import com.videostreamtest.workers.AvailableMediaServiceWorker;
+
+import java.io.File;
+
 public class CatalogActivity extends AppCompatActivity implements CatalogRecyclerViewClickListener {
     private final static String TAG = CatalogActivity.class.getSimpleName();
     private CatalogViewModel catalogViewModel;
+    private TextView profileNameTextView;
     private RecyclerView availableMediaRecyclerView;
     private GridLayoutManager gridLayoutManager;
+
+    private AvailableMediaAdapter availableMediaAdapter;
 
     @Override
     protected void onRestart() {
@@ -53,9 +60,10 @@ public class CatalogActivity extends AppCompatActivity implements CatalogRecycle
         setContentView(R.layout.activity_catalog);
 
         catalogViewModel = new ViewModelProvider(this).get(CatalogViewModel.class);
-        catalogViewModel.getApiKey().observe(this, observer -> {
-            Log.d(this.getClass().getSimpleName(), "ApiKey found! ");//+catalogViewModel.getApiKey().getValue());
-        });
+
+        final String profileName = getIntent().getStringExtra("profileName");
+        final Integer profileId = getIntent().getIntExtra("profileId", 0);
+        final String profileKey = getIntent().getStringExtra("profileKey");
 
         final ImageView countryFlagView = findViewById(R.id.selected_route_country);
         Picasso.get()
@@ -65,11 +73,10 @@ public class CatalogActivity extends AppCompatActivity implements CatalogRecycle
                 .error(R.drawable.flag_placeholder)
                 .into(countryFlagView);
 
-        final TextView profileName = findViewById(R.id.current_loaded_profile);
-        SharedPreferences myPreferences = getSharedPreferences("app",0);
-        profileName.setTextSize(20);
-        profileName.setTextColor(Color.WHITE);
-        profileName.setText(myPreferences.getString("profileName", ""));
+        profileNameTextView = findViewById(R.id.current_loaded_profile);
+        profileNameTextView.setTextSize(20);
+        profileNameTextView.setTextColor(Color.WHITE);
+        profileNameTextView.setText(profileName);
 
         availableMediaRecyclerView = findViewById(R.id.recyclerview_available_media);
         availableMediaRecyclerView.setHasFixedSize(true);
@@ -93,7 +100,67 @@ public class CatalogActivity extends AppCompatActivity implements CatalogRecycle
             }
         });
 
-        getAvailableMedia(catalogViewModel.getApiKey().getValue());
+        catalogViewModel.getCurrentConfig().observe(this, currentConfiguration -> {
+            if (currentConfiguration!= null) {
+                Log.d(TAG, "ApiKey found! ");
+                Log.d(TAG, "LocalPlay is set to --> "+currentConfiguration.isLocalPlay());
+
+                //Observe profiles
+                catalogViewModel.getProfile(profileId).observe(this, profile ->{
+                    if (profile != null) {
+                        Log.d(TAG, "Name: "+profile.getProfileName() + " Selected: "+profile.isSelected());
+                    }
+                });
+
+                WorkManager.getInstance(this)
+                    .getWorkInfosByTagLiveData("media-downloader")
+                    .observe(this, workInfos -> {
+                        Log.d(TAG, "WORKERINFOS FOUND :: "+workInfos.size());
+                        if (workInfos.size()>0) {
+                            for (WorkInfo workInfo: workInfos) {
+                                Log.d(TAG, "Progress: "+workInfo.getProgress().getDouble("progress",0.0));
+                                Log.d(TAG, "Workinfo :: "+workInfo.getTags().iterator().next()+" >> runAttemptCount :: "+workInfo.getRunAttemptCount() + " >> State :: "+workInfo.getState().name());
+                                if (availableMediaAdapter != null && availableMediaRecyclerView != null) {
+                                    availableMediaAdapter.updateDownloadProgress(workInfo.getProgress().getDouble("progress", 0.0), workInfo.getProgress().getInt("movie-id", 0));
+                                    availableMediaRecyclerView.getAdapter().notifyDataSetChanged();
+                                }
+                            }
+                        } else {
+                            Log.d(TAG, "No workerInfos are found for downloading media :: << ");
+                        }
+                    });
+
+                //Observe available routefilms in local Room database
+                catalogViewModel.getRoutefilms(currentConfiguration.getAccountToken()).observe(this, routefilms -> {
+                    if (currentConfiguration.isLocalPlay()) {
+                        Log.d(TAG, "This account has localPlay activated.");
+                    }
+
+                    Log.d(TAG, "Routefilms based on accounttoken "+currentConfiguration.getAccountToken()+" => "+routefilms.size());
+                    //Assertion block if the routefilms are 0 then return to profile page.
+                    if (routefilms.size() < 1) {
+                        Toast.makeText(getApplicationContext(), getString(R.string.catalog_no_movies_warning), Toast.LENGTH_LONG).show();
+                        CatalogActivity.this.finish();
+                    }
+
+                    //pass profiles to adapter
+                    availableMediaAdapter = new AvailableMediaAdapter(routefilms.toArray(new Routefilm[0]), currentConfiguration.isLocalPlay());
+
+                    final ImageView imageView = findViewById(R.id.selected_route_infomap_two);
+                    availableMediaAdapter.setRouteInfoImageView(imageView);
+                    final LinearLayout selectedRouteTextLayoutBlock = findViewById(R.id.selected_route_text_information);
+                    availableMediaAdapter.setRouteInfoTextView(selectedRouteTextLayoutBlock);
+
+                    availableMediaAdapter.setCatalogRecyclerViewClickListener(this);
+
+                    //set adapter to recyclerview
+                    availableMediaRecyclerView.setAdapter(availableMediaAdapter);
+                    //set recyclerview visible
+                    availableMediaRecyclerView.setVisibility(View.VISIBLE);
+                });
+                //getAvailableMedia(currentConfiguration.getAccountToken());
+            }
+        });
     }
 
     public void playSelectedVideo(View view) {

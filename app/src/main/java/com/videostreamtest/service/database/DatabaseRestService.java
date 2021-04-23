@@ -1,9 +1,12 @@
 package com.videostreamtest.service.database;
 
+import android.util.Log;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.videostreamtest.data.ResultApiKey;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -126,13 +129,22 @@ public class DatabaseRestService {
     }
 
     public String getCustomerProducts(final String apikey) {
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .build();
         final String getActiveProductsUrl = url+"/users/current/subscriptions";
         final Request request = new Request.Builder()
                 .url(getActiveProductsUrl)
                 .addHeader("api-key", apikey)
+                .get()
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
+        try {
+            Response response = client.newCall(request).execute();
+            String body = response.body().string();
+            Log.d("DatabaseService","Response got filled in :: "+body);
+            return body;
         } catch (IOException exception) {
             return "failed";
         }
