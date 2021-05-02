@@ -12,7 +12,6 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,9 +23,7 @@ import androidx.work.Data;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
-import androidx.work.WorkQuery;
 
 import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
@@ -34,15 +31,13 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.service.ant.AntPlusService;
-import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
-import com.videostreamtest.workers.DownloadServiceWorker;
+import com.videostreamtest.workers.DownloadMovieServiceWorker;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 
 public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
     final static String TAG = AvailableMediaViewHolder.class.getSimpleName();
@@ -173,7 +168,7 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
                 //Test Download media worker
                 Data.Builder mediaDownloader = new Data.Builder();
                 mediaDownloader.putString("INPUT_ROUTEFILM_JSON_STRING",  new GsonBuilder().create().toJson(movie, Movie.class));
-                OneTimeWorkRequest downloadMediaRequest = new OneTimeWorkRequest.Builder(DownloadServiceWorker.class)
+                OneTimeWorkRequest downloadMediaRequest = new OneTimeWorkRequest.Builder(DownloadMovieServiceWorker.class)
                         .setConstraints(constraint)
                         .setInputData(mediaDownloader.build())
                         .addTag("media-downloader")

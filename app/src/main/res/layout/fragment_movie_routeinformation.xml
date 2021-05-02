@@ -35,6 +35,13 @@
             android:textColor="#FFFFEE"
             />
 
+        <ImageButton
+            android:id="@+id/routeinfo_back_button"
+            android:background="@drawable/imagebutton_blue_border"
+            android:src="@drawable/exo_icon_rewind"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

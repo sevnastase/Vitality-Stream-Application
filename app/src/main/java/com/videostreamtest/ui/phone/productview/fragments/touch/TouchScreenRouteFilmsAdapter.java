@@ -41,6 +41,7 @@ public class TouchScreenRouteFilmsAdapter extends  RecyclerView.Adapter<TouchScr
 
     @Override
     public void onBindViewHolder(@NonNull TouchScreenRouteFilmsViewHolder holder, int position) {
+
         if (routefilms != null && routefilms.length > 0) {
             if (selectedProduct.getSupportStreaming()>0) {
                 holder.bindStreaming(routefilms[position], selectedProduct, communicationDevice, position);
@@ -52,6 +53,7 @@ public class TouchScreenRouteFilmsAdapter extends  RecyclerView.Adapter<TouchScr
 
     @Override
     public int getItemCount() {
+        //Define maximum items to show
         return routefilms.length;
     }
 }

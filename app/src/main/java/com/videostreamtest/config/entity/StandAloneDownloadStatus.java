@@ -16,7 +16,7 @@ public class StandAloneDownloadStatus {
     @NonNull
     private Integer downloadMovieId;
 
-    @ColumnInfo(name = "download_status")
+    @ColumnInfo(name = "download_status", defaultValue = "-1")
     @NonNull
     private Integer downloadStatus;
 

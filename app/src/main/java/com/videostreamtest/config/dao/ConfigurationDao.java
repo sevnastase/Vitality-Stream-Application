@@ -35,6 +35,6 @@ public interface ConfigurationDao {
     @Query("UPDATE configuration_table SET product_count = :productCount WHERE is_current")
     int updateProductCountCurrentConfiguration(int productCount);
 
-    @Query("UPDATE configuration_table SET local_play = :localPlay, boot_on_start = :bootOnStart, communication_device = :communicationDevice, update_praxcloud = :updateFromPraxCloud  WHERE is_current")
-    int updateCurrentConfiguration(boolean localPlay, boolean bootOnStart, String communicationDevice, boolean updateFromPraxCloud);
+    @Query("UPDATE configuration_table SET local_play = :localPlay, boot_on_start = :bootOnStart, communication_device = :communicationDevice, update_praxcloud = :updateFromPraxCloud, praxcloud_mediaserver_url = :mediaServerUrl, praxcloud_mediaserver_local_url = :localMediaServerUrl  WHERE is_current")
+    int updateCurrentConfiguration(boolean localPlay, boolean bootOnStart, String communicationDevice, boolean updateFromPraxCloud, String mediaServerUrl, String localMediaServerUrl);
 }

@@ -8,6 +8,7 @@ import androidx.work.Data;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import com.google.gson.GsonBuilder;
 import com.videostreamtest.config.dao.ConfigurationDao;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.data.model.response.Configuration;
@@ -54,15 +55,21 @@ public class ActiveConfigurationServiceWorker extends Worker {
             Log.e(TAG, ioException.getLocalizedMessage());
             return Result.failure();
         }
-        Log.d(TAG, "AccountConfiguration isLocalPlay Value Updated  <RetroFit> :: "+accountConfiguration.isLocalPlay());
 
         final ConfigurationDao configurationDao = PraxtourDatabase.getDatabase(getApplicationContext()).configurationDao();
-        configurationDao.updateCurrentConfiguration(accountConfiguration.isLocalPlay(), accountConfiguration.isBootOnStart(), accountConfiguration.getCommunicationDevice(), accountConfiguration.isUpdatePraxCloud());
+        configurationDao.updateCurrentConfiguration(
+                accountConfiguration.isLocalPlay(),
+                accountConfiguration.isBootOnStart(),
+                accountConfiguration.getCommunicationDevice(),
+                accountConfiguration.isUpdatePraxCloud(),
+                accountConfiguration.getPraxCloudMediaServerUrl(),
+                accountConfiguration.getPraxCloudMediaServerLocalUrl());
 
         //Pre-define output
         Data output = new Data.Builder()
                 .putString("apikey", apikey)
                 .putBoolean("isStreamingAccount", !accountConfiguration.isLocalPlay())
+                .putString("configurationObject", new GsonBuilder().create().toJson(accountConfiguration, Configuration.class))
                 .build();
 
         return Result.success(output);

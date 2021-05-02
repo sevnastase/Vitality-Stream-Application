@@ -108,13 +108,9 @@ public class PraxFitStatusBarFragment extends Fragment {
 
                 //LOAD ROUTEPARTS IF AVAILABLE
                 videoPlayerViewModel.getRoutePartsOfMovieId(selectedMovie.getId()).observe(getViewLifecycleOwner(), routeparts -> {
-                    if(routeparts!= null){
-                        Log.d(TAG, "Routeparts: "+routeparts.size());
-                    }
                     if (routeparts != null && routeparts.size()>0) {
                         routePartsAdapter = new RoutePartsAdapter(routeparts);
                         statusbarRouteparts.setAdapter(routePartsAdapter);
-                        Log.d(TAG,"Routeparts loaded from fragment! <<>>");
                     }
                 });
             }

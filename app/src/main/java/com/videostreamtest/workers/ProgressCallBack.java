@@ -1,5 +1,5 @@
 package com.videostreamtest.workers;
 
 public interface ProgressCallBack {
-    void callback(DownloadServiceWorker.CallbackByteChannel rbc, double progress);
+    void callback(CallbackByteChannel rbc, double progress);
 }

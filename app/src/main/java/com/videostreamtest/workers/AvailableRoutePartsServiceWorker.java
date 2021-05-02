@@ -116,6 +116,8 @@ public class AvailableRoutePartsServiceWorker extends Worker {
 
         //Store outcome in the output data model
         output = new Data.Builder()
+                .putString("apikey", apikey)
+                .putIntArray("movie-id-list", getInputData().getIntArray("movie-id-list"))
                 .putString("movieparts-list", result)
                 .build();
 

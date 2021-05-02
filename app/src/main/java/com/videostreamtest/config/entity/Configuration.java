@@ -24,6 +24,8 @@ public class Configuration {
     private boolean updatePraxCloud;
     @ColumnInfo(name = "praxcloud_mediaserver_url", defaultValue = "")
     private String praxCloudMediaServerUrl;
+    @ColumnInfo(name = "praxcloud_mediaserver_local_url", defaultValue = "")
+    private String praxCloudMediaServerLocalUrl;
 
     //Managed by App
     @ColumnInfo(name = "is_current", defaultValue = "false")
@@ -121,5 +123,13 @@ public class Configuration {
 
     public void setProductCount(int productCount) {
         this.productCount = productCount;
+    }
+
+    public String getPraxCloudMediaServerLocalUrl() {
+        return praxCloudMediaServerLocalUrl;
+    }
+
+    public void setPraxCloudMediaServerLocalUrl(String praxCloudMediaServerLocalUrl) {
+        this.praxCloudMediaServerLocalUrl = praxCloudMediaServerLocalUrl;
     }
 }

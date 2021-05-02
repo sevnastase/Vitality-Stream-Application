@@ -6,16 +6,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.work.Constraints;
 import androidx.work.Data;
-import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
@@ -25,13 +22,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.ui.phone.splash.SplashViewModel;
-import com.videostreamtest.workers.ActiveConfigurationServiceWorker;
+import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.workers.ActiveProductsServiceWorker;
-import com.videostreamtest.workers.AvailableMediaServiceWorker;
-import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
-import com.videostreamtest.workers.NetworkInfoWorker;
-import com.videostreamtest.workers.ProfileServiceWorker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +71,7 @@ public class ProductPickerActivity extends AppCompatActivity {
             if (config != null) {
                 if (refreshData) {
                     refreshData = false;
-                    loadExternalData(config.getAccountToken());
+                    ConfigurationHelper.loadExternalData(this, config.getAccountToken());
                 }
                 // Add action onClick to signout button
                 signoutButton.setOnClickListener(new View.OnClickListener() {
@@ -93,6 +85,12 @@ public class ProductPickerActivity extends AppCompatActivity {
 
                         config.setCurrent(false);
                         productPickerViewModel.updateConfiguration(config);
+
+                        //Cancel all workers (in case of downloading)
+                        WorkManager
+                                .getInstance(getApplicationContext())
+                                .cancelAllWork();
+
                         ProductPickerActivity.this.finish();
                     }
                 });
@@ -140,73 +138,6 @@ public class ProductPickerActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshData = true;
-    }
-
-    private void loadExternalData(final String accountToken) {
-        Constraints constraint = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build();
-
-        //NetworkInfo
-        Data.Builder networkData = new Data.Builder();
-        OneTimeWorkRequest networkInfoRequest = new OneTimeWorkRequest.Builder(NetworkInfoWorker.class)
-                .setConstraints(constraint)
-                .setInputData(networkData.build())
-                .addTag("connection-status")
-                .build();
-
-        //Account Configuration
-        Data.Builder configurationData = new Data.Builder();
-        configurationData.putString("apikey", accountToken);
-        OneTimeWorkRequest accountConfigurationRequest = new OneTimeWorkRequest.Builder(ActiveConfigurationServiceWorker.class)
-                .setConstraints(constraint)
-                .setInputData(configurationData.build())
-                .addTag("accountconfiguration")
-                .build();
-
-        //Active Products
-        Data.Builder productData = new Data.Builder();
-        productData.putString("apikey", accountToken);
-        OneTimeWorkRequest productsRequest = new OneTimeWorkRequest.Builder(ActiveProductsServiceWorker.class)
-                .setConstraints(constraint)
-                .setInputData(productData.build())
-                .addTag("products")
-                .build();
-
-        //Account Profiles
-        Data.Builder profileData = new Data.Builder();
-        profileData.putString("apikey", accountToken);
-        OneTimeWorkRequest profilesRequest = new OneTimeWorkRequest.Builder(ProfileServiceWorker.class)
-                .setConstraints(constraint)
-                .setInputData(profileData.build())
-                .addTag("profiles")
-                .build();
-
-        //Routefilms
-        Data.Builder routeFilmdata = new Data.Builder();
-        routeFilmdata.putString("apikey", accountToken);
-        OneTimeWorkRequest routefilmsRequest = new OneTimeWorkRequest.Builder(AvailableMediaServiceWorker.class)
-                .setConstraints(constraint)
-                .setInputData(routeFilmdata.build())
-                .addTag("routefilms")
-                .build();
-
-        //Routeparts
-        OneTimeWorkRequest routeMoviepartsRequest = new OneTimeWorkRequest.Builder(AvailableRoutePartsServiceWorker.class)
-                .addTag("available-movieparts")
-                .build();
-
-        //Chain workers and enqueue them
-        WorkManager
-                .getInstance(this)
-                .beginWith(networkInfoRequest)
-//                .then(validateAccountTokenRequest)
-                .then(accountConfigurationRequest)
-                .then(profilesRequest)
-                .then(productsRequest)
-                .then(routefilmsRequest)
-                .then(routeMoviepartsRequest)
-                .enqueue();
     }
 
     private void loadActiveProducts(final String apikey) {

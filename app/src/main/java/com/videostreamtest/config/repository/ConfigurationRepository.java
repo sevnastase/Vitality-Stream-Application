@@ -31,7 +31,7 @@ public class ConfigurationRepository {
     }
 
     public LiveData<Configuration> getCurrentConfiguration() {
-        return this.currentConfig;
+        return configurationDao.getCurrentConfiguration();
     }
 
     public LiveData<List<Configuration>> getConfigurations() {

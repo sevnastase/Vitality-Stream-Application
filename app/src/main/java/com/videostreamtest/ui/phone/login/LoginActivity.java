@@ -19,11 +19,13 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
+import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
 import com.videostreamtest.config.dao.ConfigurationDao;
 import com.videostreamtest.config.dao.ProfileDao;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Configuration;
+import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.workers.ActiveConfigurationServiceWorker;
 import com.videostreamtest.workers.LoginServiceWorker;
@@ -108,6 +110,8 @@ public class LoginActivity extends AppCompatActivity {
 
                         final String accounttoken = workInfo.getOutputData().getString("apikey");
                         final boolean isStreamingAccount = workInfo.getOutputData().getBoolean("isStreamingAccount", false);
+                        final com.videostreamtest.data.model.response.Configuration config = new GsonBuilder().create().fromJson(workInfo.getOutputData().getString("configurationObject"), com.videostreamtest.data.model.response.Configuration.class);
+
                         if (accounttoken.equalsIgnoreCase("unauthorized")) {
                             Toast.makeText(getApplicationContext(),
                                     getString(R.string.failed_login),
@@ -123,10 +127,15 @@ public class LoginActivity extends AppCompatActivity {
 
                             Log.d(TAG, "Login accounttoken: "+accounttoken);
                             Log.d(TAG, "Config not found, inserting new one.");
+
                             Configuration newConfig = new Configuration();
                             newConfig.setAccountToken(accounttoken);
                             newConfig.setCurrent(true);
-                            newConfig.setLocalPlay(!isStreamingAccount);
+                            newConfig.setLocalPlay(config.isLocalPlay());
+                            newConfig.setCommunicationDevice(config.getCommunicationDevice());
+                            newConfig.setUpdatePraxCloud(config.isUpdatePraxCloud());
+                            newConfig.setPraxCloudMediaServerLocalUrl(config.getPraxCloudMediaServerLocalUrl());
+                            newConfig.setPraxCloudMediaServerUrl(config.getPraxCloudMediaServerUrl());
                             loginViewModel.insert(newConfig);
                             Intent splashScreenActivity = new Intent(getApplicationContext(), SplashActivity.class);
                             startActivity(splashScreenActivity);

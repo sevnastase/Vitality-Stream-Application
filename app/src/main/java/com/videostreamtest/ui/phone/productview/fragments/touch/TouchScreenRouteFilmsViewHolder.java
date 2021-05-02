@@ -27,6 +27,7 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
 
     private ImageButton routefilmScenery;
     private boolean isMovieOnDevice = false;
+    private boolean isSoundOnDevice = false;
 
     public TouchScreenRouteFilmsViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -36,6 +37,7 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
         routefilmScenery = itemView.findViewById(R.id.routefilm_cover_button);
         final Movie movie = Movie.fromRoutefilm(routefilm);
         isMovieOnDevice = DownloadHelper.isMoviePresent(itemView.getContext(), movie);
+        isSoundOnDevice = DownloadHelper.isSoundPresent(itemView.getContext());
 
         Log.d(this.getClass().getSimpleName(), "Movie "+movie.getMovieTitle()+" is on device > "+isMovieOnDevice);
 

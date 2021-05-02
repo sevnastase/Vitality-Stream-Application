@@ -42,6 +42,7 @@ public class ProductPickerAdapter extends RecyclerView.Adapter<ProductPickerView
             productImageButton.requestFocus();
         }
         holder.itemView.setSelected(selectedProduct==position);
+
         if (productList.length > 0) {
             holder.bind(productList[position], position);
         }

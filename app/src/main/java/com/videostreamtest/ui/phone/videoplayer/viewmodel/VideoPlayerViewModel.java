@@ -7,7 +7,11 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.videostreamtest.config.entity.BackgroundSound;
+import com.videostreamtest.config.entity.EffectSound;
 import com.videostreamtest.config.entity.Routepart;
+import com.videostreamtest.config.repository.BackgroundSoundRepository;
+import com.videostreamtest.config.repository.EffectSoundRepository;
 import com.videostreamtest.config.repository.RoutepartRepository;
 import com.videostreamtest.data.model.Movie;
 
@@ -15,7 +19,9 @@ import java.util.List;
 
 public class VideoPlayerViewModel extends AndroidViewModel {
     //REPOSITORIES
-    private RoutepartRepository routepartRepository;
+    private RoutepartRepository         routepartRepository;
+    private BackgroundSoundRepository   backgroundSoundRepository;
+    private EffectSoundRepository       effectSoundRepository;
 
     //ELEMENTS
     private MutableLiveData <Integer>   rpmData                     = new MutableLiveData<>();
@@ -39,7 +45,9 @@ public class VideoPlayerViewModel extends AndroidViewModel {
     public VideoPlayerViewModel(@NonNull Application application) {
         super(application);
         //INITIALIZE REPOSITORIES
-        routepartRepository = new RoutepartRepository(application);
+        routepartRepository         = new RoutepartRepository(application);
+        backgroundSoundRepository   = new BackgroundSoundRepository(application);
+        effectSoundRepository       = new EffectSoundRepository(application);
 
         //Set Start values on creation of viewmodel
         rpmData.setValue(startRpmValue);
@@ -117,5 +125,13 @@ public class VideoPlayerViewModel extends AndroidViewModel {
 
     public LiveData<List<Routepart>> getRoutePartsOfMovieId(final Integer movieId){
         return routepartRepository.getRoutePartsOfMovieWithId(movieId);
+    }
+
+    public LiveData<List<BackgroundSound>> getBackgroundSounds(final Integer movieId) {
+        return backgroundSoundRepository.getBackgroundSounds(movieId);
+    }
+
+    public LiveData<List<EffectSound>> getEffectSounds(final Integer movieId) {
+        return effectSoundRepository.getEffectSounds(movieId);
     }
 }

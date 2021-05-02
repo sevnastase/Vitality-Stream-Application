@@ -8,6 +8,8 @@ public class Configuration {
     private boolean bootOnStart = false;
     private String communicationDevice = "BLE";
     private boolean updatePraxCloud = false;
+    private String praxCloudMediaServerUrl;
+    private String praxCloudMediaServerLocalUrl;
 
     public boolean isLocalPlay() {
         return localPlay;
@@ -39,5 +41,32 @@ public class Configuration {
 
     public void setUpdatePraxCloud(boolean updatePraxCloud) {
         this.updatePraxCloud = updatePraxCloud;
+    }
+
+    public String getPraxCloudMediaServerUrl() {
+        return praxCloudMediaServerUrl;
+    }
+
+    public void setPraxCloudMediaServerUrl(String praxCloudMediaServerUrl) {
+        this.praxCloudMediaServerUrl = praxCloudMediaServerUrl;
+    }
+
+    public String getPraxCloudMediaServerLocalUrl() {
+        return praxCloudMediaServerLocalUrl;
+    }
+
+    public void setPraxCloudMediaServerLocalUrl(String praxCloudMediaServerLocalUrl) {
+        this.praxCloudMediaServerLocalUrl = praxCloudMediaServerLocalUrl;
+    }
+
+    public static com.videostreamtest.config.entity.Configuration toDatabaseEntity(final Configuration configuration) {
+        com.videostreamtest.config.entity.Configuration dbConfig = new com.videostreamtest.config.entity.Configuration();
+        dbConfig.setPraxCloudMediaServerUrl(configuration.getPraxCloudMediaServerUrl());
+        dbConfig.setPraxCloudMediaServerLocalUrl(configuration.getPraxCloudMediaServerLocalUrl());
+        dbConfig.setUpdatePraxCloud(configuration.isUpdatePraxCloud());
+        dbConfig.setLocalPlay(configuration.isLocalPlay());
+        dbConfig.setBootOnStart(configuration.isBootOnStart());
+        dbConfig.setCommunicationDevice(configuration.getCommunicationDevice());
+        return dbConfig;
     }
 }

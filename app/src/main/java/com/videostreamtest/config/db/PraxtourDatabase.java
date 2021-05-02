@@ -8,13 +8,17 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
+import com.videostreamtest.config.dao.BackgroundSoundDao;
 import com.videostreamtest.config.dao.ConfigurationDao;
 import com.videostreamtest.config.dao.DownloadStatusDao;
+import com.videostreamtest.config.dao.EffectSoundDao;
 import com.videostreamtest.config.dao.ProductDao;
 import com.videostreamtest.config.dao.ProfileDao;
 import com.videostreamtest.config.dao.RoutefilmDao;
 import com.videostreamtest.config.dao.RoutepartDao;
+import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.Configuration;
+import com.videostreamtest.config.entity.EffectSound;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.config.entity.Profile;
 import com.videostreamtest.config.entity.Routefilm;
@@ -24,7 +28,16 @@ import com.videostreamtest.config.entity.StandAloneDownloadStatus;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Configuration.class, Product.class, Profile.class, Routefilm.class, StandAloneDownloadStatus.class, Routepart.class}, version = 1, exportSchema = false)
+@Database(entities = {
+        Configuration.class,
+        Product.class,
+        Profile.class,
+        Routefilm.class,
+        StandAloneDownloadStatus.class,
+        Routepart.class,
+        BackgroundSound.class,
+        EffectSound.class
+}, version = 1, exportSchema = false)
 public abstract class PraxtourDatabase extends RoomDatabase {
     private final static String TAG = PraxtourDatabase.class.getSimpleName();
     private static volatile PraxtourDatabase INSTANCE;
@@ -38,6 +51,8 @@ public abstract class PraxtourDatabase extends RoomDatabase {
     public abstract RoutefilmDao routefilmDao();
     public abstract DownloadStatusDao downloadStatusDao();
     public abstract RoutepartDao routepartDao();
+    public abstract BackgroundSoundDao backgroundSoundDao();
+    public abstract EffectSoundDao effectSoundDao();
 
     public static PraxtourDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
