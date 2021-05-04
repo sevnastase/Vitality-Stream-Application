@@ -1,6 +1,5 @@
 package com.videostreamtest.ui.phone.videoplayer;
 
-
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -55,7 +54,6 @@ import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.RpmVectorLookupTable;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 

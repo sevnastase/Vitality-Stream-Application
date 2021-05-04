@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.Constraints;
 import androidx.work.Data;
@@ -26,6 +27,7 @@ import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.ui.phone.productview.fragments.PlainScreenFragment;
 import com.videostreamtest.ui.phone.productview.fragments.TouchScreenFragment;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.workers.DownloadMovieServiceWorker;
@@ -65,29 +67,20 @@ public class ProductActivity extends AppCompatActivity {
         productViewModel.getCurrentConfig().observe(this, currentConfig ->{
             if (currentConfig != null) {
                 Log.d(getClass().getSimpleName(), "currentConfig pCount: "+currentConfig.getProductCount() + " Bundle pCount: 1");
-//                if (!(currentConfig.getProductCount()>0)) {
-//                    Toast.makeText(this, "No active subscriptions.", Toast.LENGTH_LONG).show();
-//                    productViewModel.signoutCurrentAccount(currentConfig);
-//                    //Cancel all workers (in case of downloading)
-//                    WorkManager
-//                            .getInstance(getApplicationContext())
-//                            .cancelAllWork();
-//                    System.exit(0);
-//                }
                 if (refreshData) {
                     refreshData = false;
-                    //TODO: WHEN PRODUCT COUNT IS 0 then logout
                     ConfigurationHelper.loadExternalData(this, currentConfig.getAccountToken());
                 }
 
                 Bundle arguments = getIntent().getExtras();
                 arguments.putString("communication_device", currentConfig.getCommunicationDevice());
 
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .setReorderingAllowed(true)
-                        .replace(R.id.fragment_container_view, TouchScreenFragment.class, arguments)
-                        .commit();
+                loadFragmentBasedOnScreenType(arguments);
+//                getSupportFragmentManager()
+//                        .beginTransaction()
+//                        .setReorderingAllowed(true)
+//                        .replace(R.id.fragment_container_view, TouchScreenFragment.class, arguments)
+//                        .commit();
 
                 if (currentConfig.getProductCount() > 1) {
                     signoutButton.setText("Close");
@@ -121,6 +114,22 @@ public class ProductActivity extends AppCompatActivity {
         refreshData = true;
         downloadSound();
         downloadLocalMovies();
+    }
+
+    private void loadFragmentBasedOnScreenType(final Bundle arguments) {
+        if (isTouchScreen()) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .setReorderingAllowed(true)
+                    .replace(R.id.fragment_container_view, TouchScreenFragment.class, arguments)
+                    .commit();
+        } else {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .setReorderingAllowed(true)
+                    .replace(R.id.fragment_container_view, PlainScreenFragment.class, arguments)
+                    .commit();
+        }
     }
 
     private void downloadSound() {

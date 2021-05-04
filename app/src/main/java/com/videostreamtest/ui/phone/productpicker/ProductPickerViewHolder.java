@@ -1,6 +1,7 @@
 package com.videostreamtest.ui.phone.productpicker;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -39,8 +40,10 @@ public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
                 .error(R.drawable.placeholder_button)
                 .into(productButton);
 
-        initBorders();
-        initOnFocusChangeListener();
+        if (!isTouchScreen()) {
+            initBorders();
+            initOnFocusChangeListener();
+        }
         initOnClickListener(product);
     }
 
@@ -97,5 +100,9 @@ public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
                 view.getContext().startActivity(productView);
             }
         });
+    }
+
+    private boolean isTouchScreen() {
+        return itemView.getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
     }
 }

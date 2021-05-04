@@ -158,7 +158,6 @@ public class CatalogActivity extends AppCompatActivity implements CatalogRecycle
                     //set recyclerview visible
                     availableMediaRecyclerView.setVisibility(View.VISIBLE);
                 });
-                //getAvailableMedia(currentConfiguration.getAccountToken());
             }
         });
     }
@@ -167,60 +166,6 @@ public class CatalogActivity extends AppCompatActivity implements CatalogRecycle
         final Intent videoPlayer = new Intent(getApplicationContext(), VideoplayerActivity.class);
         startActivity(videoPlayer);
         finish();
-    }
-
-    public void getAvailableMedia(final String apikey) {
-        Data.Builder networkData = new Data.Builder();
-        networkData.putString("apikey", apikey);
-
-        OneTimeWorkRequest routeMoviesRequest = new OneTimeWorkRequest.Builder(AvailableMediaServiceWorker.class)
-                .setInputData(networkData.build())
-                .addTag("available-movies")
-                .build();
-
-        WorkManager
-                .getInstance(this)
-                .enqueue(routeMoviesRequest);
-
-        WorkManager.getInstance(this)
-                .getWorkInfoByIdLiveData(routeMoviesRequest.getId())
-                .observe(this, workInfo -> {
-
-                    if( workInfo.getState() != null &&
-                            workInfo.getState() == WorkInfo.State.SUCCEEDED ) {
-
-                        final String result = workInfo.getOutputData().getString("movie-list");
-
-                        try {
-                            final ObjectMapper objectMapper = new ObjectMapper();
-                            Movie movieList[] = objectMapper.readValue(result, Movie[].class);
-
-                            if (movieList.length >0) {
-                                //pass profiles to adapter
-                                AvailableMediaAdapter availableMediaAdapter = new AvailableMediaAdapter(movieList);
-
-                                final ImageView imageView = findViewById(R.id.selected_route_infomap_two);
-                                availableMediaAdapter.setRouteInfoImageView(imageView);
-                                final LinearLayout selectedRouteTextLayoutBlock = findViewById(R.id.selected_route_text_information);
-                                availableMediaAdapter.setRouteInfoTextView(selectedRouteTextLayoutBlock);
-
-                                availableMediaAdapter.setCatalogRecyclerViewClickListener(this);
-
-                                //set adapter to recyclerview
-                                availableMediaRecyclerView.setAdapter(availableMediaAdapter);
-                                //set recyclerview visible
-                                availableMediaRecyclerView.setVisibility(View.VISIBLE);
-                            } else {
-                                Toast.makeText(this, getString(R.string.catalog_no_movies_warning), Toast.LENGTH_LONG).show();
-                                finish();
-                            }
-                        } catch (JsonMappingException jsonMappingException) {
-                            Log.e(TAG, jsonMappingException.getLocalizedMessage());
-                        } catch (JsonProcessingException jsonProcessingException) {
-                            Log.e(TAG, jsonProcessingException.getLocalizedMessage());
-                        }
-                    }
-                });
     }
 
     @Override

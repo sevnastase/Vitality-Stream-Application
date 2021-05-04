@@ -122,11 +122,15 @@ public class SplashActivity extends AppCompatActivity {
                             }
                         } else {
                             //Execute when number of products is 0
-                            Log.d(TAG, "Unset current configuration");
-                            Toast.makeText(this, "No subscriptions available for this account.", Toast.LENGTH_LONG).show();
-                            Configuration configuration = config;
-                            configuration.setCurrent(false);
-                            splashViewModel.updateConfiguration(configuration);
+                            Log.d(TAG, "Unset current configuration or product count = 0");
+                            //TODO: in worker listener that acts when activeproductsworker is done.
+                            // Because timing is of essence here the products can be 0 when this is executed
+//                            if (false) {
+//                                Toast.makeText(this, "No subscriptions available for this account.", Toast.LENGTH_LONG).show();
+//                                Configuration configuration = config;
+//                                configuration.setCurrent(false);
+//                                splashViewModel.updateConfiguration(configuration);
+//                            }
                         }
                     }
                 });
