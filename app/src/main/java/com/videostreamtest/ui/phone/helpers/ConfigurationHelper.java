@@ -13,6 +13,7 @@ import androidx.work.WorkManager;
 
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.workers.ActiveConfigurationServiceWorker;
+import com.videostreamtest.workers.ActiveProductMovieLinksServiceWorker;
 import com.videostreamtest.workers.ActiveProductsServiceWorker;
 import com.videostreamtest.workers.AvailableMediaServiceWorker;
 import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
@@ -88,6 +89,14 @@ public class ConfigurationHelper {
                 .addTag("available-sounds")
                 .build();
 
+        //Routefilms
+        Data.Builder pmData = new Data.Builder();
+        pmData.putString("apikey", accountToken);
+        OneTimeWorkRequest productMovieRequest = new OneTimeWorkRequest.Builder(ActiveProductMovieLinksServiceWorker.class)
+                .setInputData(pmData.build())
+                .addTag("productmovie-link")
+                .build();
+
         //Chain workers and enqueue them
         WorkManager
                 .getInstance(context)
@@ -99,6 +108,7 @@ public class ConfigurationHelper {
                 .then(routefilmsRequest)
                 .then(routeMoviepartsRequest)
                 .then(soundInformationRequest)
+                .then(productMovieRequest)
                 .enqueue();
     }
     public static String getVersionNumber(Context context) {

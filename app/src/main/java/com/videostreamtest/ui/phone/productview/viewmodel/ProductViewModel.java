@@ -6,15 +6,18 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
+import com.videostreamtest.config.dao.ProductMovieDao;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.config.entity.EffectSound;
+import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.entity.StandAloneDownloadStatus;
 import com.videostreamtest.config.repository.BackgroundSoundRepository;
 import com.videostreamtest.config.repository.ConfigurationRepository;
 import com.videostreamtest.config.repository.DownloadStatusRepository;
 import com.videostreamtest.config.repository.EffectSoundRepository;
+import com.videostreamtest.config.repository.ProductMovieRepository;
 import com.videostreamtest.config.repository.RoutefilmRepository;
 
 import java.util.List;
@@ -22,6 +25,7 @@ import java.util.List;
 public class ProductViewModel extends AndroidViewModel {
     private ConfigurationRepository configurationRepository;
     private RoutefilmRepository routefilmRepository;
+    private ProductMovieRepository productMovieRepository;
     private DownloadStatusRepository downloadStatusRepository;
     private BackgroundSoundRepository backgroundSoundRepository;
     private EffectSoundRepository effectSoundRepository;
@@ -33,6 +37,7 @@ public class ProductViewModel extends AndroidViewModel {
         downloadStatusRepository = new DownloadStatusRepository(application);
         backgroundSoundRepository = new BackgroundSoundRepository(application);
         effectSoundRepository = new EffectSoundRepository(application);
+        productMovieRepository = new ProductMovieRepository(application);
     }
 
     public LiveData<Configuration> getCurrentConfig() {
@@ -41,6 +46,14 @@ public class ProductViewModel extends AndroidViewModel {
 
     public LiveData<List<Routefilm>> getRoutefilms(final String accountToken) {
         return routefilmRepository.getAllRoutefilms(accountToken);
+    }
+
+    public LiveData<List<Routefilm>> getProductMovies(final String accountToken, final Integer productId) {
+        return routefilmRepository.getAllProductRoutefilms(accountToken, productId);
+    }
+
+    public LiveData<List<ProductMovie>> getPMS(final Integer productId) {
+        return productMovieRepository.getProductMovies(productId);
     }
 
     public void signoutCurrentAccount(Configuration configuration){

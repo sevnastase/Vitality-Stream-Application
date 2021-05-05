@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
+import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
@@ -25,12 +26,17 @@ import com.videostreamtest.ui.phone.productview.fragments.plain.PlainScreenRoute
 import com.videostreamtest.ui.phone.productview.fragments.touch.TouchScreenRouteFilmsAdapter;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PlainScreenFragment extends Fragment implements CatalogRecyclerViewClickListener {
     private ProductViewModel productViewModel;
 
     private RecyclerView recyclerView;
     private LinearLayout routeInformationBlock;
     private PlainScreenRouteFilmsAdapter plainScreenRouteFilmsAdapter;
+
+    private List<Routefilm> supportedRoutefilms;
 
     @Nullable
     @Override
@@ -57,8 +63,8 @@ public class PlainScreenFragment extends Fragment implements CatalogRecyclerView
     private void loadAvailableMediaScenery() {
         productViewModel.getCurrentConfig().observe(getViewLifecycleOwner(), currentConfig -> {
             if (currentConfig != null) {
-                productViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(getViewLifecycleOwner(), routefilms -> {
-                    Product selectedProduct = new GsonBuilder().create().fromJson(getArguments().getString("product_object", "{}"), Product.class);
+                Product selectedProduct = new GsonBuilder().create().fromJson(getArguments().getString("product_object", "{}"), Product.class);
+                productViewModel.getProductMovies(currentConfig.getAccountToken(), selectedProduct.getId()).observe(getViewLifecycleOwner(), routefilms -> {
                     CommunicationDevice communicationDevice = ConfigurationHelper.getCommunicationDevice(getArguments().getString("communication_device"));
 
                     plainScreenRouteFilmsAdapter = new PlainScreenRouteFilmsAdapter(routefilms.toArray(new Routefilm[0]), selectedProduct, communicationDevice);
@@ -76,5 +82,16 @@ public class PlainScreenFragment extends Fragment implements CatalogRecyclerView
     public void recyclerViewListClicked(View v, int position) {
         recyclerView.getLayoutManager().scrollToPosition(position);
 
+    }
+
+    private Routefilm getSupportedRoutefilm(List<Routefilm> routefilms, Integer movieId) {
+        if (routefilms.size()>0) {
+            for (Routefilm routefilm: routefilms) {
+                if (routefilm.getMovieId() == movieId) {
+                    return routefilm;
+                }
+            }
+        }
+        return null;
     }
 }

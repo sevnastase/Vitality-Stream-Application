@@ -25,4 +25,9 @@ public interface RoutefilmDao {
 
     @Query("SELECT * FROM routefilm_table WHERE account_token = :accountToken ORDER BY movie_title ASC")
     LiveData<List<Routefilm>> getRoutefilms(final String accountToken);
+
+    @Query("SELECT rt.* FROM routefilm_table rt JOIN productmovie_table pmt " +
+            "WHERE rt.account_token = :accountToken AND pmt.product_id = :productId AND pmt.movie_id = rt.movie_id " +
+            "ORDER BY rt.movie_title ASC")
+    LiveData<List<Routefilm>> getProductRoutefilms(final String accountToken, final Integer productId);
 }

@@ -13,6 +13,7 @@ import com.videostreamtest.config.dao.ConfigurationDao;
 import com.videostreamtest.config.dao.DownloadStatusDao;
 import com.videostreamtest.config.dao.EffectSoundDao;
 import com.videostreamtest.config.dao.ProductDao;
+import com.videostreamtest.config.dao.ProductMovieDao;
 import com.videostreamtest.config.dao.ProfileDao;
 import com.videostreamtest.config.dao.RoutefilmDao;
 import com.videostreamtest.config.dao.RoutepartDao;
@@ -20,6 +21,7 @@ import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.config.entity.EffectSound;
 import com.videostreamtest.config.entity.Product;
+import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.config.entity.Profile;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.entity.Routepart;
@@ -36,7 +38,8 @@ import java.util.concurrent.Executors;
         StandAloneDownloadStatus.class,
         Routepart.class,
         BackgroundSound.class,
-        EffectSound.class
+        EffectSound.class,
+        ProductMovie.class
 }, version = 1, exportSchema = false)
 public abstract class PraxtourDatabase extends RoomDatabase {
     private final static String TAG = PraxtourDatabase.class.getSimpleName();
@@ -53,6 +56,7 @@ public abstract class PraxtourDatabase extends RoomDatabase {
     public abstract RoutepartDao routepartDao();
     public abstract BackgroundSoundDao backgroundSoundDao();
     public abstract EffectSoundDao effectSoundDao();
+    public abstract ProductMovieDao productMovieDao();
 
     public static PraxtourDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {

@@ -22,14 +22,18 @@ import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.BackgroundSound;
+import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
+import com.videostreamtest.ui.phone.productview.fragments.plain.PlainScreenRouteFilmsAdapter;
 import com.videostreamtest.ui.phone.productview.fragments.touch.TouchScreenRouteFilmsAdapter;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TouchScreenFragment extends Fragment {
     private static final String NAVIGATION_LEFT_ARROW = "http://188.166.100.139:8080/api/dist/img/buttons/arrow_left_blue.png";
@@ -42,6 +46,8 @@ public class TouchScreenFragment extends Fragment {
     private TouchScreenRouteFilmsAdapter touchScreenRouteFilmsAdapter;
     private LinearLayout routeInformationBlock;
     private RecyclerView recyclerView;
+
+//    private List<Routefilm> supportedRoutefilms;
 
     private ImageButton navigationLeftArrow;
     private ImageButton navigationRightArrow;
@@ -123,9 +129,10 @@ public class TouchScreenFragment extends Fragment {
     private void loadAvailableMediaScenery() {
         productViewModel.getCurrentConfig().observe(getViewLifecycleOwner(), currentConfig -> {
             if (currentConfig != null) {
-                productViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(getViewLifecycleOwner(), routefilms -> {
-                    Product selectedProduct = new GsonBuilder().create().fromJson(getArguments().getString("product_object", "{}"), Product.class);
+                Product selectedProduct = new GsonBuilder().create().fromJson(getArguments().getString("product_object", "{}"), Product.class);
+                productViewModel.getProductMovies(currentConfig.getAccountToken(), selectedProduct.getId()).observe(getViewLifecycleOwner(), routefilms -> {
                     CommunicationDevice communicationDevice = ConfigurationHelper.getCommunicationDevice(getArguments().getString("communication_device"));
+
                     touchScreenRouteFilmsAdapter = new TouchScreenRouteFilmsAdapter(routefilms.toArray(new Routefilm[0]), selectedProduct, communicationDevice);
                     touchScreenRouteFilmsAdapter.setRouteInformationBlock(routeInformationBlock);
 
@@ -203,6 +210,17 @@ public class TouchScreenFragment extends Fragment {
         recyclerView.getAdapter().notifyDataSetChanged();
 
         recyclerView.getLayoutManager().scrollToPosition(nextPosition);
+    }
+
+    private Routefilm getSupportedRoutefilm(List<Routefilm> routefilms, Integer movieId) {
+        if (routefilms.size()>0) {
+            for (Routefilm routefilm: routefilms) {
+                if (routefilm.getMovieId() == movieId) {
+                    return routefilm;
+                }
+            }
+        }
+        return null;
     }
 
 }
