@@ -673,6 +673,8 @@ public class VideoplayerActivity extends AppCompatActivity {
             Uri soundItemUri = backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri;
             String localFileName = soundItemUri.getPath().substring(soundItemUri.getPath().lastIndexOf('/'), soundItemUri.getPath().length());
             //If new item is the same then return
+            Log.d(TAG, "localFileName value: "+localFileName);
+            Log.d(TAG, "backgroundSoundUrl value: "+backgroundSoundurl);
             if (backgroundSoundurl.contains(localFileName)) {
                 Log.d(TAG, "STILL SAME VALUE BG SOUND");
                 //Check if already playing else start playing
@@ -684,7 +686,7 @@ public class VideoplayerActivity extends AppCompatActivity {
             }
             for (int bgIndex = 0; bgIndex < backgroundSoundPlayer.getMediaItemCount();bgIndex++) {
                 if (backgroundSoundurl.contains(backgroundSoundPlayer.getMediaItemAt(bgIndex).playbackProperties.uri.getPath())) {
-                    Log.d(TAG, "NEW SOUND FOUND URL :: "+backgroundSoundurl);
+                    Log.d(TAG, "NEW BG SOUND FOUND URL :: "+backgroundSoundurl);
                     if (backgroundSoundPlayer.isPlaying()) {
                         backgroundSoundPlayer.pause();
                     }

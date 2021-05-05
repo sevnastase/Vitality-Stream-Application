@@ -1,7 +1,10 @@
 package com.videostreamtest.ui.phone.helpers;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 
+import androidx.core.content.pm.PackageInfoCompat;
 import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.NetworkType;
@@ -97,5 +100,31 @@ public class ConfigurationHelper {
                 .then(routeMoviepartsRequest)
                 .then(soundInformationRequest)
                 .enqueue();
+    }
+    public static String getVersionNumber(Context context) {
+        PackageManager manager = context.getPackageManager();
+        String myversionName = "";
+        try {
+            PackageInfo info = manager.getPackageInfo(context.getPackageName(), 0);
+            myversionName = info.versionName;
+        }
+        catch (PackageManager.NameNotFoundException e) {
+            myversionName = "Unknown-01";
+        }
+        return myversionName;
+    }
+
+    public static int getVersionNumberCode(Context context) {
+        PackageManager manager = context.getPackageManager();
+        int versionCode =0;
+        try {
+            PackageInfo info = manager.getPackageInfo(context.getPackageName(), 0);
+            versionCode = (int) PackageInfoCompat.getLongVersionCode(info);
+        }
+        catch (PackageManager.NameNotFoundException e) {
+//            e.printStackTrace();
+            versionCode = -1;
+        }
+        return versionCode;
     }
 }

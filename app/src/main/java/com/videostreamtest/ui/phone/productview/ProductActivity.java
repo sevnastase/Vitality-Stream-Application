@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -42,6 +43,7 @@ public class ProductActivity extends AppCompatActivity {
     private ProductViewModel productViewModel;
     private Button signoutButton;
     private ImageView productLogo;
+    private TextView appBuildNumber;
 
     private boolean refreshData = false;
 
@@ -52,6 +54,7 @@ public class ProductActivity extends AppCompatActivity {
         productViewModel = new ViewModelProvider(this).get(ProductViewModel.class);
         signoutButton = findViewById(R.id.product_logout_button);
         productLogo = findViewById(R.id.product_logo_view);
+        appBuildNumber = findViewById(R.id.app_build_number);
 
         Product selectedProduct = new GsonBuilder().create().fromJson(getIntent().getExtras().getString("product_object", "{}"), Product.class);
         Log.d(ProductActivity.class.getSimpleName(), "Product ID Loaded: "+selectedProduct.getId());
@@ -76,11 +79,8 @@ public class ProductActivity extends AppCompatActivity {
                 arguments.putString("communication_device", currentConfig.getCommunicationDevice());
 
                 loadFragmentBasedOnScreenType(arguments);
-//                getSupportFragmentManager()
-//                        .beginTransaction()
-//                        .setReorderingAllowed(true)
-//                        .replace(R.id.fragment_container_view, TouchScreenFragment.class, arguments)
-//                        .commit();
+
+                appBuildNumber.setText(ConfigurationHelper.getVersionNumber(getApplicationContext()));
 
                 if (currentConfig.getProductCount() > 1) {
                     signoutButton.setText("Close");

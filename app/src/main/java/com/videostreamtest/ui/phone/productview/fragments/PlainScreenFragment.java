@@ -75,5 +75,6 @@ public class PlainScreenFragment extends Fragment implements CatalogRecyclerView
     @Override
     public void recyclerViewListClicked(View v, int position) {
         recyclerView.getLayoutManager().scrollToPosition(position);
+
     }
 }
