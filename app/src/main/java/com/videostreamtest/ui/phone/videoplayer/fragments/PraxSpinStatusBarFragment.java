@@ -1,6 +1,8 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -34,19 +37,33 @@ public class PraxSpinStatusBarFragment extends Fragment {
     private TextView speedIndicator;
     private Chronometer stopwatchCurrentRide;
     private RecyclerView statusbarRouteparts;
+    private LinearLayout moviePartsLayout;
     private ImageButton speedUpButton;
     private ImageButton speedDownButton;
+    private ImageButton toggleSwitchRoutepart;
+    private Handler loadTimer;
+
+    //VOLUME
+    private TextView statusbarVolumeIndicator;
+    private ImageButton volumeUp;
+    private ImageButton volumeDown;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_praxspin_statusbar, container, false);
 
-        statusbarMovieTitle = view.findViewById(R.id.statusbar_praxspin_movie_title);
-        stopwatchCurrentRide = view.findViewById(R.id.statusbar_praxspin_stopwatch_current_ride);
-        statusbarDistance = view.findViewById(R.id.statusbar_praxspin_movie_distance);
-        statusbarTotalDistance = view.findViewById(R.id.statusbar_praxspin_movie_total_distance);
+        statusbarMovieTitle = view.findViewById(R.id.statusbar_title_box_title);
+        stopwatchCurrentRide = view.findViewById(R.id.statusbar_time_box_value);
+        statusbarDistance = view.findViewById(R.id.statusbar_distance_box_value);
+        statusbarTotalDistance = view.findViewById(R.id.statusbar_distance_finish_box_value);
         statusbarRouteparts = view.findViewById(R.id.statusbar_praxspin_recyclerview_movieparts);
+        moviePartsLayout = view.findViewById(R.id.statusbar_praxspin_movieparts);
+        toggleSwitchRoutepart = view.findViewById(R.id.statusbar_switch_part_button);
+        //VOLUME
+        statusbarVolumeIndicator = view.findViewById(R.id.statusbar_praxspin_volume_indicator);
+        volumeUp = view.findViewById(R.id.statusbar_praxspin_volume_button_up);
+        volumeDown = view.findViewById(R.id.statusbar_praxspin_volume_button_down);
 
         //INIT VALUES
         stopwatchCurrentRide.setFormat(getString(R.string.videoplayer_chronometer_message));
@@ -60,6 +77,10 @@ public class PraxSpinStatusBarFragment extends Fragment {
         LinearLayoutManager layoutManager
                 = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         statusbarRouteparts.setLayoutManager(layoutManager);
+
+        toggleSwitchRoutepart.setOnClickListener(clickedView -> {
+            toggleMoviePartsVisibility();
+        });
 
         return view;
     }
@@ -84,6 +105,9 @@ public class PraxSpinStatusBarFragment extends Fragment {
         videoPlayerViewModel.getPlayerPaused().observe(getViewLifecycleOwner(), isPaused -> {
             if (isPaused) {
                 stopwatchCurrentRide.stop();
+                if (toggleSwitchRoutepart.getVisibility() == View.VISIBLE) {
+                    toggleMoviePartsVisibility();
+                }
             } else {
                 stopwatchCurrentRide.start();
             }
@@ -122,6 +146,22 @@ public class PraxSpinStatusBarFragment extends Fragment {
             }
         });
 
+        videoPlayerViewModel.getVolumeLevel().observe(getViewLifecycleOwner(), volumeLevel -> {
+            if (volumeLevel!= null) {
+                statusbarVolumeIndicator.setText(""+(int) (volumeLevel*100));
+                volumeUp.setOnClickListener(clickedView -> {
+                    if (volumeLevel < 1.0f) {
+                        videoPlayerViewModel.setVolumeLevel(volumeLevel + 0.1f);
+                    }
+                });
+                volumeDown.setOnClickListener(clickedView -> {
+                    if (volumeLevel > 0.1f) {
+                        videoPlayerViewModel.setVolumeLevel(volumeLevel - 0.1f);
+                    }
+                });
+            }
+        });
+
         videoPlayerViewModel.getKmhData().observe(getViewLifecycleOwner(), kmhData -> {
             if (kmhData != null) {
                 speedIndicator.setText(""+kmhData+" kmh");
@@ -129,9 +169,34 @@ public class PraxSpinStatusBarFragment extends Fragment {
                     videoPlayerViewModel.setKmhData(kmhData+2);
                 });
                 speedDownButton.setOnClickListener(clickedView -> {
-                    videoPlayerViewModel.setKmhData(kmhData-2);
+                    if (kmhData>2) {
+                        videoPlayerViewModel.setKmhData(kmhData - 2);
+                    }
                 });
             }
         });
+
+    }
+
+    private void toggleMoviePartsVisibility() {
+        if (moviePartsLayout.getVisibility() == View.GONE) {
+            loadTimer = new Handler(Looper.getMainLooper());
+
+            Runnable closeMoviePartsLayout = new Runnable() {
+                public void run() {
+                    toggleMoviePartsVisibility();
+                }
+            };
+            //Redirect to login activity if timer exceeds 5 seconds
+            loadTimer.postDelayed( closeMoviePartsLayout, 20*1000 );
+
+            moviePartsLayout.setVisibility(View.VISIBLE);
+            if (moviePartsLayout.getChildCount()>0) {
+                moviePartsLayout.getChildAt(0).requestFocus();
+            }
+        } else {
+            loadTimer.removeCallbacksAndMessages(null);
+            moviePartsLayout.setVisibility(View.GONE);
+        }
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/route_content_overview"
     style="@style/Widget.AppTheme.ButtonBar.Fullscreen"
     android:layout_width="match_parent"
@@ -8,10 +8,33 @@
     android:layout_gravity="bottom|center_horizontal"
     android:gravity="center_horizontal"
     android:layout_centerVertical="true"
-    android:orientation="vertical" >
+    android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/statusbar_title_box"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_margin="5dp"
+        android:orientation="vertical"
+        android:gravity="start"
+        android:paddingTop="5dp"
+        android:layout_marginRight="10dp">
+        <TextView
+            android:id="@+id/statusbar_title_box_title"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFEE"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginLeft="3dp"
+            android:layout_marginBottom="15dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:text="Bollenstreek" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center_horizontal">
@@ -203,28 +226,9 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <LinearLayout
-                android:id="@+id/statusbar_title_box"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:paddingTop="5dp"
-                android:layout_marginRight="10dp">
-                <TextView
-                    android:id="@+id/statusbar_title_box_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="#FFFFEE"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:text="Bollenstreek" />
-            </LinearLayout>
-
             <SeekBar
                 android:id="@+id/statusbar_praxfit_progress_indicator"
-                android:layout_width="770dp"
+                android:layout_width="700dp"
                 android:layout_height="wrap_content"
                 android:progressDrawable="@drawable/praxfilm_progress_drawable"
                 android:thumb="@drawable/bicycle_thumb_praxfilm"
@@ -233,59 +237,5 @@
         </LinearLayout>
 
     </LinearLayout>
-
-<!--    <LinearLayout-->
-<!--        android:id="@+id/route_content_informationlabels"-->
-<!--        android:visibility="gone"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="horizontal"-->
-<!--        android:padding="5dp">-->
-
-<!--        <TextView-->
-<!--            android:id="@+id/statusbar_praxfit_movie_title"-->
-<!--            android:text="Movie Title"-->
-<!--            android:textColor="#FFFFEE"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="1"-->
-<!--            android:paddingRight="15dp"-->
-<!--            android:paddingLeft="30dp" />-->
-
-<!--        <TextView-->
-<!--            android:id="@+id/statusbar_praxfit_movie_rpm"-->
-<!--            android:text="@string/video_screen_rpm"-->
-<!--            android:textColor="#FFFFEE"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="1"-->
-<!--            android:paddingRight="5dp"/>-->
-
-<!--        <Chronometer-->
-<!--            android:id="@+id/statusbar_praxfit_stopwatch_current_ride"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:textColor="#FFFFEE"-->
-<!--            android:paddingRight="15dp"/>-->
-
-<!--        <TextView-->
-<!--            android:id="@+id/statusbar_praxfit_movie_distance"-->
-<!--            android:text="@string/video_screen_distance"-->
-<!--            android:textColor="#FFFFEE"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="1"-->
-<!--            android:paddingRight="15dp"/>-->
-<!--        <TextView-->
-<!--            android:id="@+id/statusbar_praxfit_total_distance"-->
-<!--            android:text="@string/video_screen_total_distance"-->
-<!--            android:textColor="#FFFFEE"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="1"-->
-<!--            android:paddingRight="15dp"/>-->
-
-<!--    </LinearLayout>-->
-
 
 </RelativeLayout>
