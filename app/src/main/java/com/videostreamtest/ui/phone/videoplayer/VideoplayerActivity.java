@@ -25,6 +25,7 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.Renderer;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.source.MediaSourceFactory;
@@ -171,12 +172,6 @@ public class VideoplayerActivity extends AppCompatActivity {
                         .replace(R.id.videoplayer_framelayout_statusbar, PraxFilmStatusBarFragment.class, null)
                         .commit();
 
-                videoPlayerViewModel.getVolumeLevel().observe(this, volumeLevel -> {
-                    if (videoPlayer != null) {
-                        Log.d(TAG, "VOLUMELEVEL :: "+volumeLevel);
-                        videoPlayer.setVolume(volumeLevel);
-                    }
-                });
             }
             if (selectedProduct.getProductName().contains("PraxSpin")) {
                 /*
@@ -241,6 +236,14 @@ public class VideoplayerActivity extends AppCompatActivity {
                     .replace(R.id.videoplayer_framelayout_statusbar, PraxFitStatusBarFragment.class, null)
                     .commit();
         }
+
+        videoPlayerViewModel.getVolumeLevel().observe(this, volumeLevel -> {
+            if (videoPlayer != null) {
+                videoPlayer.setVolume(volumeLevel);
+                backgroundSoundPlayer.setVolume(volumeLevel);
+                effectSoundPlayer.setVolume(volumeLevel);
+            }
+        });
 
         updateLastCadenceMeasurement(66);
         updateLastCadenceMeasurement(66);
@@ -901,6 +904,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     private void prepareVideoMediaSource(Uri mUri) {
         final MediaItem mediaItem = MediaItem.fromUri(mUri);
         videoPlayer.setMediaItem(mediaItem);
+        videoPlayer.setVideoScalingMode(Renderer.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
         Log.d(TAG,"Player preparing!");
         videoPlayer.prepare();
 

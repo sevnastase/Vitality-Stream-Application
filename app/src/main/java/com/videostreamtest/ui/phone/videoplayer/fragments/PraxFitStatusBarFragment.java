@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Chronometer;
+import android.widget.ImageButton;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -34,17 +36,28 @@ public class PraxFitStatusBarFragment extends Fragment {
     private Chronometer stopwatchCurrentRide;
     private RecyclerView statusbarRouteparts;
 
+    private TextView statusbarVolumeIndicator;
+    private ImageButton volumeUp;
+    private ImageButton volumeDown;
+
+    private SeekBar progressBar;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_praxfit_statusbar, container, false);
 
-        statusbarMovieTitle = view.findViewById(R.id.statusbar_praxfit_movie_title);
-        statusbarMovieRpm = view.findViewById(R.id.statusbar_praxfit_movie_rpm);
-        statusbarDistance = view.findViewById(R.id.statusbar_praxfit_movie_distance);
-        statusbarTotalDistance = view.findViewById(R.id.statusbar_praxfit_total_distance);
-        stopwatchCurrentRide = view.findViewById(R.id.statusbar_praxfit_stopwatch_current_ride);
+        //Link items to lay-out
+        statusbarMovieTitle = view.findViewById(R.id.statusbar_title_box_title);
+        statusbarMovieRpm = view.findViewById(R.id.statusbar_speed_box_value);
+        statusbarDistance = view.findViewById(R.id.statusbar_distance_box_value);
+        statusbarTotalDistance = view.findViewById(R.id.statusbar_distance_finish_box_value);
+        stopwatchCurrentRide = view.findViewById(R.id.statusbar_time_box_value);
         statusbarRouteparts = view.findViewById(R.id.statusbar_praxfit_recyclerview_movieparts);
+        statusbarVolumeIndicator = view.findViewById(R.id.statusbar_praxfit_volume_indicator);
+        volumeUp = view.findViewById(R.id.statusbar_praxfit_volume_button_up);
+        volumeDown = view.findViewById(R.id.statusbar_praxfit_volume_button_down);
+        progressBar = view.findViewById(R.id.statusbar_praxfit_progress_indicator);
 
         //INIT VALUES
         stopwatchCurrentRide.setFormat(getString(R.string.videoplayer_chronometer_message));
@@ -101,6 +114,9 @@ public class PraxFitStatusBarFragment extends Fragment {
 
                                 final int metersToGo = selectedMovie.getMovieLength() - currentMetersDone;
                                 statusbarTotalDistance.setText(String.format(getString(R.string.video_screen_total_distance), metersToGo));
+
+                                progressBar.setMax(movieTotalDurationSeconds.intValue());
+                                progressBar.setProgress(movieSpendDurationSeconds.intValue());
                             }
                         });
                     }
@@ -119,6 +135,22 @@ public class PraxFitStatusBarFragment extends Fragment {
         //RPM data related
         videoPlayerViewModel.getRpmData().observe(getViewLifecycleOwner(), rpmData ->{
             statusbarMovieRpm.setText(toString().format(getString(R.string.video_screen_rpm), rpmData));
+        });
+
+        videoPlayerViewModel.getVolumeLevel().observe(getViewLifecycleOwner(), volumeLevel -> {
+            if (volumeLevel!= null) {
+                statusbarVolumeIndicator.setText(""+(int) (volumeLevel*100));
+                volumeUp.setOnClickListener(clickedView -> {
+                    if (volumeLevel < 1.0f) {
+                        videoPlayerViewModel.setVolumeLevel(volumeLevel + 0.1f);
+                    }
+                });
+                volumeDown.setOnClickListener(clickedView -> {
+                    if (volumeLevel > 0.1f) {
+                        videoPlayerViewModel.setVolumeLevel(volumeLevel - 0.1f);
+                    }
+                });
+            }
         });
 
     }
