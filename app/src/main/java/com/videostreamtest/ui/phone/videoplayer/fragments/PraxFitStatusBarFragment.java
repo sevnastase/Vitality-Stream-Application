@@ -1,6 +1,9 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,6 +23,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
+import com.videostreamtest.ui.phone.login.LoginActivity;
+import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.DistanceLookupTable;
@@ -39,13 +44,13 @@ public class PraxFitStatusBarFragment extends Fragment {
 
     //MOVIE PARTS
     private LinearLayout moviePartsLayout;
+    private ImageButton toggleSwitchRoutepart;
+    private Handler loadTimer;
 
     //VOLUME
     private TextView statusbarVolumeIndicator;
     private ImageButton volumeUp;
     private ImageButton volumeDown;
-
-    private ImageButton toggleSwitchRoutepart;
 
     //ROUTE PROGRESS
     private SeekBar progressBar;
@@ -105,6 +110,9 @@ public class PraxFitStatusBarFragment extends Fragment {
         videoPlayerViewModel.getPlayerPaused().observe(getViewLifecycleOwner(), isPaused -> {
             if (isPaused) {
                 stopwatchCurrentRide.stop();
+                if (toggleSwitchRoutepart.getVisibility() == View.VISIBLE) {
+                    toggleMoviePartsVisibility();
+                }
             } else {
                 stopwatchCurrentRide.start();
             }
@@ -171,11 +179,22 @@ public class PraxFitStatusBarFragment extends Fragment {
 
     private void toggleMoviePartsVisibility() {
         if (moviePartsLayout.getVisibility() == View.GONE) {
+            loadTimer = new Handler(Looper.getMainLooper());
+
+            Runnable closeMoviePartsLayout = new Runnable() {
+                public void run() {
+                    toggleMoviePartsVisibility();
+                }
+            };
+            //Redirect to login activity if timer exceeds 5 seconds
+            loadTimer.postDelayed( closeMoviePartsLayout, 20*1000 );
+
             moviePartsLayout.setVisibility(View.VISIBLE);
             if (moviePartsLayout.getChildCount()>0) {
                 moviePartsLayout.getChildAt(0).requestFocus();
             }
         } else {
+            loadTimer.removeCallbacksAndMessages(null);
             moviePartsLayout.setVisibility(View.GONE);
         }
     }

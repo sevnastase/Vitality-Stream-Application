@@ -439,6 +439,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     public void togglePauseScreen() {
         //Set new state of videoplayer
         routePaused = !routePaused;
+        videoPlayerViewModel.setPlayerPaused(routePaused);
 
         final TextView pauseTitle = findViewById(R.id.status_dialog_title);
         pauseTitle.setText(getString(R.string.pause_screen_title));
@@ -490,6 +491,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                     long positionSecond = 0;
 
                     videoPlayerViewModel.setStatusbarVisible(false);
+                    videoPlayerViewModel.setPlayerPaused(true);
                     playerView.setVisibility(View.GONE);
 
                     TextView loadingMessage = findViewById(R.id.loading_message);

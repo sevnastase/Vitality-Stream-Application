@@ -1,5 +1,6 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments.routeparts;
 
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.View;
@@ -26,18 +27,31 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
     public void bind(MoviePart moviePart, int position) {
         moviePartCoverImage = itemView.findViewById(R.id.routepart_cover_button);
 
-        //Set Cover
-        Picasso.get()
-                .load(moviePart.getMoviepartImagepath())
-                .resize(130, 70)
-                .placeholder(R.drawable.placeholder_movieparts)
-                .error(R.drawable.placeholder_movieparts)
-                .into(moviePartCoverImage);
+        if (isTouchScreen()) {
+            //Set routepart cover
+            Picasso.get()
+                    .load(moviePart.getMoviepartImagepath())
+                    .resize(180, 120)
+                    .placeholder(R.drawable.placeholder_movieparts)
+                    .error(R.drawable.placeholder_movieparts)
+                    .into(moviePartCoverImage);
+        } else {
+            //Set routepart cover
+            Picasso.get()
+                    .load(moviePart.getMoviepartImagepath())
+                    .resize(130, 70)
+                    .placeholder(R.drawable.placeholder_movieparts)
+                    .error(R.drawable.placeholder_movieparts)
+                    .into(moviePartCoverImage);
+        }
 
         initBorders();
-        initOnFocusChangeListener();
+        if (isTouchScreen()) {
+            initTouchBorders();
+        } else {
+            initOnFocusChangeListener();
+        }
         initOnClickListener(moviePart);
-
     }
 
     private void initBorders() {
@@ -49,6 +63,10 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
         } else {
             undrawSelectionBorder();
         }
+    }
+
+    private void initTouchBorders() {
+        drawSelectionBorder();
     }
 
     private void initOnClickListener(final MoviePart moviePart) {
@@ -86,6 +104,10 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
     private void undrawSelectionBorder() {
         moviePartCoverImage.setBackground(null);
         moviePartCoverImage.setAlpha(0.7f);
+    }
+
+    private boolean isTouchScreen() {
+        return itemView.getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
     }
 
 }

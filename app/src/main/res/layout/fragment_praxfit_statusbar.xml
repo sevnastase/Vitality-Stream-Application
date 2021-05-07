@@ -18,7 +18,7 @@
 
     <LinearLayout
         android:id="@+id/statusbar_praxfit_movieparts"
-        android:layout_width="620dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_centerHorizontal="true"
@@ -27,7 +27,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/statusbar_praxfit_recyclerview_movieparts"
             android:layout_width="wrap_content"
-            android:layout_height="90dp"
+            android:layout_height="wrap_content"
             android:gravity="center"
             android:layout_gravity="center"
             android:orientation="horizontal"/>
@@ -39,14 +39,14 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-
-
         <LinearLayout
             android:id="@+id/statusbar_time_box"
             android:background="@drawable/imagebutton_blue_border"
             android:layout_width="100dp"
             android:layout_height="90dp"
-            android:layout_margin="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginRight="30dp"
             android:orientation="vertical"
             android:gravity="center_horizontal">
             <TextView
@@ -68,7 +68,9 @@
             android:id="@+id/statusbar_speed_box"
             android:layout_width="95dp"
             android:layout_height="90dp"
-            android:layout_margin="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginRight="30dp"
             android:background="@drawable/imagebutton_blue_border"
             android:orientation="vertical"
             android:gravity="center_horizontal">
@@ -93,7 +95,9 @@
             android:id="@+id/statusbar_distance_box"
             android:layout_width="95dp"
             android:layout_height="90dp"
-            android:layout_margin="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginRight="30dp"
             android:background="@drawable/imagebutton_blue_border"
             android:orientation="vertical"
             android:gravity="center_horizontal">
@@ -118,7 +122,9 @@
             android:id="@+id/statusbar_distance_finish_box"
             android:layout_width="95dp"
             android:layout_height="90dp"
-            android:layout_margin="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginRight="30dp"
             android:background="@drawable/imagebutton_blue_border"
             android:orientation="vertical"
             android:gravity="center_horizontal">
@@ -144,7 +150,9 @@
             android:id="@+id/statusbar_switch_part_box"
             android:layout_width="95dp"
             android:layout_height="90dp"
-            android:layout_margin="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginRight="30dp"
             android:background="@drawable/imagebutton_blue_border"
             android:orientation="vertical"
             android:gravity="center_horizontal">
@@ -161,7 +169,8 @@
             android:background="@drawable/imagebutton_blue_border"
             android:layout_width="95dp"
             android:layout_height="90dp"
-            android:layout_margin="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
             android:orientation="vertical"
             android:gravity="center">
 
