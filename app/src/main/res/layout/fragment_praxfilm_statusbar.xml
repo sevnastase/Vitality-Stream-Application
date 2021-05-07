@@ -49,7 +49,6 @@
                 android:textColor="#FFFFEE"
                 android:paddingRight="15dp"/>
 
-
         </LinearLayout>
 
         <LinearLayout

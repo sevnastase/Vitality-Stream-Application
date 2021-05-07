@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -36,10 +37,17 @@ public class PraxFitStatusBarFragment extends Fragment {
     private Chronometer stopwatchCurrentRide;
     private RecyclerView statusbarRouteparts;
 
+    //MOVIE PARTS
+    private LinearLayout moviePartsLayout;
+
+    //VOLUME
     private TextView statusbarVolumeIndicator;
     private ImageButton volumeUp;
     private ImageButton volumeDown;
 
+    private ImageButton toggleSwitchRoutepart;
+
+    //ROUTE PROGRESS
     private SeekBar progressBar;
 
     @Nullable
@@ -58,6 +66,8 @@ public class PraxFitStatusBarFragment extends Fragment {
         volumeUp = view.findViewById(R.id.statusbar_praxfit_volume_button_up);
         volumeDown = view.findViewById(R.id.statusbar_praxfit_volume_button_down);
         progressBar = view.findViewById(R.id.statusbar_praxfit_progress_indicator);
+        moviePartsLayout = view.findViewById(R.id.statusbar_praxfit_movieparts);
+        toggleSwitchRoutepart = view.findViewById(R.id.statusbar_switch_part_button);
 
         //INIT VALUES
         stopwatchCurrentRide.setFormat(getString(R.string.videoplayer_chronometer_message));
@@ -67,6 +77,10 @@ public class PraxFitStatusBarFragment extends Fragment {
         LinearLayoutManager layoutManager
                 = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         statusbarRouteparts.setLayoutManager(layoutManager);
+
+        toggleSwitchRoutepart.setOnClickListener(clickedView -> {
+            toggleMoviePartsVisibility();
+        });
 
         return view;
     }
@@ -153,5 +167,16 @@ public class PraxFitStatusBarFragment extends Fragment {
             }
         });
 
+    }
+
+    private void toggleMoviePartsVisibility() {
+        if (moviePartsLayout.getVisibility() == View.GONE) {
+            moviePartsLayout.setVisibility(View.VISIBLE);
+            if (moviePartsLayout.getChildCount()>0) {
+                moviePartsLayout.getChildAt(0).requestFocus();
+            }
+        } else {
+            moviePartsLayout.setVisibility(View.GONE);
+        }
     }
 }

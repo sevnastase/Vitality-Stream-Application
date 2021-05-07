@@ -13,7 +13,25 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+    <LinearLayout
+        android:id="@+id/statusbar_praxfit_movieparts"
+        android:layout_width="620dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/statusbar_praxfit_recyclerview_movieparts"
+            android:layout_width="wrap_content"
+            android:layout_height="90dp"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:orientation="horizontal"/>
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/statusbar_information_display_blocks"
@@ -21,28 +39,23 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
+
+
         <LinearLayout
-            android:id="@+id/statusbar_title_box"
+            android:id="@+id/statusbar_time_box"
+            android:background="@drawable/imagebutton_blue_border"
             android:layout_width="100dp"
-            android:layout_height="80dp"
+            android:layout_height="90dp"
             android:layout_margin="5dp"
             android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:paddingTop="5dp">
-            <TextView
-                android:id="@+id/statusbar_title_box_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#FFFFEE"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:text="Bollenstreek" />
+            android:gravity="center_horizontal">
             <TextView
                 android:id="@+id/statusbar_title_box_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#FFFFEE"
-                android:textSize="12sp"
+                android:textSize="20sp"
+                android:textStyle="bold"
                 android:text="Time" />
             <Chronometer
                 android:id="@+id/statusbar_time_box_value"
@@ -54,7 +67,7 @@
         <LinearLayout
             android:id="@+id/statusbar_speed_box"
             android:layout_width="95dp"
-            android:layout_height="80dp"
+            android:layout_height="90dp"
             android:layout_margin="5dp"
             android:background="@drawable/imagebutton_blue_border"
             android:orientation="vertical"
@@ -79,7 +92,7 @@
         <LinearLayout
             android:id="@+id/statusbar_distance_box"
             android:layout_width="95dp"
-            android:layout_height="80dp"
+            android:layout_height="90dp"
             android:layout_margin="5dp"
             android:background="@drawable/imagebutton_blue_border"
             android:orientation="vertical"
@@ -104,7 +117,7 @@
         <LinearLayout
             android:id="@+id/statusbar_distance_finish_box"
             android:layout_width="95dp"
-            android:layout_height="80dp"
+            android:layout_height="90dp"
             android:layout_margin="5dp"
             android:background="@drawable/imagebutton_blue_border"
             android:orientation="vertical"
@@ -126,29 +139,32 @@
                 android:text="46384" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/statusbar_praxfit_movieparts"
-            android:layout_width="350dp"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_centerHorizontal="true">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/statusbar_praxfit_recyclerview_movieparts"
-                android:layout_width="wrap_content"
-                android:layout_height="80dp"
-                android:gravity="center"
-                android:layout_gravity="center"
-                android:orientation="horizontal"/>
+        <LinearLayout
+            android:id="@+id/statusbar_switch_part_box"
+            android:layout_width="95dp"
+            android:layout_height="90dp"
+            android:layout_margin="5dp"
+            android:background="@drawable/imagebutton_blue_border"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+            <ImageButton
+                android:id="@+id/statusbar_switch_part_button"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@null"
+                android:src="@drawable/routeparts_button"/>
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/statusbar_praxfit_volume_buttons_layout"
+            android:background="@drawable/imagebutton_blue_border"
             android:layout_width="95dp"
-            android:layout_height="80dp"
-
+            android:layout_height="90dp"
+            android:layout_margin="5dp"
             android:orientation="vertical"
             android:gravity="center">
+
             <TextView
                 android:id="@+id/statusbar_praxfit_volume_indicator"
                 android:layout_width="wrap_content"
@@ -177,9 +193,29 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/statusbar_title_box"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingTop="5dp"
+                android:layout_marginRight="10dp">
+                <TextView
+                    android:id="@+id/statusbar_title_box_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFFFEE"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:text="Bollenstreek" />
+            </LinearLayout>
+
             <SeekBar
                 android:id="@+id/statusbar_praxfit_progress_indicator"
-                android:layout_width="870dp"
+                android:layout_width="770dp"
                 android:layout_height="wrap_content"
                 android:progressDrawable="@drawable/praxfilm_progress_drawable"
                 android:thumb="@drawable/bicycle_thumb_praxfilm"
