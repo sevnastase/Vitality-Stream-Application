@@ -48,9 +48,9 @@ public class PraxFilmStatusBarFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_praxfilm_statusbar, container, false);
 
-        statusbarMovieTitle = view.findViewById(R.id.statusbar_praxfilm_movie_title);
-        statusbarMovieRpm = view.findViewById(R.id.statusbar_praxfilm_movie_speed);
-        stopwatchCurrentRide = view.findViewById(R.id.statusbar_praxfilm_stopwatch_current_ride);
+        statusbarMovieTitle = view.findViewById(R.id.statusbar_title_box_title);
+        statusbarMovieRpm = view.findViewById(R.id.statusbar_speed_box_value);
+        stopwatchCurrentRide = view.findViewById(R.id.statusbar_time_box_value);
         progressBar = view.findViewById(R.id.statusbar_praxfilm_seekbar_movie);
         statusbarVolumeIndicator = view.findViewById(R.id.statusbar_praxfilm_volume_indicator);
         volumeUp = view.findViewById(R.id.statusbar_praxfilm_volume_button_up);

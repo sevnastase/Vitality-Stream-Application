@@ -63,6 +63,29 @@ public class DownloadHelper {
     }
 
     /**
+     * Check if movie folder contains any routeparts media
+     * @param context
+     * @param movieId
+     * @return boolean
+     */
+    public static boolean isMovieMediaPresent(final Context context, final int movieId){
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            String pathname = externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieId;
+            File possibleMovieLocation = new File(pathname);
+            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
+
+                for (File file: possibleMovieLocation.listFiles()) {
+                    if (file.getName().startsWith("T") && file.getName().endsWith(".jpg")) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Check if sound folder with content is located on any (connected) local storage device within provided context
      * @param context
      * @return boolean

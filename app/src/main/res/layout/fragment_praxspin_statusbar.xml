@@ -2,7 +2,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/route_content_overview"
-    style="@style/Widget.AppTheme.ButtonBar.Fullscreen"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="bottom|center_horizontal"
@@ -12,11 +11,12 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/statusbar_title_box"
-        android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_alignParentBottom="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:orientation="vertical"
-        android:gravity="start"
+        android:gravity="start|bottom"
         android:paddingTop="5dp"
         android:layout_marginRight="10dp">
         <TextView
@@ -35,6 +35,8 @@
 
     <LinearLayout
         android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"
+        style="@style/Widget.AppTheme.ButtonBar.Fullscreen"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center_horizontal">
@@ -171,25 +173,25 @@
                 android:orientation="vertical"
                 android:gravity="center">
 
-                <TextView
-                    android:id="@+id/statusbar_praxspin_volume_indicator"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@android:color/white"
-                    android:text="Volume"
-                    android:textStyle="bold"
-                    android:textSize="12sp" />
                 <ImageButton
                     android:id="@+id/statusbar_praxspin_volume_button_up"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:background="@null"
                     android:src="@drawable/plus_small"/>
+                <TextView
+                    android:id="@+id/statusbar_praxspin_volume_indicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    android:text="Volume"
+                    android:layout_margin="3dp"
+                    android:textStyle="bold"
+                    android:textSize="12sp" />
                 <ImageButton
                     android:id="@+id/statusbar_praxspin_volume_button_down"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:layout_marginTop="10dp"
                     android:background="@null"
                     android:src="@drawable/minus_small"/>
             </LinearLayout>
@@ -202,23 +204,22 @@
                 android:background="@drawable/imagebutton_blue_border"
                 android:orientation="vertical"
                 android:gravity="center">
-                <TextView
-                    android:id="@+id/statusbar_praxspin_speed_indicator"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@android:color/white"
-                    android:textSize="18sp" />
                 <ImageButton
                     android:id="@+id/statusbar_praxspin_speed_button_up"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:background="@null"
                     android:src="@drawable/plus_small"/>
+                <TextView
+                    android:id="@+id/statusbar_praxspin_speed_indicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp" />
                 <ImageButton
                     android:id="@+id/statusbar_praxspin_speed_button_down"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:layout_marginTop="10dp"
                     android:background="@null"
                     android:src="@drawable/minus_small"/>
             </LinearLayout>

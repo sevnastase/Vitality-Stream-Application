@@ -32,6 +32,7 @@ import com.videostreamtest.ui.phone.productview.fragments.PlainScreenFragment;
 import com.videostreamtest.ui.phone.productview.fragments.TouchScreenFragment;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.workers.DownloadMovieServiceWorker;
+import com.videostreamtest.workers.DownloadRoutepartsServiceWorker;
 import com.videostreamtest.workers.DownloadSoundServiceWorker;
 import com.videostreamtest.workers.LocalMediaServerAvailableServiceWorker;
 
@@ -185,9 +186,15 @@ public class ProductActivity extends AppCompatActivity {
                                         .addTag("routefilm-" + routefilm.getMovieId())
                                         .build();
 
+                                OneTimeWorkRequest routepartsWorkRequest = new OneTimeWorkRequest.Builder(DownloadRoutepartsServiceWorker.class)
+                                        .setConstraints(constraint)
+                                        .addTag("routeparts-routefilm-" + routefilm.getMovieId())
+                                        .build();
+
                                 WorkManager.getInstance(this)
                                         .beginUniqueWork("download-movie-" + routefilm.getMovieId(), ExistingWorkPolicy.KEEP, availabilityWorker)
                                         .then(oneTimeWorkRequest)
+                                        .then(routepartsWorkRequest)
                                         .enqueue();
                             }
                         }

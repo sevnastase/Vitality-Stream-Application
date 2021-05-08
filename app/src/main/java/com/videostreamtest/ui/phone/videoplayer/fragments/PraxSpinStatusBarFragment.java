@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -48,6 +49,9 @@ public class PraxSpinStatusBarFragment extends Fragment {
     private ImageButton volumeUp;
     private ImageButton volumeDown;
 
+    //ROUTE PROGRESS
+    private SeekBar progressBar;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -64,6 +68,8 @@ public class PraxSpinStatusBarFragment extends Fragment {
         statusbarVolumeIndicator = view.findViewById(R.id.statusbar_praxspin_volume_indicator);
         volumeUp = view.findViewById(R.id.statusbar_praxspin_volume_button_up);
         volumeDown = view.findViewById(R.id.statusbar_praxspin_volume_button_down);
+        //PROGRESSBAR
+        progressBar = view.findViewById(R.id.statusbar_praxspin_progress_indicator);
 
         //INIT VALUES
         stopwatchCurrentRide.setFormat(getString(R.string.videoplayer_chronometer_message));
@@ -131,6 +137,9 @@ public class PraxSpinStatusBarFragment extends Fragment {
 
                                 final int metersToGo = selectedMovie.getMovieLength() - currentMetersDone;
                                 statusbarTotalDistance.setText(String.format(getString(R.string.video_screen_total_distance), metersToGo));
+
+                                progressBar.setMax(movieTotalDurationSeconds.intValue());
+                                progressBar.setProgress(movieSpendDurationSeconds.intValue());
                             }
                         });
                     }

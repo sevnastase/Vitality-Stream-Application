@@ -18,110 +18,103 @@ import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import com.google.gson.Gson;
 import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.StandAloneDownloadStatus;
-import com.videostreamtest.data.model.Movie;
+import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.List;
 
-public class DownloadMovieServiceWorker extends Worker implements ProgressCallBack {
-    private static final String TAG = DownloadMovieServiceWorker.class.getSimpleName();
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.GET;
+import retrofit2.http.Header;
+import retrofit2.http.Path;
+
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_URL;
+
+public class DownloadRoutepartsServiceWorker extends Worker implements ProgressCallBack {
+    private static final String TAG = DownloadRoutepartsServiceWorker.class.getSimpleName();
     private static final String INPUT_ROUTEFILM_JSON_STRING = "INPUT_ROUTEFILM_JSON_STRING";
-    private static final String OUTPUT_FILE_NAME = "OUTPUT_FILE_NAME";
+    private static final String SOUND_FOLDER = "sound";
 
     private NotificationManager notificationManager;
 
-    private long totalDownloadSizeInBytes = 0;
-    private long totalDownloadedSizeInBytes = 0;
-
     private File selectedVolume;
-    private Movie routefilm;
+    private int[] movieIdList;
 
-    public DownloadMovieServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+    public DownloadRoutepartsServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+    }
+
+    public interface PraxCloud {
+        @GET("/api/route/movieparts/{movie_id}")
+        Call<List<MoviePart>> getRoutepartsOfMovieId(@Path(value = "movie_id", encoded = true) Integer movieId, @Header("api-key") String accountToken);
     }
 
     @NonNull
     @Override
     public Result doWork() {
         Data inputData = getInputData();
-        String inputDataString = inputData.getString(INPUT_ROUTEFILM_JSON_STRING); // Movie object json
-        String outputFile = inputData.getString(OUTPUT_FILE_NAME); // default folder
+        //Get Input
         final String apikey = getInputData().getString("apikey");
+        final int movieId = getInputData().getInt("movie-id",0);
 
-        routefilm = new Gson().fromJson(inputDataString, Movie.class);
-
-        if (DownloadHelper.isMoviePresent(getApplicationContext(), routefilm)) {
+        if (DownloadHelper.isMovieMediaPresent(getApplicationContext(), movieId)) {
             return Result.success();
         }
 
-        /*
-        TODO: Requirements for downloading:
-         - Movie object as string in json format
-         -> every file has file size in bytes
-         - path to store media content usually default folder /Praxtour/
-         -> media path is further formulated as {movieId}/{content}
-         */
-
         // Mark the Worker as important
-        String progress = "Starting Download";
+        String progress = "Download Routeparts";
         setForegroundAsync(createForegroundInfo(progress));
+        Data outputData = new Data.Builder()
+                .putString("progress-notification", "Downloading routeparts.")
+                .build();
+        setProgressAsync(outputData);
 
-        //Transform string json to object
-        if (routefilm.getMapFileSize() == -1 ||
-            routefilm.getMovieFileSize() == -1 ||
-            routefilm.getSceneryFileSize() == -1) {
-            Log.e(TAG, "No size available");
-            return Result.failure();
-        }
-
-        totalDownloadSizeInBytes = routefilm.getMapFileSize()+routefilm.getSceneryFileSize()+routefilm.getMovieFileSize();
+        //Select volume with largest free space to use
         selectedVolume = selectStorageVolumeWithLargestFreeSpace();
 
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(PRAXCLOUD_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        PraxCloud praxCloud = retrofit.create(PraxCloud.class);
 
-
-        if (canFileBeCopied(selectedVolume, totalDownloadSizeInBytes)) {
+        if (movieId != 0) {
+            Call<List<MoviePart>> call = praxCloud.getRoutepartsOfMovieId(movieId, apikey);
+            List<MoviePart> routeparts = new ArrayList<>();
             try {
-                //Scenery
-                download(routefilm.getMovieImagepath(), routefilm.getSceneryFileSize(), String.valueOf(routefilm.getId()));
-                //Map
-                download(routefilm.getMovieRouteinfoPath(), routefilm.getMapFileSize(), String.valueOf(routefilm.getId()));
-                //Movie
-                download(routefilm.getMovieUrl(), routefilm.getMovieFileSize(), String.valueOf(routefilm.getId()));
+                routeparts = call.execute().body();
+                if (routeparts.size()>0) {
+                    for (final MoviePart moviePart: routeparts) {
+                        download(moviePart.getMoviepartImagepath(), Long.MAX_VALUE, String.valueOf(movieId));
+                    }
+                }
             } catch (IOException ioException) {
-                Log.e(DownloadMovieServiceWorker.class.getSimpleName(), ioException.getLocalizedMessage());
-                Log.e(TAG, "Error downloading");
+                Log.e(TAG, ioException.getLocalizedMessage());
                 return Result.failure();
             }
-        } else {
-            insertDownloadStatus(routefilm.getId(), -2);
-            Log.e(TAG, "Cant copy file");
-            return Result.failure();
         }
-        Data outputData = new Data.Builder()
-                .putString("apikey", apikey)
-                .putInt("movie-id", routefilm.getId()).build();
-        return Result.success(outputData);
+
+        return Result.success();
     }
 
     /**
      * Specify external URL, expected file size in bytes and movie id as the id will be used as foldername.
      * @param inputPath
      * @param expectedSize
-     * @param movieIdFolder
      * @throws IOException
      */
     private void download(final String inputPath, final long expectedSize, final String movieIdFolder) throws IOException {
@@ -132,15 +125,9 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
 
         if (selectedVolume.exists()) {
 
-            Log.d(DownloadMovieServiceWorker.class.getSimpleName(), "Free space selectedVolume: "+selectedVolume.getFreeSpace());
-
-            //Create main folder on external storage
+            //Create main folder on external storage if not already there
             if (new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER).exists() &&
                     new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER).isDirectory()) {
-
-                Log.d(DownloadMovieServiceWorker.class.getSimpleName(), "Folder "+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+" exists");
-                Log.d(DownloadMovieServiceWorker.class.getSimpleName(), "Checking "+selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder+" <<>>>>");
-
             } else {
                 new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER).mkdir();
             }
@@ -148,12 +135,13 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             //Create movie folder named by movie ID
             if (new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder).exists() &&
                     new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder).isDirectory()) {
-                Log.d(DownloadMovieServiceWorker.class.getSimpleName(), "movieID folder exists");
+                Log.d(TAG, "movieID folder exists");
             } else {
                 new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder).mkdir();
             }
+
         } else {
-            Log.e(DownloadMovieServiceWorker.class.getSimpleName(), "We're doomed");
+            Log.e(TAG, "We're doomed");
             return;
         }
 
@@ -170,7 +158,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(getApplicationContext(), null);
         long freeSpace = 0;
         for (File externalStorageVolume: externalStorageVolumes) {
-            Log.d(DownloadMovieServiceWorker.class.getSimpleName(), externalStorageVolume.getAbsolutePath() + " >> Free ::  "+externalStorageVolume.getFreeSpace());
+            Log.d(DownloadRoutepartsServiceWorker.class.getSimpleName(), externalStorageVolume.getAbsolutePath() + " >> Free ::  "+externalStorageVolume.getFreeSpace());
             if (externalStorageVolume.getFreeSpace() > freeSpace) {
                 freeSpace = externalStorageVolume.getFreeSpace();
                 selectedVolume = externalStorageVolume;
@@ -207,28 +195,10 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
     public void callback(CallbackByteChannel rbc, double progress) {
 //        System.out.println(rbc.getReadSoFar());
 //        System.out.println(progress);
-        double bytesRead = Double.longBitsToDouble(rbc.getReadSoFar());
-        double totalSize = Double.longBitsToDouble(totalDownloadSizeInBytes);
-
-        double totalProgress = (bytesRead / totalSize) * 100;
-
-        int roundedProgress = (int)Math.round(totalProgress);
-
-        insertDownloadStatus(routefilm.getId(), roundedProgress);
-
-        //Deprecated TODO: remove later
-        Data outputData = new Data.Builder()
-                .putString("progress-notification", "Progress: "+totalProgress+"%")
-                .putDouble("progress", progress)
-                .putInt("movie-id", routefilm.getId())
-                .build();
-        setProgressAsync(outputData);
-
     }
 
     private ForegroundInfo createForegroundInfo(@NonNull String progress) {
         //Build a notification using bytesRead and contentLength
-
         Context context = getApplicationContext();
         String id = "download_media" ;//context.getString(R.string.notification_channel_id);
         String title = context.getString(R.string.app_name);//notification_title
@@ -260,40 +230,4 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         assert notificationManager != null;
         notificationManager.createNotificationChannel(channel);
     }
-
-//    class CallbackByteChannel implements ReadableByteChannel {
-//        ProgressCallBack delegate;
-//        long size;
-//        ReadableByteChannel rbc;
-//        long sizeRead;
-//
-//        CallbackByteChannel(ReadableByteChannel rbc, long expectedSize,
-//                            ProgressCallBack delegate) {
-//            this.delegate = delegate;
-//            this.size = expectedSize;
-//            this.rbc = rbc;
-//        }
-//        public void close() throws IOException {
-//            rbc.close();
-//        }
-//        public long getReadSoFar() {
-//            return sizeRead;
-//        }
-//
-//        public boolean isOpen() {
-//            return rbc.isOpen();
-//        }
-//
-//        public int read(ByteBuffer bb) throws IOException {
-//            int n;
-//            double progress;
-//            if ((n = rbc.read(bb)) > 0) {
-//                sizeRead += n;
-//                progress = size > 0 ? (double) sizeRead / (double) size
-//                        * 100.0 : -1.0;
-//                delegate.callback(this, progress);
-//            }
-//            return n;
-//        }
-//    }
 }

@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -42,6 +43,8 @@ public class PraxFitStatusBarFragment extends Fragment {
     private Chronometer stopwatchCurrentRide;
     private RecyclerView statusbarRouteparts;
 
+    private ConstraintLayout titlelayout;
+
     //MOVIE PARTS
     private LinearLayout moviePartsLayout;
     private ImageButton toggleSwitchRoutepart;
@@ -61,6 +64,7 @@ public class PraxFitStatusBarFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_praxfit_statusbar, container, false);
 
         //Link items to lay-out
+        titlelayout = view.findViewById(R.id.statusbar_title_box);
         statusbarMovieTitle = view.findViewById(R.id.statusbar_title_box_title);
         statusbarMovieRpm = view.findViewById(R.id.statusbar_speed_box_value);
         statusbarDistance = view.findViewById(R.id.statusbar_distance_box_value);
