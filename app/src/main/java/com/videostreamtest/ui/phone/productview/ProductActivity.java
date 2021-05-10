@@ -74,6 +74,21 @@ public class ProductActivity extends AppCompatActivity {
                 if (refreshData) {
                     refreshData = false;
                     ConfigurationHelper.loadExternalData(this, currentConfig.getAccountToken());
+
+                    Data.Builder mediaDownloader = new Data.Builder();
+                    mediaDownloader.putString("apikey",  currentConfig.getAccountToken());
+                    mediaDownloader.putInt("movie-id", 1);
+                    Constraints constraint = new Constraints.Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build();
+                    OneTimeWorkRequest routepartsWorkRequest = new OneTimeWorkRequest.Builder(DownloadRoutepartsServiceWorker.class)
+                            .setConstraints(constraint)
+                            .setInputData(mediaDownloader.build())
+                            .addTag("routeparts-routefilm-1")
+                            .build();
+                    WorkManager.getInstance(this)
+                            .beginUniqueWork("download-movieparts-1", ExistingWorkPolicy.KEEP, routepartsWorkRequest)
+                            .enqueue();
                 }
 
                 Bundle arguments = getIntent().getExtras();
@@ -98,15 +113,6 @@ public class ProductActivity extends AppCompatActivity {
                 });
             }
         });
-
-        /**
-         * TODO: pseudo steps
-         *  1. get current configuration
-         *  2. get current selected product
-         *  3. Get screen type ( Touch or Plain )
-         *  4. Is account for standalone or streaming
-         *  4. Build up activity with fragments and/or nav_graphs
-         */
     }
 
     @Override
@@ -115,6 +121,7 @@ public class ProductActivity extends AppCompatActivity {
         refreshData = true;
         downloadSound();
         downloadLocalMovies();
+        downloadMovieRouteParts();
     }
 
     private void loadFragmentBasedOnScreenType(final Bundle arguments) {
@@ -154,6 +161,33 @@ public class ProductActivity extends AppCompatActivity {
         });
     }
 
+    private void downloadMovieRouteParts() {
+        productViewModel.getCurrentConfig().observe(this, currentConfig -> {
+            if (currentConfig != null) {
+                productViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(this, routefilms -> {
+                    if (routefilms.size() > 0 && currentConfig.isLocalPlay()) {
+                        for (Routefilm routefilm : routefilms) {
+                            Data.Builder mediaDownloader = new Data.Builder();
+                            mediaDownloader.putString("apikey",  currentConfig.getAccountToken());
+                            mediaDownloader.putInt("movie-id", routefilm.getMovieId());
+                            Constraints constraint = new Constraints.Builder()
+                                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                                    .build();
+                            OneTimeWorkRequest routepartsWorkRequest = new OneTimeWorkRequest.Builder(DownloadRoutepartsServiceWorker.class)
+                                    .setConstraints(constraint)
+                                    .setInputData(mediaDownloader.build())
+                                    .addTag("routeparts-routefilm-"+routefilm.getMovieId())
+                                    .build();
+                            WorkManager.getInstance(this)
+                                    .beginUniqueWork("download-movieparts-"+routefilm.getMovieId(), ExistingWorkPolicy.KEEP, routepartsWorkRequest)
+                                    .enqueue();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
     private void downloadLocalMovies() {
         productViewModel.getCurrentConfig().observe(this, currentConfig -> {
             if (currentConfig != null) {
@@ -169,11 +203,6 @@ public class ProductActivity extends AppCompatActivity {
                                 mediaDownloader.putString("INPUT_ROUTEFILM_JSON_STRING", new GsonBuilder().create().toJson(Movie.fromRoutefilm(routefilm), Movie.class));
                                 mediaDownloader.putString("localMediaServer", currentConfig.getPraxCloudMediaServerLocalUrl());
 
-                                OneTimeWorkRequest downloadSoundWorker = new OneTimeWorkRequest.Builder(DownloadSoundServiceWorker.class)
-                                        .setConstraints(constraint)
-                                        .setInputData(new Data.Builder().putString("apikey", currentConfig.getAccountToken()).build())
-                                        .build();
-
                                 OneTimeWorkRequest availabilityWorker = new OneTimeWorkRequest.Builder(LocalMediaServerAvailableServiceWorker.class)
                                         .setConstraints(constraint)
                                         .setInputData(mediaDownloader.build())
@@ -186,15 +215,9 @@ public class ProductActivity extends AppCompatActivity {
                                         .addTag("routefilm-" + routefilm.getMovieId())
                                         .build();
 
-                                OneTimeWorkRequest routepartsWorkRequest = new OneTimeWorkRequest.Builder(DownloadRoutepartsServiceWorker.class)
-                                        .setConstraints(constraint)
-                                        .addTag("routeparts-routefilm-" + routefilm.getMovieId())
-                                        .build();
-
                                 WorkManager.getInstance(this)
                                         .beginUniqueWork("download-movie-" + routefilm.getMovieId(), ExistingWorkPolicy.KEEP, availabilityWorker)
                                         .then(oneTimeWorkRequest)
-                                        .then(routepartsWorkRequest)
                                         .enqueue();
                             }
                         }

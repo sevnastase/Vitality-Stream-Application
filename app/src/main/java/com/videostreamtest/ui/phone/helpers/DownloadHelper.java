@@ -7,6 +7,7 @@ import android.util.Log;
 import androidx.core.content.ContextCompat;
 
 import com.videostreamtest.data.model.Movie;
+import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import java.io.BufferedReader;
@@ -140,6 +141,32 @@ public class DownloadHelper {
                 movie.setMovieRouteinfoPath(pathname+"/"+mapFilename);
             }
         }
+    }
+
+    /**
+     * Adjust moviepart object url's to local storage paths
+     * @param context
+     * @param moviePart
+     */
+    public static File getLocalMediaRoutepart(final Context context, final MoviePart moviePart) {
+        String moviePartFileName = "";
+        try {
+            URL moviePartUrl = new URL(moviePart.getMoviepartImagepath());
+            moviePartFileName = new File(moviePartUrl.getFile()).getName();
+        } catch (MalformedURLException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+            return null;
+        }
+        File file;
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + moviePart.getMovieId();
+            File possibleMovieLocation = new File(pathname);
+            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
+                return new File(moviePartFileName);
+            }
+        }
+        return null;
     }
 
     /**

@@ -58,6 +58,8 @@ public class PraxFitStatusBarFragment extends Fragment {
     //ROUTE PROGRESS
     private SeekBar progressBar;
 
+    private boolean isLocalPlay = false;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -81,6 +83,11 @@ public class PraxFitStatusBarFragment extends Fragment {
         //INIT VALUES
         stopwatchCurrentRide.setFormat(getString(R.string.videoplayer_chronometer_message));
         stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
+
+        Bundle arguments = getArguments();
+        if (arguments!= null) {
+            isLocalPlay = arguments.getBoolean("localPlay");
+        }
 
         statusbarRouteparts.setHasFixedSize(true);
         LinearLayoutManager layoutManager
@@ -151,7 +158,7 @@ public class PraxFitStatusBarFragment extends Fragment {
                 //LOAD ROUTEPARTS IF AVAILABLE
                 videoPlayerViewModel.getRoutePartsOfMovieId(selectedMovie.getId()).observe(getViewLifecycleOwner(), routeparts -> {
                     if (routeparts != null && routeparts.size()>0) {
-                        routePartsAdapter = new RoutePartsAdapter(routeparts);
+                        routePartsAdapter = new RoutePartsAdapter(routeparts, isLocalPlay);
                         statusbarRouteparts.setAdapter(routePartsAdapter);
                     }
                 });

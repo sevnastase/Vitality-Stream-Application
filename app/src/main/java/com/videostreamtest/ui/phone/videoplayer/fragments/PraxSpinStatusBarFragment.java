@@ -52,6 +52,8 @@ public class PraxSpinStatusBarFragment extends Fragment {
     //ROUTE PROGRESS
     private SeekBar progressBar;
 
+    private boolean isLocalPlay = false;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -78,6 +80,11 @@ public class PraxSpinStatusBarFragment extends Fragment {
         speedIndicator = view.findViewById(R.id.statusbar_praxspin_speed_indicator);
         speedUpButton = view.findViewById(R.id.statusbar_praxspin_speed_button_up);
         speedDownButton = view.findViewById(R.id.statusbar_praxspin_speed_button_down);
+
+        Bundle arguments = getArguments();
+        if (arguments!= null) {
+            isLocalPlay = arguments.getBoolean("localPlay");
+        }
 
         statusbarRouteparts.setHasFixedSize(true);
         LinearLayoutManager layoutManager
@@ -148,7 +155,7 @@ public class PraxSpinStatusBarFragment extends Fragment {
                 //LOAD ROUTEPARTS IF AVAILABLE
                 videoPlayerViewModel.getRoutePartsOfMovieId(selectedMovie.getId()).observe(getViewLifecycleOwner(), routeparts -> {
                     if (routeparts != null && routeparts.size()>0) {
-                        routePartsAdapter = new RoutePartsAdapter(routeparts);
+                        routePartsAdapter = new RoutePartsAdapter(routeparts, isLocalPlay);
                         statusbarRouteparts.setAdapter(routePartsAdapter);
                     }
                 });

@@ -71,6 +71,7 @@ public class AvailableMediaServiceWorker extends Worker {
 
         //DATABASE INJECTION
         final RoutefilmDao routefilmDao = PraxtourDatabase.getDatabase(getApplicationContext()).routefilmDao();
+        routefilmDao.nukeTable();
         if (routefilms.size() > 0) {
             for (final Movie routefilm: routefilms) {
                 final com.videostreamtest.config.entity.Routefilm dbRoutefilm = new com.videostreamtest.config.entity.Routefilm();
@@ -92,7 +93,7 @@ public class AvailableMediaServiceWorker extends Worker {
 
                 long result = routefilmDao.insert(dbRoutefilm);
             }
-            Log.d(TAG, "All routefilms been downloaded");
+            Log.d(TAG, "All routefilms been synchronized");
         }
 
         //Store outcome in the output data model

@@ -59,8 +59,8 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
     }
 
     public interface PraxCloud {
-        @GET("/api/route/movieparts/{movie_id}")
-        Call<List<MoviePart>> getRoutepartsOfMovieId(@Path(value = "movie_id", encoded = true) Integer movieId, @Header("api-key") String accountToken);
+        @GET("/api/route/movieparts/{movieId}")
+        Call<List<MoviePart>> getMoviepartsOfMovieId(@Path(value = "movieId", encoded = true) Integer movieId, @Header("api-key") String accountToken);
     }
 
     @NonNull
@@ -93,11 +93,20 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
         PraxCloud praxCloud = retrofit.create(PraxCloud.class);
 
         if (movieId != 0) {
-            Call<List<MoviePart>> call = praxCloud.getRoutepartsOfMovieId(movieId, apikey);
+            Call<List<MoviePart>> call = praxCloud.getMoviepartsOfMovieId(movieId, apikey);
             List<MoviePart> routeparts = new ArrayList<>();
             try {
                 routeparts = call.execute().body();
-                if (routeparts.size()>0) {
+            } catch (IOException ioException) {
+                Log.e(TAG, ioException.getLocalizedMessage());
+                return Result.failure();
+            }
+            Log.d(TAG, "'Routeparts object: "+routeparts);
+            if (routeparts!= null) {
+                Log.d(TAG, "'Routeparts found: "+routeparts.size());
+            }
+            try {
+                if (routeparts != null && routeparts.size()>0) {
                     for (final MoviePart moviePart: routeparts) {
                         download(moviePart.getMoviepartImagepath(), Long.MAX_VALUE, String.valueOf(movieId));
                     }

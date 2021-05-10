@@ -90,6 +90,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     private List<EffectSound> effectSoundList = new ArrayList<>();
 
     private boolean isSoundOnDevice = false;
+    private boolean isLocalPlay = false;
 
     private CadenceSensorBroadcastReceiver cadenceSensorBroadcastReceiver;
 
@@ -129,6 +130,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
             selectedProduct = new GsonBuilder().create().fromJson(arguments.getString("productObject", "{}"), Product.class);
             communicationDevice = ConfigurationHelper.getCommunicationDevice(arguments.getString("communication_device"));
+            isLocalPlay = arguments.getBoolean("localPlay");
 
             Log.d(TAG, "productObject :: " + selectedProduct.getProductName());
 
@@ -142,15 +144,11 @@ public class VideoplayerActivity extends AppCompatActivity {
 
                 videoPlayerViewModel.setSelectedMovie(selectedMovie);
 
-                /*
                 //BALK OPBOUWEN DOOR GEBRUIK FRAGMENTS
-                Rij 1: Tonen Filmtitel, gereden tijd, huidig rpm, gereden afstand, nog te rijden afstand, Volume.
-                Rij 2: T1 - T6 routeparts laden
-                 */
                 getSupportFragmentManager()
                         .beginTransaction()
                         .setReorderingAllowed(true)
-                        .replace(R.id.videoplayer_framelayout_statusbar, PraxFitStatusBarFragment.class, null)
+                        .replace(R.id.videoplayer_framelayout_statusbar, PraxFitStatusBarFragment.class, arguments)
                         .commit();
 
             }
@@ -191,7 +189,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                 getSupportFragmentManager()
                         .beginTransaction()
                         .setReorderingAllowed(true)
-                        .replace(R.id.videoplayer_framelayout_statusbar, PraxSpinStatusBarFragment.class, null)
+                        .replace(R.id.videoplayer_framelayout_statusbar, PraxSpinStatusBarFragment.class, arguments)
                         .commit();
 
                 //Pass movie details with a second based timer

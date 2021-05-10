@@ -111,6 +111,7 @@ public class ConfigurationHelper {
                 .then(productMovieRequest)
                 .enqueue();
     }
+
     public static String getVersionNumber(Context context) {
         PackageManager manager = context.getPackageManager();
         String myversionName = "";
@@ -132,7 +133,6 @@ public class ConfigurationHelper {
             versionCode = (int) PackageInfoCompat.getLongVersionCode(info);
         }
         catch (PackageManager.NameNotFoundException e) {
-//            e.printStackTrace();
             versionCode = -1;
         }
         return versionCode;

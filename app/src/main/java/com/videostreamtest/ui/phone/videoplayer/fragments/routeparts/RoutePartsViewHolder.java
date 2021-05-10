@@ -12,7 +12,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.MoviePart;
+import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
+
+import java.io.File;
 
 public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
 
@@ -24,25 +27,45 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
         super(itemView);
     }
 
-    public void bind(MoviePart moviePart, int position) {
+    public void bind(MoviePart moviePart, boolean isLocalPlay, int position) {
         moviePartCoverImage = itemView.findViewById(R.id.routepart_cover_button);
 
         if (isTouchScreen()) {
-            //Set routepart cover
-            Picasso.get()
-                    .load(moviePart.getMoviepartImagepath())
-                    .resize(180, 120)
-                    .placeholder(R.drawable.placeholder_movieparts)
-                    .error(R.drawable.placeholder_movieparts)
-                    .into(moviePartCoverImage);
+            if (isLocalPlay) {
+                //Set routepart cover
+                Picasso.get()
+                        .load(DownloadHelper.getLocalMediaRoutepart(itemView.getContext(), moviePart))
+                        .resize(180, 120)
+                        .placeholder(R.drawable.placeholder_movieparts)
+                        .error(R.drawable.placeholder_movieparts)
+                        .into(moviePartCoverImage);
+            } else {
+                //Set routepart cover
+                Picasso.get()
+                        .load(moviePart.getMoviepartImagepath())
+                        .resize(180, 120)
+                        .placeholder(R.drawable.placeholder_movieparts)
+                        .error(R.drawable.placeholder_movieparts)
+                        .into(moviePartCoverImage);
+            }
         } else {
-            //Set routepart cover
-            Picasso.get()
-                    .load(moviePart.getMoviepartImagepath())
-                    .resize(130, 70)
-                    .placeholder(R.drawable.placeholder_movieparts)
-                    .error(R.drawable.placeholder_movieparts)
-                    .into(moviePartCoverImage);
+            if (isLocalPlay) {
+                //Set routepart cover
+                Picasso.get()
+                        .load(DownloadHelper.getLocalMediaRoutepart(itemView.getContext(), moviePart))
+                        .resize(130, 70)
+                        .placeholder(R.drawable.placeholder_movieparts)
+                        .error(R.drawable.placeholder_movieparts)
+                        .into(moviePartCoverImage);
+            } else {
+                //Set routepart cover
+                Picasso.get()
+                        .load(moviePart.getMoviepartImagepath())
+                        .resize(130, 70)
+                        .placeholder(R.drawable.placeholder_movieparts)
+                        .error(R.drawable.placeholder_movieparts)
+                        .into(moviePartCoverImage);
+            }
         }
 
         initBorders();

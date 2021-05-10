@@ -89,6 +89,7 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
                     arguments.putString("productObject", new GsonBuilder().create().toJson(selectedProduct, Product.class));
                     arguments.putString("communication_device", communicationDevice.name());
                     arguments.putString("accountToken", routefilm.getAccountToken());
+                    arguments.putBoolean("localPlay", localPlay);
 
                     final Intent videoPlayer = new Intent(itemView.getContext(), VideoplayerActivity.class);
                     videoPlayer.putExtras(arguments);
@@ -101,6 +102,7 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
                     arguments.putString("movieObject", new GsonBuilder().create().toJson(movie, Movie.class));
                     arguments.putString("productObject", new GsonBuilder().create().toJson(selectedProduct, Product.class));
                     arguments.putString("communication_device", communicationDevice.name());
+                    arguments.putBoolean("localPlay", localPlay);
 
                     activity.getSupportFragmentManager()
                             .beginTransaction()
@@ -140,6 +142,7 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
                 arguments.putString("productObject", new GsonBuilder().create().toJson(selectedProduct, Product.class));
                 arguments.putString("communication_device", communicationDevice.name());
                 arguments.putString("accountToken", routefilm.getAccountToken());
+                arguments.putBoolean("localPlay", localPlay);
 
                 final Intent videoPlayer = new Intent(itemView.getContext(), VideoplayerActivity.class);
                 videoPlayer.putExtras(arguments);

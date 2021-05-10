@@ -20,12 +20,13 @@ public class RoutePartsAdapter extends RecyclerView.Adapter<RoutePartsViewHolder
     private MoviePart[] movieParts;
 
     private int selectedMoviePart = 0;
+    private boolean isLocalPlay = false;
 
     public RoutePartsAdapter(MoviePart[] movieParts) {
         this.movieParts = movieParts;
     }
 
-    public RoutePartsAdapter(List<Routepart> routeparts) {
+    public RoutePartsAdapter(List<Routepart> routeparts, boolean isLocalPlay) {
         if (routeparts.size()>0) {
             movieParts = new MoviePart[routeparts.size()];
             for (int partIndex = 0; partIndex<routeparts.size();partIndex++) {
@@ -71,7 +72,7 @@ public class RoutePartsAdapter extends RecyclerView.Adapter<RoutePartsViewHolder
         }
         holder.itemView.setSelected(selectedMoviePart==position);
         if (movieParts.length > 0) {
-            holder.bind(movieParts[position], position);
+            holder.bind(movieParts[position], isLocalPlay, position);
         }
     }
 

@@ -10,6 +10,8 @@ import androidx.room.Update;
 
 import com.videostreamtest.config.entity.StandAloneDownloadStatus;
 
+import java.util.List;
+
 @Dao
 public interface DownloadStatusDao {
 

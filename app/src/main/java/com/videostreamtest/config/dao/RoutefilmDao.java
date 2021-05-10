@@ -23,6 +23,9 @@ public interface RoutefilmDao {
     @Delete
     void delete(Routefilm routefilm);
 
+    @Query("DELETE FROM routefilm_table")
+    public void nukeTable();
+
     @Query("SELECT * FROM routefilm_table WHERE account_token = :accountToken ORDER BY movie_title ASC")
     LiveData<List<Routefilm>> getRoutefilms(final String accountToken);
 
