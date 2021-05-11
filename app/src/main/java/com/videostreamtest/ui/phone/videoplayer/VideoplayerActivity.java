@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
@@ -117,6 +118,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 //        castContext = CastContext.getSharedInstance(this); TODO; Google cast implementation
 
         playerView = findViewById(R.id.playerView);
+        playerView.setUseController(false);
 
         statusDialog = findViewById(R.id.status_dialog_videoplayer);
         loadingView = findViewById(R.id.loading_view);
@@ -904,7 +906,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     private void prepareVideoMediaSource(Uri mUri) {
         final MediaItem mediaItem = MediaItem.fromUri(mUri);
         videoPlayer.setMediaItem(mediaItem);
-        videoPlayer.setVideoScalingMode(Renderer.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
+        videoPlayer.setVideoScalingMode(C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
         Log.d(TAG,"Player preparing!");
         videoPlayer.prepare();
 

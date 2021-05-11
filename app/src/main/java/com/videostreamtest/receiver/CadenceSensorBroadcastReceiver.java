@@ -57,6 +57,9 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
                 if (rpmReceived > 0 && rpmReceived < 40) {
                     rpmReceived = 40;
                 }
+                if (rpmReceived > 110) {
+                    rpmReceived = 110;
+                }
                 VideoplayerActivity.getInstance().updateVideoPlayerParams(rpmReceived);
             }
 
