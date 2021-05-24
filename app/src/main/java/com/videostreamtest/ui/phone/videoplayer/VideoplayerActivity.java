@@ -26,10 +26,10 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.Renderer;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.source.MediaSourceFactory;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
@@ -59,6 +59,10 @@ import com.videostreamtest.utils.RpmVectorLookupTable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
+import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+
 /**
  * Full-screen videoplayer activity
  */
@@ -79,13 +83,14 @@ public class VideoplayerActivity extends AppCompatActivity {
     private RecyclerView routePartsRecyclerview;
     private RoutePartsAdapter availableRoutePartsAdapter;
 
-    private String videoUri = "http://46.101.137.215:5080/WebRTCApp/streams/989942527862373986107078.mp4";
+    private String videoUri;
     private int movieId = 0;
-    private String accountKey;
-    private Movie selectedMovie;
-    private Product selectedProduct;
     private CommunicationType communicationType;
     private CommunicationDevice communicationDevice;
+
+    //TODO: Removal and set above items
+    private Movie selectedMovie;
+    private Product selectedProduct;
 
     private List<BackgroundSound> backgroundSoundList = new ArrayList<>();
     private List<EffectSound> effectSoundList = new ArrayList<>();
@@ -107,13 +112,18 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private boolean routePaused = false;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         thisInstance = this;
         setContentView(R.layout.activity_videoplayer);
         videoPlayerViewModel = new ViewModelProvider(this).get(VideoPlayerViewModel.class);
+
+        getWindow().getDecorView().setSystemUiVisibility(
+                SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                SYSTEM_UI_FLAG_FULLSCREEN |
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
 //        castContext = CastContext.getSharedInstance(this); TODO; Google cast implementation
 
@@ -125,14 +135,19 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         isSoundOnDevice = DownloadHelper.isSoundPresent(getApplicationContext());
 
+        //Calculate rpm lookup table
+        RpmVectorLookupTable.getPlaybackspeed(60);
+
         final Bundle arguments = getIntent().getExtras();
         if (arguments != null) {
+            //Need selectedMovie to pass through viewmodel to statusbar fragments
             selectedMovie = new GsonBuilder().create().fromJson(arguments.getString("movieObject", "{}"), Movie.class);
             videoUri = selectedMovie.getMovieUrl();//NOT IMPORTANT ANYMORE AS WE"VE GOT THE MOVIE OBJECT
-
-            selectedProduct = new GsonBuilder().create().fromJson(arguments.getString("productObject", "{}"), Product.class);
+            movieId = selectedMovie.getId();
             communicationDevice = ConfigurationHelper.getCommunicationDevice(arguments.getString("communication_device"));
             isLocalPlay = arguments.getBoolean("localPlay");
+
+            selectedProduct = new GsonBuilder().create().fromJson(arguments.getString("productObject", "{}"), Product.class);
 
             Log.d(TAG, "productObject :: " + selectedProduct.getProductName());
 
@@ -241,7 +256,7 @@ public class VideoplayerActivity extends AppCompatActivity {
             if (videoPlayer != null) {
                 videoPlayer.setVolume(volumeLevel);
                 backgroundSoundPlayer.setVolume(volumeLevel);
-                effectSoundPlayer.setVolume(volumeLevel);
+                //effectSoundPlayer.setVolume(volumeLevel);
             }
         });
 
@@ -321,10 +336,6 @@ public class VideoplayerActivity extends AppCompatActivity {
         return thisInstance;
     }
 
-    public void updateSeekbar() {
-        int currentProgresss = (int) (videoPlayer.getCurrentPosition() * 1.0f / videoPlayer.getDuration() * 100);
-    }
-
     public void updateVideoPlayerScreen(int rpm) {
         runOnUiThread(new Runnable() {
             @Override
@@ -344,18 +355,15 @@ public class VideoplayerActivity extends AppCompatActivity {
                         sensorConnected = rpm>0;
                         //Update RPM
                         videoPlayerViewModel.setRpmData(rpm);
-                        Log.d(TAG, communicationType.name()+" ACTIVATED NOW<<");
                         break;
                     case ACTIVE:
                         //Boolean to unlock video because sensor is connected
                         sensorConnected = rpm>0;
                         //Update RPM
                         videoPlayerViewModel.setRpmData(rpm);
-                        Log.d(TAG, communicationType.name()+" ACTIVATED NOW<<");
                         break;
                     case NONE:
                         sensorConnected = true;
-                        Log.d(TAG, communicationType.name()+" ACTIVATED NOW<<");
                         break;
                     default:
                 }
@@ -653,8 +661,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                 //Asssert of videoplayer remains as it is the main priority
                 if (videoPlayer != null) {
                     checkBackgroundSoundMedia();
-                    checkEffectSoundMedia();
-
+//                    checkEffectSoundMedia();
                     timelineHandler.postDelayed(this::run, 1000);
                 }
             }
@@ -678,10 +685,7 @@ public class VideoplayerActivity extends AppCompatActivity {
             Uri soundItemUri = backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri;
             String localFileName = soundItemUri.getPath().substring(soundItemUri.getPath().lastIndexOf('/'), soundItemUri.getPath().length());
             //If new item is the same then return
-            Log.d(TAG, "localFileName value: "+localFileName);
-            Log.d(TAG, "backgroundSoundUrl value: "+backgroundSoundurl);
             if (backgroundSoundurl.contains(localFileName)) {
-                Log.d(TAG, "STILL SAME VALUE BG SOUND");
                 //Check if already playing else start playing
                 if (!backgroundSoundPlayer.isPlaying()){
                     backgroundSoundPlayer.setRepeatMode(Player.REPEAT_MODE_ONE);
@@ -691,7 +695,6 @@ public class VideoplayerActivity extends AppCompatActivity {
             }
             for (int bgIndex = 0; bgIndex < backgroundSoundPlayer.getMediaItemCount();bgIndex++) {
                 if (backgroundSoundurl.contains(backgroundSoundPlayer.getMediaItemAt(bgIndex).playbackProperties.uri.getPath())) {
-                    Log.d(TAG, "NEW BG SOUND FOUND URL :: "+backgroundSoundurl);
                     if (backgroundSoundPlayer.isPlaying()) {
                         backgroundSoundPlayer.pause();
                     }
@@ -743,7 +746,6 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void startEffectSound(final String effectSoundUrl) {
-        //TODO:  CHECK IF SOUND EFFECT IS ALREADY PLAYING
         if (effectSoundPlayer.getMediaItemCount()>0) {
             for (int effectIndex = 0; effectIndex < effectSoundPlayer.getMediaItemCount();effectIndex++) {
                 Uri soundItemUri = effectSoundPlayer.getMediaItemAt(effectIndex).playbackProperties.uri;
@@ -782,7 +784,7 @@ public class VideoplayerActivity extends AppCompatActivity {
             effectSoundPlayerReady = true;
         }
 
-        return (videoPlayerReady || backgroundPlayerReady || effectSoundPlayerReady);
+        return (videoPlayerReady || backgroundPlayerReady);// || effectSoundPlayerReady);
     }
 
     private void updateLastCadenceMeasurement(final int rpm){
@@ -826,7 +828,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         //START INIT EFFECT SOUND
         initializeEffectSoundPlayer();
-        prepareEffectSoundPlayer();
+//        prepareEffectSoundPlayer();
 
         //START DATA RECEIVERS
         if (communicationType != CommunicationType.NONE) {
@@ -863,9 +865,25 @@ public class VideoplayerActivity extends AppCompatActivity {
         if (videoPlayer == null) {
             // Create the player
             final MediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(this);
-            //DefaultLoadControl.Builder.setPrioritizeTimeOverSizeThresholds(true)
-            DefaultLoadControl defaultLoadControl = new DefaultLoadControl.Builder().setPrioritizeTimeOverSizeThresholds(true).build();
-            videoPlayer = new SimpleExoPlayer.Builder(this).setLoadControl(defaultLoadControl).setMediaSourceFactory(mediaSourceFactory).build();
+
+//            Trackselector to retrieve and start the best track in mp4
+            DefaultTrackSelector trackSelector = new DefaultTrackSelector(getApplicationContext());
+            trackSelector.setParameters(
+                trackSelector.buildUponParameters()
+                        .setForceHighestSupportedBitrate(true)
+                        .build()
+            );
+
+            DefaultLoadControl defaultLoadControl = new DefaultLoadControl.Builder()
+                    .setPrioritizeTimeOverSizeThresholds(true)
+                    .setBufferDurationsMs(50000,50000, 20000,20000)
+                    .build();
+
+            videoPlayer = new SimpleExoPlayer.Builder(this)
+                    .setLoadControl(defaultLoadControl)
+                    //.setTrackSelector(trackSelector) Not using the trackselector
+                    .setMediaSourceFactory(mediaSourceFactory)
+                    .build();
 
             // Set speed of the video (hence buffering /streaming speed )
             PlaybackParameters playbackParameters  = new PlaybackParameters(1.0f, PlaybackParameters.DEFAULT.pitch);
@@ -923,21 +941,19 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void prepareBackgroundSoundPlayer() {
-        videoPlayerViewModel.getSelectedMovie().observe(this, selectedMovie ->{
-            if (selectedMovie != null) {
-                videoPlayerViewModel.getBackgroundSounds(selectedMovie.getId()).observe(this, backgroundSounds -> {
-                    backgroundSoundList = backgroundSounds;
-                    List<Uri> backgroundSoundUriList = new ArrayList<>();
-                    if (backgroundSounds.size()>0) {
-                        for (BackgroundSound backgroundSound: backgroundSounds) {
-                            backgroundSoundUriList.add(Uri.parse(backgroundSound.getSoundUrl()));
-                        }
+        if (movieId != 0) {
+            videoPlayerViewModel.getBackgroundSounds(movieId).observe(this, backgroundSounds -> {
+                backgroundSoundList = backgroundSounds;
+                List<Uri> backgroundSoundUriList = new ArrayList<>();
+                if (backgroundSounds.size()>0) {
+                    for (BackgroundSound backgroundSound: backgroundSounds) {
+                        backgroundSoundUriList.add(Uri.parse(backgroundSound.getSoundUrl()));
                     }
+                }
 
-                    prepareBackgroundSoundMediaSources(backgroundSoundUriList);
-                });
-            }
-        });
+                prepareBackgroundSoundMediaSources(backgroundSoundUriList);
+            });
+        }
     }
 
     private void prepareBackgroundSoundMediaSources(final List<Uri> backgroundSounds) {
@@ -955,21 +971,19 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void prepareEffectSoundPlayer() {
-        videoPlayerViewModel.getSelectedMovie().observe(this, selectedMovie ->{
-            if (selectedMovie != null) {
-                videoPlayerViewModel.getEffectSounds(selectedMovie.getId()).observe(this, effectSounds -> {
-                    effectSoundList = effectSounds;
-                    List<Uri> effectSoundUriList = new ArrayList<>();
-                    if (effectSounds.size()>0) {
-                        for (EffectSound effectSound: effectSounds) {
-                            effectSoundUriList.add(Uri.parse(effectSound.getSoundUrl()));
-                        }
+        if (movieId != 0) {
+            videoPlayerViewModel.getEffectSounds(movieId).observe(this, effectSounds -> {
+                effectSoundList = effectSounds;
+                List<Uri> effectSoundUriList = new ArrayList<>();
+                if (effectSounds.size()>0) {
+                    for (EffectSound effectSound: effectSounds) {
+                        effectSoundUriList.add(Uri.parse(effectSound.getSoundUrl()));
                     }
+                }
 
-                    prepareEffectSoundMediaSources(effectSoundUriList);
-                });
-            }
-        });
+                prepareEffectSoundMediaSources(effectSoundUriList);
+            });
+        }
     }
 
     private void prepareEffectSoundMediaSources(final List<Uri> effectSounds) {

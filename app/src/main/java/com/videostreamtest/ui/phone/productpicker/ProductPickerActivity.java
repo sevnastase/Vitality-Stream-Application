@@ -1,5 +1,6 @@
 package com.videostreamtest.ui.phone.productpicker;
 
+import android.app.ActionBar;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -28,6 +29,10 @@ import com.videostreamtest.workers.ActiveProductsServiceWorker;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
+import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+
 public class ProductPickerActivity extends AppCompatActivity {
     private final static String TAG = ProductPickerActivity.class.getSimpleName();
 
@@ -41,6 +46,13 @@ public class ProductPickerActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_productpicker);
+
+        getWindow().getDecorView().setSystemUiVisibility(
+                SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                        SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                        SYSTEM_UI_FLAG_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
         productPickerViewModel = new ViewModelProvider(this).get(ProductPickerViewModel.class);
 
          /*

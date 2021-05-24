@@ -201,6 +201,7 @@
                 android:layout_width="100dp"
                 android:layout_height="90dp"
                 android:layout_marginTop="5dp"
+                android:layout_marginRight="30dp"
                 android:background="@drawable/imagebutton_blue_border"
                 android:orientation="vertical"
                 android:gravity="center">
@@ -222,6 +223,23 @@
                     android:layout_height="20dp"
                     android:background="@null"
                     android:src="@drawable/minus_small"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/statusbar_praxspin_stop_button_layout"
+                android:layout_width="100dp"
+                android:layout_height="90dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/imagebutton_blue_border"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageButton
+                    android:id="@+id/statusbar_praxspin_stop_button"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:background="@null"
+                    android:src="@drawable/stop_sign_small"/>
             </LinearLayout>
 
         </LinearLayout>

@@ -27,6 +27,7 @@ public class RoutePartsAdapter extends RecyclerView.Adapter<RoutePartsViewHolder
     }
 
     public RoutePartsAdapter(List<Routepart> routeparts, boolean isLocalPlay) {
+        this.isLocalPlay = isLocalPlay;
         if (routeparts.size()>0) {
             movieParts = new MoviePart[routeparts.size()];
             for (int partIndex = 0; partIndex<routeparts.size();partIndex++) {

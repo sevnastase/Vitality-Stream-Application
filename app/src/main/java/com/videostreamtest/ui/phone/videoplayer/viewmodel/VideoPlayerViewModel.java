@@ -35,7 +35,7 @@ public class VideoPlayerViewModel extends AndroidViewModel {
 
     //START VALUES
     private Integer     startRpmValue           = 0;
-    private Integer     startKmhValue           = 18;
+    private Integer     startKmhValue           = 22;
     private Float       startVolumeLevel        = 0.5f;
     private Boolean     statusbarVisibility     = false;
     private Boolean     playerStatus            = false;

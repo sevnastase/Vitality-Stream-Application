@@ -1,9 +1,11 @@
 package com.videostreamtest.ui.phone.productview;
 
+import android.app.ActionBar;
 import android.app.Application;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -39,6 +41,10 @@ import com.videostreamtest.workers.LocalMediaServerAvailableServiceWorker;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
+import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+
 public class ProductActivity extends AppCompatActivity {
 
     private ProductViewModel productViewModel;
@@ -52,6 +58,13 @@ public class ProductActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product);
+
+        getWindow().getDecorView().setSystemUiVisibility(
+                SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                SYSTEM_UI_FLAG_FULLSCREEN |
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
         productViewModel = new ViewModelProvider(this).get(ProductViewModel.class);
         signoutButton = findViewById(R.id.product_logout_button);
         productLogo = findViewById(R.id.product_logo_view);

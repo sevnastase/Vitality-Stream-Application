@@ -1,5 +1,6 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -36,13 +37,23 @@ public class PraxSpinStatusBarFragment extends Fragment {
     private TextView statusbarDistance;
     private TextView statusbarTotalDistance;
     private TextView speedIndicator;
+
+    //CLOCK
+    private Handler loadTimer;
     private Chronometer stopwatchCurrentRide;
-    private RecyclerView statusbarRouteparts;
-    private LinearLayout moviePartsLayout;
+
+    //SPEED BUTTONS
     private ImageButton speedUpButton;
     private ImageButton speedDownButton;
+
+    //STOP BUTTON
+    private ImageButton stopButton;
+
+    //TOGGLE SWITCH FOR ROUTEPARTS
+    private LinearLayout moviePartsLayout;
+    private RecyclerView statusbarRouteparts;
     private ImageButton toggleSwitchRoutepart;
-    private Handler loadTimer;
+
 
     //VOLUME
     private TextView statusbarVolumeIndicator;
@@ -70,6 +81,9 @@ public class PraxSpinStatusBarFragment extends Fragment {
         statusbarVolumeIndicator = view.findViewById(R.id.statusbar_praxspin_volume_indicator);
         volumeUp = view.findViewById(R.id.statusbar_praxspin_volume_button_up);
         volumeDown = view.findViewById(R.id.statusbar_praxspin_volume_button_down);
+        //STOP BUTTON
+        stopButton = view.findViewById(R.id.statusbar_praxspin_stop_button);
+
         //PROGRESSBAR
         progressBar = view.findViewById(R.id.statusbar_praxspin_progress_indicator);
 
@@ -77,6 +91,7 @@ public class PraxSpinStatusBarFragment extends Fragment {
         stopwatchCurrentRide.setFormat(getString(R.string.videoplayer_chronometer_message));
         stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
 
+        //SPEED BUTTONS
         speedIndicator = view.findViewById(R.id.statusbar_praxspin_speed_indicator);
         speedUpButton = view.findViewById(R.id.statusbar_praxspin_speed_button_up);
         speedDownButton = view.findViewById(R.id.statusbar_praxspin_speed_button_down);
@@ -93,6 +108,10 @@ public class PraxSpinStatusBarFragment extends Fragment {
 
         toggleSwitchRoutepart.setOnClickListener(clickedView -> {
             toggleMoviePartsVisibility();
+        });
+
+        stopButton.setOnClickListener(clickedView -> {
+            ((Activity) view.getContext()).finish();
         });
 
         return view;

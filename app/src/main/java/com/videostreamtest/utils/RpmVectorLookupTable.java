@@ -11,7 +11,9 @@ public class RpmVectorLookupTable {
     final static HashMap<Integer, Float> lookupTable = new HashMap<>();
 
     public final static float getPlaybackspeed(int rpm) {
-        RpmVectorLookupTable.calculateLookupTable();
+        if (lookupTable.size() ==0) {
+            RpmVectorLookupTable.calculateLookupTable();
+        }
         return lookupTable.get(rpm);
     }
 
