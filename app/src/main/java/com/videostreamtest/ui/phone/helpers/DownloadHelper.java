@@ -163,7 +163,7 @@ public class DownloadHelper {
             String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + moviePart.getMovieId();
             File possibleMovieLocation = new File(pathname);
             if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
-                return new File(moviePartFileName);
+                return new File(pathname+"/"+moviePartFileName);
             }
         }
         return null;
