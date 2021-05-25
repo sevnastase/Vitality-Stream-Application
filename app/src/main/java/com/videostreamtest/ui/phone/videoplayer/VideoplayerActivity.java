@@ -514,8 +514,9 @@ public class VideoplayerActivity extends AppCompatActivity {
                     }
                     playerView.hideController();
 
-                    if (frameNumber > 30) {
-                        positionSecond = frameNumber / 30;
+                    int fps = selectedMovie.getRecordedFps();
+                    if (frameNumber > fps) {
+                        positionSecond = frameNumber / fps;
                         videoPlayer.seekTo(positionSecond*1000);
                     } else {
                         videoPlayer.seekTo(0);

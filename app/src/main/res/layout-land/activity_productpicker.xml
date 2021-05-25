@@ -36,9 +36,9 @@
         android:backgroundTint="@android:color/holo_red_dark"
         android:textColor="@android:color/white"
         android:text="@string/productpicker_signout_button_text"
-        android:textSize="14sp"
-        android:padding="15dp"
-        android:layout_margin="26dp"
+        android:textSize="8sp"
+        android:padding="10dp"
+        android:layout_margin="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 

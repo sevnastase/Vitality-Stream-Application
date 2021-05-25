@@ -66,4 +66,5 @@
     <string name="login_action_password_forgotten">Password forgotten?</string>
     <string name="catalog_download_status_message">Download status: %,.2f percent</string>
     <string name="catalog_already_downloading_message">Movie is still downloading.</string>
+    <string name="productpicker_close_button_text">Close</string>
 </resources>

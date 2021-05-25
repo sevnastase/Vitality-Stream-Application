@@ -112,7 +112,7 @@ public class ProductActivity extends AppCompatActivity {
                 appBuildNumber.setText(ConfigurationHelper.getVersionNumber(getApplicationContext()));
 
                 if (currentConfig.getProductCount() > 1) {
-                    signoutButton.setText("Close");
+                    signoutButton.setText(getString(R.string.productpicker_close_button_text));
                 }
                 signoutButton.setOnClickListener(view -> {
                     if (currentConfig.getProductCount() == 1) {
