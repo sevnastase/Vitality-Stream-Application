@@ -77,7 +77,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     private PlayerView playerView;
     private SimpleExoPlayer videoPlayer;
     private SimpleExoPlayer backgroundSoundPlayer;
-    private SimpleExoPlayer effectSoundPlayer;
+//    private SimpleExoPlayer effectSoundPlayer;
 
     //TODO: for later replacement or removal
     private RecyclerView routePartsRecyclerview;
@@ -266,7 +266,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         updateLastCadenceMeasurement(66);
         updateLastCadenceMeasurement(66);
 
-        updateVideoPlayerScreen(0);
+        updateVideoPlayerScreen(66);
 
         setUp();
 
@@ -509,9 +509,9 @@ public class VideoplayerActivity extends AppCompatActivity {
                     if (backgroundSoundPlayer !=  null) {
                         backgroundSoundPlayer.pause();
                     }
-                    if (effectSoundPlayer != null) {
-                        effectSoundPlayer.pause();
-                    }
+//                    if (effectSoundPlayer != null) {
+//                        effectSoundPlayer.pause();
+//                    }
                     playerView.hideController();
 
                     int fps = selectedMovie.getRecordedFps();
@@ -581,6 +581,13 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        releasePlayers();
+        playerView.setPlayer(null);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         stopSensorService();
@@ -590,6 +597,7 @@ public class VideoplayerActivity extends AppCompatActivity {
             Log.e(TAG, illegalArgumentException.getLocalizedMessage());
         }
         releasePlayers();
+        playerView.setPlayer(null);
     }
 
     private void toggleStatusScreen() {
@@ -674,7 +682,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         if (backgroundSoundList.size()>0) {
             long currentSecond = (videoPlayer.getCurrentPosition() / 1000L);
             for (final BackgroundSound backgroundSound : backgroundSoundList) {
-                if ((backgroundSound.getFramenumber()/30) == currentSecond) {
+                if ((backgroundSound.getFramenumber()/selectedMovie.getRecordedFps()) == currentSecond) {
                     switchToNewBackgroundMedia(backgroundSound.getSoundUrl());
                 }
             }
@@ -718,11 +726,11 @@ public class VideoplayerActivity extends AppCompatActivity {
         long currentSecond = (videoPlayer.getCurrentPosition() / 1000L);
         if (backgroundSoundList.size()>0) {
             for (BackgroundSound backgroundSound: backgroundSoundList) {
-                int backgroundsoundTriggerSecond = backgroundSound.getFramenumber()/30;
+                int backgroundsoundTriggerSecond = backgroundSound.getFramenumber()/selectedMovie.getRecordedFps();
 
                 if (currentSecond > backgroundsoundTriggerSecond) {
                     if (selectBackgroundSound != null) {
-                        if (currentSecond > (selectBackgroundSound.getFramenumber()/30)) {
+                        if (currentSecond > (selectBackgroundSound.getFramenumber()/selectedMovie.getRecordedFps())) {
                             selectBackgroundSound = backgroundSound;
                         }
                     } else
@@ -735,41 +743,41 @@ public class VideoplayerActivity extends AppCompatActivity {
         return selectBackgroundSound;
     }
 
-    private void checkEffectSoundMedia() {
-        if (effectSoundList.size()>0) {
-            long currentSecond = (videoPlayer.getCurrentPosition() / 1000L);
-            for (final EffectSound effectSound : effectSoundList) {
-                if ((effectSound.getFramenumber()/30) == currentSecond) {
-                    startEffectSound(effectSound.getSoundUrl());
-                }
-            }
-        }
-    }
+//    private void checkEffectSoundMedia() {
+//        if (effectSoundList.size()>0) {
+//            long currentSecond = (videoPlayer.getCurrentPosition() / 1000L);
+//            for (final EffectSound effectSound : effectSoundList) {
+//                if ((effectSound.getFramenumber()/selectedMovie.getRecordedFps()) == currentSecond) {
+//                    startEffectSound(effectSound.getSoundUrl());
+//                }
+//            }
+//        }
+//    }
 
-    private void startEffectSound(final String effectSoundUrl) {
-        if (effectSoundPlayer.getMediaItemCount()>0) {
-            for (int effectIndex = 0; effectIndex < effectSoundPlayer.getMediaItemCount();effectIndex++) {
-                Uri soundItemUri = effectSoundPlayer.getMediaItemAt(effectIndex).playbackProperties.uri;
-                String localFileName = soundItemUri.getPath().substring(soundItemUri.getPath().lastIndexOf('/'), soundItemUri.getPath().length());
-
-                if (effectSoundUrl.contains(localFileName)) {
-                    Log.d(TAG, "EFFECT SOUND FOUND URL :: "+effectSoundUrl);
-                    if (effectSoundPlayer.isPlaying()) {
-                        effectSoundPlayer.pause();
-                    }
-                    effectSoundPlayer.moveMediaItem(effectIndex, 1);
-                    effectSoundPlayer.setRepeatMode(Player.REPEAT_MODE_OFF);
-                    effectSoundPlayer.next();
-                    effectSoundPlayer.play();
-                }
-            }
-        }
-    }
+//    private void startEffectSound(final String effectSoundUrl) {
+//        if (effectSoundPlayer.getMediaItemCount()>0) {
+//            for (int effectIndex = 0; effectIndex < effectSoundPlayer.getMediaItemCount();effectIndex++) {
+//                Uri soundItemUri = effectSoundPlayer.getMediaItemAt(effectIndex).playbackProperties.uri;
+//                String localFileName = soundItemUri.getPath().substring(soundItemUri.getPath().lastIndexOf('/'), soundItemUri.getPath().length());
+//
+//                if (effectSoundUrl.contains(localFileName)) {
+//                    Log.d(TAG, "EFFECT SOUND FOUND URL :: "+effectSoundUrl);
+//                    if (effectSoundPlayer.isPlaying()) {
+//                        effectSoundPlayer.pause();
+//                    }
+//                    effectSoundPlayer.moveMediaItem(effectIndex, 1);
+//                    effectSoundPlayer.setRepeatMode(Player.REPEAT_MODE_OFF);
+//                    effectSoundPlayer.next();
+//                    effectSoundPlayer.play();
+//                }
+//            }
+//        }
+//    }
 
     private boolean isPraxtourMediaPlayerReady() {
         boolean videoPlayerReady = false;
         boolean backgroundPlayerReady = false;
-        boolean effectSoundPlayerReady = false;
+//        boolean effectSoundPlayerReady = false;
 
         if (videoPlayer.getMediaItemCount()>0) {
             videoPlayerReady = (videoPlayer.getPlaybackState() == Player.STATE_READY);
@@ -779,11 +787,11 @@ public class VideoplayerActivity extends AppCompatActivity {
         } else {
             backgroundPlayerReady = true;
         }
-        if (effectSoundPlayer.getMediaItemCount()>0) {
-            effectSoundPlayerReady = (effectSoundPlayer.getPlaybackState() == Player.STATE_READY);
-        } else {
-            effectSoundPlayerReady = true;
-        }
+//        if (effectSoundPlayer.getMediaItemCount()>0) {
+//            effectSoundPlayerReady = (effectSoundPlayer.getPlaybackState() == Player.STATE_READY);
+//        } else {
+//            effectSoundPlayerReady = true;
+//        }
 
         return (videoPlayerReady || backgroundPlayerReady);// || effectSoundPlayerReady);
     }
@@ -828,7 +836,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         prepareBackgroundSoundPlayer();
 
         //START INIT EFFECT SOUND
-        initializeEffectSoundPlayer();
+//        initializeEffectSoundPlayer();
 //        prepareEffectSoundPlayer();
 
         //START DATA RECEIVERS
@@ -877,7 +885,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
             DefaultLoadControl defaultLoadControl = new DefaultLoadControl.Builder()
                     .setPrioritizeTimeOverSizeThresholds(true)
-                    .setBufferDurationsMs(50000,50000, 20000,20000)
+//                    .setBufferDurationsMs(50000,50000, 20000,20000)
                     .build();
 
             videoPlayer = new SimpleExoPlayer.Builder(this)
@@ -911,16 +919,16 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
     }
 
-    private void initializeEffectSoundPlayer() {
-        if (effectSoundPlayer == null) {
-            final MediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(this);
-            DefaultLoadControl defaultLoadControl = new DefaultLoadControl.Builder().setPrioritizeTimeOverSizeThresholds(true).build();
-            effectSoundPlayer = new SimpleExoPlayer.Builder(this).setLoadControl(defaultLoadControl).setMediaSourceFactory(mediaSourceFactory).build();
-
-            PlaybackParameters playbackParameters  = new PlaybackParameters(1.0f, PlaybackParameters.DEFAULT.pitch);
-            effectSoundPlayer.setPlaybackParameters(playbackParameters);
-        }
-    }
+//    private void initializeEffectSoundPlayer() {
+//        if (effectSoundPlayer == null) {
+//            final MediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(this);
+//            DefaultLoadControl defaultLoadControl = new DefaultLoadControl.Builder().setPrioritizeTimeOverSizeThresholds(true).build();
+//            effectSoundPlayer = new SimpleExoPlayer.Builder(this).setLoadControl(defaultLoadControl).setMediaSourceFactory(mediaSourceFactory).build();
+//
+//            PlaybackParameters playbackParameters  = new PlaybackParameters(1.0f, PlaybackParameters.DEFAULT.pitch);
+//            effectSoundPlayer.setPlaybackParameters(playbackParameters);
+//        }
+//    }
 
     private void prepareVideoMediaSource(Uri mUri) {
         final MediaItem mediaItem = MediaItem.fromUri(mUri);
@@ -971,35 +979,35 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
     }
 
-    private void prepareEffectSoundPlayer() {
-        if (movieId != 0) {
-            videoPlayerViewModel.getEffectSounds(movieId).observe(this, effectSounds -> {
-                effectSoundList = effectSounds;
-                List<Uri> effectSoundUriList = new ArrayList<>();
-                if (effectSounds.size()>0) {
-                    for (EffectSound effectSound: effectSounds) {
-                        effectSoundUriList.add(Uri.parse(effectSound.getSoundUrl()));
-                    }
-                }
+//    private void prepareEffectSoundPlayer() {
+//        if (movieId != 0) {
+//            videoPlayerViewModel.getEffectSounds(movieId).observe(this, effectSounds -> {
+//                effectSoundList = effectSounds;
+//                List<Uri> effectSoundUriList = new ArrayList<>();
+//                if (effectSounds.size()>0) {
+//                    for (EffectSound effectSound: effectSounds) {
+//                        effectSoundUriList.add(Uri.parse(effectSound.getSoundUrl()));
+//                    }
+//                }
+//
+//                prepareEffectSoundMediaSources(effectSoundUriList);
+//            });
+//        }
+//    }
 
-                prepareEffectSoundMediaSources(effectSoundUriList);
-            });
-        }
-    }
-
-    private void prepareEffectSoundMediaSources(final List<Uri> effectSounds) {
-        if (effectSounds.size()>0) {
-            for (Uri uri: effectSounds) {
-                if (isSoundOnDevice) {
-                    uri = DownloadHelper.getLocalSound(getApplicationContext(), uri);
-                }
-
-                MediaItem mediaItem = MediaItem.fromUri(uri);
-                effectSoundPlayer.addMediaItem(mediaItem);
-            }
-            effectSoundPlayer.prepare();
-        }
-    }
+//    private void prepareEffectSoundMediaSources(final List<Uri> effectSounds) {
+//        if (effectSounds.size()>0) {
+//            for (Uri uri: effectSounds) {
+//                if (isSoundOnDevice) {
+//                    uri = DownloadHelper.getLocalSound(getApplicationContext(), uri);
+//                }
+//
+//                MediaItem mediaItem = MediaItem.fromUri(uri);
+//                effectSoundPlayer.addMediaItem(mediaItem);
+//            }
+//            effectSoundPlayer.prepare();
+//        }
+//    }
 
     private void releasePlayers() {
         if (videoPlayer != null) {
@@ -1011,10 +1019,10 @@ public class VideoplayerActivity extends AppCompatActivity {
             backgroundSoundPlayer = null;
         }
 
-        if (effectSoundPlayer != null) {
-            effectSoundPlayer.release();
-            effectSoundPlayer = null;
-        }
+//        if (effectSoundPlayer != null) {
+//            effectSoundPlayer.release();
+//            effectSoundPlayer = null;
+//        }
     }
 
     private void pausePlayer() {

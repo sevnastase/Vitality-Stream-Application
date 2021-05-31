@@ -42,8 +42,6 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
             Log.d(TAG, "Action: " + intent.getAction() + "\n");
             Log.d(TAG, "Intent cadence received: "+rpmReceived+"\n");
 
-//            VideoplayerActivity.getInstance().updateDeviceStatusField(serviceStatus);
-
             if (serviceStatus.toLowerCase().contains("dead")) {
                 VideoplayerActivity.getInstance().setDeadDeviceParams();
             } else {
@@ -51,14 +49,14 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
 
                 /* ONLY FOR VIDEO SPEED!
                  * When the rpm is above 0 ( there is activity) ) and
-                 * when rpm is below minimum speed of 35
-                 * set rpm on minimum speed of 35
+                 * when rpm is below minimum speed
+                 * set rpm on static minimum speed
                  */
-                if (rpmReceived > 0 && rpmReceived < 40) {
-                    rpmReceived = 40;
+                if (rpmReceived > 0 && rpmReceived < 50) {
+                    rpmReceived = 50;
                 }
-                if (rpmReceived > 110) {
-                    rpmReceived = 110;
+                if (rpmReceived > 100) {
+                    rpmReceived = 100;
                 }
                 VideoplayerActivity.getInstance().updateVideoPlayerParams(rpmReceived);
             }
