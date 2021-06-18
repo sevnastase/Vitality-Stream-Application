@@ -15,6 +15,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -56,6 +57,11 @@ import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.RpmVectorLookupTable;
 
+import org.videolan.libvlc.LibVLC;
+import org.videolan.libvlc.Media;
+import org.videolan.libvlc.MediaPlayer;
+import org.videolan.libvlc.util.VLCVideoLayout;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,6 +84,12 @@ public class VideoplayerActivity extends AppCompatActivity {
     private SimpleExoPlayer videoPlayer;
     private SimpleExoPlayer backgroundSoundPlayer;
 //    private SimpleExoPlayer effectSoundPlayer;
+
+    //VLC
+    private VLCVideoLayout videoLayout;
+    private LibVLC libVLC;
+    private boolean vlcLoaded = false;
+    private boolean isBestStreamLoaded = false;
 
     //TODO: for later replacement or removal
     private RecyclerView routePartsRecyclerview;
@@ -109,8 +121,111 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private int[] lastRpmMeasurements = new int[5];
     private int currentMeasurementIteration = 0;
+    private int numberOfFalsePositives = 0;
+
+    private MediaPlayer mediaPlayer;
 
     private boolean routePaused = false;
+
+    //VLC stuff
+    private LibVLC createLibVLC() {
+        final List<String> args = new ArrayList<>();
+        args.add("-vvv");
+        args.add("--sout-all");
+        //LOCAL PLAY
+        args.add("--file-caching=30000");
+        //STREAMING
+        args.add("--drop-late-frames");
+        args.add("--network-caching=20000");
+
+        LibVLC libVLC = new LibVLC(this, args);
+        return libVLC;
+    }
+
+    private void setVideoFeatures() {
+        mediaPlayer.setVideoTrackEnabled(true);
+
+        int sw = getWindow().getDecorView().getWidth();
+        int sh = getWindow().getDecorView().getHeight();
+
+        // sanity check
+        if (sw * sh == 0) {
+            Log.e(TAG, "Invalid surface size");
+            return;
+        }
+
+        mediaPlayer.getVLCVout().setWindowSize(sw, sh);
+        mediaPlayer.setEventListener(new MediaPlayer.EventListener() {
+            @Override
+            public void onEvent(MediaPlayer.Event event) {
+                Log.d(TAG, "TYPE : "+event.type);
+                Log.d(TAG, "TYPE BUFFERING: "+MediaPlayer.Event.Buffering);
+                Log.d(TAG, "TYPE PLAYING: "+MediaPlayer.Event.Playing);
+
+                if (event.type != MediaPlayer.Event.Buffering && isBestStreamLoaded) {
+                    vlcLoaded = true;
+                }
+
+                if (event.type == MediaPlayer.Event.EndReached) {
+                    showFinishScreen();
+                }
+
+                if (mediaPlayer!= null) {
+                    if (mediaPlayer.getVideoTracksCount() > 0) {
+                        int id = -1;
+                        for (MediaPlayer.TrackDescription trackDescription : mediaPlayer.getVideoTracks()) {
+                            if (trackDescription.id > id) {
+                                id = trackDescription.id;
+                            }
+                            Log.d(TAG, "name:" + trackDescription.name + " :: id:" + trackDescription.id);
+                        }
+                        if (id > 0 && mediaPlayer.getVideoTrack() != id) {
+                            mediaPlayer.setVideoTrack(id);
+                        }
+                    }
+                    if (mediaPlayer.getCurrentVideoTrack()!=null) {
+                        Log.d(TAG, "Height :: " + mediaPlayer.getCurrentVideoTrack().height);
+                        if (mediaPlayer.getCurrentVideoTrack().height >= 720) {
+                            isBestStreamLoaded = true;
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    private void setMediaPlayer() {
+        if (libVLC != null) {
+            mediaPlayer = new MediaPlayer(libVLC);
+        } else {
+            libVLC = createLibVLC();
+            mediaPlayer = new MediaPlayer(libVLC);
+        }
+
+        mediaPlayer.attachViews(videoLayout, null, false, false);
+
+        if (mediaPlayer.getMedia() == null) {
+            if (isLocalPlay) {
+                final Media media = new Media(libVLC, videoUri);
+                //Streaming
+//                media.setHWDecoderEnabled(true, false);
+//                media.addOption(":clock-jitter=0");
+//                media.addOption(":clock-synchro=0");
+                //end
+                mediaPlayer.setMedia(media);
+                media.release();
+            } else {
+                final Media media = new Media(libVLC, Uri.parse(videoUri));
+                mediaPlayer.setMedia(media);
+                media.release();
+            }
+        }
+        setVideoFeatures();
+
+        mediaPlayer.setRate(1.0f);
+        mediaPlayer.setVolume(80);
+        mediaPlayer.play();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,13 +242,19 @@ public class VideoplayerActivity extends AppCompatActivity {
 
 //        castContext = CastContext.getSharedInstance(this); TODO; Google cast implementation
 
+        //EXO player
         playerView = findViewById(R.id.playerView);
         playerView.setUseController(false);
+
+        // VLC PLayer
+        videoLayout = findViewById(R.id.vlc_player_view);
 
         statusDialog = findViewById(R.id.status_dialog_videoplayer);
         loadingView = findViewById(R.id.loading_view);
 
         isSoundOnDevice = DownloadHelper.isSoundPresent(getApplicationContext());
+
+        libVLC = createLibVLC();
 
         //Calculate rpm lookup table
         RpmVectorLookupTable.getPlaybackspeed(60);
@@ -209,17 +330,21 @@ public class VideoplayerActivity extends AppCompatActivity {
                         .replace(R.id.videoplayer_framelayout_statusbar, PraxSpinStatusBarFragment.class, arguments)
                         .commit();
 
-                //Pass movie details with a second based timer
+                //Pass movie details with a second based timer TODO:move to setTimeLineEvent method in this class
                 Handler praxSpinHandler = new Handler();
                 Runnable runnableMovieDetails = new Runnable() {
                     @Override
                     public void run() {
-                        if (videoPlayer != null) {
-                            videoPlayerViewModel.setMovieSpendDurationSeconds(videoPlayer.getCurrentPosition());
-                            videoPlayerViewModel.setMovieTotalDurationSeconds(videoPlayer.getDuration());
+                        if (mediaPlayer != null) {
+                            Log.d(TAG, "TIME "+mediaPlayer.getTime());
+                            videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getTime());
+                            if (mediaPlayer.getMedia()!= null && mediaPlayer.getMedia().getDuration() != -1) {
+                                Log.d(TAG, "DURATION "+mediaPlayer.getMedia().getDuration());
+                                videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getMedia().getDuration());
+                            }
 
-                            praxSpinHandler.postDelayed(this::run, 1000);
                         }
+                        praxSpinHandler.postDelayed(this::run, 1000);
                     }
                 };
                 praxSpinHandler.postDelayed(runnableMovieDetails, 0);
@@ -233,6 +358,9 @@ public class VideoplayerActivity extends AppCompatActivity {
                         // Set speed of the video (hence buffering /streaming speed )
                         PlaybackParameters playbackParameters  = new PlaybackParameters(RpmVectorLookupTable.getPlayBackSpeedFromKmh(kmhData), PlaybackParameters.DEFAULT.pitch);
                         videoPlayer.setPlaybackParameters(playbackParameters);
+                        if (mediaPlayer!= null) {
+                            mediaPlayer.setRate(RpmVectorLookupTable.getPlayBackSpeedFromKmh(kmhData));
+                        }
                     }
                 });
             }
@@ -258,6 +386,9 @@ public class VideoplayerActivity extends AppCompatActivity {
                 backgroundSoundPlayer.setVolume(volumeLevel);
                 //effectSoundPlayer.setVolume(volumeLevel);
             }
+            if (mediaPlayer!=null) {
+                mediaPlayer.setVolume(volumeLevel.intValue()*100);
+            }
         });
 
         updateLastCadenceMeasurement(66);
@@ -266,7 +397,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         updateLastCadenceMeasurement(66);
         updateLastCadenceMeasurement(66);
 
-        updateVideoPlayerScreen(66);
+        updateVideoPlayerScreen(0);
 
         setUp();
 
@@ -321,8 +452,18 @@ public class VideoplayerActivity extends AppCompatActivity {
                     if (videoPlayer != null) {
                         //progressbar.setProgress((int) ((exoPlayer.getCurrentPosition()*100)/exoPlayer.getDuration()));
                         videoPlayerViewModel.setRpmData(60);//new Random().nextInt(80));
-                        videoPlayerViewModel.setMovieSpendDurationSeconds(videoPlayer.getCurrentPosition());
-                        videoPlayerViewModel.setMovieTotalDurationSeconds(videoPlayer.getDuration());
+
+                        if (mediaPlayer!=null) {
+                            Log.d(TAG, "TIME " + mediaPlayer.getTime());
+                            videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getTime());
+                            if (mediaPlayer.getMedia().getDuration() != -1) {
+                                Log.d(TAG, "DURATION " + mediaPlayer.getMedia().getDuration());
+                                videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getMedia().getDuration());
+                            }
+                        }
+
+//                        videoPlayerViewModel.setMovieSpendDurationSeconds(videoPlayer.getCurrentPosition());
+//                        videoPlayerViewModel.setMovieTotalDurationSeconds(videoPlayer.getDuration());
 
                         handler.postDelayed(this::run, 1000);
                     }
@@ -343,9 +484,17 @@ public class VideoplayerActivity extends AppCompatActivity {
                 //First update the measurements with the latest sensor data
                 updateLastCadenceMeasurement(rpm);
 
-                if (videoPlayer != null) {
+                if (videoPlayer != null && videoPlayer.isPlaying()) {
                     videoPlayerViewModel.setMovieSpendDurationSeconds(videoPlayer.getCurrentPosition());
                     videoPlayerViewModel.setMovieTotalDurationSeconds(videoPlayer.getDuration());
+                }
+                if (mediaPlayer!=null) {
+                    Log.d(TAG, "TIME "+mediaPlayer.getTime());
+                    videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getTime());
+                    if (mediaPlayer.getMedia().getDuration() != -1) {
+                        Log.d(TAG, "DURATION "+mediaPlayer.getMedia().getDuration());
+                        videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getMedia().getDuration());
+                    }
                 }
 
                 /* Update the on-screen data based on CommunicationType */
@@ -398,7 +547,9 @@ public class VideoplayerActivity extends AppCompatActivity {
                             //Set the speed of the player based on our cadence rpm reading
                             PlaybackParameters playbackRpmParameters = new PlaybackParameters(RpmVectorLookupTable.getPlaybackspeed(rpm), PlaybackParameters.DEFAULT.pitch);
                             videoPlayer.setPlaybackParameters(playbackRpmParameters);
-
+                            if (mediaPlayer!= null) {
+                                mediaPlayer.setRate(RpmVectorLookupTable.getPlaybackspeed(rpm));
+                            }
                             break;
                         case ACTIVE:
 
@@ -462,10 +613,20 @@ public class VideoplayerActivity extends AppCompatActivity {
             backToOverview.requestFocus();
         } else {
             videoPlayerViewModel.setStatusbarVisible(true);
+            numberOfFalsePositives = 0;
         }
 
         videoPlayer.setPlayWhenReady(!videoPlayer.getPlayWhenReady());
         videoPlayer.getPlaybackState();
+
+        if (mediaPlayer!=null) {
+            if(mediaPlayer.isPlaying()) {
+                mediaPlayer.pause();
+            } else {
+                mediaPlayer.play();
+            }
+        }
+
         playerView.hideController();
         toggleStatusScreen();
     }
@@ -495,36 +656,74 @@ public class VideoplayerActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (videoPlayer.isCurrentWindowSeekable()) {
+                if (mediaPlayer.isSeekable()) {
                     long positionSecond = 0;
 
                     videoPlayerViewModel.setStatusbarVisible(false);
                     videoPlayerViewModel.setPlayerPaused(true);
                     playerView.setVisibility(View.GONE);
+                    videoLayout.setVisibility(View.GONE);
 
+                    //Loading message
                     TextView loadingMessage = findViewById(R.id.loading_message);
                     loadingMessage.setText(getString(R.string.loading_message));
                     loadingView.setVisibility(View.VISIBLE);
-                    videoPlayer.pause();
+
+                    //Exoplayer needs to pause before seeking
+//                    videoPlayer.pause();
+
+                    //Sounds
                     if (backgroundSoundPlayer !=  null) {
                         backgroundSoundPlayer.pause();
                     }
 //                    if (effectSoundPlayer != null) {
 //                        effectSoundPlayer.pause();
 //                    }
-                    playerView.hideController();
 
                     int fps = selectedMovie.getRecordedFps();
                     if (frameNumber > fps) {
                         positionSecond = frameNumber / fps;
-                        videoPlayer.seekTo(positionSecond*1000);
+//                        mediaPlayer.setPosition(positionSecond*1000);
+                        mediaPlayer.setTime(positionSecond*1000);
                     } else {
-                        videoPlayer.seekTo(0);
+                        mediaPlayer.setTime(0);
                     }
 
+                    //Set number of false positives to 0 again as the player starts again
+                    numberOfFalsePositives = 0;
+
                     waitUntilVideoIsReady(3);
-//                    setFocusOnCurrentRoutePart(); //MOVE TO FRAGMENT (DISPLAY WHEN NECESSARY)
                 }
+//                if (videoPlayer.isCurrentWindowSeekable()) {
+//                    long positionSecond = 0;
+//
+//                    videoPlayerViewModel.setStatusbarVisible(false);
+//                    videoPlayerViewModel.setPlayerPaused(true);
+//                    playerView.setVisibility(View.GONE);
+//
+//                    TextView loadingMessage = findViewById(R.id.loading_message);
+//                    loadingMessage.setText(getString(R.string.loading_message));
+//                    loadingView.setVisibility(View.VISIBLE);
+//                    videoPlayer.pause();
+//                    if (backgroundSoundPlayer !=  null) {
+//                        backgroundSoundPlayer.pause();
+//                    }
+////                    if (effectSoundPlayer != null) {
+////                        effectSoundPlayer.pause();
+////                    }
+//                    playerView.hideController();
+//
+//                    int fps = selectedMovie.getRecordedFps();
+//                    if (frameNumber > fps) {
+//                        positionSecond = frameNumber / fps;
+//                        videoPlayer.seekTo(positionSecond*1000);
+//                    } else {
+//                        videoPlayer.seekTo(0);
+//                    }
+//
+//                    waitUntilVideoIsReady(3);
+////                    setFocusOnCurrentRoutePart(); //MOVE TO FRAGMENT (DISPLAY WHEN NECESSARY)
+//                }
             }
         });
     }
@@ -609,10 +808,19 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void playVideo() {
-        playerView.setVisibility(View.VISIBLE);
-        loadingView.setVisibility(View.GONE);
+        videoLayout.setVisibility(View.VISIBLE);
+//        playerView.setVisibility(View.VISIBLE);
+//        loadingView.setVisibility(View.GONE);
         videoPlayerViewModel.setStatusbarVisible(true);
-        videoPlayer.play();
+//        videoPlayer.play();
+
+        if (mediaPlayer ==null) {
+            setMediaPlayer();
+
+        } else {
+            setVideoFeatures();
+            mediaPlayer.play();
+        }
 
         if (getCurrentBackgroundSoundByCurrentPostion() != null) {
             switchToNewBackgroundMedia(getCurrentBackgroundSoundByCurrentPostion().getSoundUrl());
@@ -648,13 +856,21 @@ public class VideoplayerActivity extends AppCompatActivity {
                             (sensorConnected || ApplicationSettings.DEVELOPER_MODE)
                     ) {
                         isLoading = false;
+                        isBestStreamLoaded = false;
                         playVideo();
                     } else {
                         isLoading = true;
                         Log.d(TAG, "CurrentSecondWaiting: "+currentSecond);
-                        Log.d(TAG, "Player State: "+ videoPlayer.getPlaybackState());
+                        Log.d(TAG, "EXO Player State: "+ videoPlayer.getPlaybackState());
+
                         currentSecond++;
-                        handler.postDelayed(this::run, 1000);
+                        //Maximize waiting for video and/or sensor
+                        if (currentSecond > 20) {
+                            Toast.makeText(VideoplayerActivity.this, getString(R.string.videoplayer_sensor_wait_error_message), Toast.LENGTH_LONG).show();
+                            VideoplayerActivity.this.finish();
+                        } else {
+                            handler.postDelayed(this::run, 1000);
+                        }
                     }
                 }
             }
@@ -667,12 +883,21 @@ public class VideoplayerActivity extends AppCompatActivity {
         Runnable runnableMovieDetails = new Runnable() {
             @Override
             public void run() {
-                //Asssert of videoplayer remains as it is the main priority
-                if (videoPlayer != null) {
+                if (mediaPlayer != null) {
+                    Log.d(TAG, "VLC Player Position: " + mediaPlayer.getPosition());
+                    Log.d(TAG, "VLC Player Time: " + mediaPlayer.getTime());
+                    if (mediaPlayer.getMedia()!= null) {
+                        Log.d(TAG, "VLC Player Media total duration: " + mediaPlayer.getMedia().getDuration());
+                    }
                     checkBackgroundSoundMedia();
 //                    checkEffectSoundMedia();
                     timelineHandler.postDelayed(this::run, 1000);
                 }
+                //Asssert of videoplayer remains as it is the main priority
+                if (videoPlayer != null) {
+
+                }
+
             }
         };
         timelineHandler.postDelayed(runnableMovieDetails, 0);
@@ -680,7 +905,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private void checkBackgroundSoundMedia() {
         if (backgroundSoundList.size()>0) {
-            long currentSecond = (videoPlayer.getCurrentPosition() / 1000L);
+            long currentSecond = (mediaPlayer.getTime() / 1000L);
             for (final BackgroundSound backgroundSound : backgroundSoundList) {
                 if ((backgroundSound.getFramenumber()/selectedMovie.getRecordedFps()) == currentSecond) {
                     switchToNewBackgroundMedia(backgroundSound.getSoundUrl());
@@ -693,6 +918,9 @@ public class VideoplayerActivity extends AppCompatActivity {
         if (backgroundSoundPlayer.getMediaItemCount()>0) {
             Uri soundItemUri = backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri;
             String localFileName = soundItemUri.getPath().substring(soundItemUri.getPath().lastIndexOf('/'), soundItemUri.getPath().length());
+            Log.d(TAG, "STREAM SOUND URI :: "+soundItemUri);
+            Log.d(TAG, "LOCAL SOUND URI :: "+localFileName);
+
             //If new item is the same then return
             if (backgroundSoundurl.contains(localFileName)) {
                 //Check if already playing else start playing
@@ -723,7 +951,7 @@ public class VideoplayerActivity extends AppCompatActivity {
      */
     private BackgroundSound getCurrentBackgroundSoundByCurrentPostion() {
         BackgroundSound selectBackgroundSound = null;
-        long currentSecond = (videoPlayer.getCurrentPosition() / 1000L);
+        long currentSecond = (mediaPlayer.getTime() / 1000L);
         if (backgroundSoundList.size()>0) {
             for (BackgroundSound backgroundSound: backgroundSoundList) {
                 int backgroundsoundTriggerSecond = backgroundSound.getFramenumber()/selectedMovie.getRecordedFps();
@@ -793,10 +1021,21 @@ public class VideoplayerActivity extends AppCompatActivity {
 //            effectSoundPlayerReady = true;
 //        }
 
-        return (videoPlayerReady || backgroundPlayerReady);// || effectSoundPlayerReady);
+        return (videoPlayerReady || backgroundPlayerReady || isBestStreamLoaded);// || effectSoundPlayerReady);
     }
 
     private void updateLastCadenceMeasurement(final int rpm){
+        if (rpm == 0) {
+            numberOfFalsePositives++;
+            if (numberOfFalsePositives > 3) {
+                updateMeasurementList(rpm);
+            }
+        } else {
+            updateMeasurementList(rpm);
+        }
+    }
+
+    private void updateMeasurementList(final int rpm) {
         if (currentMeasurementIteration < lastRpmMeasurements.length) {
             lastRpmMeasurements[currentMeasurementIteration] = rpm;
             currentMeasurementIteration++;
@@ -825,6 +1064,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         //START INIT VIDEO
         initializeVideoPlayer();
+        initializeVlcVideoPlayer();
         if (videoUri == null) {
             return;
         }
@@ -870,6 +1110,12 @@ public class VideoplayerActivity extends AppCompatActivity {
         this.registerReceiver(cadenceSensorBroadcastReceiver, filter);
     }
 
+    private void initializeVlcVideoPlayer() {
+        if (mediaPlayer == null) {
+            setMediaPlayer();
+        }
+    }
+
     private void initializeVideoPlayer() {
         if (videoPlayer == null) {
             // Create the player
@@ -884,12 +1130,12 @@ public class VideoplayerActivity extends AppCompatActivity {
             );
 
             DefaultLoadControl defaultLoadControl = new DefaultLoadControl.Builder()
-                    .setPrioritizeTimeOverSizeThresholds(true)
+                    .setPrioritizeTimeOverSizeThresholds(true)//default = false
 //                    .setBufferDurationsMs(50000,50000, 20000,20000)
                     .build();
 
             videoPlayer = new SimpleExoPlayer.Builder(this)
-                    .setLoadControl(defaultLoadControl)
+//                    .setLoadControl(defaultLoadControl)
                     //.setTrackSelector(trackSelector) Not using the trackselector
                     .setMediaSourceFactory(mediaSourceFactory)
                     .build();
@@ -1014,6 +1260,12 @@ public class VideoplayerActivity extends AppCompatActivity {
             videoPlayer.release();
             videoPlayer = null;
         }
+        if (mediaPlayer!=null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+            libVLC.release();
+            libVLC = null;
+        }
         if (backgroundSoundPlayer != null) {
             backgroundSoundPlayer.release();
             backgroundSoundPlayer = null;
@@ -1030,12 +1282,18 @@ public class VideoplayerActivity extends AppCompatActivity {
             videoPlayer.setPlayWhenReady(false);
             videoPlayer.getPlaybackState();
         }
+        if (mediaPlayer!=null) {
+            mediaPlayer.pause();
+        }
     }
 
     private void resumePlayer() {
         if (videoPlayer != null) {
             videoPlayer.setPlayWhenReady(true);
             videoPlayer.getPlaybackState();
+        }
+        if (mediaPlayer!=null) {
+            mediaPlayer.play();
         }
     }
 
