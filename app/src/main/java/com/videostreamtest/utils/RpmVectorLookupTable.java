@@ -4,7 +4,11 @@ import java.util.HashMap;
 
 public class RpmVectorLookupTable {
     private final static float pi = 3.14f;
-    private final static float radiusWheelMeters = 1.0f;
+    /**
+     * 0.74 = 23,5 * 3.14 (radius in inches * pi)
+     * 0.83 = 26 * 3.14 -> based on an average wheel size of 26 inches
+     */
+    private final static float circumferenceWheelInches = 0.83f;
     private final static float defaultSpeedKmh = 25.0f;
 
     //Lookuptable based on (Key, Value) as in (RPM, playbackspeed)
@@ -23,7 +27,7 @@ public class RpmVectorLookupTable {
     }
 
     public final static float getDistanceSingleRpm(){
-        return (2*pi) * radiusWheelMeters;
+        return (2*pi) * circumferenceWheelInches;
     }
 
     public static float getPlayBackSpeedFromKmh(final int kmh) {
@@ -36,7 +40,7 @@ public class RpmVectorLookupTable {
     }
 
     private final static void calculateLookupTable(final float recordedSpeedKmh) {
-        final float normalPlaybackspeedRpm = (25 / (3*pi*radiusWheelMeters)) * recordedSpeedKmh;
+        final float normalPlaybackspeedRpm = (25 / (3*pi* circumferenceWheelInches)) * recordedSpeedKmh;
         final float playbackSpeedPerRpm = 1.0f / normalPlaybackspeedRpm;
 
         for ( int rpm = 0; rpm < 256; rpm++ ) {
