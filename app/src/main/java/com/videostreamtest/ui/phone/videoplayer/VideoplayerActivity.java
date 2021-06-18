@@ -1157,7 +1157,10 @@ public class VideoplayerActivity extends AppCompatActivity {
         if (backgroundSoundPlayer == null) {
             final MediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(this);
             DefaultLoadControl defaultLoadControl = new DefaultLoadControl.Builder().setPrioritizeTimeOverSizeThresholds(true).build();
-            backgroundSoundPlayer = new SimpleExoPlayer.Builder(this).setLoadControl(defaultLoadControl).setMediaSourceFactory(mediaSourceFactory).build();
+            backgroundSoundPlayer = new SimpleExoPlayer.Builder(this)
+                    .setLoadControl(defaultLoadControl)
+                    .setMediaSourceFactory(mediaSourceFactory)
+                    .build();
 
             PlaybackParameters playbackParameters  = new PlaybackParameters(1.0f, PlaybackParameters.DEFAULT.pitch);
             backgroundSoundPlayer.setPlaybackParameters(playbackParameters);
