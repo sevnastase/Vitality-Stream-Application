@@ -55,4 +55,10 @@
     <string name="catalog_download_status_message">Download status: %,.2f procent</string>
     <string name="catalog_already_downloading_message">Film is nog bezig met downloaden.</string>
     <string name="productpicker_close_button_text">Sluiten</string>
+    <string name="statusbar_time_title">Tijd</string>
+    <string name="statusbar_distance_title">Afstand</string>
+    <string name="statusbar_finish_distance_title">Einde</string>
+    <string name="statusbar_volume_title">Volume</string>
+    <string name="statusbar_rpm_title">RPM</string>
+    <string name="videoplayer_sensor_wait_error_message">Kon geen connectie met sensor maken, probeer het nog eens.</string>
 </resources>

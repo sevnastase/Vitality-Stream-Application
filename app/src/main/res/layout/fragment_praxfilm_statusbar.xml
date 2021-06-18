@@ -68,7 +68,7 @@
                     android:textColor="#FFFFEE"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:text="Time" />
+                    android:text="@string/statusbar_time_title" />
                 <Chronometer
                     android:id="@+id/statusbar_time_box_value"
                     android:layout_width="wrap_content"
@@ -93,7 +93,7 @@
                     android:textColor="#FFFFEE"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:text="RPM" />
+                    android:text="@string/statusbar_rpm_title" />
                 <TextView
                     android:id="@+id/statusbar_speed_box_value"
                     android:layout_width="wrap_content"
@@ -124,7 +124,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@android:color/white"
-                    android:text="Volume"
+                    android:text="@string/statusbar_volume_title"
                     android:layout_margin="3dp"
                     android:textStyle="bold"
                     android:textSize="12sp" />
