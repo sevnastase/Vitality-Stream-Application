@@ -107,6 +107,9 @@ public class ProductPickerActivity extends AppCompatActivity {
                     }
                 });
 
+                if(config.isLocalPlay()) {
+                    signoutButton.setVisibility(View.GONE);
+                }
 
                 productPickerViewModel.getAccountProducts(config.getAccountToken(), !config.isLocalPlay()).observe(this, products ->{
 

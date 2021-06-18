@@ -87,21 +87,6 @@ public class ProductActivity extends AppCompatActivity {
                 if (refreshData) {
                     refreshData = false;
                     ConfigurationHelper.loadExternalData(this, currentConfig.getAccountToken());
-
-                    Data.Builder mediaDownloader = new Data.Builder();
-                    mediaDownloader.putString("apikey",  currentConfig.getAccountToken());
-                    mediaDownloader.putInt("movie-id", 1);
-                    Constraints constraint = new Constraints.Builder()
-                            .setRequiredNetworkType(NetworkType.CONNECTED)
-                            .build();
-                    OneTimeWorkRequest routepartsWorkRequest = new OneTimeWorkRequest.Builder(DownloadRoutepartsServiceWorker.class)
-                            .setConstraints(constraint)
-                            .setInputData(mediaDownloader.build())
-                            .addTag("routeparts-routefilm-1")
-                            .build();
-                    WorkManager.getInstance(this)
-                            .beginUniqueWork("download-movieparts-1", ExistingWorkPolicy.KEEP, routepartsWorkRequest)
-                            .enqueue();
                 }
 
                 Bundle arguments = getIntent().getExtras();
@@ -109,7 +94,7 @@ public class ProductActivity extends AppCompatActivity {
 
                 loadFragmentBasedOnScreenType(arguments);
 
-                appBuildNumber.setText(ConfigurationHelper.getVersionNumber(getApplicationContext()));
+                appBuildNumber.setText(ConfigurationHelper.getVersionNumber(getApplicationContext())+":"+currentConfig.getAccountToken());
 
                 if (currentConfig.getProductCount() > 1) {
                     signoutButton.setText(getString(R.string.productpicker_close_button_text));
