@@ -8,8 +8,8 @@ android {
         applicationId "com.videostreamtest"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 93
-        versionName "1.0.93"
+        versionCode 100
+        versionName "1.0.100"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

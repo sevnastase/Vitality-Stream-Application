@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -74,6 +75,7 @@ import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
  */
 public class VideoplayerActivity extends AppCompatActivity {
     private static final String TAG = VideoplayerActivity.class.getSimpleName();
+    private static final int MAX_PAUSE_TIME_SEC = 55;
     private VideoPlayerViewModel videoPlayerViewModel;
 
     private static VideoplayerActivity thisInstance;
@@ -126,16 +128,19 @@ public class VideoplayerActivity extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
 
     private boolean routePaused = false;
+    private int pauseTimer = 0;
+    private boolean routeFinished = false;
 
     //VLC stuff
     private LibVLC createLibVLC() {
         final List<String> args = new ArrayList<>();
         args.add("-vvv");
         args.add("--sout-all");
+//      args.add("--drop-late-frames");
         //LOCAL PLAY
-        args.add("--file-caching=30000");
+        args.add("--file-caching=45000");
+        args.add("--no-avcodec-hurry-up");//ATTEMPT TO SOLVE GREY SCREEN PROBLEM
         //STREAMING
-        args.add("--drop-late-frames");
         args.add("--network-caching=20000");
 
         LibVLC libVLC = new LibVLC(this, args);
@@ -167,26 +172,30 @@ public class VideoplayerActivity extends AppCompatActivity {
                 }
 
                 if (event.type == MediaPlayer.Event.EndReached) {
+                    mediaPlayer.release();
+                    routeFinished = true;
                     showFinishScreen();
                 }
 
-                if (mediaPlayer!= null) {
-                    if (mediaPlayer.getVideoTracksCount() > 0) {
-                        int id = -1;
-                        for (MediaPlayer.TrackDescription trackDescription : mediaPlayer.getVideoTracks()) {
-                            if (trackDescription.id > id) {
-                                id = trackDescription.id;
+                if (!routeFinished) {
+                    if (mediaPlayer != null) {
+                        if (mediaPlayer.getVideoTracksCount() > 0) {
+                            int id = -1;
+                            for (MediaPlayer.TrackDescription trackDescription : mediaPlayer.getVideoTracks()) {
+                                if (trackDescription.id > id) {
+                                    id = trackDescription.id;
+                                }
+                                Log.d(TAG, "name:" + trackDescription.name + " :: id:" + trackDescription.id);
                             }
-                            Log.d(TAG, "name:" + trackDescription.name + " :: id:" + trackDescription.id);
+                            if (id > 0 && mediaPlayer.getVideoTrack() != id) {
+                                mediaPlayer.setVideoTrack(id);
+                            }
                         }
-                        if (id > 0 && mediaPlayer.getVideoTrack() != id) {
-                            mediaPlayer.setVideoTrack(id);
-                        }
-                    }
-                    if (mediaPlayer.getCurrentVideoTrack()!=null) {
-                        Log.d(TAG, "Height :: " + mediaPlayer.getCurrentVideoTrack().height);
-                        if (mediaPlayer.getCurrentVideoTrack().height >= 720) {
-                            isBestStreamLoaded = true;
+                        if (mediaPlayer.getCurrentVideoTrack() != null) {
+                            Log.d(TAG, "Height :: " + mediaPlayer.getCurrentVideoTrack().height);
+                            if (mediaPlayer.getCurrentVideoTrack().height >= 720) {
+                                isBestStreamLoaded = true;
+                            }
                         }
                     }
                 }
@@ -335,7 +344,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                 Runnable runnableMovieDetails = new Runnable() {
                     @Override
                     public void run() {
-                        if (mediaPlayer != null) {
+                        if (mediaPlayer != null && !routeFinished) {
                             Log.d(TAG, "TIME "+mediaPlayer.getTime());
                             videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getTime());
                             if (mediaPlayer.getMedia()!= null && mediaPlayer.getMedia().getDuration() != -1) {
@@ -344,7 +353,9 @@ public class VideoplayerActivity extends AppCompatActivity {
                             }
 
                         }
-                        praxSpinHandler.postDelayed(this::run, 1000);
+                        if (!routeFinished) {
+                            praxSpinHandler.postDelayed(this::run, 1000);
+                        }
                     }
                 };
                 praxSpinHandler.postDelayed(runnableMovieDetails, 0);
@@ -415,12 +426,17 @@ public class VideoplayerActivity extends AppCompatActivity {
 //        Runnable showPauseScreen = new Runnable() {
 //            public void run() {
 //                updateVideoPlayerScreen(0);
+//                updateVideoPlayerParams(0);
 //                updateVideoPlayerScreen(0);
+//                updateVideoPlayerParams(0);
 //                updateVideoPlayerScreen(0);
+//                updateVideoPlayerParams(0);
 //                updateVideoPlayerScreen(0);
+//                updateVideoPlayerParams(0);
 //                updateVideoPlayerScreen(0);
 //
 //                updateVideoPlayerParams(0);
+//                togglePauseScreen();
 //
 //                Runnable hidePauseScreen = new Runnable() {
 //                    public void run() {
@@ -429,12 +445,13 @@ public class VideoplayerActivity extends AppCompatActivity {
 //                        updateVideoPlayerScreen(60);
 //
 //                        updateVideoPlayerParams(60);
+//                        togglePauseScreen();
 //                    }
 //                };
 //                new Handler(Looper.getMainLooper()).postDelayed( hidePauseScreen, 8000 );
 //            }
 //        };
-//        new Handler(Looper.getMainLooper()).postDelayed( showPauseScreen, 8000 );
+//        new Handler(Looper.getMainLooper()).postDelayed( showPauseScreen, 18000 );
         // END TEST CODE
     }
 
@@ -478,6 +495,9 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     public void updateVideoPlayerScreen(int rpm) {
+        if (routeFinished) {
+            return;
+        }
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -488,6 +508,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                     videoPlayerViewModel.setMovieSpendDurationSeconds(videoPlayer.getCurrentPosition());
                     videoPlayerViewModel.setMovieTotalDurationSeconds(videoPlayer.getDuration());
                 }
+
                 if (mediaPlayer!=null) {
                     Log.d(TAG, "TIME "+mediaPlayer.getTime());
                     videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getTime());
@@ -536,6 +557,9 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     public void updateVideoPlayerParams(int rpm) {
+        if (routeFinished) {
+            return;
+        }
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -614,6 +638,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         } else {
             videoPlayerViewModel.setStatusbarVisible(true);
             numberOfFalsePositives = 0;
+            this.pauseTimer = 0;
         }
 
         videoPlayer.setPlayWhenReady(!videoPlayer.getPlayWhenReady());
@@ -623,6 +648,7 @@ public class VideoplayerActivity extends AppCompatActivity {
             if(mediaPlayer.isPlaying()) {
                 mediaPlayer.pause();
             } else {
+                this.pauseTimer = 0;
                 mediaPlayer.play();
             }
         }
@@ -845,6 +871,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void waitUntilVideoIsReady(final int minSecondsLoadingView) {
+        this.pauseTimer = 0;
         Handler handler = new Handler();
         Runnable runnable = new Runnable() {
             int currentSecond = 0;
@@ -865,7 +892,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
                         currentSecond++;
                         //Maximize waiting for video and/or sensor
-                        if (currentSecond > 20) {
+                        if (currentSecond > 30) {
                             Toast.makeText(VideoplayerActivity.this, getString(R.string.videoplayer_sensor_wait_error_message), Toast.LENGTH_LONG).show();
                             VideoplayerActivity.this.finish();
                         } else {
@@ -883,7 +910,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         Runnable runnableMovieDetails = new Runnable() {
             @Override
             public void run() {
-                if (mediaPlayer != null) {
+                if (mediaPlayer != null && !routeFinished) {
                     Log.d(TAG, "VLC Player Position: " + mediaPlayer.getPosition());
                     Log.d(TAG, "VLC Player Time: " + mediaPlayer.getTime());
                     if (mediaPlayer.getMedia()!= null) {
@@ -898,9 +925,24 @@ public class VideoplayerActivity extends AppCompatActivity {
 
                 }
 
+                //PAUSE TIMER
+                if (routePaused) {
+                    if (pauseTimer > MAX_PAUSE_TIME_SEC) {
+                        VideoplayerActivity.this.finish();
+                    } else {
+                        pauseTimer++;
+                    }
+
+                    if (pauseTimer % 10 == 0) {
+                        startSensorService();
+                    }
+                }
             }
         };
-        timelineHandler.postDelayed(runnableMovieDetails, 0);
+
+        if (!routeFinished) {
+            timelineHandler.postDelayed(runnableMovieDetails, 0);
+        }
     }
 
     private void checkBackgroundSoundMedia() {

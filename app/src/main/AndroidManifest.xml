@@ -28,6 +28,8 @@
     <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <!-- Android Features -->
     <uses-feature
         android:name="android.software.leanback"
@@ -37,8 +39,6 @@
         android:required="false" />
     <uses-feature android:name="android.hardware.usb.host" />
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
-
-
 
     <application
         android:name=".config.application.PraxtourApplication"

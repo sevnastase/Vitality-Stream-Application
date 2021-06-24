@@ -11,7 +11,6 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/recyclerview_available_routefilms"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_gravity="center|center_horizontal"
         android:background="@drawable/imagebutton_blue_border"
@@ -20,7 +19,7 @@
         android:gravity="center"
         app:layout_constraintVertical_weight="5"
         android:padding="5dp"
-        android:layout_marginTop="5dp">
+        android:layout_marginTop="20dp">
 
         <LinearLayout
             android:id="@+id/selected_route_text_information"
@@ -38,7 +37,7 @@
                 android:background="@drawable/image_black_border"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:visibility="invisible"
+                android:visibility="gone"
                 />
 
             <TextView
@@ -127,7 +126,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview_available_routefilms"
         android:layout_width="wrap_content"
-        android:layout_height="350dp"
+        android:layout_height="400dp"
         android:layout_gravity="center"
         android:scrollbars="vertical"
         android:scrollbarThumbVertical="@drawable/scrollbar_shape"
