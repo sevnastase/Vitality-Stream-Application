@@ -1,9 +1,14 @@
 package com.videostreamtest.ui.phone.productpicker;
 
 import android.app.ActionBar;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Process;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -24,6 +29,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
+import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
+import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.ActiveProductsServiceWorker;
 
 import java.util.ArrayList;
@@ -42,6 +49,10 @@ public class ProductPickerActivity extends AppCompatActivity {
 
     private Button signoutButton;
 
+    private Handler screensaverhandler;
+    private Looper screensaverLooper;
+    private Runnable screensaverRunnable;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +65,9 @@ public class ProductPickerActivity extends AppCompatActivity {
                         View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
         productPickerViewModel = new ViewModelProvider(this).get(ProductPickerViewModel.class);
+
+        initScreensaverHandler();
+        startScreensaverHandler();
 
          /*
         Logout button
@@ -150,8 +164,47 @@ public class ProductPickerActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onUserInteraction() {
+        super.onUserInteraction();
+        resetScreensaverTimer();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         refreshData = true;
+        resetScreensaverTimer();
+    }
+
+    private void initScreensaverHandler() {
+        screensaverRunnable = new Runnable() {
+            @Override
+            public void run() {
+                //Start Screensaver service to show screensaver after predetermined user inactivity
+                Intent screensaverActivity = new Intent(getApplicationContext(), ScreensaverActivity.class);
+                startActivity(screensaverActivity);
+                ApplicationSettings.setScreensaverActive(true);
+            }
+        };
+    }
+
+    private void startScreensaverHandler() {
+        HandlerThread thread = new HandlerThread("ServiceStartArguments",
+                Process.THREAD_PRIORITY_BACKGROUND);
+        thread.start();
+
+        // Get the HandlerThread's Looper and use it for our Handler
+        screensaverLooper = thread.getLooper();
+        screensaverhandler = new Handler(screensaverLooper);
+        Log.d(TAG, "call postDelayed with delay of "+ApplicationSettings.SCREENSAVER_TRIGGER_SECONDS*1000+" ms");
+        screensaverhandler.postDelayed(screensaverRunnable, ApplicationSettings.SCREENSAVER_TRIGGER_SECONDS*1000);
+    }
+
+    private void resetScreensaverTimer() {
+        Log.d(TAG, "reset check if Screensaver state = "+ApplicationSettings.SCREENSAVER_ACTIVE);
+        if (screensaverhandler != null && !ApplicationSettings.SCREENSAVER_ACTIVE) {
+            screensaverhandler.removeCallbacksAndMessages(null);
+            startScreensaverHandler();
+        }
     }
 }

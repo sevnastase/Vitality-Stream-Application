@@ -1,19 +1,20 @@
 package com.videostreamtest.ui.phone.productview;
 
-import android.app.ActionBar;
-import android.app.Application;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Process;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.Constraints;
 import androidx.work.Data;
@@ -33,19 +34,19 @@ import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.productview.fragments.PlainScreenFragment;
 import com.videostreamtest.ui.phone.productview.fragments.TouchScreenFragment;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
+import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
+import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.DownloadMovieServiceWorker;
 import com.videostreamtest.workers.DownloadRoutepartsServiceWorker;
 import com.videostreamtest.workers.DownloadSoundServiceWorker;
 import com.videostreamtest.workers.LocalMediaServerAvailableServiceWorker;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
 
 public class ProductActivity extends AppCompatActivity {
+    private final static String TAG = ProductActivity.class.getSimpleName();
 
     private ProductViewModel productViewModel;
     private Button signoutButton;
@@ -53,6 +54,10 @@ public class ProductActivity extends AppCompatActivity {
     private TextView appBuildNumber;
 
     private boolean refreshData = false;
+
+    private Handler screensaverhandler;
+    private Looper screensaverLooper;
+    private Runnable screensaverRunnable;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,6 +69,9 @@ public class ProductActivity extends AppCompatActivity {
                 SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
                 SYSTEM_UI_FLAG_FULLSCREEN |
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+        initScreensaverHandler();
+        startScreensaverHandler();
 
         productViewModel = new ViewModelProvider(this).get(ProductViewModel.class);
         signoutButton = findViewById(R.id.product_logout_button);
@@ -117,9 +125,16 @@ public class ProductActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshData = true;
+        resetScreensaverTimer();
         downloadSound();
         downloadLocalMovies();
         downloadMovieRouteParts();
+    }
+
+    @Override
+    public void onUserInteraction() {
+        super.onUserInteraction();
+        resetScreensaverTimer();
     }
 
     private void loadFragmentBasedOnScreenType(final Bundle arguments) {
@@ -141,7 +156,7 @@ public class ProductActivity extends AppCompatActivity {
     private void downloadSound() {
         productViewModel.getCurrentConfig().observe(this, currentConfig -> {
             if (currentConfig != null) {
-                if (currentConfig.isLocalPlay() && !DownloadHelper.isSoundPresent(getApplicationContext())) {
+                if (!DownloadHelper.isSoundPresent(getApplicationContext())) {
                     Constraints constraint = new Constraints.Builder()
                             .setRequiredNetworkType(NetworkType.CONNECTED)
                             .build();
@@ -227,5 +242,37 @@ public class ProductActivity extends AppCompatActivity {
 
     private boolean isTouchScreen() {
         return getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
+    }
+
+    private void initScreensaverHandler() {
+        screensaverRunnable = new Runnable() {
+            @Override
+            public void run() {
+                //Start Screensaver service to show screensaver after predetermined user inactivity
+                Intent screensaverActivity = new Intent(getApplicationContext(), ScreensaverActivity.class);
+                startActivity(screensaverActivity);
+                ApplicationSettings.setScreensaverActive(true);
+            }
+        };
+    }
+
+    private void startScreensaverHandler() {
+        HandlerThread thread = new HandlerThread("ServiceStartArguments",
+                Process.THREAD_PRIORITY_BACKGROUND);
+        thread.start();
+
+        // Get the HandlerThread's Looper and use it for our Handler
+        screensaverLooper = thread.getLooper();
+        screensaverhandler = new Handler(screensaverLooper);
+        Log.d(TAG, "call postDelayed with delay of "+ApplicationSettings.SCREENSAVER_TRIGGER_SECONDS*1000+" ms");
+        screensaverhandler.postDelayed(screensaverRunnable, ApplicationSettings.SCREENSAVER_TRIGGER_SECONDS*1000);
+    }
+
+    private void resetScreensaverTimer() {
+        Log.d(TAG, "reset check if Screensaver state = "+ApplicationSettings.SCREENSAVER_ACTIVE);
+        if (screensaverhandler != null && !ApplicationSettings.SCREENSAVER_ACTIVE) {
+            screensaverhandler.removeCallbacksAndMessages(null);
+            startScreensaverHandler();
+        }
     }
 }

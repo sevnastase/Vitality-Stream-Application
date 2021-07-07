@@ -1,5 +1,7 @@
 package com.videostreamtest.ui.phone.splash;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -13,14 +15,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.work.Constraints;
-import androidx.work.Data;
-import androidx.work.NetworkType;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
 
 import com.google.gson.GsonBuilder;
-import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.ProductType;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
@@ -28,12 +24,6 @@ import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.ui.phone.productview.ProductActivity;
 import com.videostreamtest.ui.phone.profiles.ProfilesActivity;
-import com.videostreamtest.workers.ActiveConfigurationServiceWorker;
-import com.videostreamtest.workers.ActiveProductsServiceWorker;
-import com.videostreamtest.workers.AvailableMediaServiceWorker;
-import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
-import com.videostreamtest.workers.NetworkInfoWorker;
-import com.videostreamtest.workers.ProfileServiceWorker;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -57,6 +47,8 @@ public class SplashActivity extends AppCompatActivity {
 
         requestDrawOverlayPermission();
 
+        resetBluetoothAdapter();
+
         loadTimer = new Handler(Looper.getMainLooper());
 
         //New way
@@ -70,13 +62,6 @@ public class SplashActivity extends AppCompatActivity {
                 Log.d(TAG, "Token :: " + config.getAccountToken() + " > Current =  " + config.isCurrent());
                 //If there's internet, retrieve account info and/or synchronize data
                 ConfigurationHelper.loadExternalData(this, config.getAccountToken());
-
-//                TODO: Put the startActivities in a seperate method to be able to wait and then show the next activity
-//                try {
-//                    Thread.sleep(5000);
-//                } catch (InterruptedException interruptedException) {
-//                    Log.e(TAG, interruptedException.getLocalizedMessage());
-//                }
 
                 /**
                  * TODO  if accounttoken is valid (create worker)
@@ -187,107 +172,31 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
-    private void loadExternalData(final String accountToken) {
-        Constraints constraint = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build();
+    private void resetBluetoothAdapter() {
+        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        assert bluetoothManager != null;
+        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
+        if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
+            bluetoothAdapter.disable();
+            Toast.makeText(this, "Bluetooth restarting...", Toast.LENGTH_LONG).show();
+        }
 
-        //NetworkInfo
-        Data.Builder networkData = new Data.Builder();
-        OneTimeWorkRequest networkInfoRequest = new OneTimeWorkRequest.Builder(NetworkInfoWorker.class)
-                .setConstraints(constraint)
-                .setInputData(networkData.build())
-                .addTag("connection-status")
-                .build();
+        Handler resetBleHandler = new Handler();
+        Runnable bleDeviceRunnable = new Runnable() {
+            @Override
+            public void run() {
+                BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+                assert bluetoothManager != null;
+                BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
+                if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
+                    bluetoothAdapter.enable();
+                    Toast.makeText(SplashActivity.this, "Bluetooth succesfully started!", Toast.LENGTH_LONG).show();
+                }
+            }
+        };
 
-        //Account Configuration
-        Data.Builder configurationData = new Data.Builder();
-        configurationData.putString("apikey", accountToken);
-        OneTimeWorkRequest accountConfigurationRequest = new OneTimeWorkRequest.Builder(ActiveConfigurationServiceWorker.class)
-                .setConstraints(constraint)
-                .setInputData(configurationData.build())
-                .addTag("accountconfiguration")
-                .build();
+        resetBleHandler.postDelayed(bleDeviceRunnable, 8000);
 
-        //Active Products
-        Data.Builder productData = new Data.Builder();
-        productData.putString("apikey", accountToken);
-        OneTimeWorkRequest productsRequest = new OneTimeWorkRequest.Builder(ActiveProductsServiceWorker.class)
-                .setConstraints(constraint)
-                .setInputData(productData.build())
-                .addTag("products")
-                .build();
-
-        //Account Profiles
-        Data.Builder profileData = new Data.Builder();
-        profileData.putString("apikey", accountToken);
-        OneTimeWorkRequest profilesRequest = new OneTimeWorkRequest.Builder(ProfileServiceWorker.class)
-                .setConstraints(constraint)
-                .setInputData(profileData.build())
-                .addTag("profiles")
-                .build();
-
-        //Routefilms
-        Data.Builder routeFilmdata = new Data.Builder();
-        routeFilmdata.putString("apikey", accountToken);
-        OneTimeWorkRequest routefilmsRequest = new OneTimeWorkRequest.Builder(AvailableMediaServiceWorker.class)
-                .setConstraints(constraint)
-                .setInputData(routeFilmdata.build())
-                .addTag("routefilms")
-                .build();
-
-        //Routeparts
-        OneTimeWorkRequest routeMoviepartsRequest = new OneTimeWorkRequest.Builder(AvailableRoutePartsServiceWorker.class)
-                .addTag("available-movieparts")
-                .build();
-
-        //Test Download media worker
-//        Data.Builder mediaDownloader = new Data.Builder();
-//        OneTimeWorkRequest downloadMediaRequest = new OneTimeWorkRequest.Builder(DownloadServiceWorker.class)
-//                .setConstraints(constraint)
-//                .setInputData(mediaDownloader.build())
-//                .addTag("downloader")
-//                .build();
-
-        //Chain workers and enqueue them
-        WorkManager
-                .getInstance(this)
-                .beginWith(networkInfoRequest)
-//                .then(validateAccountTokenRequest)
-                .then(accountConfigurationRequest)
-                .then(profilesRequest)
-                .then(productsRequest)
-                .then(routefilmsRequest)
-                .then(routeMoviepartsRequest)
-//                .then(downloadMediaRequest)
-                .enqueue();
-
-//        //Listen to output of profiles
-//        WorkManager.getInstance(this)
-//                .getWorkInfoByIdLiveData(profilesRequest.getId())
-//                .observe(this, workInfo -> {
-//                    Log.d(TAG, "WORKERINFO PROFILES :: "+workInfo.getState().name());
-//                    if (workInfo.getState() != null &&
-//                            workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-//                        splashViewModel.getWorkerProgress().setValue(80);
-//                    } else {
-//                        Log.d(TAG, "workerInfo not succeeded :: " + workInfo.getState().name());
-//                    }
-//                });
-
-//        //Listen to output of products
-//        WorkManager.getInstance(this)
-//                .getWorkInfoByIdLiveData(productsRequest.getId())
-//                .observe(this, workInfo -> {
-//                    Log.d(TAG, "WORKERINFO PRODUCTS :: "+workInfo.getState().name());
-//                    Log.d(TAG, "WORKERINFO PRODUCTS :: "+workInfo.getState().isFinished());
-//                    if (workInfo.getState() != null &&
-//                            workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-//                        splashViewModel.getWorkerProgress().setValue(100);
-//                    } else {
-//                        Log.d(TAG, "workerInfo not succeeded :: " + workInfo.getState().name());
-//                    }
-//                });
     }
 
 }

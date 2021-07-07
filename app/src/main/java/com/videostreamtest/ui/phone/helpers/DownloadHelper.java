@@ -96,7 +96,7 @@ public class DownloadHelper {
         for (File externalStorageVolume: externalStorageVolumes) {
             String pathname = externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_SOUND_STORAGE_FOLDER;
             File possibleMovieLocation = new File(pathname);
-            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
+            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length==15) {
                 long totalSizeOnDisk = 0;
 
                 for (File file: possibleMovieLocation.listFiles()) {

@@ -9,6 +9,16 @@
 
     <style name="SplashScreenTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="android:windowBackground">@drawable/splash_screen_background</item>
+        <item name="android:windowAnimationStyle">@style/MyAnimation.Window</item>
+    </style>
+
+    <style name="MyAnimation.Window" parent="@android:style/Animation.Dialog">
+        <item name="android:windowEnterAnimation">@anim/fragment_fade_enter</item>
+        <item name="android:windowExitAnimation">@anim/fragment_fade_exit</item>
+    </style>
+
+    <style name="ScreensaverTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@drawable/screensaver_background</item>
     </style>
 
     <style name="FullscreenTheme" parent="AppTheme">

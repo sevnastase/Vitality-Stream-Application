@@ -28,6 +28,7 @@
     <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
+    <!-- REQUIRED FOR KEEP SCREEN ON -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- Android Features -->
@@ -85,6 +86,11 @@
             android:label="@string/title_activity_login"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ui.phone.screensaver.ScreensaverActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="landscape"
+            android:theme="@style/ScreensaverTheme" />
         <activity
             android:name=".ui.phone.productpicker.ProductPickerActivity"
             android:label="@string/app_name"

@@ -61,8 +61,11 @@ import com.videostreamtest.utils.RpmVectorLookupTable;
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
+import org.videolan.libvlc.RendererItem;
+import org.videolan.libvlc.interfaces.IMedia;
 import org.videolan.libvlc.util.VLCVideoLayout;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -107,6 +110,9 @@ public class VideoplayerActivity extends AppCompatActivity {
     private Product selectedProduct;
 
     private List<BackgroundSound> backgroundSoundList = new ArrayList<>();
+    private List<BackgroundSound> backgroundSoundTriggers = new ArrayList<>();
+    private List<MediaItem> backgroundMediaItems = new ArrayList<>();
+
     private List<EffectSound> effectSoundList = new ArrayList<>();
 
     private boolean isSoundOnDevice = false;
@@ -126,6 +132,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     private int numberOfFalsePositives = 0;
 
     private MediaPlayer mediaPlayer;
+    private MediaPlayer soundPlayer;
 
     private boolean routePaused = false;
     private int pauseTimer = 0;
@@ -136,6 +143,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         final List<String> args = new ArrayList<>();
         args.add("-vvv");
         args.add("--sout-all");
+        args.add("--aout=opensles");
 //      args.add("--drop-late-frames");
         //LOCAL PLAY
         args.add("--file-caching=45000");
@@ -163,34 +171,54 @@ public class VideoplayerActivity extends AppCompatActivity {
         mediaPlayer.setEventListener(new MediaPlayer.EventListener() {
             @Override
             public void onEvent(MediaPlayer.Event event) {
-                Log.d(TAG, "TYPE : "+event.type);
-                Log.d(TAG, "TYPE BUFFERING: "+MediaPlayer.Event.Buffering);
-                Log.d(TAG, "TYPE PLAYING: "+MediaPlayer.Event.Playing);
+                Log.d(TAG, "CURRENT TYPE : "+event.type);
 
+                // IF NOT BUFFERING AND BEST VIDEO TRACK IS LOADED
                 if (event.type != MediaPlayer.Event.Buffering && isBestStreamLoaded) {
                     vlcLoaded = true;
                 }
 
+                //IF END OF VIDEO IS REACHED
                 if (event.type == MediaPlayer.Event.EndReached) {
                     mediaPlayer.release();
+                    soundPlayer.pause();
+                    soundPlayer.release();
                     routeFinished = true;
                     showFinishScreen();
                 }
 
+                //WHILE ROUTE IS PLAYING
                 if (!routeFinished) {
                     if (mediaPlayer != null) {
+                        //SELECT AUDIO TRACK
+//                        if (mediaPlayer.getAudioTracksCount() > 0) {
+//                            int sid = -1;
+//                            for (MediaPlayer.TrackDescription soundTrackDescription : mediaPlayer.getAudioTracks()) {
+//                                if (soundTrackDescription.id > sid) {
+//                                    sid = soundTrackDescription.id;
+//                                }
+//                                Log.d(TAG, "sName:" + soundTrackDescription.name + " :: sid:" + soundTrackDescription.id);
+//                            }
+//                            if (sid > 0 && mediaPlayer.getAudioTrack() != sid) {
+//                                mediaPlayer.setAudioTrack(sid);
+//                            }
+//                        }
+
+                        //SELECT VIDEO TRACK
                         if (mediaPlayer.getVideoTracksCount() > 0) {
                             int id = -1;
                             for (MediaPlayer.TrackDescription trackDescription : mediaPlayer.getVideoTracks()) {
                                 if (trackDescription.id > id) {
                                     id = trackDescription.id;
                                 }
-                                Log.d(TAG, "name:" + trackDescription.name + " :: id:" + trackDescription.id);
+//                                Log.d(TAG, "Name:" + trackDescription.name + " :: id:" + trackDescription.id);
                             }
                             if (id > 0 && mediaPlayer.getVideoTrack() != id) {
                                 mediaPlayer.setVideoTrack(id);
                             }
                         }
+
+                        //CHECK IF VIDEOTRACK IS QUALITY OF 720p OR HIGHER
                         if (mediaPlayer.getCurrentVideoTrack() != null) {
                             Log.d(TAG, "Height :: " + mediaPlayer.getCurrentVideoTrack().height);
                             if (mediaPlayer.getCurrentVideoTrack().height >= 720) {
@@ -206,15 +234,19 @@ public class VideoplayerActivity extends AppCompatActivity {
     private void setMediaPlayer() {
         if (libVLC != null) {
             mediaPlayer = new MediaPlayer(libVLC);
+            soundPlayer = new MediaPlayer(libVLC);
         } else {
             libVLC = createLibVLC();
             mediaPlayer = new MediaPlayer(libVLC);
+            soundPlayer = new MediaPlayer(libVLC);
         }
 
         mediaPlayer.attachViews(videoLayout, null, false, false);
 
+        //This loads the given videoUri to the media
         if (mediaPlayer.getMedia() == null) {
             if (isLocalPlay) {
+                //VIDEO
                 final Media media = new Media(libVLC, videoUri);
                 //Streaming
 //                media.setHWDecoderEnabled(true, false);
@@ -224,6 +256,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                 mediaPlayer.setMedia(media);
                 media.release();
             } else {
+                //VIDEO
                 final Media media = new Media(libVLC, Uri.parse(videoUri));
                 mediaPlayer.setMedia(media);
                 media.release();
@@ -232,8 +265,11 @@ public class VideoplayerActivity extends AppCompatActivity {
         setVideoFeatures();
 
         mediaPlayer.setRate(1.0f);
-        mediaPlayer.setVolume(80);
         mediaPlayer.play();
+        soundPlayer.play();
+        Log.d(TAG, "Volume Level: "+mediaPlayer.getVolume());
+//        mediaPlayer.setVolume(50);
+
     }
 
     @Override
@@ -248,8 +284,6 @@ public class VideoplayerActivity extends AppCompatActivity {
                 SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
                 SYSTEM_UI_FLAG_FULLSCREEN |
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-
-//        castContext = CastContext.getSharedInstance(this); TODO; Google cast implementation
 
         //EXO player
         playerView = findViewById(R.id.playerView);
@@ -398,7 +432,10 @@ public class VideoplayerActivity extends AppCompatActivity {
                 //effectSoundPlayer.setVolume(volumeLevel);
             }
             if (mediaPlayer!=null) {
-                mediaPlayer.setVolume(volumeLevel.intValue()*100);
+                final Float bigVolumeLevel = volumeLevel * 100;
+                Log.d(TAG, "Volume Level: "+bigVolumeLevel.intValue());
+                mediaPlayer.setVolume(bigVolumeLevel.intValue());
+                soundPlayer.setVolume(bigVolumeLevel.intValue());
             }
         });
 
@@ -460,6 +497,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         super.onPostCreate(savedInstanceState);
 
         waitUntilVideoIsReady();
+        setTimeLineEventVideoPlayer();
 
         if (ApplicationSettings.DEVELOPER_MODE) {
             Handler handler = new Handler();
@@ -624,6 +662,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         routePaused = !routePaused;
         videoPlayerViewModel.setPlayerPaused(routePaused);
 
+        //LAYOUT CHANGES
         final TextView pauseTitle = findViewById(R.id.status_dialog_title);
         pauseTitle.setText(getString(R.string.pause_screen_title));
         final TextView pauseMessage = findViewById(R.id.status_dialog_message);
@@ -640,16 +679,21 @@ public class VideoplayerActivity extends AppCompatActivity {
             numberOfFalsePositives = 0;
             this.pauseTimer = 0;
         }
-
+        //Videoplayer but doesnt used (OLD)
         videoPlayer.setPlayWhenReady(!videoPlayer.getPlayWhenReady());
         videoPlayer.getPlaybackState();
 
+        // IF VLC EXISTS
         if (mediaPlayer!=null) {
             if(mediaPlayer.isPlaying()) {
                 mediaPlayer.pause();
+                soundPlayer.pause();
+                backgroundSoundPlayer.setDeviceMuted(true);
             } else {
                 this.pauseTimer = 0;
+                backgroundSoundPlayer.setDeviceMuted(false);
                 mediaPlayer.play();
+                soundPlayer.play();
             }
         }
 
@@ -702,9 +746,6 @@ public class VideoplayerActivity extends AppCompatActivity {
                     if (backgroundSoundPlayer !=  null) {
                         backgroundSoundPlayer.pause();
                     }
-//                    if (effectSoundPlayer != null) {
-//                        effectSoundPlayer.pause();
-//                    }
 
                     int fps = selectedMovie.getRecordedFps();
                     if (frameNumber > fps) {
@@ -720,36 +761,6 @@ public class VideoplayerActivity extends AppCompatActivity {
 
                     waitUntilVideoIsReady(3);
                 }
-//                if (videoPlayer.isCurrentWindowSeekable()) {
-//                    long positionSecond = 0;
-//
-//                    videoPlayerViewModel.setStatusbarVisible(false);
-//                    videoPlayerViewModel.setPlayerPaused(true);
-//                    playerView.setVisibility(View.GONE);
-//
-//                    TextView loadingMessage = findViewById(R.id.loading_message);
-//                    loadingMessage.setText(getString(R.string.loading_message));
-//                    loadingView.setVisibility(View.VISIBLE);
-//                    videoPlayer.pause();
-//                    if (backgroundSoundPlayer !=  null) {
-//                        backgroundSoundPlayer.pause();
-//                    }
-////                    if (effectSoundPlayer != null) {
-////                        effectSoundPlayer.pause();
-////                    }
-//                    playerView.hideController();
-//
-//                    int fps = selectedMovie.getRecordedFps();
-//                    if (frameNumber > fps) {
-//                        positionSecond = frameNumber / fps;
-//                        videoPlayer.seekTo(positionSecond*1000);
-//                    } else {
-//                        videoPlayer.seekTo(0);
-//                    }
-//
-//                    waitUntilVideoIsReady(3);
-////                    setFocusOnCurrentRoutePart(); //MOVE TO FRAGMENT (DISPLAY WHEN NECESSARY)
-//                }
             }
         });
     }
@@ -842,17 +853,18 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         if (mediaPlayer ==null) {
             setMediaPlayer();
-
         } else {
             setVideoFeatures();
             mediaPlayer.play();
+            soundPlayer.play();
         }
 
         if (getCurrentBackgroundSoundByCurrentPostion() != null) {
             switchToNewBackgroundMedia(getCurrentBackgroundSoundByCurrentPostion().getSoundUrl());
+        } else {
+            Log.d(TAG, "Empty currentBackGround at Start!");
         }
 
-        setTimeLineEventVideoPlayer();
         playerView.hideController();
     }
 
@@ -887,8 +899,6 @@ public class VideoplayerActivity extends AppCompatActivity {
                         playVideo();
                     } else {
                         isLoading = true;
-                        Log.d(TAG, "CurrentSecondWaiting: "+currentSecond);
-                        Log.d(TAG, "EXO Player State: "+ videoPlayer.getPlaybackState());
 
                         currentSecond++;
                         //Maximize waiting for video and/or sensor
@@ -906,17 +916,29 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void setTimeLineEventVideoPlayer() {
+        Log.d(TAG, "TimeLineEventHandler started!");
         Handler timelineHandler = new Handler();
         Runnable runnableMovieDetails = new Runnable() {
             @Override
             public void run() {
                 if (mediaPlayer != null && !routeFinished) {
-                    Log.d(TAG, "VLC Player Position: " + mediaPlayer.getPosition());
-                    Log.d(TAG, "VLC Player Time: " + mediaPlayer.getTime());
-                    if (mediaPlayer.getMedia()!= null) {
-                        Log.d(TAG, "VLC Player Media total duration: " + mediaPlayer.getMedia().getDuration());
+
+                    if (mediaPlayer.getTime()/1000L < 2) {
+                        mediaPlayer.setVolume(50);
+                        soundPlayer.setVolume(50);
                     }
+
+                    //check for current backgroundsound
+                    BackgroundSound backgroundSound = getCurrentBackgroundSoundByCurrentPostion();
+                    if ( backgroundSound != null) {
+                        Log.d(TAG, "EventTimeLineHandler: "+backgroundSound.getSoundId() + " on second: "+mediaPlayer.getTime()/1000L);
+                        Log.d(TAG, "BgSound with id: "+backgroundSound.getSoundId()+" state if playing: "+backgroundSoundPlayer.isPlaying());
+//                        switchToNewBackgroundMedia(getCurrentBackgroundSoundByCurrentPostion().getSoundUrl());
+                    }
+
+                    //set to new
                     checkBackgroundSoundMedia();
+
 //                    checkEffectSoundMedia();
                     timelineHandler.postDelayed(this::run, 1000);
                 }
@@ -946,9 +968,9 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void checkBackgroundSoundMedia() {
-        if (backgroundSoundList.size()>0) {
+        if (backgroundSoundTriggers.size()>0) {
             long currentSecond = (mediaPlayer.getTime() / 1000L);
-            for (final BackgroundSound backgroundSound : backgroundSoundList) {
+            for (final BackgroundSound backgroundSound : backgroundSoundTriggers) {
                 if ((backgroundSound.getFramenumber()/selectedMovie.getRecordedFps()) == currentSecond) {
                     switchToNewBackgroundMedia(backgroundSound.getSoundUrl());
                 }
@@ -957,32 +979,26 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void switchToNewBackgroundMedia(final String backgroundSoundurl) {
-        if (backgroundSoundPlayer.getMediaItemCount()>0) {
-            Uri soundItemUri = backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri;
-            String localFileName = soundItemUri.getPath().substring(soundItemUri.getPath().lastIndexOf('/'), soundItemUri.getPath().length());
-            Log.d(TAG, "STREAM SOUND URI :: "+soundItemUri);
-            Log.d(TAG, "LOCAL SOUND URI :: "+localFileName);
+        if (backgroundSoundTriggers.size()>0) {
+            String localFileName = getSoundFileName(Uri.parse(backgroundSoundurl));
 
-            //If new item is the same then return
-            if (backgroundSoundurl.contains(localFileName)) {
-                //Check if already playing else start playing
-                if (!backgroundSoundPlayer.isPlaying()){
-                    backgroundSoundPlayer.setRepeatMode(Player.REPEAT_MODE_ONE);
-                    backgroundSoundPlayer.play();
+            if (mediaPlayer.getMedia() != null
+                    && soundPlayer.getMedia() != null
+            ) {
+                Log.d(TAG, "AudioTrack uri: "+soundPlayer.getMedia().getUri().toString());
+                Log.d(TAG, "AudioTrack uri should be: "+backgroundSoundurl);
+                if (soundPlayer.getMedia().getUri().toString().contains(localFileName)) {
+                    return;
+                } else {
+                    Uri localItem = DownloadHelper.getLocalSound(getApplicationContext(), Uri.parse(backgroundSoundurl));
+                    soundPlayer.pause();
+//                    Toast.makeText(this, localItem.toString() + " exists: "+new File(localItem.toString()).exists(), Toast.LENGTH_LONG).show();
+                    Media localBgSoundMedia = new Media(libVLC, localItem.toString());
+                    soundPlayer.setMedia(localBgSoundMedia);
+                    soundPlayer.play();
+                    localBgSoundMedia.release();
                 }
-                return;
-            }
-            for (int bgIndex = 0; bgIndex < backgroundSoundPlayer.getMediaItemCount();bgIndex++) {
-                if (backgroundSoundurl.contains(backgroundSoundPlayer.getMediaItemAt(bgIndex).playbackProperties.uri.getPath())) {
-                    if (backgroundSoundPlayer.isPlaying()) {
-                        backgroundSoundPlayer.pause();
-                    }
-                    backgroundSoundPlayer.moveMediaItem(bgIndex, 1);
-                    backgroundSoundPlayer.setRepeatMode(Player.REPEAT_MODE_OFF);
-                    backgroundSoundPlayer.next();
-                    backgroundSoundPlayer.setRepeatMode(Player.REPEAT_MODE_ONE);
-                    backgroundSoundPlayer.play();
-                }
+
             }
         }
     }
@@ -994,8 +1010,8 @@ public class VideoplayerActivity extends AppCompatActivity {
     private BackgroundSound getCurrentBackgroundSoundByCurrentPostion() {
         BackgroundSound selectBackgroundSound = null;
         long currentSecond = (mediaPlayer.getTime() / 1000L);
-        if (backgroundSoundList.size()>0) {
-            for (BackgroundSound backgroundSound: backgroundSoundList) {
+        if (backgroundSoundTriggers.size()>0) {
+            for (BackgroundSound backgroundSound: backgroundSoundTriggers) {
                 int backgroundsoundTriggerSecond = backgroundSound.getFramenumber()/selectedMovie.getRecordedFps();
 
                 if (currentSecond > backgroundsoundTriggerSecond) {
@@ -1013,36 +1029,9 @@ public class VideoplayerActivity extends AppCompatActivity {
         return selectBackgroundSound;
     }
 
-//    private void checkEffectSoundMedia() {
-//        if (effectSoundList.size()>0) {
-//            long currentSecond = (videoPlayer.getCurrentPosition() / 1000L);
-//            for (final EffectSound effectSound : effectSoundList) {
-//                if ((effectSound.getFramenumber()/selectedMovie.getRecordedFps()) == currentSecond) {
-//                    startEffectSound(effectSound.getSoundUrl());
-//                }
-//            }
-//        }
-//    }
-
-//    private void startEffectSound(final String effectSoundUrl) {
-//        if (effectSoundPlayer.getMediaItemCount()>0) {
-//            for (int effectIndex = 0; effectIndex < effectSoundPlayer.getMediaItemCount();effectIndex++) {
-//                Uri soundItemUri = effectSoundPlayer.getMediaItemAt(effectIndex).playbackProperties.uri;
-//                String localFileName = soundItemUri.getPath().substring(soundItemUri.getPath().lastIndexOf('/'), soundItemUri.getPath().length());
-//
-//                if (effectSoundUrl.contains(localFileName)) {
-//                    Log.d(TAG, "EFFECT SOUND FOUND URL :: "+effectSoundUrl);
-//                    if (effectSoundPlayer.isPlaying()) {
-//                        effectSoundPlayer.pause();
-//                    }
-//                    effectSoundPlayer.moveMediaItem(effectIndex, 1);
-//                    effectSoundPlayer.setRepeatMode(Player.REPEAT_MODE_OFF);
-//                    effectSoundPlayer.next();
-//                    effectSoundPlayer.play();
-//                }
-//            }
-//        }
-//    }
+    private String getSoundFileName(final Uri soundItemUri) {
+        return soundItemUri.getPath().substring(soundItemUri.getPath().lastIndexOf('/'), soundItemUri.getPath().length());
+    }
 
     private boolean isPraxtourMediaPlayerReady() {
         boolean videoPlayerReady = false;
@@ -1115,6 +1104,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         //START INIT BACKGROUND SOUND
         initializeBackgroundSoundPlayer();
+        Log.d(TAG, "bg items loaded for preparation: "+backgroundSoundTriggers.size());
         prepareBackgroundSoundPlayer();
 
         //START INIT EFFECT SOUND
@@ -1243,31 +1233,89 @@ public class VideoplayerActivity extends AppCompatActivity {
     private void prepareBackgroundSoundPlayer() {
         if (movieId != 0) {
             videoPlayerViewModel.getBackgroundSounds(movieId).observe(this, backgroundSounds -> {
-                backgroundSoundList = backgroundSounds;
-                List<Uri> backgroundSoundUriList = new ArrayList<>();
-                if (backgroundSounds.size()>0) {
-                    for (BackgroundSound backgroundSound: backgroundSounds) {
-                        backgroundSoundUriList.add(Uri.parse(backgroundSound.getSoundUrl()));
-                    }
-                }
+                if (backgroundSounds != null && backgroundSounds.size() > 0 && backgroundSoundTriggers.size() == 0) {
+                    //Split into 2 paths
+                    // 1. backgroundTriggers
+                    // 2. backgroundMediaItems
+                    backgroundSoundTriggers = backgroundSounds;
 
-                prepareBackgroundSoundMediaSources(backgroundSoundUriList);
+                    isSoundOnDevice = DownloadHelper.isSoundPresent(getApplicationContext());
+
+                    if (backgroundSounds.size() > 0) {
+                        for (final BackgroundSound backgroundSound : backgroundSounds) {
+                            if (!isBackgroundSoundAlreadyExistingInList(backgroundSound)) {
+                                Uri uri = Uri.parse(backgroundSound.getSoundUrl());
+                                if (isSoundOnDevice) {
+                                    uri = DownloadHelper.getLocalSound(getApplicationContext(), uri);
+                                }
+
+                                MediaItem mediaItem = MediaItem.fromUri(uri);
+                                backgroundMediaItems.add(mediaItem);
+                            }
+                        }
+                    }
+
+                    //Old
+//                    backgroundSoundList = backgroundSounds;
+//                    Log.d(TAG, "method: bg items loaded for preparation: " + backgroundSoundList.size());
+//                    List<Uri> backgroundSoundUriList = new ArrayList<>();
+//                    if (backgroundSounds.size() > 0) {
+//                        for (final BackgroundSound backgroundSound : backgroundSounds) {
+//                            backgroundSoundUriList.add(Uri.parse(backgroundSound.getSoundUrl()));
+//                        }
+//                    }
+
+                    prepareBackgroundSoundMediaSources();
+                }
             });
         }
     }
 
-    private void prepareBackgroundSoundMediaSources(final List<Uri> backgroundSounds) {
-        if (backgroundSounds.size()>0) {
-            for (Uri uri: backgroundSounds) {
-                if (isSoundOnDevice) {
-                    uri = DownloadHelper.getLocalSound(getApplicationContext(), uri);
-                }
+    private boolean isBackgroundSoundAlreadyExistingInList(BackgroundSound backgroundSound) {
+        MediaItem mediaItem =  null;
+        Uri uri = Uri.parse(backgroundSound.getSoundUrl());
+        if (isSoundOnDevice) {
+            uri = DownloadHelper.getLocalSound(getApplicationContext(), uri);
+        }
+        mediaItem = MediaItem.fromUri(uri);
 
-                MediaItem mediaItem = MediaItem.fromUri(uri);
-                backgroundSoundPlayer.addMediaItem(mediaItem);
+        for (final MediaItem bgSound: backgroundMediaItems) {
+            if (    getSoundFileName(bgSound.playbackProperties.uri).toLowerCase()
+                    .equals(
+                        getSoundFileName(Uri.parse(backgroundSound.getSoundUrl().toLowerCase()))
+                    )
+            ) {
+               return true;
+            }
+        }
+        return false;
+    }
+
+    private void prepareBackgroundSoundMediaSources() {
+        if (backgroundMediaItems.size()>0) {
+            for (MediaItem bgMediaItem: backgroundMediaItems) {
+                backgroundSoundPlayer.addMediaItem(bgMediaItem);
             }
             backgroundSoundPlayer.prepare();
+
+            Log.d(TAG, "Add (AUDIO) to SOUND VLC Player: "+backgroundMediaItems.get(0).playbackProperties.uri.toString());
+//            mediaPlayer.addSlave(IMedia.Slave.Type.Audio, backgroundMediaItems.get(0).playbackProperties.uri, false );
+            Media bgSound = new Media(libVLC, backgroundMediaItems.get(0).playbackProperties.uri.toString());
+            soundPlayer.setMedia(bgSound);
+            bgSound.release();
         }
+//        if (backgroundSounds.size()>0) {
+//            for (Uri uri: backgroundSounds) {
+//                if (isSoundOnDevice) {
+//                    uri = DownloadHelper.getLocalSound(getApplicationContext(), uri);
+//                }
+//
+//                MediaItem mediaItem = MediaItem.fromUri(uri);
+//                backgroundSoundPlayer.addMediaItem(mediaItem);
+//            }
+//            Log.d(TAG, "preparemethod: bg items loaded for preparation: "+backgroundSoundList.size());
+//            backgroundSoundPlayer.prepare();
+//        }
     }
 
 //    private void prepareEffectSoundPlayer() {
@@ -1308,6 +1356,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         if (mediaPlayer!=null) {
             mediaPlayer.release();
             mediaPlayer = null;
+            soundPlayer.release();
+            soundPlayer = null;
             libVLC.release();
             libVLC = null;
         }
