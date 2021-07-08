@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+apply from: 'versionCode.gradle'
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
@@ -8,8 +10,8 @@ android {
         applicationId "com.videostreamtest"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 118
-        versionName "1.0.118"
+        versionCode Integer.parseInt(VERSION_CODE)
+        versionName VERSION_NAME+''+versionCode
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -90,6 +92,9 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
+
+    // GOOGLE PLAY CORE
+    implementation 'com.google.android.play:core:1.8.0'
 
     implementation "com.google.android.gms:play-services-cast-framework:15.0.0"
 
