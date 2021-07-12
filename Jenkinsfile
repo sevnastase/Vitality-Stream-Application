@@ -17,7 +17,7 @@ pipeline {
                 echo 'Building release...'
                 sh './gradlew :app:assembleRelease --no-daemon'
                 echo 'Storing apk file for publishing'
-                archiveArtifacts artifacts: 'app/build/outputs/apk/release', fingerprint: true
+                archiveArtifacts artifacts: '${workspace}/app/build/outputs/apk/release', fingerprint: true
             }
         }
         stage('Deploy') {
