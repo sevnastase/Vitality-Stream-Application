@@ -6,13 +6,10 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
+        stage('Dry Build') {
             steps {
             	echo 'Building...'
                 sh './gradlew clean build --no-daemon'
-
-                archiveArtifacts artifacts: '**/build/libs/*.jar', fingerprint: true
-                archiveArtifacts artifacts: '**/Dockerfile', fingerprint: true
             }
         }
         stage('Release') {
