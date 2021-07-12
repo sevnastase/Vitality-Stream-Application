@@ -73,4 +73,5 @@
     <string name="statusbar_volume_title">Volume</string>
     <string name="statusbar_rpm_title">RPM</string>
     <string name="videoplayer_sensor_wait_error_message">Failed to connect sensor, please try again.</string>
+    <string name="update_available">Update for Praxtour app available!</string>
 </resources>

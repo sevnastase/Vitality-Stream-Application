@@ -12,10 +12,18 @@ import com.videostreamtest.utils.ApplicationSettings;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +50,11 @@ public class DownloadHelper {
      * @return boolean
      */
     public static boolean isMoviePresent(final Context context, final Movie movie){
+        /*
+        TODO: First correct the movie from full movie name to movie id folder.
+         */
+        correctMoviefolder(context, movie);
+
         File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
         for (File externalStorageVolume: externalStorageVolumes) {
             String pathname = externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movie.getId();
@@ -61,6 +74,121 @@ public class DownloadHelper {
             }
         }
         return false;
+    }
+
+    /**
+     * Check and correct when a full named folder is copied instead of a id named folder
+     * @param context
+     * @param movie
+     */
+    private static void correctMoviefolder(Context context, Movie movie) {
+        //Get movie folder full name
+        String extractionpath = movie.getMovieUrl();
+        String pathParts[] = extractionpath.split("/");
+        String moviefolderName = "movie_title";
+        if (pathParts.length>0) {
+            moviefolderName = pathParts[pathParts.length-2];
+        }
+
+        //Check if full movie folder exists and rename to movie id
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+
+            String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + moviefolderName;
+            File possibleMovieLocation = new File(pathname);
+            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length > 0) {
+
+                /*
+                   Check if folder name with movie id exists.
+                   If so, delete the id folder and then rename moviefullname folder
+                 */
+
+                String existingPathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + movie.getId();
+                File existingMovieLocation = new File(existingPathname);
+
+                //Delete folder before flatten en renaming the other
+                if (existingMovieLocation.exists()) {
+                    deleteMovieFolder(existingMovieLocation);
+                }
+
+                //put pictures folder in root folder of moviefolder
+                flattenMovieFolder(possibleMovieLocation);
+
+                //The actual renaming of the folder to the id folder
+                possibleMovieLocation.renameTo(
+                  new File(
+                          externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + movie.getId()
+                  )
+                );
+            }
+        }
+    }
+
+    private static void flattenMovieFolder(File newMovieLocation) {
+        File root = newMovieLocation;
+        if (root.listFiles().length>0) {
+            for (File file: root.listFiles()) {
+                if (file.isDirectory() && file.getName().contains("pictures") && file.listFiles().length>0) {
+                    for (File pictureFile: file.listFiles()) {
+                        moveFile(file.getAbsolutePath(), "/"+pictureFile.getName(), root.getAbsolutePath());
+                    }
+                    file.delete();
+                }
+            }
+        }
+    }
+
+    private static void runFileChecksForConsistency(final File movieFolderByName) {
+        //TODO: Run check in for loop of root folder of proved File object
+    }
+
+    private static void moveFile(String inputPath, String inputFile, String outputPath) {
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+
+            //create output directory if it doesn't exist
+            File dir = new File(outputPath);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+
+            in = new FileInputStream(inputPath + inputFile);
+            out = new FileOutputStream(outputPath + inputFile);
+
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            in.close();
+            in = null;
+
+            // write the output file
+            out.flush();
+            out.close();
+            out = null;
+
+            // delete the original file
+            new File(inputPath + inputFile).delete();
+
+
+        } catch (FileNotFoundException fnfe1) {
+            Log.e("tag", fnfe1.getMessage());
+        } catch (Exception e) {
+            Log.e("tag", e.getMessage());
+        }
+    }
+
+    private static void deleteMovieFolder(File movieFullPathLocation) {
+        File files[] = movieFullPathLocation.listFiles();
+        if (files.length>0) {
+            for (File entry: files) {
+                entry.delete();
+            }
+        }
+        movieFullPathLocation.delete();
     }
 
     /**
@@ -186,6 +314,24 @@ public class DownloadHelper {
             }
         }
         return soundItemUri;
+    }
+
+    /**
+     * Get local update apk URI
+     * @param context
+     * @param updateFilename
+     * @return
+     */
+    public static Uri getLocalUpdateFileUri(final Context context, final String updateFilename) {
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_UPDATE_STORAGE_FOLDER + "/"+ updateFilename;
+            File possibleUpdateFile = new File(pathname);
+            if (possibleUpdateFile.exists() && possibleUpdateFile.isFile()) {
+                return Uri.parse(pathname);
+            }
+        }
+        return Uri.parse(updateFilename);
     }
 
     /**

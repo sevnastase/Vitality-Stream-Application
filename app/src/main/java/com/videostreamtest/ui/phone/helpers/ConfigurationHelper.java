@@ -3,7 +3,9 @@ package com.videostreamtest.ui.phone.helpers;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Environment;
 
+import androidx.core.content.ContextCompat;
 import androidx.core.content.pm.PackageInfoCompat;
 import androidx.work.Constraints;
 import androidx.work.Data;
@@ -12,6 +14,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.videostreamtest.enums.CommunicationDevice;
+import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.ActiveConfigurationServiceWorker;
 import com.videostreamtest.workers.ActiveProductMovieLinksServiceWorker;
 import com.videostreamtest.workers.ActiveProductsServiceWorker;
@@ -20,6 +23,11 @@ import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
 import com.videostreamtest.workers.NetworkInfoWorker;
 import com.videostreamtest.workers.ProfileServiceWorker;
 import com.videostreamtest.workers.SoundInformationServiceWorker;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class ConfigurationHelper {
     public static CommunicationDevice getCommunicationDevice(final String communicationDevice) {
@@ -136,5 +144,42 @@ public class ConfigurationHelper {
             versionCode = -1;
         }
         return versionCode;
+    }
+
+    public static PackageInfo getLocalUpdatePackageInfo(Context context) {
+        final PackageManager pm = context.getPackageManager();
+//      String apkName = "example.apk";//for example, remove later
+        String fullPath = "/error";
+
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_UPDATE_STORAGE_FOLDER;
+            File possibleUpdatePackageLocation = new File(pathname);
+            if (possibleUpdatePackageLocation.exists() && possibleUpdatePackageLocation.listFiles().length>0) {
+                for (File updateFile : possibleUpdatePackageLocation.listFiles()) {
+                    if (updateFile.getName().toLowerCase().endsWith(".apk")) {
+                        fullPath = updateFile.getAbsolutePath();
+                    }
+                }
+            }
+        }
+//        String fullPath = Environment.getExternalStorageDirectory() + "/" + apkName;
+        if (new File(fullPath).exists()) {
+            PackageInfo info = pm.getPackageArchiveInfo(fullPath, 0);
+            return info;
+        } else {
+            return null;
+        }
+    }
+
+    public static boolean verifyInstalledByGooglePlayStore(Context context) {
+        // A list with valid installers package name
+        List<String> validInstallers = new ArrayList<>(Arrays.asList("com.android.vending", "com.google.android.feedback"));
+
+        // The package name of the app that has installed your app
+        final String installer = context.getPackageManager().getInstallerPackageName(context.getPackageName());
+
+        // true if your app has been downloaded from Play Store
+        return installer != null && validInstallers.contains(installer);
     }
 }

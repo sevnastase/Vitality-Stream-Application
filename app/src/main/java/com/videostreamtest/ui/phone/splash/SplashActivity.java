@@ -3,6 +3,7 @@ package com.videostreamtest.ui.phone.splash;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,8 +16,19 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.UpdateAvailability;
+import com.google.android.play.core.tasks.Task;
 import com.google.gson.GsonBuilder;
+import com.videostreamtest.R;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.ProductType;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
@@ -24,10 +36,14 @@ import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.ui.phone.productview.ProductActivity;
 import com.videostreamtest.ui.phone.profiles.ProfilesActivity;
+import com.videostreamtest.workers.InstallPackageServiceWorker;
+import com.videostreamtest.workers.UpdatePackageServiceWorker;
+
 
 public class SplashActivity extends AppCompatActivity {
 
     private static final String TAG = SplashActivity.class.getSimpleName();
+    private static final int MY_REQUEST_CODE = 1337;
     public static int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE= 2323;
 
     private SplashViewModel splashViewModel;
@@ -51,6 +67,8 @@ public class SplashActivity extends AppCompatActivity {
 
         loadTimer = new Handler(Looper.getMainLooper());
 
+        checkForUpdates();
+
         //New way
         splashViewModel.getCurrentConfig().observe(this, config -> {
             Log.d(TAG, "CurrentConfig Value = "+config);
@@ -62,6 +80,7 @@ public class SplashActivity extends AppCompatActivity {
                 Log.d(TAG, "Token :: " + config.getAccountToken() + " > Current =  " + config.isCurrent());
                 //If there's internet, retrieve account info and/or synchronize data
                 ConfigurationHelper.loadExternalData(this, config.getAccountToken());
+
 
                 /**
                  * TODO  if accounttoken is valid (create worker)
@@ -136,6 +155,63 @@ public class SplashActivity extends AppCompatActivity {
 
         });
 
+    }
+
+    private void checkForUpdates() {
+        boolean updatedByGPS = ConfigurationHelper.verifyInstalledByGooglePlayStore(getApplicationContext());
+
+        if (!updatedByGPS) {
+            Constraints constraint = new Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build();
+
+            OneTimeWorkRequest updateServiceWorker = new OneTimeWorkRequest.Builder(UpdatePackageServiceWorker.class)
+                    .setConstraints(constraint)
+                    .addTag("local-updater")
+                    .build();
+
+            OneTimeWorkRequest installPackageServiceWorker = new OneTimeWorkRequest.Builder(InstallPackageServiceWorker.class)
+                    .setConstraints(constraint)
+                    .addTag("local-update-installer")
+                    .build();
+
+            WorkManager.getInstance(this)
+                    .beginWith(updateServiceWorker)
+                    .then(installPackageServiceWorker)
+                    .enqueue();
+        } else {
+            AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(getApplicationContext());
+
+            // Returns an intent object that you use to check for an update.
+            Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
+
+            // Checks that the platform will allow the specified type of update.
+            appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
+                if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                        // This example applies an immediate update. To apply a flexible update
+                        // instead, pass in AppUpdateType.FLEXIBLE
+                        && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
+                    // Request the update.
+                    Log.d(TAG, "REQUEST THE GPS UPDATE WHICH IS AVAILABLE");
+                    Toast.makeText(this, getString(R.string.update_available), Toast.LENGTH_LONG).show();
+                    try {
+                        appUpdateManager.startUpdateFlowForResult(
+                                // Pass the intent that is returned by 'getAppUpdateInfo()'.
+                                appUpdateInfo,
+                                // Or 'AppUpdateType.FLEXIBLE' for flexible updates.
+                                AppUpdateType.IMMEDIATE,
+                                // The current activity making the update request.
+                                this,
+                                // Include a request code to later monitor this update request.
+                                MY_REQUEST_CODE);
+                    } catch (IntentSender.SendIntentException sendIntentException) {
+                        Log.e(TAG, sendIntentException.getLocalizedMessage());
+                    }
+                } else {
+                    Log.d(TAG, "NO UPDATE AVAILABLE");
+                }
+            });
+        }
     }
 
     private ProductType getProductType(final String productName, final boolean supportStreaming) {

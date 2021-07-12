@@ -30,6 +30,7 @@ import com.videostreamtest.R;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
+import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.ActiveProductsServiceWorker;
 
@@ -180,10 +181,14 @@ public class ProductPickerActivity extends AppCompatActivity {
         screensaverRunnable = new Runnable() {
             @Override
             public void run() {
-                //Start Screensaver service to show screensaver after predetermined user inactivity
-                Intent screensaverActivity = new Intent(getApplicationContext(), ScreensaverActivity.class);
-                startActivity(screensaverActivity);
-                ApplicationSettings.setScreensaverActive(true);
+                if (VideoplayerActivity.getInstance() != null && !VideoplayerActivity.getInstance().isActive()) {
+                    //Start Screensaver service to show screensaver after predetermined user inactivity
+                    Intent screensaverActivity = new Intent(getApplicationContext(), ScreensaverActivity.class);
+                    startActivity(screensaverActivity);
+                    ApplicationSettings.setScreensaverActive(true);
+                } else {
+                    resetScreensaverTimer();
+                }
             }
         };
     }

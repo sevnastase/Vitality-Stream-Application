@@ -6,7 +6,9 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.Process;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -792,6 +794,14 @@ public class VideoplayerActivity extends AppCompatActivity {
         finish();
     }
 
+    public boolean isActive() {
+        if (mediaPlayer != null) {
+            return mediaPlayer.isPlaying();
+        } else {
+            return false;
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -917,7 +927,12 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private void setTimeLineEventVideoPlayer() {
         Log.d(TAG, "TimeLineEventHandler started!");
-        Handler timelineHandler = new Handler();
+
+        HandlerThread thread = new HandlerThread("TimeLineEventHandlerStart",
+                Process.THREAD_PRIORITY_BACKGROUND);
+        thread.start();
+
+        Handler timelineHandler = new Handler(thread.getLooper());
         Runnable runnableMovieDetails = new Runnable() {
             @Override
             public void run() {
@@ -932,7 +947,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                     BackgroundSound backgroundSound = getCurrentBackgroundSoundByCurrentPostion();
                     if ( backgroundSound != null) {
                         Log.d(TAG, "EventTimeLineHandler: "+backgroundSound.getSoundId() + " on second: "+mediaPlayer.getTime()/1000L);
-                        Log.d(TAG, "BgSound with id: "+backgroundSound.getSoundId()+" state if playing: "+backgroundSoundPlayer.isPlaying());
+                        Log.d(TAG, "BgSound with id: "+backgroundSound.getSoundId()+" state if playing: "+soundPlayer.isPlaying());
 //                        switchToNewBackgroundMedia(getCurrentBackgroundSoundByCurrentPostion().getSoundUrl());
                     }
 
