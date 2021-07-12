@@ -9,7 +9,7 @@ pipeline {
         stage('Build') {
             steps {
             	echo 'Building...'
-                sh './gradlew clean build'
+                sh './gradlew clean build --no-daemon'
 
                 archiveArtifacts artifacts: '**/build/libs/*.jar', fingerprint: true
                 archiveArtifacts artifacts: '**/Dockerfile', fingerprint: true
@@ -18,7 +18,7 @@ pipeline {
         stage('Release') {
             steps {
                 echo 'Building release...'
-                sh './gradlew :app:assembleRelease'
+                sh './gradlew :app:assembleRelease --no-daemon'
                 echo 'Storing apk file for publishing'
                 archiveArtifacts artifacts: '**/app/build/outputs/apk/release', fingerprint: true
             }
