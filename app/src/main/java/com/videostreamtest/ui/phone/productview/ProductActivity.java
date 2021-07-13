@@ -261,12 +261,14 @@ public class ProductActivity extends AppCompatActivity {
     }
 
     private void startScreensaverHandler() {
-        HandlerThread thread = new HandlerThread("ServiceStartArguments",
-                Process.THREAD_PRIORITY_BACKGROUND);
-        thread.start();
+        if (screensaverLooper == null) {
+            HandlerThread thread = new HandlerThread("ServiceStartArguments",
+                    Process.THREAD_PRIORITY_BACKGROUND);
+            thread.start();
 
-        // Get the HandlerThread's Looper and use it for our Handler
-        screensaverLooper = thread.getLooper();
+            // Get the HandlerThread's Looper and use it for our Handler
+            screensaverLooper = thread.getLooper();
+        }
         screensaverhandler = new Handler(screensaverLooper);
         Log.d(TAG, "call postDelayed with delay of "+ApplicationSettings.SCREENSAVER_TRIGGER_SECONDS*1000+" ms");
         screensaverhandler.postDelayed(screensaverRunnable, ApplicationSettings.SCREENSAVER_TRIGGER_SECONDS*1000);
