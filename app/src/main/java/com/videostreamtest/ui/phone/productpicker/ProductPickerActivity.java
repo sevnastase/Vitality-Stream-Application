@@ -174,7 +174,6 @@ public class ProductPickerActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshData = true;
-        resetScreensaverTimer();
     }
 
     private void initScreensaverHandler() {

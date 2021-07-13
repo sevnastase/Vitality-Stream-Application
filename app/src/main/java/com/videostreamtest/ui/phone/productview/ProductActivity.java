@@ -126,7 +126,6 @@ public class ProductActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshData = true;
-        resetScreensaverTimer();
         downloadSound();
         downloadLocalMovies();
         downloadMovieRouteParts();
