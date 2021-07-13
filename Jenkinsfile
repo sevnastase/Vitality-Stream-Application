@@ -30,7 +30,10 @@ pipeline {
 					remote.user = 'jenkins'
 					remote.password = 'Duco2020#1'
 					remote.allowAnyHosts = true
-                    sshPut remote: remote, from: 'app/build/outputs/apk/release/', into: '/var/www/html/app'
+					sshRemove remote: remote, path: "/var/www/html/app/app-release.apk"
+					sshRemove remote: remote, path: "/var/www/html/app/output-metadata.json"
+                    sshPut remote: remote, from: 'app/build/outputs/apk/release/app-release.apk', into: '/var/www/html/app/'
+                    sshPut remote: remote, from: 'app/build/outputs/apk/release/output-metadata.json', into: '/var/www/html/app/'
                 }
                 echo 'Deploy SUCCESSFULL'
             }
