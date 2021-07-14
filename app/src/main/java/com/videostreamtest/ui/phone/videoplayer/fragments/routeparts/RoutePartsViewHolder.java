@@ -5,10 +5,12 @@ import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.MoviePart;
@@ -32,13 +34,27 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
 
         if (isTouchScreen()) {
             if (isLocalPlay) {
-                //Set routepart cover
-                Picasso.get()
-                        .load(DownloadHelper.getLocalMediaRoutepart(itemView.getContext(), moviePart))
-                        .resize(180, 120)
-                        .placeholder(R.drawable.placeholder_movieparts)
-                        .error(R.drawable.placeholder_movieparts)
-                        .into(moviePartCoverImage);
+                if (DownloadHelper.getLocalMediaRoutepart(itemView.getContext(), moviePart).exists()) {
+                    //Set routepart cover
+                    Picasso.get()
+                            .load(DownloadHelper.getLocalMediaRoutepart(itemView.getContext(), moviePart))
+                            .resize(180, 120)
+                            .placeholder(R.drawable.placeholder_movieparts)
+                            .error(R.drawable.placeholder_movieparts)
+                            .into(moviePartCoverImage, new Callback() {
+                                @Override
+                                public void onSuccess() {
+
+                                }
+
+                                @Override
+                                public void onError(Exception e) {
+                                    Toast.makeText(itemView.getContext(), "[ERROR][LOCAL] "+e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                                }
+                            });
+                } else {
+                    Toast.makeText(itemView.getContext(), "[Local] routepart image not found: "+DownloadHelper.getLocalMediaRoutepart(itemView.getContext(), moviePart).getAbsolutePath(), Toast.LENGTH_LONG).show();
+                }
             } else {
                 //Set routepart cover
                 Picasso.get()
@@ -46,7 +62,17 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
                         .resize(180, 120)
                         .placeholder(R.drawable.placeholder_movieparts)
                         .error(R.drawable.placeholder_movieparts)
-                        .into(moviePartCoverImage);
+                        .into(moviePartCoverImage, new Callback() {
+                            @Override
+                            public void onSuccess() {
+
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                Toast.makeText(itemView.getContext(), "[ERROR][EXTERNAL] "+e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
             }
         } else {
             if (isLocalPlay) {
