@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -206,33 +207,44 @@ public class ProductActivity extends AppCompatActivity {
             if (currentConfig != null) {
                 productViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(this, routefilms -> {
                     if (routefilms.size()>0 && currentConfig.isLocalPlay()) {
-                        for (Routefilm routefilm : routefilms) {
-                            if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
-                                Constraints constraint = new Constraints.Builder()
-                                        .setRequiredNetworkType(NetworkType.CONNECTED)
-                                        .build();
+                        //CHECK IF ALL MOVIES FIT TO DISK
+                        // Accumulate size of movies
+                        long totalMovieFileSizeOnDisk = 0L;
+                        for (Routefilm routefilm: routefilms) {
+                            totalMovieFileSizeOnDisk += routefilm.getMovieFileSize();
+                        }
 
-                                Data.Builder mediaDownloader = new Data.Builder();
-                                mediaDownloader.putString("INPUT_ROUTEFILM_JSON_STRING", new GsonBuilder().create().toJson(Movie.fromRoutefilm(routefilm), Movie.class));
-                                mediaDownloader.putString("localMediaServer", currentConfig.getPraxCloudMediaServerLocalUrl());
+                        if (DownloadHelper.canFileBeCopied(getApplicationContext(), totalMovieFileSizeOnDisk)) {
+                            for (Routefilm routefilm : routefilms) {
+                                if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
+                                    Constraints constraint = new Constraints.Builder()
+                                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                                            .build();
 
-                                OneTimeWorkRequest availabilityWorker = new OneTimeWorkRequest.Builder(LocalMediaServerAvailableServiceWorker.class)
-                                        .setConstraints(constraint)
-                                        .setInputData(mediaDownloader.build())
-                                        .addTag("local-" + routefilm.getMovieId())
-                                        .build();
+                                    Data.Builder mediaDownloader = new Data.Builder();
+                                    mediaDownloader.putString("INPUT_ROUTEFILM_JSON_STRING", new GsonBuilder().create().toJson(Movie.fromRoutefilm(routefilm), Movie.class));
+                                    mediaDownloader.putString("localMediaServer", currentConfig.getPraxCloudMediaServerLocalUrl());
 
-                                OneTimeWorkRequest oneTimeWorkRequest = new OneTimeWorkRequest.Builder(DownloadMovieServiceWorker.class)
-                                        .setConstraints(constraint)
-                                        .setInputData(mediaDownloader.build())
-                                        .addTag("routefilm-" + routefilm.getMovieId())
-                                        .build();
+                                    OneTimeWorkRequest availabilityWorker = new OneTimeWorkRequest.Builder(LocalMediaServerAvailableServiceWorker.class)
+                                            .setConstraints(constraint)
+                                            .setInputData(mediaDownloader.build())
+                                            .addTag("local-" + routefilm.getMovieId())
+                                            .build();
 
-                                WorkManager.getInstance(this)
-                                        .beginUniqueWork("download-movie-" + routefilm.getMovieId(), ExistingWorkPolicy.KEEP, availabilityWorker)
-                                        .then(oneTimeWorkRequest)
-                                        .enqueue();
+                                    OneTimeWorkRequest oneTimeWorkRequest = new OneTimeWorkRequest.Builder(DownloadMovieServiceWorker.class)
+                                            .setConstraints(constraint)
+                                            .setInputData(mediaDownloader.build())
+                                            .addTag("routefilm-" + routefilm.getMovieId())
+                                            .build();
+
+                                    WorkManager.getInstance(this)
+                                            .beginUniqueWork("download-movie-" + routefilm.getMovieId(), ExistingWorkPolicy.KEEP, availabilityWorker)
+                                            .then(oneTimeWorkRequest)
+                                            .enqueue();
+                                }
                             }
+                        } else {
+                            Toast.makeText(getApplicationContext(), getString(R.string.warning_need_more_disk_capacity), Toast.LENGTH_LONG).show();
                         }
                     }
                 });

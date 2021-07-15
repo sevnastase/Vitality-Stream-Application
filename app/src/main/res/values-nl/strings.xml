@@ -62,4 +62,5 @@
     <string name="statusbar_rpm_title">RPM</string>
     <string name="videoplayer_sensor_wait_error_message">Kon geen connectie met sensor maken, probeer het nog eens.</string>
     <string name="update_available">Update voor de app beschikbaar!</string>
+    <string name="warning_need_more_disk_capacity">Er is geen harddisk beschikbaar met voldoende schuifruimte om alle films te waarborgen.</string>
 </resources>

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -130,15 +131,39 @@ public class TouchScreenFragment extends Fragment {
         productViewModel.getCurrentConfig().observe(getViewLifecycleOwner(), currentConfig -> {
             if (currentConfig != null) {
                 Product selectedProduct = new GsonBuilder().create().fromJson(getArguments().getString("product_object", "{}"), Product.class);
-                productViewModel.getProductMovies(currentConfig.getAccountToken(), selectedProduct.getId()).observe(getViewLifecycleOwner(), routefilms -> {
-                    CommunicationDevice communicationDevice = ConfigurationHelper.getCommunicationDevice(getArguments().getString("communication_device"));
 
-                    touchScreenRouteFilmsAdapter = new TouchScreenRouteFilmsAdapter(routefilms.toArray(new Routefilm[0]), selectedProduct, communicationDevice);
-                    touchScreenRouteFilmsAdapter.setRouteInformationBlock(routeInformationBlock);
+                productViewModel.getPMS(selectedProduct.getId()).observe(getViewLifecycleOwner(), pmsList -> {
+                    productViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(getViewLifecycleOwner(), allRoutefilms -> {
+                        List<Routefilm> filteredRoutefilmList = new ArrayList<>();
+                        if (pmsList.size()>0 && allRoutefilms.size()>0) {
+                            for (Routefilm routefilm: allRoutefilms) {
+                                for (ProductMovie productMovie: pmsList) {
+                                    if (routefilm.getMovieId() == productMovie.getMovieId()) {
+                                        filteredRoutefilmList.add(routefilm);
+                                    }
+                                }
+                            }
 
-                    recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
-                    recyclerView.getAdapter().notifyDataSetChanged();
+                            CommunicationDevice communicationDevice = ConfigurationHelper.getCommunicationDevice(getArguments().getString("communication_device"));
+
+                            touchScreenRouteFilmsAdapter = new TouchScreenRouteFilmsAdapter(filteredRoutefilmList.toArray(new Routefilm[0]), selectedProduct, communicationDevice);
+                            touchScreenRouteFilmsAdapter.setRouteInformationBlock(routeInformationBlock);
+
+                            recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
+                            recyclerView.getAdapter().notifyDataSetChanged();
+                        }
+                    });
                 });
+
+//                productViewModel.getProductMovies(currentConfig.getAccountToken(), selectedProduct.getId()).observe(getViewLifecycleOwner(), routefilms -> {
+//                    CommunicationDevice communicationDevice = ConfigurationHelper.getCommunicationDevice(getArguments().getString("communication_device"));
+//
+//                    touchScreenRouteFilmsAdapter = new TouchScreenRouteFilmsAdapter(routefilms.toArray(new Routefilm[0]), selectedProduct, communicationDevice);
+//                    touchScreenRouteFilmsAdapter.setRouteInformationBlock(routeInformationBlock);
+//
+//                    recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
+//                    recyclerView.getAdapter().notifyDataSetChanged();
+//                });
             }
         });
     }

@@ -45,44 +45,47 @@ public class InstallPackageServiceWorker extends Worker implements ProgressCallB
         final boolean updateAvailable = getInputData().getBoolean("update", false);
         final String updateFileName = getInputData().getString("updatefilename");
 
-        if (updateAvailable ) {
+        if (updateAvailable) {
             selectedVolume = DownloadHelper.selectStorageVolumeWithLargestFreeSpace(getApplicationContext());
             try {
                 //download online file to local update folder
-                download(UPDATE_URL+"/"+updateFileName, Long.MAX_VALUE);
+                download(UPDATE_URL + "/" + updateFileName, Long.MAX_VALUE);
             } catch (IOException ioException) {
                 Log.e(TAG, ioException.getLocalizedMessage());
                 return Result.failure();
             }
-        }
 
-        PackageInfo packageInfo = ConfigurationHelper.getLocalUpdatePackageInfo(getApplicationContext());
-        Log.d(TAG,  "EXTERNAL PACKAGE READ VERSION: "+packageInfo.versionName );
-        try {
-            Log.d(TAG, "CURRENT PACKAGE READ VERSION: " + getApplicationContext().getPackageManager().getPackageInfo(getApplicationContext().getPackageName(), 0).versionName);
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-        }
 
-        if (ConfigurationHelper.getVersionNumberCode(getApplicationContext()) >= ConfigurationHelper.getLocalUpdatePackageInfo(getApplicationContext()).versionCode) {
-            //DELETE LOCAL UPDATE
-            new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()).delete();
-        } else {
-            //REQUEST TO INSTALL UPDATE TO USER
-            Uri contentUri = FileProvider.getUriForFile(
-                    getApplicationContext(),
-                    BuildConfig.APPLICATION_ID + ".provider",
-                    new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()));
+            if (new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()).exists()) {
+                PackageInfo packageInfo = ConfigurationHelper.getLocalUpdatePackageInfo(getApplicationContext());
+                Log.d(TAG, "EXTERNAL PACKAGE READ VERSION: " + packageInfo.versionName);
+                try {
+                    Log.d(TAG, "CURRENT PACKAGE READ VERSION: " + getApplicationContext().getPackageManager().getPackageInfo(getApplicationContext().getPackageName(), 0).versionName);
+                } catch (PackageManager.NameNotFoundException e) {
+                    Log.e(TAG, e.getLocalizedMessage());
+                }
 
-            Intent autoUpdatePackage = new Intent(Intent.ACTION_VIEW);
-            autoUpdatePackage.setAction(Intent.ACTION_INSTALL_PACKAGE);
-            autoUpdatePackage.putExtra(Intent.EXTRA_RETURN_RESULT, true);
-            autoUpdatePackage.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true);
-            autoUpdatePackage.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
-            autoUpdatePackage.setDataAndType(
-                    contentUri,
-                    "application/vnd.android.package-archive");
-            getApplicationContext().startActivity(autoUpdatePackage);
+                if (ConfigurationHelper.getVersionNumberCode(getApplicationContext()) >= ConfigurationHelper.getLocalUpdatePackageInfo(getApplicationContext()).versionCode) {
+                    //DELETE LOCAL UPDATE
+                    new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()).delete();
+                } else {
+                    //REQUEST TO INSTALL UPDATE TO USER
+                    Uri contentUri = FileProvider.getUriForFile(
+                            getApplicationContext(),
+                            BuildConfig.APPLICATION_ID + ".provider",
+                            new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()));
+
+                    Intent autoUpdatePackage = new Intent(Intent.ACTION_VIEW);
+                    autoUpdatePackage.setAction(Intent.ACTION_INSTALL_PACKAGE);
+                    autoUpdatePackage.putExtra(Intent.EXTRA_RETURN_RESULT, true);
+                    autoUpdatePackage.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true);
+                    autoUpdatePackage.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    autoUpdatePackage.setDataAndType(
+                            contentUri,
+                            "application/vnd.android.package-archive");
+                    getApplicationContext().startActivity(autoUpdatePackage);
+                }
+            }
         }
 
         Data outputData = new Data.Builder()
