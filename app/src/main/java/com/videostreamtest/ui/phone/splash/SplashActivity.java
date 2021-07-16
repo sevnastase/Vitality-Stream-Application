@@ -1,5 +1,6 @@
 package com.videostreamtest.ui.phone.splash;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Intent;
@@ -241,7 +242,7 @@ public class SplashActivity extends AppCompatActivity {
         // Check if Android M or higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Show alert dialog to the user saying a separate permission is needed
-            requestPermissions(new String[]{Settings.ACTION_MANAGE_OVERLAY_PERMISSION}, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE);
+            requestPermissions(new String[]{Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE);
             if(!Settings.canDrawOverlays(this)) {
                Log.d(TAG, "checkpermission "+getPackageManager().checkPermission(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, getPackageName())) ;
             }
