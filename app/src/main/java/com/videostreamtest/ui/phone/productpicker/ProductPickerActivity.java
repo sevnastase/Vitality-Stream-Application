@@ -1,14 +1,17 @@
 package com.videostreamtest.ui.phone.productpicker;
 
-import android.app.ActionBar;
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -18,21 +21,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.work.Data;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
-import com.videostreamtest.workers.ActiveProductsServiceWorker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +62,8 @@ public class ProductPickerActivity extends AppCompatActivity {
                         View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
         productPickerViewModel = new ViewModelProvider(this).get(ProductPickerViewModel.class);
+
+        requestAppPermissions();
 
         initScreensaverHandler();
         startScreensaverHandler();
@@ -211,6 +209,28 @@ public class ProductPickerActivity extends AppCompatActivity {
         if (screensaverhandler != null && !ApplicationSettings.SCREENSAVER_ACTIVE) {
             screensaverhandler.removeCallbacksAndMessages(null);
             startScreensaverHandler();
+        }
+    }
+
+    private void requestAppPermissions() {
+        // Check if Android M or higher
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Show alert dialog to the user saying a separate permission is needed
+            requestPermissions(new String[]{
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Manifest.permission.INTERNET,
+                    Manifest.permission.ACCESS_NETWORK_STATE,
+                    Manifest.permission.BLUETOOTH,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+            }, 2323);
+            if (checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED){
+                Log.d(TAG, "BLUETOOTH PERMISSION GRANTED");
+            }
+            if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_GRANTED){
+                Log.d(TAG, "BLUETOOTH_ADMIN PERMISSION GRANTED");
+            }
         }
     }
 }
