@@ -267,6 +267,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         setVideoFeatures();
 
         mediaPlayer.setRate(1.0f);
+        mediaPlayer.setAspectRatio("16:9");
         mediaPlayer.play();
         soundPlayer.play();
         Log.d(TAG, "Volume Level: "+mediaPlayer.getVolume());

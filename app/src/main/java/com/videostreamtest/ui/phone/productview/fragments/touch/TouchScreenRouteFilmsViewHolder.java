@@ -69,6 +69,11 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
                     .into(routefilmScenery);
         } else {
             Log.d(this.getClass().getSimpleName(), "PRAXCLOUD :: " + routefilm.getMovieImagepath());
+
+            if (routefilm.getMovieTitle().toLowerCase().contains("amsterdam 1")) {
+                routefilm.setMovieUrl("https://praxmedia.praxtour.com/movies/Amsterdam_1/mpd/amsterdam_1.mpd");
+            }
+
             //Set product image in button
             Picasso.get()
                     .load(routefilm.getMovieImagepath())
