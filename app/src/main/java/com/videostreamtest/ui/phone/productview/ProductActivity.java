@@ -94,10 +94,10 @@ public class ProductActivity extends AppCompatActivity {
         productViewModel.getCurrentConfig().observe(this, currentConfig ->{
             if (currentConfig != null) {
                 Log.d(getClass().getSimpleName(), "currentConfig pCount: "+currentConfig.getProductCount() + " Bundle pCount: 1");
-                if (refreshData) {
-                    refreshData = false;
-                    ConfigurationHelper.loadExternalData(this, currentConfig.getAccountToken());
-                }
+//                if (refreshData) {
+//                    refreshData = false;
+//                    ConfigurationHelper.loadExternalData(this, currentConfig.getAccountToken());
+//                }
 
                 Bundle arguments = getIntent().getExtras();
                 arguments.putString("communication_device", currentConfig.getCommunicationDevice());

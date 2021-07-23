@@ -103,7 +103,7 @@ public class SplashActivity extends AppCompatActivity {
                                     for (final com.videostreamtest.config.entity.Product p : products) {
                                         Log.d(TAG, "Product ID :: " + p.getUid() + " :: Product name :: " + p.getProductName());
                                     }
-                                    startActivity(new Intent(this, ProductPickerActivity.class));
+                                    startActivity(new Intent(SplashActivity.this, ProductPickerActivity.class));
                                     SplashActivity.this.finish();
                                 }
                             } else {
