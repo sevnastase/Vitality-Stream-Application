@@ -25,11 +25,13 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.config.entity.Routefilm;
+import com.videostreamtest.data.model.response.Configuration;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.productview.fragments.plain.PlainScreenRouteFilmsAdapter;
 import com.videostreamtest.ui.phone.productview.fragments.touch.TouchScreenRouteFilmsAdapter;
+import com.videostreamtest.ui.phone.productview.layoutmanager.PreCachingLayoutManager;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
 import java.io.File;
@@ -78,7 +80,10 @@ public class TouchScreenFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.recyclerview_available_routefilms);
         recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new GridLayoutManager(view.getContext(),4));
+        PreCachingLayoutManager preCachingLayoutManager = new PreCachingLayoutManager(view.getContext(),4);
+        preCachingLayoutManager.setItemPrefetchEnabled(true);
+        preCachingLayoutManager.setExtraLayoutSpace(60);
+        recyclerView.setLayoutManager(preCachingLayoutManager);
 
         navigationLeftArrow.setOnClickListener(onClickView ->{
             setNavigationLeftArrow();
@@ -101,6 +106,25 @@ public class TouchScreenFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         loadNavigationArrows();
         loadAvailableMediaScenery();
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        refreshRecyclerView();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshRecyclerView();
+    }
+
+    private void refreshRecyclerView() {
+        if (recyclerView != null && recyclerView.getAdapter()!=null) {
+            recyclerView.getAdapter().notifyDataSetChanged();
+        }
     }
 
     private void loadNavigationArrows() {
@@ -150,91 +174,90 @@ public class TouchScreenFragment extends Fragment {
                             touchScreenRouteFilmsAdapter.setRouteInformationBlock(routeInformationBlock);
 
                             recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
-                            recyclerView.getAdapter().notifyDataSetChanged();
+                        } else {
+                            Toast.makeText(getActivity().getApplicationContext(), getString(R.string.product_view_loading_data_message), Toast.LENGTH_LONG).show();
                         }
                     });
                 });
-
-//                productViewModel.getProductMovies(currentConfig.getAccountToken(), selectedProduct.getId()).observe(getViewLifecycleOwner(), routefilms -> {
-//                    CommunicationDevice communicationDevice = ConfigurationHelper.getCommunicationDevice(getArguments().getString("communication_device"));
-//
-//                    touchScreenRouteFilmsAdapter = new TouchScreenRouteFilmsAdapter(routefilms.toArray(new Routefilm[0]), selectedProduct, communicationDevice);
-//                    touchScreenRouteFilmsAdapter.setRouteInformationBlock(routeInformationBlock);
-//
-//                    recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
-//                    recyclerView.getAdapter().notifyDataSetChanged();
-//                });
             }
         });
     }
 
     private void setNavigationLeftArrow() {
-        int currentPosition = touchScreenRouteFilmsAdapter.getSelectedMovie();
-        int nextPosition = 0;
-        if (currentPosition == 0) {
-            nextPosition = recyclerView.getAdapter().getItemCount() -1;
-        } else {
-            nextPosition = currentPosition -1;
+        if (touchScreenRouteFilmsAdapter != null) {
+            int currentPosition = touchScreenRouteFilmsAdapter.getSelectedMovie();
+            int nextPosition = 0;
+            if (currentPosition == 0) {
+                nextPosition = recyclerView.getAdapter().getItemCount() - 1;
+            } else {
+                nextPosition = currentPosition - 1;
+            }
+            touchScreenRouteFilmsAdapter.setSelectedMovie(nextPosition);
+
+            recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
+            recyclerView.getAdapter().notifyDataSetChanged();
+
+            recyclerView.getLayoutManager().scrollToPosition(nextPosition);
         }
-        touchScreenRouteFilmsAdapter.setSelectedMovie(nextPosition);
-
-        recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
-        recyclerView.getAdapter().notifyDataSetChanged();
-
-        recyclerView.getLayoutManager().scrollToPosition(nextPosition);
     }
 
     private void setNavigationRightArrow() {
-        int currentPosition = touchScreenRouteFilmsAdapter.getSelectedMovie();
-        int nextPosition = 0;
-        if (currentPosition == (recyclerView.getAdapter().getItemCount() -1)) {
-            nextPosition = 0;
-        } else {
-            nextPosition = currentPosition +1;
+        if (touchScreenRouteFilmsAdapter != null) {
+            int currentPosition = touchScreenRouteFilmsAdapter.getSelectedMovie();
+            int nextPosition = 0;
+            if (currentPosition == (recyclerView.getAdapter().getItemCount() - 1)) {
+                nextPosition = 0;
+            } else {
+                nextPosition = currentPosition + 1;
+            }
+            touchScreenRouteFilmsAdapter.setSelectedMovie(nextPosition);
+
+            recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
+            recyclerView.getAdapter().notifyDataSetChanged();
+
+            recyclerView.getLayoutManager().scrollToPosition(nextPosition);
         }
-        touchScreenRouteFilmsAdapter.setSelectedMovie(nextPosition);
-
-        recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
-        recyclerView.getAdapter().notifyDataSetChanged();
-
-        recyclerView.getLayoutManager().scrollToPosition(nextPosition);
     }
 
     private void setNavigationUpArrow() {
-        int currentPosition = touchScreenRouteFilmsAdapter.getSelectedMovie();
-        int nextPosition = 0;
+        if (touchScreenRouteFilmsAdapter != null) {
+            int currentPosition = touchScreenRouteFilmsAdapter.getSelectedMovie();
+            int nextPosition = 0;
 
-        if (currentPosition <= 3) {
-            nextPosition = currentPosition;
-        } else {
-            nextPosition = currentPosition - 4;
+            if (currentPosition <= 3) {
+                nextPosition = currentPosition;
+            } else {
+                nextPosition = currentPosition - 4;
+            }
+
+            touchScreenRouteFilmsAdapter.setSelectedMovie(nextPosition);
+
+            recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
+            recyclerView.getAdapter().notifyDataSetChanged();
+
+            recyclerView.getLayoutManager().scrollToPosition(nextPosition);
         }
-
-        touchScreenRouteFilmsAdapter.setSelectedMovie(nextPosition);
-
-        recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
-        recyclerView.getAdapter().notifyDataSetChanged();
-
-        recyclerView.getLayoutManager().scrollToPosition(nextPosition);
     }
 
     private void setNavigationDownArrow() {
-        int currentPosition = touchScreenRouteFilmsAdapter.getSelectedMovie();
-        int nextPosition = 0;
+        if (touchScreenRouteFilmsAdapter != null) {
+            int currentPosition = touchScreenRouteFilmsAdapter.getSelectedMovie();
+            int nextPosition = 0;
 
-        //TODO: SMOOTH CHECK BECAUSE LAGGY UX NOW
-        if (currentPosition >= ((recyclerView.getAdapter().getItemCount() -1)-4)) {
-            nextPosition = currentPosition;
-        } else {
-            nextPosition = currentPosition + 4;
+            //TODO: SMOOTH CHECK BECAUSE LAGGY UX NOW
+            if (currentPosition >= ((recyclerView.getAdapter().getItemCount() - 1) - 4)) {
+                nextPosition = currentPosition;
+            } else {
+                nextPosition = currentPosition + 4;
+            }
+
+            touchScreenRouteFilmsAdapter.setSelectedMovie(nextPosition);
+
+            recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
+            recyclerView.getAdapter().notifyDataSetChanged();
+
+            recyclerView.getLayoutManager().scrollToPosition(nextPosition);
         }
-
-        touchScreenRouteFilmsAdapter.setSelectedMovie(nextPosition);
-
-        recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
-        recyclerView.getAdapter().notifyDataSetChanged();
-
-        recyclerView.getLayoutManager().scrollToPosition(nextPosition);
     }
 
     private Routefilm getSupportedRoutefilm(List<Routefilm> routefilms, Integer movieId) {

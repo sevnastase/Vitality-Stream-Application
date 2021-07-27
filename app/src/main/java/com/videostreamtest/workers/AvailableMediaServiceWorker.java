@@ -71,7 +71,8 @@ public class AvailableMediaServiceWorker extends Worker {
 
         //DATABASE INJECTION
         final RoutefilmDao routefilmDao = PraxtourDatabase.getDatabase(getApplicationContext()).routefilmDao();
-        routefilmDao.nukeTable();
+        //CHECK: Fill in the first attempt, let the rest be synchronised by the UpdateRegisteredMovieServiceWorker
+//        routefilmDao.nukeTable();
         if (routefilms.size() > 0) {
             for (final Movie routefilm: routefilms) {
                 final com.videostreamtest.config.entity.Routefilm dbRoutefilm = new com.videostreamtest.config.entity.Routefilm();

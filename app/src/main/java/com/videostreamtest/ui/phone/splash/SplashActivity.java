@@ -72,10 +72,6 @@ public class SplashActivity extends AppCompatActivity {
 
         //New way
         splashViewModel.getCurrentConfig().observe(this, config -> {
-            Log.d(TAG, "CurrentConfig Value = "+config);
-            Log.d(TAG, "CurrentConfig FakeTouch = "+getPackageManager().hasSystemFeature(PackageManager.FEATURE_FAKETOUCH));
-            Log.d(TAG, "CurrentConfig Touch = "+getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN));
-            Log.d(TAG, "CurrentConfig MultiTouch = "+getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH));
             if (config != null) {
                 loadTimer.removeCallbacksAndMessages(null);
                 Log.d(TAG, "Token :: " + config.getAccountToken() + " > Current =  " + config.isCurrent());

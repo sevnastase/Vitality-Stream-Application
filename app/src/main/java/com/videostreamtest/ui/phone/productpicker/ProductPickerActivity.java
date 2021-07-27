@@ -94,10 +94,7 @@ public class ProductPickerActivity extends AppCompatActivity {
 
         productPickerViewModel.getCurrentConfig().observe(this, config -> {
             if (config != null) {
-                if (refreshData) {
-                    refreshData = false;
-                    ConfigurationHelper.loadExternalData(this, config.getAccountToken());
-                }
+//                ConfigurationHelper.loadExternalData(this, config.getAccountToken());
                 // Add action onClick to signout button
                 signoutButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -171,7 +168,6 @@ public class ProductPickerActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        refreshData = true;
     }
 
     private void initScreensaverHandler() {

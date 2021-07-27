@@ -19,9 +19,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.Constraints;
 import androidx.work.Data;
+import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import com.google.gson.GsonBuilder;
@@ -38,10 +40,14 @@ import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.workers.DownloadMovieImagesServiceWorker;
 import com.videostreamtest.workers.DownloadMovieServiceWorker;
 import com.videostreamtest.workers.DownloadRoutepartsServiceWorker;
 import com.videostreamtest.workers.DownloadSoundServiceWorker;
 import com.videostreamtest.workers.LocalMediaServerAvailableServiceWorker;
+import com.videostreamtest.workers.UpdateRegisteredMovieServiceWorker;
+
+import java.util.concurrent.TimeUnit;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
@@ -54,8 +60,6 @@ public class ProductActivity extends AppCompatActivity {
     private Button signoutButton;
     private ImageView productLogo;
     private TextView appBuildNumber;
-
-    private boolean refreshData = false;
 
     private Handler screensaverhandler;
     private Looper screensaverLooper;
@@ -94,14 +98,11 @@ public class ProductActivity extends AppCompatActivity {
         productViewModel.getCurrentConfig().observe(this, currentConfig ->{
             if (currentConfig != null) {
                 Log.d(getClass().getSimpleName(), "currentConfig pCount: "+currentConfig.getProductCount() + " Bundle pCount: 1");
-//                if (refreshData) {
-//                    refreshData = false;
-//                    ConfigurationHelper.loadExternalData(this, currentConfig.getAccountToken());
-//                }
 
                 Bundle arguments = getIntent().getExtras();
                 arguments.putString("communication_device", currentConfig.getCommunicationDevice());
 
+                syncMovieDatabasePeriodically(currentConfig.getAccountToken());
                 loadFragmentBasedOnScreenType(arguments);
 
                 appBuildNumber.setText(ConfigurationHelper.getVersionNumber(getApplicationContext())+":"+currentConfig.getAccountToken());
@@ -126,10 +127,10 @@ public class ProductActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        refreshData = true;
+        downloadMovieSupportImages();
         downloadSound();
-        downloadLocalMovies();
         downloadMovieRouteParts();
+        downloadLocalMovies();
     }
 
     @Override
@@ -171,6 +172,38 @@ public class ProductActivity extends AppCompatActivity {
                             .beginUniqueWork("download-sound", ExistingWorkPolicy.KEEP, downloadSoundWorker)
                             .enqueue();
                 }
+            }
+        });
+    }
+
+    private void downloadMovieSupportImages() {
+        productViewModel.getCurrentConfig().observe(this, currentConfig -> {
+            if (currentConfig != null) {
+                productViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(this, routefilms -> {
+                    if (routefilms.size() > 0 && currentConfig.isLocalPlay()) {
+                        for (Routefilm routefilm : routefilms) {
+                            //SPECIFY INPUT
+                            Data.Builder mediaDownloader = new Data.Builder();
+                            mediaDownloader.putString("INPUT_ROUTEFILM_JSON_STRING", new GsonBuilder().create().toJson(Movie.fromRoutefilm(routefilm), Movie.class));
+                            mediaDownloader.putString("localMediaServer", currentConfig.getPraxCloudMediaServerLocalUrl());
+
+                            //COSNTRAINTS
+                            Constraints constraint = new Constraints.Builder()
+                                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                                    .build();
+                            //WORKREQUEST
+                            OneTimeWorkRequest downloadMovieSupportImagesWorkRequest = new OneTimeWorkRequest.Builder(DownloadMovieImagesServiceWorker.class)
+                                    .setConstraints(constraint)
+                                    .setInputData(mediaDownloader.build())
+                                    .addTag("support-images-routefilm-"+routefilm.getMovieId())
+                                    .build();
+                            //START WORKING
+                            WorkManager.getInstance(this)
+                                    .beginUniqueWork("download-support-images-"+routefilm.getMovieId(), ExistingWorkPolicy.KEEP, downloadMovieSupportImagesWorkRequest)
+                                    .enqueue();
+                        }
+                    }
+                });
             }
         });
     }
@@ -250,6 +283,21 @@ public class ProductActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    private void syncMovieDatabasePeriodically(final String apikey) {
+        Data.Builder syncData = new Data.Builder();
+        syncData.putString("apikey",  apikey);
+        Constraints constraint = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+        PeriodicWorkRequest syncDatabaseWorkRequest = new PeriodicWorkRequest.Builder(UpdateRegisteredMovieServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .setInputData(syncData.build())
+                .addTag("sync-database")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-database-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, syncDatabaseWorkRequest);
     }
 
     private boolean isTouchScreen() {

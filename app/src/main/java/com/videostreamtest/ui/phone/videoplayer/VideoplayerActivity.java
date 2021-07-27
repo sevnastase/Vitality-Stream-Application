@@ -191,21 +191,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
                 //WHILE ROUTE IS PLAYING
                 if (!routeFinished) {
-                    if (mediaPlayer != null) {
-                        //SELECT AUDIO TRACK
-//                        if (mediaPlayer.getAudioTracksCount() > 0) {
-//                            int sid = -1;
-//                            for (MediaPlayer.TrackDescription soundTrackDescription : mediaPlayer.getAudioTracks()) {
-//                                if (soundTrackDescription.id > sid) {
-//                                    sid = soundTrackDescription.id;
-//                                }
-//                                Log.d(TAG, "sName:" + soundTrackDescription.name + " :: sid:" + soundTrackDescription.id);
-//                            }
-//                            if (sid > 0 && mediaPlayer.getAudioTrack() != sid) {
-//                                mediaPlayer.setAudioTrack(sid);
-//                            }
-//                        }
-
+                    if (mediaPlayer != null && !selectedMovie.getMovieUrl().toLowerCase().contains("/mpd/")) {
                         //SELECT VIDEO TRACK
                         if (mediaPlayer.getVideoTracksCount() > 0) {
                             int id = -1;
@@ -270,9 +256,6 @@ public class VideoplayerActivity extends AppCompatActivity {
         mediaPlayer.setAspectRatio("16:9");
         mediaPlayer.play();
         soundPlayer.play();
-        Log.d(TAG, "Volume Level: "+mediaPlayer.getVolume());
-//        mediaPlayer.setVolume(50);
-
     }
 
     @Override
@@ -901,6 +884,11 @@ public class VideoplayerActivity extends AppCompatActivity {
             @Override
             public void run() {
                 if (videoPlayer != null) {
+                    if (mediaPlayer!=null) {
+                        Log.d(TAG, "Seekable: "+mediaPlayer.isSeekable());
+                        Log.d(TAG, "Time available: "+mediaPlayer.getTime());
+                        Log.d(TAG, "Length available: "+mediaPlayer.getLength());
+                    }
                     if (    (currentSecond >= minSecondsLoadingView) &&
                             isPraxtourMediaPlayerReady() &&
                             (sensorConnected || ApplicationSettings.DEVELOPER_MODE)
@@ -937,11 +925,20 @@ public class VideoplayerActivity extends AppCompatActivity {
         Runnable runnableMovieDetails = new Runnable() {
             @Override
             public void run() {
+                if (mediaPlayer!=null) {
+                    //Is media seekable
+                    Log.d(TAG, "Seekable: "+mediaPlayer.isSeekable());
+                    //Current position in ms
+                    Log.d(TAG, "Time available: "+mediaPlayer.getTime());
+                    //Total length of video in ms
+                    Log.d(TAG, "Length available: "+mediaPlayer.getLength());
+                }
+
                 if (mediaPlayer != null && !routeFinished) {
 
                     if (mediaPlayer.getTime()/1000L < 2) {
-                        mediaPlayer.setVolume(50);
-                        soundPlayer.setVolume(50);
+                        mediaPlayer.setVolume(ApplicationSettings.DEFAULT_SOUND_VOLUME);
+                        soundPlayer.setVolume(ApplicationSettings.DEFAULT_SOUND_VOLUME);
                     }
 
                     //check for current backgroundsound
@@ -1054,9 +1051,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         boolean backgroundPlayerReady = false;
 //        boolean effectSoundPlayerReady = false;
 
-        if (videoPlayer.getMediaItemCount()>0) {
-            videoPlayerReady = (videoPlayer.getPlaybackState() == Player.STATE_READY);
-        }
+        videoPlayerReady = (mediaPlayer.isSeekable() && mediaPlayer.getLength() != -1);
+
         if (backgroundSoundPlayer.getMediaItemCount()>0) {
             backgroundPlayerReady = (backgroundSoundPlayer.getPlaybackState() == Player.STATE_READY);
         } else {

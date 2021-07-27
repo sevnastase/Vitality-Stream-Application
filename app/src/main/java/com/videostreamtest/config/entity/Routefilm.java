@@ -5,6 +5,8 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import com.videostreamtest.data.model.Movie;
+
 @Entity(tableName = "routefilm_table")
 public class Routefilm {
     @PrimaryKey
@@ -173,5 +175,23 @@ public class Routefilm {
 
     public void setRecordedFps(@NonNull Integer recordedFps) {
         this.recordedFps = recordedFps;
+    }
+
+    public static Routefilm fromMovie(final Movie movie, final String apikey) {
+        final Routefilm dbRoutefilm = new Routefilm();
+        dbRoutefilm.setAccountToken(apikey);
+        dbRoutefilm.setMovieId(movie.getId());
+        dbRoutefilm.setMinimalSpeed(movie.getMinimalSpeed());
+        dbRoutefilm.setMovieImagepath(movie.getMovieImagepath());
+        dbRoutefilm.setMovieLength(movie.getMovieLength());
+        dbRoutefilm.setMovieRouteinfoPath(movie.getMovieRouteinfoPath());
+        dbRoutefilm.setMovieTitle(movie.getMovieTitle());
+        dbRoutefilm.setMovieUrl(movie.getMovieUrl());
+        dbRoutefilm.setRecordedFps(movie.getRecordedFps());
+        dbRoutefilm.setRecordedSpeed(movie.getRecordedSpeed());
+        dbRoutefilm.setMovieFileSize(movie.getMovieFileSize());
+        dbRoutefilm.setMapFileSize(movie.getMapFileSize());
+        dbRoutefilm.setSceneryFileSize(movie.getSceneryFileSize());
+        return dbRoutefilm;
     }
 }

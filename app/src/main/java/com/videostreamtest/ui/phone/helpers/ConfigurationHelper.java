@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.pm.PackageInfoCompat;
 import androidx.work.Constraints;
 import androidx.work.Data;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
@@ -107,10 +108,10 @@ public class ConfigurationHelper {
 
         //Chain workers and enqueue them
         WorkManager
-                .getInstance(context)
-                .beginWith(networkInfoRequest)
+                .getInstance(context).beginUniqueWork("data-loader", ExistingWorkPolicy.KEEP, accountConfigurationRequest)
+//                .beginWith(networkInfoRequest)
 //                .then(validateAccountTokenRequest)
-                .then(accountConfigurationRequest)
+//                .beginWith(accountConfigurationRequest)
                 .then(profilesRequest)
                 .then(productsRequest)
                 .then(routefilmsRequest)

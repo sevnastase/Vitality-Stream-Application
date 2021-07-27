@@ -39,6 +39,7 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
     private ImageButton routefilmScenery;
     private boolean isMovieOnDevice = false;
     private boolean isSoundOnDevice = false;
+    private boolean isMovieSupportImagesOnDevice = false;
 
     public TouchScreenRouteFilmsViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -56,8 +57,9 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
 
         isMovieOnDevice = DownloadHelper.isMoviePresent(itemView.getContext(), movie);
         isSoundOnDevice = DownloadHelper.isSoundPresent(itemView.getContext());
+        isMovieSupportImagesOnDevice = DownloadHelper.isMovieImagesPresent(itemView.getContext(), movie.getId());
 
-        if (isMovieOnDevice) {
+        if (isMovieSupportImagesOnDevice) {
             DownloadHelper.setLocalMedia(itemView.getContext(), movie);
             Log.d(this.getClass().getSimpleName(), "LOCAL :: " + movie.getMovieImagepath());
 
@@ -69,10 +71,6 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
                     .into(routefilmScenery);
         } else {
             Log.d(this.getClass().getSimpleName(), "PRAXCLOUD :: " + routefilm.getMovieImagepath());
-
-            if (routefilm.getMovieTitle().toLowerCase().contains("amsterdam 1")) {
-                routefilm.setMovieUrl("https://praxmedia.praxtour.com/movies/Amsterdam_1/mpd/amsterdam_1.mpd");
-            }
 
             //Set product image in button
             Picasso.get()
@@ -138,6 +136,19 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
                 .into(routefilmScenery);
 
         initView();
+
+        //TEST CASES MPEG DASH ADAPTIVE STREAMING
+        if (routefilm.getMovieTitle().toLowerCase().contains("amsterdam 1")) {
+            routefilm.setMovieUrl("http://178.62.194.237/movies/Amsterdam_1/mpd/amsterdam_1.mpd");
+        }
+
+        if (routefilm.getMovieTitle().toLowerCase().contains("amersfoort")) {
+            routefilm.setMovieUrl("http://178.62.194.237/movies/Amersfoort/mpd/amersfoort.mpd");
+        }
+
+        if (routefilm.getMovieTitle().toLowerCase().contains("groningen")) {
+            routefilm.setMovieUrl("http://178.62.194.237/movies/Groningen/mpd/groningen.mpd");
+        }
 
         routefilmScenery.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -224,7 +235,7 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
         distanceView.setText(toString().format(itemView.getContext().getString(R.string.catalog_screen_distance), km, hectometers));
 
         //Set Route Information map
-        if (localPlay && isMovieOnDevice) {
+        if (localPlay && isMovieSupportImagesOnDevice) {
             Picasso.get()
                     .load(new File(movie.getMovieRouteinfoPath()))
                     .fit()

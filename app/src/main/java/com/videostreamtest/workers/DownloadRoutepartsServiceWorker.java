@@ -83,8 +83,13 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
                 .build();
         setProgressAsync(outputData);
 
-        //Select volume with largest free space to use
-        selectedVolume = selectStorageVolumeWithLargestFreeSpace();
+        //Select largest volume
+        selectedVolume = DownloadHelper.selectLargestStorageVolume(getApplicationContext());
+        //CHECK WHETHER THE VOLUME IS BIG ENOUGH FOR IMAGES AND MOVIES
+        if (selectedVolume.getTotalSpace()< ApplicationSettings.MINIMUM_DISK_SPACE_BYTES) {
+            Log.e(TAG, "Disk not big enough for standalone.");
+            return Result.failure();
+        }
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(PRAXCLOUD_URL)

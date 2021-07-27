@@ -24,6 +24,7 @@ import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.StandAloneDownloadStatus;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.SoundItem;
+import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import java.io.File;
@@ -82,8 +83,8 @@ public class DownloadSoundServiceWorker extends Worker implements ProgressCallBa
                 .build();
         setProgressAsync(outputData);
 
-        //Select volume with largest free space to use
-        selectedVolume = selectStorageVolumeWithLargestFreeSpace();
+        //Select largest volume
+        selectedVolume = DownloadHelper.selectLargestStorageVolume(getApplicationContext());
         List<SoundItem> soundItems = new ArrayList<>();
 
         Retrofit retrofit = new Retrofit.Builder()

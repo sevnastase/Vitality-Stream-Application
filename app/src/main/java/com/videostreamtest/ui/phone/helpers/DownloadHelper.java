@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.workers.DownloadMovieServiceWorker;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -51,13 +52,13 @@ public class DownloadHelper {
      */
     public static boolean isMoviePresent(final Context context, final Movie movie){
         /*
-        TODO: First correct the movie from full movie name to movie id folder.
+            First correct the movie from full movie name to movie id folder.
          */
         correctMoviefolder(context, movie);
 
         File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
         for (File externalStorageVolume: externalStorageVolumes) {
-            String pathname = externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movie.getId();
+            String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/" + movie.getId();
             File possibleMovieLocation = new File(pathname);
             if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
                 long totalSizeOnDisk = 0;
@@ -189,6 +190,35 @@ public class DownloadHelper {
             }
         }
         movieFullPathLocation.delete();
+    }
+
+    /**
+     * Check if movie folder contains any routeparts media
+     * @param context
+     * @param movieId
+     * @return boolean
+     */
+    public static boolean isMovieImagesPresent(final Context context, final int movieId){
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            String pathname = externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieId;
+            File possibleMovieLocation = new File(pathname);
+            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
+                int foundMovieImage = 0;
+                for (File file: possibleMovieLocation.listFiles()) {
+                    if (file.getName().toLowerCase().equals("map.jpg") && file.getName().toLowerCase().endsWith(".jpg")) {
+                        foundMovieImage++;
+                    }
+                    if (file.getName().toLowerCase().equals("scenery.jpg") && file.getName().toLowerCase().endsWith(".jpg")) {
+                        foundMovieImage++;
+                    }
+                }
+                if (foundMovieImage == 2) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -346,6 +376,24 @@ public class DownloadHelper {
         for (File externalStorageVolume: externalStorageVolumes) {
             if (externalStorageVolume.getFreeSpace() > freeSpace) {
                 freeSpace = externalStorageVolume.getFreeSpace();
+                selectedVolume = externalStorageVolume;
+            }
+        }
+        return selectedVolume;
+    }
+
+    /**
+     * Check which volume has the largest disk and return the location as File object.
+     * @return
+     */
+    public static File selectLargestStorageVolume(Context context) {
+        File selectedVolume = null;
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context, null);
+        long space = 0;
+        for (File externalStorageVolume: externalStorageVolumes) {
+            Log.d(DownloadMovieServiceWorker.class.getSimpleName(), externalStorageVolume.getAbsolutePath() + " >> Total Space ::  "+externalStorageVolume.getTotalSpace());
+            if (externalStorageVolume.getTotalSpace() > space) {
+                space = externalStorageVolume.getTotalSpace();
                 selectedVolume = externalStorageVolume;
             }
         }
