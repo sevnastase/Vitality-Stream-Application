@@ -25,7 +25,6 @@ import androidx.work.WorkManager;
 
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
