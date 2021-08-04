@@ -1,8 +1,10 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
@@ -83,6 +85,30 @@ public class PraxFilmStatusBarFragment extends Fragment {
             }
         });
 
+        //SET FOCUS LISTENERS
+        volumeUp.setOnFocusChangeListener((itemView,hasFocus) ->{
+            if (hasFocus) {
+                final Drawable border = view.getContext().getDrawable(R.drawable.imagebutton_red_border);
+                volumeUp.setBackground(border);
+
+            } else {
+                volumeUp.setBackground(null);
+            }
+        });
+
+        volumeDown.setOnFocusChangeListener((itemView,hasFocus) ->{
+            if (hasFocus) {
+                final Drawable border = view.getContext().getDrawable(R.drawable.imagebutton_red_border);
+                volumeDown.setBackground(border);
+            } else {
+                volumeDown.setBackground(null);
+            }
+        });
+
+        //SET BUTTONS FOCUSABLE
+        volumeUp.setFocusable(true);
+        volumeDown.setFocusable(true);
+
         return view;
     }
 
@@ -96,6 +122,12 @@ public class PraxFilmStatusBarFragment extends Fragment {
             if (statusBarVisible) {
                 view.setVisibility(View.VISIBLE);
                 stopwatchCurrentRide.start();
+
+                if (!isTouchScreen()) {
+                    //SET FOCUS ON BUTTON
+                    volumeUp.requestFocus();
+                    volumeUp.requestFocusFromTouch();
+                }
             } else {
                 view.setVisibility(View.GONE);
                 stopwatchCurrentRide.stop();
@@ -147,5 +179,9 @@ public class PraxFilmStatusBarFragment extends Fragment {
                 });
             }
         });
+    }
+
+    private boolean isTouchScreen() {
+        return getView().getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
     }
 }

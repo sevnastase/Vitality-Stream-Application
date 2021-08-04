@@ -1,6 +1,8 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
 import android.app.Activity;
+import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -114,6 +116,68 @@ public class PraxSpinStatusBarFragment extends Fragment {
             ((Activity) view.getContext()).finish();
         });
 
+        //SET FOCUS LISTENERS
+        toggleSwitchRoutepart.setOnFocusChangeListener((itemView, hasFocus)->{
+            if (hasFocus) {
+                final Drawable border = view.getContext().getDrawable(R.drawable.imagebutton_red_border);
+                toggleSwitchRoutepart.setBackground(border);
+            } else {
+                toggleSwitchRoutepart.setBackground(null);
+            }
+        });
+
+        volumeUp.setOnFocusChangeListener((itemView,hasFocus) ->{
+            if (hasFocus) {
+                final Drawable border = view.getContext().getDrawable(R.drawable.imagebutton_red_border);
+                volumeUp.setBackground(border);
+
+            } else {
+                volumeUp.setBackground(null);
+            }
+        });
+
+        volumeDown.setOnFocusChangeListener((itemView,hasFocus) ->{
+            if (hasFocus) {
+                final Drawable border = view.getContext().getDrawable(R.drawable.imagebutton_red_border);
+                volumeDown.setBackground(border);
+            } else {
+                volumeDown.setBackground(null);
+            }
+        });
+
+        speedUpButton.setOnFocusChangeListener((itemView,hasFocus) ->{
+            if (hasFocus) {
+                final Drawable border = view.getContext().getDrawable(R.drawable.imagebutton_red_border);
+                speedUpButton.setBackground(border);
+            } else {
+                speedUpButton.setBackground(null);
+            }
+        });
+        speedDownButton.setOnFocusChangeListener((itemView,hasFocus) ->{
+            if (hasFocus) {
+                final Drawable border = view.getContext().getDrawable(R.drawable.imagebutton_red_border);
+                speedDownButton.setBackground(border);
+            } else {
+                speedDownButton.setBackground(null);
+            }
+        });
+        stopButton.setOnFocusChangeListener((itemView,hasFocus) ->{
+            if (hasFocus) {
+                final Drawable border = view.getContext().getDrawable(R.drawable.imagebutton_red_border);
+                stopButton.setBackground(border);
+            } else {
+                stopButton.setBackground(null);
+            }
+        });
+
+        //SET BUTTONS FOCUSABLE
+        toggleSwitchRoutepart.setFocusable(true);
+        volumeUp.setFocusable(true);
+        volumeDown.setFocusable(true);
+        speedUpButton.setFocusable(true);
+        speedDownButton.setFocusable(true);
+        stopButton.setFocusable(true);
+
         return view;
     }
 
@@ -127,6 +191,12 @@ public class PraxSpinStatusBarFragment extends Fragment {
             if (statusBarVisible) {
                 view.setVisibility(View.VISIBLE);
                 stopwatchCurrentRide.start();
+
+                if (!isTouchScreen()) {
+                    //SET FOCUS ON BUTTON
+                    toggleSwitchRoutepart.requestFocus();
+                    toggleSwitchRoutepart.requestFocusFromTouch();
+                }
             } else {
                 view.setVisibility(View.GONE);
                 stopwatchCurrentRide.stop();
@@ -234,5 +304,9 @@ public class PraxSpinStatusBarFragment extends Fragment {
             loadTimer.removeCallbacksAndMessages(null);
             moviePartsLayout.setVisibility(View.GONE);
         }
+    }
+
+    private boolean isTouchScreen() {
+        return getView().getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
     }
 }

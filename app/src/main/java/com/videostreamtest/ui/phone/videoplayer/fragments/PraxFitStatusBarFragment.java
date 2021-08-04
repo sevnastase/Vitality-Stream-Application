@@ -1,6 +1,9 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -98,6 +101,40 @@ public class PraxFitStatusBarFragment extends Fragment {
             toggleMoviePartsVisibility();
         });
 
+        //SET FOCUS LISTENERS
+        toggleSwitchRoutepart.setOnFocusChangeListener((itemView, hasFocus)->{
+            if (hasFocus) {
+                final Drawable border = view.getContext().getDrawable(R.drawable.imagebutton_red_border);
+                toggleSwitchRoutepart.setBackground(border);
+            } else {
+                toggleSwitchRoutepart.setBackground(null);
+            }
+        });
+
+        volumeUp.setOnFocusChangeListener((itemView,hasFocus) ->{
+            if (hasFocus) {
+                final Drawable border = view.getContext().getDrawable(R.drawable.imagebutton_red_border);
+                volumeUp.setBackground(border);
+
+            } else {
+                volumeUp.setBackground(null);
+            }
+        });
+
+        volumeDown.setOnFocusChangeListener((itemView,hasFocus) ->{
+            if (hasFocus) {
+                final Drawable border = view.getContext().getDrawable(R.drawable.imagebutton_red_border);
+                volumeDown.setBackground(border);
+            } else {
+                volumeDown.setBackground(null);
+            }
+        });
+
+        //SET BUTTONS FOCUSABLE
+        toggleSwitchRoutepart.setFocusable(true);
+        volumeUp.setFocusable(true);
+        volumeDown.setFocusable(true);
+
         return view;
     }
 
@@ -111,6 +148,12 @@ public class PraxFitStatusBarFragment extends Fragment {
             if (statusBarVisible) {
                 view.setVisibility(View.VISIBLE);
                 stopwatchCurrentRide.start();
+
+                if (!isTouchScreen()) {
+                    //SET FOCUS ON BUTTON
+                    toggleSwitchRoutepart.requestFocus();
+                    toggleSwitchRoutepart.requestFocusFromTouch();
+                }
             } else {
                 view.setVisibility(View.GONE);
                 stopwatchCurrentRide.stop();
@@ -188,6 +231,10 @@ public class PraxFitStatusBarFragment extends Fragment {
 
     }
 
+    public float convertDpToPx(Context context, float dp) {
+        return dp * context.getResources().getDisplayMetrics().density;
+    }
+
     private void toggleMoviePartsVisibility() {
         if (moviePartsLayout.getVisibility() == View.GONE) {
             loadTimer = new Handler(Looper.getMainLooper());
@@ -208,5 +255,9 @@ public class PraxFitStatusBarFragment extends Fragment {
             loadTimer.removeCallbacksAndMessages(null);
             moviePartsLayout.setVisibility(View.GONE);
         }
+    }
+
+    private boolean isTouchScreen() {
+        return getView().getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
     }
 }

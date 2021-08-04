@@ -2,6 +2,10 @@ package com.videostreamtest.ui.phone.productview;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -26,6 +30,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
@@ -119,6 +124,14 @@ public class ProductActivity extends AppCompatActivity {
                                 .cancelAllWork();
                     }
                     ProductActivity.this.finish();
+                });
+                signoutButton.setOnFocusChangeListener((view, hasFocus) -> {
+                    if (hasFocus) {
+                        final Drawable border = getDrawable(R.drawable.imagebutton_blue_border);
+                        signoutButton.setBackground(border);
+                    } else {
+                        signoutButton.setBackground(null);
+                    }
                 });
             }
         });

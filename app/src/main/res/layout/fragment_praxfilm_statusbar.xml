@@ -27,6 +27,7 @@
             android:layout_height="wrap_content"
             android:textColor="#FFFFEE"
             android:textSize="14sp"
+            android:focusable="false"
             android:textStyle="bold"
             android:layout_marginLeft="3dp"
             android:layout_marginBottom="15dp"
@@ -66,6 +67,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#FFFFEE"
+                    android:focusable="false"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     android:text="@string/statusbar_time_title" />
@@ -73,7 +75,8 @@
                     android:id="@+id/statusbar_time_box_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#FFFFEE" />
+                    android:textColor="#FFFFEE"
+                    android:focusable="false"/>
             </LinearLayout>
 
             <LinearLayout
@@ -91,6 +94,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#FFFFEE"
+                    android:focusable="false"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     android:text="@string/statusbar_rpm_title" />
@@ -99,6 +103,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#FFFFEE"
+                    android:focusable="false"
                     android:textSize="20sp"
                     android:text="60" />
             </LinearLayout>
@@ -118,11 +123,14 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:background="@null"
-                    android:src="@drawable/plus_small"/>
+                    android:src="@drawable/plus_small"
+                    android:nextFocusLeft="@id/statusbar_praxfilm_volume_button_down"
+                    android:nextFocusRight="@id/statusbar_praxfilm_volume_button_down"/>
                 <TextView
                     android:id="@+id/statusbar_praxfilm_volume_indicator"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:focusable="false"
                     android:textColor="@android:color/white"
                     android:text="@string/statusbar_volume_title"
                     android:layout_margin="3dp"
@@ -133,7 +141,9 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:background="@null"
-                    android:src="@drawable/minus_small"/>
+                    android:src="@drawable/minus_small"
+                    android:nextFocusLeft="@id/statusbar_praxfilm_volume_button_up"
+                    android:nextFocusRight="@id/statusbar_praxfilm_volume_button_up"/>
             </LinearLayout>
 
         </LinearLayout>
@@ -150,6 +160,7 @@
                 android:id="@+id/statusbar_praxfilm_digital_twin_seekbar_movie"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:focusable="false"
                 android:layout_marginTop="50dp"
                 android:layout_marginBottom="20dp"
                 android:progressDrawable="@android:color/holo_blue_light"
@@ -161,6 +172,7 @@
             <SeekBar
                 android:id="@+id/statusbar_praxfilm_seekbar_movie"
                 android:layout_width="700dp"
+                android:focusable="false"
                 android:layout_height="wrap_content"
                 android:progressDrawable="@drawable/praxfilm_progress_drawable"
                 android:thumb="@drawable/bicycle_thumb_praxfilm"
