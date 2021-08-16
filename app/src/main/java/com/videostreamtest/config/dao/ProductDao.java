@@ -23,6 +23,9 @@ public interface ProductDao {
     @Delete
     void delete(Product product);
 
+    @Query("DELETE FROM product_table")
+    public void nukeTable();
+
     @Query("SELECT * FROM product_table pt WHERE pt.account_token = :accountToken AND product_support_streaming = :isStreamAccount AND pt.product_blocked = 0 ")
     LiveData<List<Product>> getAccountProducts(final String accountToken, final boolean isStreamAccount);
 }
