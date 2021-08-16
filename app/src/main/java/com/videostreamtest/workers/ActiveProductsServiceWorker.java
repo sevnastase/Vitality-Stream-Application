@@ -63,6 +63,8 @@ public class ActiveProductsServiceWorker extends Worker {
 
         //Update local room database with the newest products based on cloud configuration
         final ProductDao productDao = PraxtourDatabase.getDatabase(getApplicationContext()).productDao();
+        //Clear the products before adding the right dataset
+        productDao.nukeTable();
         if (activeProducts.size() > 0) {
             for (final Product externalProduct : activeProducts) {
                 final com.videostreamtest.config.entity.Product tmpProduct = new com.videostreamtest.config.entity.Product();
