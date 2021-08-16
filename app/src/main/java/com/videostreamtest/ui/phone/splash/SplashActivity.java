@@ -64,7 +64,7 @@ public class SplashActivity extends AppCompatActivity {
 
         requestDrawOverlayPermission();
 
-        resetBluetoothAdapter();
+//        resetBluetoothAdapter();
 
         loadTimer = new Handler(Looper.getMainLooper());
 

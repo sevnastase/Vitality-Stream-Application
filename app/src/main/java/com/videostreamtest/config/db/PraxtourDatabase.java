@@ -3,12 +3,15 @@ package com.videostreamtest.config.db;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.room.AutoMigration;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.videostreamtest.config.dao.BackgroundSoundDao;
+import com.videostreamtest.config.dao.BluetoothDefaultDeviceDao;
 import com.videostreamtest.config.dao.ConfigurationDao;
 import com.videostreamtest.config.dao.DownloadStatusDao;
 import com.videostreamtest.config.dao.EffectSoundDao;
@@ -18,6 +21,7 @@ import com.videostreamtest.config.dao.ProfileDao;
 import com.videostreamtest.config.dao.RoutefilmDao;
 import com.videostreamtest.config.dao.RoutepartDao;
 import com.videostreamtest.config.entity.BackgroundSound;
+import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.config.entity.EffectSound;
 import com.videostreamtest.config.entity.Product;
@@ -39,8 +43,9 @@ import java.util.concurrent.Executors;
         Routepart.class,
         BackgroundSound.class,
         EffectSound.class,
-        ProductMovie.class
-}, version = 1, exportSchema = false)
+        ProductMovie.class,
+        BluetoothDefaultDevice.class
+}, version = 2, exportSchema = true)
 public abstract class PraxtourDatabase extends RoomDatabase {
     private final static String TAG = PraxtourDatabase.class.getSimpleName();
     private static volatile PraxtourDatabase INSTANCE;
@@ -57,6 +62,22 @@ public abstract class PraxtourDatabase extends RoomDatabase {
     public abstract BackgroundSoundDao backgroundSoundDao();
     public abstract EffectSoundDao effectSoundDao();
     public abstract ProductMovieDao productMovieDao();
+    public abstract BluetoothDefaultDeviceDao bluetoothDefaultDeviceDao();
+
+    static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE `default_ble_device_table` ("
+                    + "`ble_id` INTEGER, "
+                    + "`ble_address` TEXT,"
+                    + "`ble_name` TEXT,"
+                    + "`ble_signal_strength` TEXT,"
+                    + "`ble_battery_level` TEXT,"
+                    + "`ble_sensor_type` TEXT,"
+                    +" PRIMARY KEY(`ble_id`))");
+        }
+    };
+
 
     public static PraxtourDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
@@ -65,8 +86,8 @@ public abstract class PraxtourDatabase extends RoomDatabase {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             PraxtourDatabase.class,
                             "configuration_database")
-                            .fallbackToDestructiveMigration()//TODO: Remove when releasing to production
                             .addCallback(sRoomDatabaseCallback)
+                            .addMigrations(MIGRATION_1_2)
                             .build();
                 }
             }

@@ -21,10 +21,12 @@ public class CSCProfile {
     // https://www.bluetooth.com/specifications/gatt/services/
     /** Cycling Speed and Cadence */
     public static UUID CSC_SERVICE = UUID.fromString("00001816-0000-1000-8000-00805f9b34fb");
+    public static UUID BATTERY_SERVICE = UUID.fromString("0000180f-0000-1000-8000-00805f9b34fb");
 
     // https://www.bluetooth.com/specifications/gatt/characteristics/
     /** Mandatory Characteristic: CSC Measurement */
     public static UUID CSC_MEASUREMENT = UUID.fromString("00002a5b-0000-1000-8000-00805f9b34fb");
+    public static UUID BATTERY_MEASUREMENT = UUID.fromString("00002a19-0000-1000-8000-00805f9b34fb");
 
     // https://www.bluetooth.com/specifications/gatt/descriptors/
     /** Mandatory Client Characteristic Config Descriptor */

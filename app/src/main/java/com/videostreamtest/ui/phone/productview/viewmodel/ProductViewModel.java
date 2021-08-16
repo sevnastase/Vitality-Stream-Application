@@ -8,12 +8,14 @@ import androidx.lifecycle.LiveData;
 
 import com.videostreamtest.config.dao.ProductMovieDao;
 import com.videostreamtest.config.entity.BackgroundSound;
+import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.config.entity.EffectSound;
 import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.entity.StandAloneDownloadStatus;
 import com.videostreamtest.config.repository.BackgroundSoundRepository;
+import com.videostreamtest.config.repository.BluetoothDefaultDeviceRepository;
 import com.videostreamtest.config.repository.ConfigurationRepository;
 import com.videostreamtest.config.repository.DownloadStatusRepository;
 import com.videostreamtest.config.repository.EffectSoundRepository;
@@ -29,6 +31,7 @@ public class ProductViewModel extends AndroidViewModel {
     private DownloadStatusRepository downloadStatusRepository;
     private BackgroundSoundRepository backgroundSoundRepository;
     private EffectSoundRepository effectSoundRepository;
+    private BluetoothDefaultDeviceRepository bluetoothDefaultDeviceRepository;
 
     public ProductViewModel(@NonNull Application application) {
         super(application);
@@ -38,6 +41,7 @@ public class ProductViewModel extends AndroidViewModel {
         backgroundSoundRepository = new BackgroundSoundRepository(application);
         effectSoundRepository = new EffectSoundRepository(application);
         productMovieRepository = new ProductMovieRepository(application);
+        bluetoothDefaultDeviceRepository = new BluetoothDefaultDeviceRepository(application);
     }
 
     public LiveData<Configuration> getCurrentConfig() {
@@ -71,5 +75,13 @@ public class ProductViewModel extends AndroidViewModel {
 
     public LiveData<List<EffectSound>> getEffectSounds(final Integer movieId) {
         return effectSoundRepository.getEffectSounds(movieId);
+    }
+
+    public LiveData<List<BluetoothDefaultDevice>> getBluetoothDefaultDevices() {
+        return bluetoothDefaultDeviceRepository.getBluetoothDefaultDevice();
+    }
+
+    public void insertBluetoothDefaultDevice(final BluetoothDefaultDevice bluetoothDefaultDevice) {
+        bluetoothDefaultDeviceRepository.insertBluetoothDefaultDevice(bluetoothDefaultDevice);
     }
 }

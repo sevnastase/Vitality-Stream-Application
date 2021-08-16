@@ -11,30 +11,44 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.os.ParcelUuid;
 import android.util.Log;
+import android.util.StateSet;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
 import com.videostreamtest.R;
+import com.videostreamtest.config.db.PraxtourDatabase;
+import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.constants.CadenceSensorConstants;
+import com.videostreamtest.ui.phone.helpers.BleHelper;
 import com.videostreamtest.ui.phone.profiles.ProfilesActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class BleService extends Service {
     private static final String TAG = BleService.class.getSimpleName();
@@ -42,6 +56,8 @@ public class BleService extends Service {
     private static final int ONGOING_NOTIFICATION_ID = 9999;
     private static final String CHANNEL_DEFAULT_IMPORTANCE = "csc_ble_channel";
     private static final String MAIN_CHANNEL_NAME = "CscService";
+
+    private List<BluetoothDefaultDevice> bluetoothDefaultDeviceList;
 
     // bluetooth API
     private BluetoothManager bluetoothManager;
@@ -66,12 +82,13 @@ public class BleService extends Service {
             "com.example.bluetooth.le.EXTRA_DATA";
     // notification subscribers
     private Set<BluetoothDevice> mRegisteredDevices = new HashSet<>();
+    private List<BluetoothGattService> mRegisteredServices = new ArrayList<>();
 
     // last wheel and crank (speed/cadence) information to send to CSCProfile
     private long cumulativeWheelRevolution = 0;
     private long cumulativeCrankRevolution = 0;
     private float crankRevolution = 0;
-    private long lastCumulativeCrankRevolution = 0;
+
     private int lastWheelEventTime = 0;
     private int lastCrankEventTime = 0;
     private int lastCumCrankEventTime = 0;
@@ -99,6 +116,10 @@ public class BleService extends Service {
     // Various callback methods defined by the BLE API.
     private final BluetoothGattCallback gattCallback =
             new BluetoothGattCallback() {
+
+                private long lastCumulativeCrankRevolution = 0;
+                private BluetoothGattCharacteristic mbatteryCharacteristic;
+
                 @Override
                 public void onConnectionStateChange(BluetoothGatt gatt, int status,
                                                     int newState) {
@@ -109,7 +130,7 @@ public class BleService extends Service {
                         broadcastUpdate(intentAction);
                         Log.i(TAG, "Connected to GATT server.");
                         Log.i(TAG, "Attempting to start service discovery:" +
-                                bluetoothGatt.discoverServices());
+                                gatt.discoverServices());
 
                     } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                         intentAction = ACTION_GATT_DISCONNECTED;
@@ -131,23 +152,39 @@ public class BleService extends Service {
                     String serviceStatus = "DEAD";
                     for(BluetoothGattService bluetoothGattService : gatt.getServices()) {
                         Log.d(TAG, "Service Type: "+bluetoothGattService.getType() + " Service UUID: "+bluetoothGattService.getUuid());
+
+                        if (CSCProfile.BATTERY_SERVICE.equals(bluetoothGattService.getUuid())) {
+                            mRegisteredServices.add(bluetoothGattService);
+                            Log.d(TAG, "BATTERY SERVICE Charas: "+bluetoothGattService.getCharacteristics().size());
+//                            gatt.setCharacteristicNotification(bluetoothGattService.getCharacteristic(CSCProfile.BATTERY_MEASUREMENT), true);
+//                            BluetoothGattDescriptor descriptor = bluetoothGattService.getCharacteristic(CSCProfile.BATTERY_MEASUREMENT).getDescriptor(CSCProfile.CLIENT_CONFIG);
+//                            if (descriptor != null) {
+//                                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+//                                boolean writeDescriptor = gatt.writeDescriptor(descriptor);
+//                                if (writeDescriptor) {
+//                                    Log.d(TAG, "WRITTEN DESCRIPTOR ON BATTERY SERVICE");
+//                                }
+//                            }
+                            mbatteryCharacteristic = bluetoothGattService.getCharacteristic(CSCProfile.BATTERY_MEASUREMENT);
+                        }
+
+                        if (CSCProfile.RSC_SERVICE.equals(bluetoothGattService.getUuid())) {
+                            mRegisteredServices.add(bluetoothGattService);
+                            Log.d(TAG, "RSC SERVICE Charas: "+bluetoothGattService.getCharacteristics().size());
+                            gatt.setCharacteristicNotification(bluetoothGattService.getCharacteristic(CSCProfile.RSC_MEASUREMENT), true);
+                            BluetoothGattDescriptor descriptor = bluetoothGattService.getCharacteristic(CSCProfile.RSC_MEASUREMENT).getDescriptor(CSCProfile.CLIENT_CONFIG);
+                            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                            gatt.writeDescriptor(descriptor);
+                        }
+
                         if (CSCProfile.CSC_SERVICE.equals(bluetoothGattService.getUuid())) {
-
+                            mRegisteredServices.add(bluetoothGattService);
                             Log.d(TAG, "CSC SERVICE Charas: "+bluetoothGattService.getCharacteristics().size());
-                            for (BluetoothGattCharacteristic characteristic : bluetoothGattService.getCharacteristics()) {
-                                Log.d(TAG, "CHARACTERISTIC FOUND: "+characteristic.getUuid());
-                                Log.d(TAG, "CHARACTERISTIC FOUND WITH VALUE: "+characteristic.getStringValue(0));
-                            }
-                            gatt.setCharacteristicNotification(bluetoothGattService.getCharacteristic(CSCProfile.CSC_MEASUREMENT), true);
-                            Log.d(TAG, "CSC SERVICE FOUND, ACTIVATED NOTIFICATIONS NOW!");
-                            for (BluetoothGattCharacteristic characteristic : bluetoothGattService.getCharacteristics()) {
-                                Log.d(TAG, "CHARACTERISTIC FOUND: "+characteristic.getUuid());
-                                Log.d(TAG, "CHARACTERISTIC FOUND WITH VALUE: "+characteristic.getStringValue(0));
-                            }
 
-                            Log.d(TAG, "DESCRIPTORS: "+bluetoothGattService.getCharacteristic(CSCProfile.CSC_MEASUREMENT).getDescriptors().size());
-                            for (BluetoothGattDescriptor descriptor : bluetoothGattService.getCharacteristic(CSCProfile.CSC_MEASUREMENT).getDescriptors()) {
-                                Log.d(TAG, "DESCRIPTOR FOUND: "+descriptor.getUuid());
+                            boolean activateCSC = gatt.setCharacteristicNotification(bluetoothGattService.getCharacteristic(CSCProfile.CSC_MEASUREMENT), true);
+
+                            if (activateCSC) {
+                                Log.d(TAG, "CSC SERVICE FOUND, ACTIVATED NOTIFICATIONS NOW!");
                             }
 
                             BluetoothGattDescriptor descriptor = bluetoothGattService.getCharacteristic(CSCProfile.CSC_MEASUREMENT).getDescriptor(CSCProfile.CLIENT_CONFIG);
@@ -156,99 +193,156 @@ public class BleService extends Service {
                             serviceStatus = "SERVICE FOUND";
                         }
                     }
+
                     broadcastData(CadenceSensorConstants.BIKE_CADENCE_STATUS, serviceStatus);
                 }
 
-//                @Override
-//                // Result of a characteristic read operation
-//                public void onCharacteristicRead(BluetoothGatt gatt,
-//                                                 BluetoothGattCharacteristic characteristic,
-//                                                 int status) {
-//                    Log.d(TAG, "Result broadcasted! "+characteristic.getStringValue(0));
-//                    if (status == BluetoothGatt.GATT_SUCCESS) {
-//                        broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
-//                    }
-//                }
+                @Override
+                // Result of a characteristic read operation
+                public void onCharacteristicRead(BluetoothGatt gatt,
+                                                 BluetoothGattCharacteristic characteristic,
+                                                 int status) {
+                    if (status == BluetoothGatt.GATT_SUCCESS) {
+
+                        if (characteristic.getUuid().equals(CSCProfile.BATTERY_MEASUREMENT)) {
+                            Log.d(TAG,"BATTERY_SERVICE: "+characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0));
+                            List<BluetoothDefaultDevice> bluetoothDefaultDevices = PraxtourDatabase.getDatabase(getApplicationContext()).bluetoothDefaultDeviceDao().getRawBluetoothDefaultDevice(1);
+                            if (bluetoothDefaultDevices!= null && bluetoothDefaultDevices.size()>0) {
+                                bluetoothDefaultDevices.get(0).setBleBatterylevel(""+characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0));
+                                PraxtourDatabase.getDatabase(getApplicationContext()).bluetoothDefaultDeviceDao().insert(bluetoothDefaultDevices.get(0));
+                            };
+                        }
+
+                        Log.d(TAG, "READ SUCCES UUID: "+characteristic.getUuid()+" > "+characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0));
+                        broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+                    } else {
+                        Log.e(TAG, "Status code: "+status);
+                    }
+                }
 
                 @Override
                 public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-                    Log.d(TAG, "Notification set on charas: "+characteristic.getUuid().toString());
+                    Log.d(TAG, "Notification set on chars: " + characteristic.getUuid().toString());
 
-                    int flag = characteristic.getProperties();
-                    int format = -1;
+                    if (characteristic.getUuid().equals(CSCProfile.RSC_MEASUREMENT)) {
+                        Log.d(TAG, "RUNNING SERVICE CHAR CHANGED");
 
-                    if ((flag & 0x01) != 0) {
-                        format = BluetoothGattCharacteristic.FORMAT_UINT16;
-                        Log.d(TAG, "CSC format UINT16.");
-                    } else {
-                        format = BluetoothGattCharacteristic.FORMAT_UINT8;
-                        Log.d(TAG, "CSC format UINT8.");
+                        int offset = 0;
+                        final int flags = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, offset);
+                        final boolean instantaneousStrideLengthPresent = (flags & 0x01) != 0;
+                        final boolean totalDistancePresent = (flags & 0x02) != 0;
+                        final boolean statusRunning = (flags & 0x04) != 0;
+                        offset += 1;
+
+                        final float speed = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset) / 256.f; // [m/s]
+                        offset += 2;
+                        final int cadence = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, offset);
+                        offset += 1;
+
+                        Log.d(TAG, "instantaneousStrideLengthPresent: "+instantaneousStrideLengthPresent + " > totalDistancePresent: "+totalDistancePresent+" statusRunning > "+statusRunning+" Speed: "+speed+" cadence: "+cadence);
+
+                        Integer strideLength = null;
+                        if (instantaneousStrideLengthPresent) {
+                            strideLength = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset);
+                            offset += 2;
+                        }
+                        Log.d(TAG, "strideLength: "+strideLength);
+
+                        Float totalDistance = null;
+                        if (totalDistancePresent) {
+                            totalDistance = characteristic.getFloatValue(BluetoothGattCharacteristic.FORMAT_UINT32, offset);
+                            // offset += 4;
+                        }
+                        Log.d(TAG, "totalDistance: "+totalDistance);
+                        updateCadenceMeasurementList(cadence);
+                        //TODO: USE OBJECT AND STRINGIFY THE OBJECT(JSON) FOR USE IN THE BROADCASTRECEIVER
+//                        broadcastData(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, getLastMeasuredCadenceValue());
+                        broadcastData(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, getLastMeasuredCadenceValue());
                     }
 
-                    /**
-                     * Profile values:
-                     * 1 = Speed 0x1
-                     * 2 = Cadence 0x2
-                     * 3 = Both 0x3
-                     */
-                    Log.d(TAG, "PROFILE: "+ characteristic.getIntValue(format, 0));
+                    if (characteristic.getUuid().equals(CSCProfile.CSC_MEASUREMENT)) {
+                        Log.d(TAG, "CYCLING SERVICE CHAR CHANGED");
 
-                    if (characteristic.getIntValue(format, 0) >= 2) {
-                        Log.d(TAG, "CHARACTERISTIC VALUE BYTE ARRAY LENGTH: "+characteristic.getValue().length);
+                        int flag = characteristic.getProperties();
+                        int format = -1;
 
-                        int cumulativeRotations = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 1);
-                        if (lastCumulativeCrankRevolution > 0) {
-                            crankRevolution = cumulativeRotations - lastCumulativeCrankRevolution ;
+                        if ((flag & 0x01) != 0) {
+                            format = BluetoothGattCharacteristic.FORMAT_UINT16;
+                            Log.d(TAG, "CSC format UINT16.");
+                        } else {
+                            format = BluetoothGattCharacteristic.FORMAT_UINT8;
+                            Log.d(TAG, "CSC format UINT8.");
                         }
-                        lastCumulativeCrankRevolution = cumulativeRotations;
 
-                        Log.d(TAG, "CUMULATIVE CRANK EVENTS :: "+cumulativeRotations);
-                        Log.d(TAG, "LAST SUCCESIVE CRANK EVENT(S) :: "+crankRevolution);
+                        /**
+                         * Profile values:
+                         * 1 = Speed 0x1
+                         * 2 = Cadence 0x2
+                         * 3 = Both 0x3
+                         */
+                        Log.d(TAG, "PROFILE: " + characteristic.getIntValue(format, 0));
 
-                        int cumulativeEventTime = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 3);
-                        if (lastCumCrankEventTime == 0) {
-                            lastCumCrankEventTime = cumulativeEventTime;
-                        } else
-                        {
-                            lastCrankEventTime = cumulativeEventTime - lastCumCrankEventTime;
-                            lastCumCrankEventTime = cumulativeEventTime;
+                        if (characteristic.getIntValue(format, 0) >= 2) {
+    //                        Log.d(TAG, "CHARACTERISTIC VALUE BYTE ARRAY LENGTH: "+characteristic.getValue().length);
 
-                            Log.d(TAG, "LAST SUCCESIVE CRANK EVENTTIME(S) :: "+lastCrankEventTime);
-                            if (crankRevolution >0 && lastCrankEventTime > 0) {
-                                float cyclesPerMilliSecond = crankRevolution / Float.valueOf(""+lastCrankEventTime);
-                                float cyclesPerSecond = cyclesPerMilliSecond * 1000;
-                                float cyclesPerMinute = cyclesPerSecond * 60;
-                                lastCadence = (int)cyclesPerMinute;
-                            } else {
-                                Log.d(TAG, " CRANK REVOLUTION :: " + crankRevolution + " LAST CRANK EVENT TIME :: "+lastCrankEventTime);
-                                lastCadence = 0;
+                            int cumulativeRotations = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 1);
+                            if (lastCumulativeCrankRevolution > 0) {
+                                crankRevolution = cumulativeRotations - lastCumulativeCrankRevolution;
                             }
+                            lastCumulativeCrankRevolution = cumulativeRotations;
 
-//                            if (lastCrankEventTime > 0) {
-//                                float cyclesPerMilliSecond = 1 / Float.valueOf(""+lastCrankEventTime);
-//                                float cyclesPerSecond = cyclesPerMilliSecond * 1000;
-//                                float cyclesPerMinute = cyclesPerSecond * 60;
-//                                lastCadence = (int) cyclesPerMinute;
-//                            } else {
-//                                lastCadence = 0;
-//                            }
+                            int cumulativeEventTime = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, 3);
+                            if (lastCumCrankEventTime == 0) {
+                                lastCumCrankEventTime = cumulativeEventTime;
+                            } else {
+                                lastCrankEventTime = cumulativeEventTime - lastCumCrankEventTime;
+                                lastCumCrankEventTime = cumulativeEventTime;
 
-                            updateCadenceMeasurementList(lastCadence);
-                            broadcastData(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, getLastMeasuredCadenceValue());
+                                if (crankRevolution > 0 && lastCrankEventTime > 0) {
+                                    float cyclesPerMilliSecond = crankRevolution / Float.valueOf("" + lastCrankEventTime);
+                                    float cyclesPerSecond = cyclesPerMilliSecond * 1000;
+                                    float cyclesPerMinute = cyclesPerSecond * 60;
+                                    lastCadence = (int) cyclesPerMinute;
+                                } else {
+                                    lastCadence = 0;
+                                }
+                                Log.d(TAG, "CADENCE: "+lastCadence);
+
+                                updateCadenceMeasurementList(lastCadence);
+                                broadcastData(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, getLastMeasuredCadenceValue());
+                            }
                         }
+                    }
+                    gatt.readRemoteRssi();
+                    if (mbatteryCharacteristic !=null) {
+                        gatt.readCharacteristic(mbatteryCharacteristic);
+                    }
+                }
+
+                @Override
+                public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
+                    SharedPreferences sharedPreferences = getSharedPreferences("app",MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_CONNECTION_STRENGTH_KEY, BleHelper.getRssiStrengthIndicator(rssi));
+                    editor.commit();
+
+                    List<BluetoothDefaultDevice> bluetoothDefaultDevices = PraxtourDatabase.getDatabase(getApplicationContext()).bluetoothDefaultDeviceDao().getRawBluetoothDefaultDevice(1);
+                    if (bluetoothDefaultDevices!= null && bluetoothDefaultDevices.size()>0) {
+                        bluetoothDefaultDevices.get(0).setBleSignalStrength(BleHelper.getRssiStrengthIndicator(rssi));
+                        PraxtourDatabase.getDatabase(getApplicationContext()).bluetoothDefaultDeviceDao().insert(bluetoothDefaultDevices.get(0));
                     }
                 }
             };
 
     @Override
     public void onCreate() {
-        Log.d(TAG, "BLE Service started");
         super.onCreate();
+        Log.d(TAG, "BLE Service started");
 
         // Bluetooth LE
         bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         assert bluetoothManager != null;
-        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
+        bluetoothAdapter = bluetoothManager.getAdapter();
         // continue without proper Bluetooth support
         if (!checkBluetoothSupport(bluetoothAdapter)) {
             Log.e(TAG, "Bluetooth LE isn't supported. This won't run");
@@ -265,26 +359,106 @@ public class BleService extends Service {
         } else {
             Log.d(TAG, "Bluetooth enabled...starting services");
 
-            for (BluetoothDevice bluetoothDevice : BluetoothAdapter.getDefaultAdapter().getBondedDevices()) {
-                Log.d(TAG, bluetoothDevice.getName());
+            //Check already bound devices for supports
+//            for (BluetoothDevice bluetoothDevice : BluetoothAdapter.getDefaultAdapter().getBondedDevices()) {
+//                Log.d(TAG, bluetoothDevice.getName());
+//
+//                Log.d(TAG, String.valueOf(bluetoothDevice.getType()));
+//                if (bluetoothDevice.getType() == BluetoothDevice.DEVICE_TYPE_LE) {
+//                    Log.d(TAG, "Device "+bluetoothDevice.getName()+" supports BLE");
+//                }
+//                //TODO: Check if there are BLE devices connected which have the CSC Profile
+//                //TODO: Show BLE Devices which are nearby and support the CSC Profile
+//                //TODO: After onCLick the device connects
+//
+//                ParcelUuid parcelUuidList[] = bluetoothDevice.getUuids();
+//                if (parcelUuidList != null && parcelUuidList.length>0) {
+//                    for (ParcelUuid parcelUuid : parcelUuidList) {
+//                        Log.d(TAG, "ParcelUuid : "+parcelUuid);
+//                        if (parcelUuid.getUuid().equals(CSCProfile.CSC_SERVICE)) {
+//                            Log.d(TAG, "Bike Cadence Found ! > "+bluetoothDevice.getName());
+//                        }
+//                        if (parcelUuid.getUuid().equals(CSCProfile.RSC_SERVICE)) {
+//                            Log.d(TAG, "Running Cadence Found! > "+bluetoothDevice.getName());
+//                        }
+//                    }
+//                }
+//
+////                if (bluetoothDevice.getName().contains("CAD-")) {
+////                    bluetoothGatt = bluetoothDevice.connectGatt(this, true, gattCallback);
+////                }
+//            }
 
-                Log.d(TAG, String.valueOf(bluetoothDevice.getType()));
-                if (bluetoothDevice.getType() == BluetoothDevice.DEVICE_TYPE_LE) {
-                    Log.d(TAG, "Device "+bluetoothDevice.getName()+" supports BLE");
-                }
-                //TODO: Check if there are BLE devices connected which have the CSC Profile
-                //TODO: Show BLE Devices which are nearby and support the CSC Profile
-                //TODO: After onCLick the device connects
-                if (bluetoothDevice.getName().contains("CAD-")) {
-                    bluetoothGatt = bluetoothDevice.connectGatt(this, true, gattCallback);
-                }
-            }
+//            BluetoothLeScanner scanner = bluetoothAdapter.getBluetoothLeScanner();
+//
+//            scanner.startScan(new ScanCallback() {
+//                @Override
+//                public void onScanResult(int callbackType, ScanResult result) {
+////                    super.onScanResult(callbackType, result);
+////                    Log.d(TAG, "ScanResult :: "+result.toString());
+//
+//                    if (bluetoothGatt != null) {
+//                        scanner.stopScan(this);
+//                        return;
+//                    }
+//
+//                    if(result != null && result.getDevice()!=null && result.getDevice().getName()!=null) {
+//                        Log.d(TAG, "ScanResult NAME:: " + result.getDevice().getName());
+//                        if (result.getScanRecord().getServiceUuids()!= null) {
+//                            Log.d(TAG, "ScanResult SIZE :: " + result.getScanRecord().getServiceUuids().size());
+//                            if (result.getScanRecord().getServiceUuids().size() > 0 ) {
+//                                for (ParcelUuid parcelUuid: result.getScanRecord().getServiceUuids()) {
+//                                    Log.d(TAG, parcelUuid.toString());
+//                                    //UNKNOWN UUID GATT SERVICE > 0000fc00-0000-1000-8000-00805f9b34fb
+//                                    if (parcelUuid.getUuid().equals(CSCProfile.RSC_SERVICE)) {
+//                                        Log.d(TAG, "ScanResult :: Running sensor found ::> " + result.getDevice().getName());
+//                                    }
+//                                    if (parcelUuid.getUuid().equals(CSCProfile.CSC_SERVICE)) {
+//                                        Log.d(TAG, "ScanResult :: CYCLING sensor found ::> " + result.getDevice().getName());
+////                                        bluetoothGatt = result.getDevice().connectGatt(getApplicationContext(), true, gattCallback);
+//                                    }
+//                                    if (result.getDevice().getName().toLowerCase().contains("move")) {
+//                                        bluetoothGatt = result.getDevice().connectGatt(getApplicationContext(), true, gattCallback);
+//                                    }
+//                                    Log.d(TAG, "RSSI: "+result.getRssi());
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//
+//                //0000180a-0000-1000-8000-00805f9b34fb
+//                //0000fc00-0000-1000-8000-00805f9b34fb
+//
+//                @Override
+//                public void onBatchScanResults(List<ScanResult> results) {
+////                    super.onBatchScanResults(results);
+//                    Log.d(TAG, "ScanBatchResult :: "+results.size());
+//                }
+//
+//                @Override
+//                public void onScanFailed(int errorCode) {
+////                    super.onScanFailed(errorCode);
+//                    Log.d(TAG, "ScanFailedResult :: "+errorCode);
+//                }
+//            });
+
         }
         initialised = true;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        assert bluetoothManager != null;
+        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
+//        bluetoothAdapter.disable();
+        if (bluetoothAdapter == null) {
+            stopSelf();
+            return START_NOT_STICKY;
+        }
+
         Log.d(TAG, "BLE Service onStartCommand");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel(CHANNEL_DEFAULT_IMPORTANCE, MAIN_CHANNEL_NAME);
@@ -317,6 +491,99 @@ public class BleService extends Service {
 
             startForeground(ONGOING_NOTIFICATION_ID, notification);
         }
+
+        bluetoothDefaultDeviceList = new ArrayList<>();
+        PraxtourDatabase.databaseWriterExecutor.execute( () -> {
+            bluetoothDefaultDeviceList = PraxtourDatabase.getDatabase(getApplicationContext()).bluetoothDefaultDeviceDao().getRawBluetoothDefaultDevice(1);
+            Log.d(TAG, "BLE DEFAULT DEVICE Size: "+bluetoothDefaultDeviceList.size());
+            String bleDeviceAddress = "";
+            if (bluetoothDefaultDeviceList.size()>0) {
+                bleDeviceAddress = bluetoothDefaultDeviceList.get(0).getBleAddress();
+                Log.d(TAG, "Address/Name of Default BLE Device: "+bluetoothDefaultDeviceList.get(0).getBleAddress()+"/"+bluetoothDefaultDeviceList.get(0).getBleName());
+            }
+
+            final String finalizedBleDeviceAddress = bleDeviceAddress;
+
+            BluetoothLeScanner scanner = bluetoothAdapter.getBluetoothLeScanner();
+
+            scanner.startScan(new ScanCallback() {
+                @Override
+                public void onScanResult(int callbackType, ScanResult result) {
+                    if (bluetoothGatt != null && bluetoothGatt.getDevice().getAddress().equals(finalizedBleDeviceAddress)) {
+                        scanner.stopScan(this);
+                        return;
+                    }
+
+                    if(result != null && result.getDevice()!=null && result.getDevice().getAddress()!=null) {
+                        if (finalizedBleDeviceAddress.equals(result.getDevice().getAddress())) {
+                            bluetoothGatt = result.getDevice().connectGatt(BleService.this, true, gattCallback, BluetoothDevice.TRANSPORT_LE);
+                        }
+                    }
+                }
+
+                //0000180a-0000-1000-8000-00805f9b34fb
+                //0000fc00-0000-1000-8000-00805f9b34fb
+
+                @Override
+                public void onBatchScanResults(List<ScanResult> results) {
+//                    super.onBatchScanResults(results);
+                    Log.d(TAG, "ScanBatchResult :: "+results.size());
+                }
+
+                @Override
+                public void onScanFailed(int errorCode) {
+//                    super.onScanFailed(errorCode);
+                    Log.d(TAG, "ScanFailedResult :: "+errorCode);
+                }
+            });
+
+        });
+//        String bleDeviceAddress = "";
+        if (bluetoothDefaultDeviceList.size()>0) {
+//            bleDeviceAddress =
+                    Log.d(TAG, "Address/Name of Default BLE Device: "+bluetoothDefaultDeviceList.get(0).getBleAddress()+"/"+bluetoothDefaultDeviceList.get(0).getBleName());
+        }
+
+//        if (!bleDeviceAddress.isEmpty() && bleDeviceAddress != "") {
+//            final String deviceAddress = bleDeviceAddress;
+
+//        SharedPreferences sharedPreferences = getSharedPreferences("app", MODE_PRIVATE);
+//        if (sharedPreferences.contains(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY) && !sharedPreferences.getString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, "").isEmpty()) {
+//            final String bleDeviceAddress = sharedPreferences.getString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY,"");
+//            BluetoothLeScanner scanner = bluetoothAdapter.getBluetoothLeScanner();
+//
+//            scanner.startScan(new ScanCallback() {
+//                @Override
+//                public void onScanResult(int callbackType, ScanResult result) {
+//                    if (bluetoothGatt != null && bluetoothGatt.getDevice().getAddress().equals(bleDeviceAddress)) {
+//                        scanner.stopScan(this);
+//                        return;
+//                    }
+//
+//                    if(result != null && result.getDevice()!=null && result.getDevice().getAddress()!=null) {
+//                        if (bleDeviceAddress.equals(result.getDevice().getAddress())) {
+//                            bluetoothGatt = result.getDevice().connectGatt(BleService.this, true, gattCallback);
+//                        }
+//                    }
+//                }
+//
+//                //0000180a-0000-1000-8000-00805f9b34fb
+//                //0000fc00-0000-1000-8000-00805f9b34fb
+//
+//                @Override
+//                public void onBatchScanResults(List<ScanResult> results) {
+////                    super.onBatchScanResults(results);
+//                    Log.d(TAG, "ScanBatchResult :: "+results.size());
+//                }
+//
+//                @Override
+//                public void onScanFailed(int errorCode) {
+////                    super.onScanFailed(errorCode);
+//                    Log.d(TAG, "ScanFailedResult :: "+errorCode);
+//                }
+//            });
+//        }
+
         return Service.START_NOT_STICKY;
     }
 
@@ -332,11 +599,13 @@ public class BleService extends Service {
         if (initialised) {
             // stop BLE
             BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
-            if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
+            if (bluetoothAdapter != null && bluetoothAdapter.isEnabled() && bluetoothGatt!=null) {
+                bluetoothGatt.disconnect();
 //                stopServer();
 //                stopAdvertising();
             }
             unregisterReceiver(mBluetoothReceiver);
+            stopForeground(true);
         }
     }
 

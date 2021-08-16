@@ -1,10 +1,15 @@
 package com.videostreamtest.ui.phone.productpicker;
 
 import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,16 +20,26 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.location.LocationManagerCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.WorkManager;
 
+import com.fasterxml.jackson.databind.deser.BuilderBasedDeserializer;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.response.Product;
+import com.videostreamtest.service.ble.BleService;
+import com.videostreamtest.service.ble.callback.BleScanCallback;
+import com.videostreamtest.ui.phone.helpers.PermissionHelper;
+import com.videostreamtest.ui.phone.productview.fragments.messagebox.BleDeviceInformationAdapter;
+import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -93,7 +108,8 @@ public class ProductPickerActivity extends AppCompatActivity {
 
         productPickerViewModel.getCurrentConfig().observe(this, config -> {
             if (config != null) {
-//                ConfigurationHelper.loadExternalData(this, config.getAccountToken());
+                PermissionHelper.requestPermission(getApplicationContext(), this, config);
+
                 // Add action onClick to signout button
                 signoutButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -152,9 +168,69 @@ public class ProductPickerActivity extends AppCompatActivity {
                     final GridLayoutManager gridLayoutManager = new GridLayoutManager(this,spanCount);
                     //Zet de layoutmanager erin
                     productOverview.setLayoutManager(gridLayoutManager);
+                    findViewById(android.R.id.content).invalidate();
                 });
             }
         });
+
+//        // Check if Android M or higher
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            // Show alert dialog to the user saying a separate permission is needed
+//            requestPermissions(new String[]{
+//                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+//                    Manifest.permission.INTERNET,
+//                    Manifest.permission.ACCESS_NETWORK_STATE,
+//                    Manifest.permission.BLUETOOTH,
+//                    Manifest.permission.BLUETOOTH_ADMIN,
+//                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//                    Manifest.permission.READ_EXTERNAL_STORAGE
+//            }, 2323);
+//        }
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+//            if (ContextCompat.checkSelfPermission(getApplicationContext(),
+//                    Manifest.permission.ACCESS_COARSE_LOCATION)
+//                    != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(
+//                        ProductPickerActivity.this,
+//                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+//                        2323);
+//            }
+//        }
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//            if (ContextCompat.checkSelfPermission(getApplicationContext(),
+//                    Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+//                    != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(
+//                        ProductPickerActivity.this,
+//                        new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+//                        2323);
+//            }
+//            if (ContextCompat.checkSelfPermission(getApplicationContext(),
+//                    Manifest.permission.ACCESS_FINE_LOCATION)
+//                    != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(
+//                        ProductPickerActivity.this,
+//                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+//                        2323);
+//            }
+//        }getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
+
+
+//
+//        Intent intent = new Intent(getApplicationContext(), BleService.class);
+//        startService(intent);
+//
+//        bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+//        assert bluetoothManager != null;
+//        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
+//
+//        scanner = bluetoothAdapter.getBluetoothLeScanner();
+//
+//        final BleDeviceInformationAdapter bleDeviceInformationAdapter = new BleDeviceInformationAdapter(productViewModel);
+//        bleScanCallback = new BleScanCallback(bleDeviceInformationAdapter);
+//        scanner.startScan(bleScanCallback);
 
     }
 
@@ -162,6 +238,12 @@ public class ProductPickerActivity extends AppCompatActivity {
     public void onUserInteraction() {
         super.onUserInteraction();
         resetScreensaverTimer();
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        findViewById(android.R.id.content).invalidate();
     }
 
     @Override
@@ -215,8 +297,11 @@ public class ProductPickerActivity extends AppCompatActivity {
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Manifest.permission.INTERNET,
                     Manifest.permission.ACCESS_NETWORK_STATE,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.BLUETOOTH,
                     Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION, //ANDROID 10 FOR BLE
+                    Manifest.permission.ACCESS_COARSE_LOCATION, //ANDROID 10 OR OLDER THEN 7.0 FOR BLE
                     Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     Manifest.permission.READ_EXTERNAL_STORAGE
             }, 2323);
@@ -225,6 +310,15 @@ public class ProductPickerActivity extends AppCompatActivity {
             }
             if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_GRANTED){
                 Log.d(TAG, "BLUETOOTH_ADMIN PERMISSION GRANTED");
+            }
+            if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+                Log.d(TAG, "ACCESS_COARSE_LOCATION PERMISSION GRANTED");
+            }
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+                Log.d(TAG, "ACCESS_FINE_LOCATION PERMISSION GRANTED");
+            }
+            if (checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED){
+                Log.d(TAG, "ACCESS_BACKGROUND_LOCATION PERMISSION GRANTED");
             }
         }
     }
