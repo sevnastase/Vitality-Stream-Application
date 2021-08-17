@@ -32,13 +32,13 @@
     <string name="failed_login">Failed to login!</string>
     <string name="under_construction">Unlocks later</string>
     <string name="loading_profile_message">Profile %s loading</string>
-    <string name="pre_video_message">Please start paddling</string>
+    <string name="pre_video_message">Please start excersizing</string>
     <string name="pre_video_title">Please start slowly</string>
     <string name="ant_error_message">Ant+ device not found!</string>
     <string name="ant_error_title">Ant+ plugin error</string>
     <string name="positive_button">Ok</string>
     <string name="pause_screen_title">Pause</string>
-    <string name="pause_screen_message">Start paddling if you want to continue</string>
+    <string name="pause_screen_message">Start excersize if you want to continue</string>
     <string name="finish_screen_title">Finish!</string>
     <string name="pause_screen_button_text">Back to overview</string>
     <string name="video_screen_distance">%d m</string>
@@ -76,4 +76,21 @@
     <string name="update_available">Update for Praxtour app available!</string>
     <string name="warning_need_more_disk_capacity">No disk present which can hold all the desired movies.</string>
     <string name="product_view_loading_data_message">Loading data...</string>
+    <string name="menu_nav_home_title">Home</string>
+    <string name="menu_nav_ble_settings_title">BLE settings</string>
+    <string name="settings_ble_activity_sensor_overview_header">Activity Sensor Overview</string>
+    <string name="settings_ble_name_header">Name:</string>
+    <string name="settings_ble_value_placeholder_no_device">No device</string>
+    <string name="settings_ble_battery_header">Battery:</string>
+    <string name="settings_ble_battery_value_placeholder">--%</string>
+    <string name="settings_ble_signal_strength_header">Signal strength:</string>
+    <string name="settings_ble_signal_strength_value_placeholder">None</string>
+    <string name="settings_ble_connect_to_device_header">Select device to connect:</string>
+    <string name="productpicker_settings_button_text">Settings</string>
+    <string name="signal_strength_indicator_no_signal_value">No signal</string>
+    <string name="signal_strength_indicator_excellent_signal_value">Excellent</string>
+    <string name="signal_strength_indicator_very_good_signal_value">Very good</string>
+    <string name="signal_strength_indicator_good_signal_value">Good</string>
+    <string name="signal_strength_indicator_low_signal_value">Low</string>
+    <string name="signal_strength_indicator_very_low_signal_value">Very low</string>
 </resources>

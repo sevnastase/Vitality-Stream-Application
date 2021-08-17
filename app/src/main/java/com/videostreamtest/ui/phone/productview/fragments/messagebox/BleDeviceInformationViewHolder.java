@@ -66,7 +66,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
         deviceNameText.setText(bleDeviceInfo.getBluetoothDevice().getName());
 
         TextView deviceConnectionStrengthText = itemView.findViewById(R.id.single_ble_device_connection_strength);
-        deviceConnectionStrengthText.setText(BleHelper.getRssiStrengthIndicator(bleDeviceInfo.getConnectionStrength()));
+        deviceConnectionStrengthText.setText(BleHelper.getRssiStrengthIndicator(itemView.getContext().getApplicationContext(), bleDeviceInfo.getConnectionStrength()));
     }
 
     private void initBorders() {
@@ -130,7 +130,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, bleDeviceInfo.getBluetoothDevice().getAddress());
         editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_NAME_KEY, bleDeviceInfo.getBluetoothDevice().getName());
-        editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_CONNECTION_STRENGTH_KEY, BleHelper.getRssiStrengthIndicator(bleDeviceInfo.getConnectionStrength()));
+        editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_CONNECTION_STRENGTH_KEY, BleHelper.getRssiStrengthIndicator(itemView.getContext().getApplicationContext(), bleDeviceInfo.getConnectionStrength()));
         editor.commit();
 
         if (productViewModel==null) {
@@ -142,7 +142,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
         bluetoothDefaultDevice.setBleAddress(bleDeviceInfo.getBluetoothDevice().getAddress());
         bluetoothDefaultDevice.setBleName(bleDeviceInfo.getBluetoothDevice().getName());
         bluetoothDefaultDevice.setBleSensorType(bleDeviceInfo.getDeviceType());
-        bluetoothDefaultDevice.setBleSignalStrength(BleHelper.getRssiStrengthIndicator(bleDeviceInfo.getConnectionStrength()));
+        bluetoothDefaultDevice.setBleSignalStrength(BleHelper.getRssiStrengthIndicator(itemView.getContext().getApplicationContext(), bleDeviceInfo.getConnectionStrength()));
         bluetoothDefaultDevice.setBleBatterylevel("--");
         productViewModel.insertBluetoothDefaultDevice(bluetoothDefaultDevice);
 

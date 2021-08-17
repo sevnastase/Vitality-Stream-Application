@@ -10,6 +10,7 @@ import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.location.LocationManagerCompat;
@@ -88,6 +89,7 @@ public class PermissionHelper {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public static void forceOverlayForBoot(Context context) {
         if(!Settings.canDrawOverlays(context)) {
             Log.d(TAG, "PackageManager draw-over-app permissions are inactive!");

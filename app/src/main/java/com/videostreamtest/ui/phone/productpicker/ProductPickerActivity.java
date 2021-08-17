@@ -18,21 +18,30 @@ import android.os.Looper;
 import android.os.Process;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.location.LocationManagerCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.WorkManager;
 
 import com.fasterxml.jackson.databind.deser.BuilderBasedDeserializer;
+import com.google.android.material.navigation.NavigationView;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.service.ble.BleService;
@@ -44,6 +53,8 @@ import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,13 +62,17 @@ import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
 
-public class ProductPickerActivity extends AppCompatActivity {
+public class ProductPickerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private final static String TAG = ProductPickerActivity.class.getSimpleName();
 
     private ProductPickerViewModel productPickerViewModel;
     private RecyclerView productOverview;
     private boolean refreshData = false;
 
+    private DrawerLayout drawerLayout;
+    private NavigationView navView;
+
+    private Button settingsButton;
     private Button signoutButton;
 
     private Handler screensaverhandler;
@@ -82,6 +97,22 @@ public class ProductPickerActivity extends AppCompatActivity {
         initScreensaverHandler();
         startScreensaverHandler();
 
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navView = drawerLayout.findViewById(R.id.nav_view);
+
+        /*
+        Settings button
+         */
+        settingsButton = findViewById(R.id.productpicker_settings_button);
+        settingsButton.setOnFocusChangeListener((onFocusedView, hasFocus) -> {
+            if (hasFocus) {
+                final Drawable border = onFocusedView.getContext().getDrawable(R.drawable.imagebutton_blue_border);
+                settingsButton.setBackground(border);
+            } else {
+                settingsButton.setBackground(null);
+            }
+        });
+
          /*
         Logout button
          */
@@ -103,8 +134,8 @@ public class ProductPickerActivity extends AppCompatActivity {
          */
 
         //Koppel de recyclerView aan de layout xml
-        productOverview = findViewById(R.id.recyclerview_products);
-        productOverview.setHasFixedSize(true);
+//        productOverview = findViewById(R.id.recyclerview_products);
+//        productOverview.setHasFixedSize(true);
 
         productPickerViewModel.getCurrentConfig().observe(this, config -> {
             if (config != null) {
@@ -132,44 +163,60 @@ public class ProductPickerActivity extends AppCompatActivity {
                     }
                 });
 
+                settingsButton.setOnClickListener(onClickedView -> {
+                    Log.d(TAG,"Settings clicked!");
+                    if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                        drawerLayout.closeDrawer(GravityCompat.START);
+                    } else {
+                        drawerLayout.openDrawer(GravityCompat.START);
+
+                        if (navView.getCheckedItem()!= null) {
+//                            navView.getCheckedItem().setChecked(false);
+                            navView.requestFocus();
+                        } else {
+                            navView.requestFocus();
+                        }
+                    }
+                });
+
                 if(config.isLocalPlay()) {
                     signoutButton.setVisibility(View.GONE);
                 }
 
-                productPickerViewModel.getAccountProducts(config.getAccountToken(), !config.isLocalPlay()).observe(this, products ->{
-
-                    List<Product> productList = new ArrayList<>();
-                    if (products.size()>0) {
-                        for (com.videostreamtest.config.entity.Product extProd : products) {
-                            Product addProd = new Product();
-                            addProd.setId(extProd.getUid());
-                            addProd.setDefaultSettingsId(0);
-                            addProd.setProductLogoButtonPath(extProd.getProductLogoButtonPath());
-                            addProd.setSupportStreaming(extProd.getSupportStreaming());
-                            addProd.setProductName(extProd.getProductName());
-                            addProd.setBlocked(extProd.getBlocked());
-                            addProd.setCommunicationType(extProd.getCommunicationType());
-                            productList.add(addProd);
-                        }
-                    }
-
-                    ProductPickerAdapter productPickerAdapter = new ProductPickerAdapter(productList.toArray(new Product[0]));
-                    //set adapter to recyclerview
-                    productOverview.setAdapter(productPickerAdapter);
-                    //set recyclerview visible
-                    productOverview.setVisibility(View.VISIBLE);
-
-                    //For UI alignment in center with less then 5 products
-                    int spanCount = 5;
-                    if (products.size() < 5) {
-                        spanCount = products.size();
-                    }
-                    //Grid Layout met een max 5 kolommen breedte
-                    final GridLayoutManager gridLayoutManager = new GridLayoutManager(this,spanCount);
-                    //Zet de layoutmanager erin
-                    productOverview.setLayoutManager(gridLayoutManager);
-                    findViewById(android.R.id.content).invalidate();
-                });
+//                productPickerViewModel.getAccountProducts(config.getAccountToken(), !config.isLocalPlay()).observe(this, products ->{
+//
+//                    List<Product> productList = new ArrayList<>();
+//                    if (products.size()>0) {
+//                        for (com.videostreamtest.config.entity.Product extProd : products) {
+//                            Product addProd = new Product();
+//                            addProd.setId(extProd.getUid());
+//                            addProd.setDefaultSettingsId(0);
+//                            addProd.setProductLogoButtonPath(extProd.getProductLogoButtonPath());
+//                            addProd.setSupportStreaming(extProd.getSupportStreaming());
+//                            addProd.setProductName(extProd.getProductName());
+//                            addProd.setBlocked(extProd.getBlocked());
+//                            addProd.setCommunicationType(extProd.getCommunicationType());
+//                            productList.add(addProd);
+//                        }
+//                    }
+//
+//                    ProductPickerAdapter productPickerAdapter = new ProductPickerAdapter(productList.toArray(new Product[0]));
+//                    //set adapter to recyclerview
+//                    productOverview.setAdapter(productPickerAdapter);
+//                    //set recyclerview visible
+//                    productOverview.setVisibility(View.VISIBLE);
+//
+//                    //For UI alignment in center with less then 5 products
+//                    int spanCount = 5;
+//                    if (products.size() < 5) {
+//                        spanCount = products.size();
+//                    }
+//                    //Grid Layout met een max 5 kolommen breedte
+//                    final GridLayoutManager gridLayoutManager = new GridLayoutManager(this,spanCount);
+//                    //Zet de layoutmanager erin
+//                    productOverview.setLayoutManager(gridLayoutManager);
+//                    findViewById(android.R.id.content).invalidate();
+//                });
             }
         });
 
@@ -244,6 +291,7 @@ public class ProductPickerActivity extends AppCompatActivity {
     protected void onPostCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         findViewById(android.R.id.content).invalidate();
+        navView.setNavigationItemSelectedListener(this);
     }
 
     @Override
@@ -322,4 +370,22 @@ public class ProductPickerActivity extends AppCompatActivity {
             }
         }
     }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull @NotNull MenuItem menuItem) {
+        NavHostFragment navHostFragment =
+                (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+        NavController navController = navHostFragment.getNavController();
+        switch (menuItem.getItemId()) {
+            case R.id.nav_ble:
+                navController.navigate(R.id.bleDeviceInformationBoxFragment);
+                break;
+            case R.id.nav_home:
+                navController.navigate(R.id.productPickerFragment);
+                break;
+        }
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return false;
+    }
+
 }

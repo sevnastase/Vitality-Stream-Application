@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -26,6 +27,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
+import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.service.ble.callback.BleScanCallback;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -43,6 +45,10 @@ public class BleDeviceInformationBoxFragment extends Fragment {
 
     private ProductViewModel productViewModel;
 
+    private TextView deviceConnectionStrengthLabel;
+    private TextView deviceBatterylevelLabel;
+    private TextView deviceNameLabel;
+
     private Button closeButton;
     private TextView deviceLabel;
     private RecyclerView showBleDevicesRecyclerView;
@@ -54,22 +60,26 @@ public class BleDeviceInformationBoxFragment extends Fragment {
 
         productViewModel = new ViewModelProvider(requireActivity()).get(ProductViewModel.class);
 
-        closeButton = view.findViewById(R.id.current_connected_device_close_button);
+//        closeButton = view.findViewById(R.id.current_connected_device_close_button);
         deviceLabel = view.findViewById(R.id.messagebox_connected_device_label);
         showBleDevicesRecyclerView = view.findViewById(R.id.messagebox_available_ble_devices);
 
-        closeButton.setOnClickListener(onClickView -> {
-            closeMessageBox();
-        });
+        deviceConnectionStrengthLabel = view.findViewById(R.id.current_connected_device_connection_strength_label);
+        deviceBatterylevelLabel = view.findViewById(R.id.current_connected_device_battery_label);
+        deviceNameLabel = view.findViewById(R.id.current_connected_device_label);
 
-        initOnFocusChangeCloseMessageboxButtonListener();
+//        closeButton.setOnClickListener(onClickView -> {
+//            closeMessageBox();
+//        });
+
+//        initOnFocusChangeCloseMessageboxButtonListener();
 
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-        closeButton.requestFocus();
+//        closeButton.requestFocus();
         // Bluetooth Low Energy
         bluetoothManager = (BluetoothManager) getActivity().getSystemService(BLUETOOTH_SERVICE);
         assert bluetoothManager != null;
@@ -95,6 +105,8 @@ public class BleDeviceInformationBoxFragment extends Fragment {
                 != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "No ACCESS_BACKGROUND_LOCATION permission.");
         }
+
+        loadBluetoothDefaultDeviceInformation();
 
         if (checkBluetoothSupport(bluetoothAdapter)) {
 
@@ -122,7 +134,41 @@ public class BleDeviceInformationBoxFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        scanner.stopScan(bleScanCallback);
+        if (scanner != null) {
+            scanner.stopScan(bleScanCallback);
+        }
+    }
+
+    private void loadBluetoothDefaultDeviceInformation() {
+        BluetoothManager bluetoothManager = (BluetoothManager) getActivity().getSystemService(BLUETOOTH_SERVICE);
+        assert bluetoothManager != null;
+        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
+        LinearLayout linearLayoutConnectionDeviceSummary = getView().findViewById(R.id.overlay_connection_info_box);
+        if (bluetoothAdapter!= null) {
+            bluetoothAdapter.enable();
+            linearLayoutConnectionDeviceSummary.setVisibility(View.VISIBLE);
+
+            productViewModel.getBluetoothDefaultDevices().observe(getViewLifecycleOwner(), bluetoothDefaultDevices -> {
+                if (bluetoothDefaultDevices != null && bluetoothDefaultDevices.size()>0) {
+                    BluetoothDefaultDevice bluetoothDefaultDevice =  bluetoothDefaultDevices.get(0);
+                    if (bluetoothDefaultDevice.getBleName() != null && !bluetoothDefaultDevice.getBleName().isEmpty()) {
+                        deviceNameLabel.setText(bluetoothDefaultDevice.getBleName());
+                        if (!bluetoothDefaultDevice.getBleBatterylevel().isEmpty() && bluetoothDefaultDevice.getBleBatterylevel()!="") {
+                            deviceBatterylevelLabel.setText(bluetoothDefaultDevice.getBleBatterylevel() + "%");
+                        }
+                        if (bluetoothDefaultDevice.getBleSignalStrength() != null && !bluetoothDefaultDevice.getBleSignalStrength().isEmpty()) {
+                            deviceConnectionStrengthLabel.setText(bluetoothDefaultDevice.getBleSignalStrength());
+                        }
+                    } else {
+                        deviceNameLabel.setText("No device");
+                        deviceConnectionStrengthLabel.setText("No device");
+                        deviceBatterylevelLabel.setText("0%");
+                    }
+                }
+            });
+        } else {
+            linearLayoutConnectionDeviceSummary.setVisibility(View.GONE);
+        }
     }
 
     private void closeMessageBox() {
@@ -157,22 +203,22 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         }
     }
 
-    private void initOnFocusChangeCloseMessageboxButtonListener() {
-        closeButton.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-
-                closeButton.setSelected(true);
-                if (hasFocus) {
-                    final Drawable border = getContext().getDrawable(R.drawable.imagebutton_blue_border);
-                    closeButton.setBackground(border);
-                    closeButton.setBackgroundTintMode(PorterDuff.Mode.ADD);
-                } else {
-                    final Drawable border = getContext().getDrawable(R.drawable.imagebutton_red_border);
-                    closeButton.setBackground(border);
-                    closeButton.setBackgroundTintMode(PorterDuff.Mode.SRC_OVER);
-                }
-            }
-        });
-    }
+//    private void initOnFocusChangeCloseMessageboxButtonListener() {
+//        closeButton.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+//            @Override
+//            public void onFocusChange(View v, boolean hasFocus) {
+//
+//                closeButton.setSelected(true);
+//                if (hasFocus) {
+//                    final Drawable border = getContext().getDrawable(R.drawable.imagebutton_blue_border);
+//                    closeButton.setBackground(border);
+//                    closeButton.setBackgroundTintMode(PorterDuff.Mode.ADD);
+//                } else {
+//                    final Drawable border = getContext().getDrawable(R.drawable.imagebutton_red_border);
+//                    closeButton.setBackground(border);
+//                    closeButton.setBackgroundTintMode(PorterDuff.Mode.SRC_OVER);
+//                }
+//            }
+//        });
+//    }
 }

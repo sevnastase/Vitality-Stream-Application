@@ -323,12 +323,12 @@ public class BleService extends Service {
                 public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
                     SharedPreferences sharedPreferences = getSharedPreferences("app",MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_CONNECTION_STRENGTH_KEY, BleHelper.getRssiStrengthIndicator(rssi));
+                    editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_CONNECTION_STRENGTH_KEY, BleHelper.getRssiStrengthIndicator(getApplicationContext(), rssi));
                     editor.commit();
 
                     List<BluetoothDefaultDevice> bluetoothDefaultDevices = PraxtourDatabase.getDatabase(getApplicationContext()).bluetoothDefaultDeviceDao().getRawBluetoothDefaultDevice(1);
                     if (bluetoothDefaultDevices!= null && bluetoothDefaultDevices.size()>0) {
-                        bluetoothDefaultDevices.get(0).setBleSignalStrength(BleHelper.getRssiStrengthIndicator(rssi));
+                        bluetoothDefaultDevices.get(0).setBleSignalStrength(BleHelper.getRssiStrengthIndicator(getApplicationContext(), rssi));
                         PraxtourDatabase.getDatabase(getApplicationContext()).bluetoothDefaultDeviceDao().insert(bluetoothDefaultDevices.get(0));
                     }
                 }
