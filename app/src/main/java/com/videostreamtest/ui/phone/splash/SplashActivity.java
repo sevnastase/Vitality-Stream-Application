@@ -92,7 +92,7 @@ public class SplashActivity extends AppCompatActivity {
 //                        splashViewModel.updateConfiguration(config);
                         if(products.size() > 0) {
                             Log.d(TAG, "Set current configuration");
-                            if (products.size() > 1 ) {
+//                            if (products.size() > 1 ) {
                                 if (!productPickerLoaded) {
                                     productPickerLoaded = true;
                                     Log.d(TAG, "Number of products :: " + products.size());
@@ -102,36 +102,42 @@ public class SplashActivity extends AppCompatActivity {
                                     startActivity(new Intent(SplashActivity.this, ProductPickerActivity.class));
                                     SplashActivity.this.finish();
                                 }
-                            } else {
-                                if (!profileViewLoaded) {
-                                    profileViewLoaded = true;
-                                    // only one product so start product immediately based on streamingAccount
-                                    Log.d(TAG, "Single product :: " + products.get(0).getProductName() + " standalone: "+config.isLocalPlay());
-                                    if (config.isLocalPlay()) { //TODO: APPEND CHECK WITH: && products.get(0).getSupportStreaming().intValue()==0
-                                        Bundle arguments = new Bundle();
-                                        arguments.putString("product_object", new GsonBuilder().create().toJson(Product.fromProductEntity(products.get(0)), Product.class));
-
-                                        Intent productView = new Intent(SplashActivity.this, ProductActivity.class);
-                                        productView.putExtras(arguments);
-
-                                        startActivity(productView);
-                                    } else {
-                                        startActivity(new Intent(SplashActivity.this, ProfilesActivity.class));
-                                    }
-                                    SplashActivity.this.finish();
-                                }
-                            }
+//                            } else {
+//                                if (!profileViewLoaded) {
+//                                    profileViewLoaded = true;
+//                                    // only one product so start product immediately based on streamingAccount
+//                                    Log.d(TAG, "Single product :: " + products.get(0).getProductName() + " standalone: "+config.isLocalPlay());
+//                                    if (config.isLocalPlay()) { //TODO: APPEND CHECK WITH: && products.get(0).getSupportStreaming().intValue()==0
+//                                        Bundle arguments = new Bundle();
+//                                        arguments.putString("product_object", new GsonBuilder().create().toJson(Product.fromProductEntity(products.get(0)), Product.class));
+//
+//                                        Intent productView = new Intent(SplashActivity.this, ProductActivity.class);
+//                                        productView.putExtras(arguments);
+//
+//                                        startActivity(productView);
+//                                    } else {
+//                                        startActivity(new Intent(SplashActivity.this, ProfilesActivity.class));
+//                                    }
+//                                    SplashActivity.this.finish();
+//                                }
+//                            }
                         } else {
                             //Execute when number of products is 0
-                            Log.d(TAG, "Unset current configuration or product count = 0");
-                            //TODO: in worker listener that acts when activeproductsworker is done.
-                            // Because timing is of essence here the products can be 0 when this is executed
-//                            if (false) {
-//                                Toast.makeText(this, "No subscriptions available for this account.", Toast.LENGTH_LONG).show();
-//                                Configuration configuration = config;
-//                                configuration.setCurrent(false);
-//                                splashViewModel.updateConfiguration(configuration);
-//                            }
+                            // This happens when the trial time expires
+                            //Login activity will be shown
+                            Log.d(TAG, "Unset current configuration when product count = 0");
+                            Runnable showLoginScreen = new Runnable() {
+                                public void run() {
+                                    config.setCurrent(false);
+                                    splashViewModel.updateConfiguration(config);
+                                    //Redirect to login activity
+                                    startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+                                    //Close this activity and release resources
+                                    SplashActivity.this.finish();
+                                }
+                            };
+                            //Redirect to login activity if timer exceeds 5 seconds
+                            loadTimer.postDelayed( showLoginScreen, 15000 );
                         }
                     }
                 });

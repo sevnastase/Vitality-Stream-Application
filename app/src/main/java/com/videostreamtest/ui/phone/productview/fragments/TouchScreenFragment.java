@@ -141,10 +141,6 @@ public class TouchScreenFragment extends Fragment {
             if (currentConfig != null) {
                 Product selectedProduct = new GsonBuilder().create().fromJson(getArguments().getString("product_object", "{}"), Product.class);
 
-                if (selectedProduct.getCommunicationType().toLowerCase().contains("none")) {
-                    deviceConnectionInformationBlock.setVisibility(View.GONE);
-                }
-
                 productViewModel.getPMS(selectedProduct.getId()).observe(getViewLifecycleOwner(), pmsList -> {
                     productViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(getViewLifecycleOwner(), allRoutefilms -> {
                         List<Routefilm> filteredRoutefilmList = new ArrayList<>();
