@@ -1,6 +1,8 @@
 package com.videostreamtest.ui.phone.productview;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -37,8 +39,11 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
+import com.videostreamtest.receiver.BluetoothDeviceBroadcastListener;
+import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.productview.fragments.PlainScreenFragment;
 import com.videostreamtest.ui.phone.productview.fragments.TouchScreenFragment;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
@@ -102,6 +107,8 @@ public class ProductActivity extends AppCompatActivity {
 
         productViewModel.getCurrentConfig().observe(this, currentConfig ->{
             if (currentConfig != null) {
+                PermissionHelper.requestPermission(getApplicationContext(), this, currentConfig);
+
                 Log.d(getClass().getSimpleName(), "currentConfig pCount: "+currentConfig.getProductCount() + " Bundle pCount: 1");
 
                 Bundle arguments = getIntent().getExtras();
@@ -135,6 +142,11 @@ public class ProductActivity extends AppCompatActivity {
                 });
             }
         });
+
+        if (!selectedProduct.getCommunicationType().toLowerCase().contains("none")) {
+            Intent bleService = new Intent(getApplicationContext(), BleService.class);
+            startService(bleService);
+        }
     }
 
     @Override

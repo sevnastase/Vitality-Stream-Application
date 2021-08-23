@@ -20,13 +20,13 @@
     <string name="failed_login">Inloggen mislukt!</string>
     <string name="under_construction">Binnenkort beschikbaar.</string>
     <string name="loading_profile_message">Profiel van %s ingeladen</string>
-    <string name="pre_video_message">Begin met trappen</string>
+    <string name="pre_video_message">Begin met bewegen</string>
     <string name="pre_video_title">Begin rustig aan</string>
     <string name="ant_error_message">Sensor apparaat niet gevonden!</string>
     <string name="ant_error_title">Sensor fout</string>
     <string name="positive_button">Oke</string>
     <string name="pause_screen_title">Pauze</string>
-    <string name="pause_screen_message">Ga verder met fietsen om door te gaan</string>
+    <string name="pause_screen_message">Ga verder met bewegen om door te gaan</string>
     <string name="finish_screen_title">Finish!</string>
     <string name="pause_screen_button_text">Terug naar overzicht</string>
     <string name="video_screen_distance">%d m</string>
@@ -64,4 +64,21 @@
     <string name="update_available">Update voor de app beschikbaar!</string>
     <string name="warning_need_more_disk_capacity">Er is geen harddisk beschikbaar met voldoende schuifruimte om alle films te waarborgen.</string>
     <string name="product_view_loading_data_message">Bezig met ophalen van informatie...</string>
+    <string name="menu_nav_home_title">Startscherm</string>
+    <string name="menu_nav_ble_settings_title">BLE instellingen</string>
+    <string name="settings_ble_activity_sensor_overview_header">Huidig sensor activiteit</string>
+    <string name="settings_ble_name_header">Naam:</string>
+    <string name="settings_ble_value_placeholder_no_device">Niet aanwezig</string>
+    <string name="settings_ble_battery_header">Batterij:</string>
+    <string name="settings_ble_battery_value_placeholder">--%</string>
+    <string name="settings_ble_signal_strength_header">Signaalsterkte:</string>
+    <string name="settings_ble_signal_strength_value_placeholder">Geen</string>
+    <string name="settings_ble_connect_to_device_header">Selecteer apparaat om mee te verbinden:</string>
+    <string name="productpicker_settings_button_text">Instellingen</string>
+    <string name="signal_strength_indicator_no_signal_value">Geen signaal</string>
+    <string name="signal_strength_indicator_excellent_signal_value">Uitstekend</string>
+    <string name="signal_strength_indicator_very_good_signal_value">Zeer goed</string>
+    <string name="signal_strength_indicator_good_signal_value">Goed</string>
+    <string name="signal_strength_indicator_low_signal_value">Slecht</string>
+    <string name="signal_strength_indicator_very_low_signal_value">Erg slecht</string>
 </resources>

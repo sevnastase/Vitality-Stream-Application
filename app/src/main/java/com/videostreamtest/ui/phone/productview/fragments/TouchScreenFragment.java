@@ -1,42 +1,34 @@
 package com.videostreamtest.ui.phone.productview.fragments;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.work.Operation;
 
 import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
-import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.config.entity.Routefilm;
-import com.videostreamtest.data.model.response.Configuration;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
-import com.videostreamtest.ui.phone.productview.fragments.plain.PlainScreenRouteFilmsAdapter;
 import com.videostreamtest.ui.phone.productview.fragments.touch.TouchScreenRouteFilmsAdapter;
 import com.videostreamtest.ui.phone.productview.layoutmanager.PreCachingLayoutManager;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class TouchScreenFragment extends Fragment {
     private static final String NAVIGATION_LEFT_ARROW = "http://188.166.100.139:8080/api/dist/img/buttons/arrow_left_blue.png";
@@ -48,22 +40,13 @@ public class TouchScreenFragment extends Fragment {
 
     private TouchScreenRouteFilmsAdapter touchScreenRouteFilmsAdapter;
     private LinearLayout routeInformationBlock;
+    private LinearLayout deviceConnectionInformationBlock;
     private RecyclerView recyclerView;
-
-//    private List<Routefilm> supportedRoutefilms;
 
     private ImageButton navigationLeftArrow;
     private ImageButton navigationRightArrow;
     private ImageButton navigationUpArrow;
     private ImageButton navigationDownArrow;
-
-     /*
-    TODO: create a viewHolder for a plain scenery representation and navigation arrow left/right
-     - Number of items is maxed on 12 at a time.
-     - Adapter is refreshed after each navigation arrow is pressed and the next or previous 10 movies are loaded
-     - All the movies are in the local room database
-     - all the movies are synched with the internet after logging in or loading the app when user is still logged in
-     */
 
     @Nullable
     @Override
@@ -77,6 +60,8 @@ public class TouchScreenFragment extends Fragment {
         navigationDownArrow = view.findViewById(R.id.down_navigation_arrow);
 
         routeInformationBlock = view.findViewById(R.id.overlay_route_information);
+        deviceConnectionInformationBlock = view.findViewById(R.id.overlay_connection_info_box);
+
 
         recyclerView = view.findViewById(R.id.recyclerview_available_routefilms);
         recyclerView.setHasFixedSize(true);
@@ -155,6 +140,10 @@ public class TouchScreenFragment extends Fragment {
         productViewModel.getCurrentConfig().observe(getViewLifecycleOwner(), currentConfig -> {
             if (currentConfig != null) {
                 Product selectedProduct = new GsonBuilder().create().fromJson(getArguments().getString("product_object", "{}"), Product.class);
+
+                if (selectedProduct.getCommunicationType().toLowerCase().contains("none")) {
+                    deviceConnectionInformationBlock.setVisibility(View.GONE);
+                }
 
                 productViewModel.getPMS(selectedProduct.getId()).observe(getViewLifecycleOwner(), pmsList -> {
                     productViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(getViewLifecycleOwner(), allRoutefilms -> {
@@ -270,5 +259,4 @@ public class TouchScreenFragment extends Fragment {
         }
         return null;
     }
-
 }

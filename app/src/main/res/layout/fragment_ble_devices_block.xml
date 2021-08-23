@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/overlay_ble_devices_information_block"
+    android:layout_width="500dp"
+    android:layout_height="wrap_content"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    android:layout_gravity="center|center_horizontal"
+    android:background="@drawable/imagebutton_blue_border"
+    android:backgroundTint="@color/light_blue_900"
+    android:orientation="vertical"
+    android:clickable="true"
+    android:descendantFocusability="afterDescendants"
+    android:padding="10dp"
+    android:layout_margin="25dp">
+
+    <LinearLayout
+        android:id="@+id/overlay_connection_info_box"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_gravity="center|center_horizontal"
+        android:background="@drawable/imagebutton_blue_border"
+        android:backgroundTint="@color/light_blue_600"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:focusable="false"
+            android:layout_marginTop="1dp"
+            android:src="@drawable/bluetooth_small"/>
+
+        <LinearLayout
+            android:id="@+id/overlay_connection_info_summary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/current_connected_device_box_label"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_margin="5dp"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/exo_white"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:focusable="false"
+                    android:text="@string/settings_ble_activity_sensor_overview_header"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:textStyle="bold"
+                    android:focusable="false"
+                    android:textColor="@color/exo_white"
+                    android:textSize="12sp"
+                    android:text="@string/settings_ble_name_header"/>
+                <TextView
+                    android:id="@+id/current_connected_device_label"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_margin="5dp"
+                    android:layout_gravity="center"
+                    android:focusable="false"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/exo_white"
+                    android:textSize="12sp"
+                    android:text="@string/settings_ble_value_placeholder_no_device"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:textStyle="bold"
+                    android:focusable="false"
+                    android:textColor="@color/exo_white"
+                    android:textSize="12sp"
+                    android:text="@string/settings_ble_battery_header"/>
+                <TextView
+                    android:id="@+id/current_connected_device_battery_label"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_margin="5dp"
+                    android:focusable="false"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/exo_white"
+                    android:textSize="12sp"
+                    android:text="@string/settings_ble_battery_value_placeholder"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:textStyle="bold"
+                    android:focusable="false"
+                    android:textColor="@color/exo_white"
+                    android:textSize="12sp"
+                    android:text="@string/settings_ble_signal_strength_header"/>
+                <TextView
+                    android:id="@+id/current_connected_device_connection_strength_label"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_margin="5dp"
+                    android:focusable="false"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/exo_white"
+                    android:textSize="12sp"
+                    android:text="@string/settings_ble_signal_strength_value_placeholder"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/overlay_messagebox_connection_info_summary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|center_horizontal"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/messagebox_connected_device_label"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_margin="5dp"
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/exo_white"
+                android:text="@string/settings_ble_connect_to_device_header" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/messagebox_available_ble_devices"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <!--            <Button-->
+            <!--                android:id="@+id/current_connected_device_connect_button"-->
+            <!--                app:layout_constraintTop_toTopOf="parent"-->
+            <!--                app:layout_constraintStart_toStartOf="parent"-->
+            <!--                android:layout_margin="5dp"-->
+            <!--                android:layout_gravity="center"-->
+            <!--                android:layout_width="wrap_content"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:textColor="@color/exo_white"-->
+            <!--                android:background="@drawable/imagebutton_red_border"-->
+            <!--                android:text="Connect"/>-->
+<!--            <Button-->
+<!--                android:id="@+id/current_connected_device_close_button"-->
+<!--                app:layout_constraintTop_toTopOf="parent"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                android:layout_margin="5dp"-->
+<!--                android:layout_gravity="center"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:textColor="@color/exo_white"-->
+<!--                android:background="@drawable/imagebutton_red_border"-->
+<!--                android:text="[X] Close"/>-->
+        </LinearLayout>
+    </LinearLayout>
+
+
+</LinearLayout>

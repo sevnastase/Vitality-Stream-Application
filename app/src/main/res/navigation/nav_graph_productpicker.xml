@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph_productpicker"
+    app:startDestination="@id/productPickerFragment">
+
+    <fragment
+        android:id="@+id/productPickerFragment"
+        android:name="com.videostreamtest.ui.phone.productpicker.fragments.ProductPickerFragment"
+        android:label="ProductPickerFragment" />
+    <fragment
+        android:id="@+id/bleDeviceInformationBoxFragment"
+        android:name="com.videostreamtest.ui.phone.productview.fragments.messagebox.BleDeviceInformationBoxFragment"
+        android:label="BleDeviceInformationBoxFragment" />
+</navigation>

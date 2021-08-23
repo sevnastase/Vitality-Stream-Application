@@ -594,7 +594,9 @@ public class VideoplayerActivity extends AppCompatActivity {
                         case RPM:
                             //Set the speed of the player based on our cadence rpm reading
                             PlaybackParameters playbackRpmParameters = new PlaybackParameters(RpmVectorLookupTable.getPlaybackspeed(rpm), PlaybackParameters.DEFAULT.pitch);
-                            videoPlayer.setPlaybackParameters(playbackRpmParameters);
+                            if (videoPlayer != null) {
+                                videoPlayer.setPlaybackParameters(playbackRpmParameters);
+                            }
                             if (mediaPlayer!= null) {
                                 mediaPlayer.setRate(RpmVectorLookupTable.getPlaybackspeed(rpm));
                             }

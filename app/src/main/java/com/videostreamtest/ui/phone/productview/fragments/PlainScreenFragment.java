@@ -1,7 +1,6 @@
 package com.videostreamtest.ui.phone.productview.fragments;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,17 +15,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
-import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.ui.phone.catalog.CatalogRecyclerViewClickListener;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.productview.fragments.plain.PlainScreenRouteFilmsAdapter;
-import com.videostreamtest.ui.phone.productview.fragments.touch.TouchScreenRouteFilmsAdapter;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class PlainScreenFragment extends Fragment implements CatalogRecyclerViewClickListener {
@@ -34,6 +30,7 @@ public class PlainScreenFragment extends Fragment implements CatalogRecyclerView
 
     private RecyclerView recyclerView;
     private LinearLayout routeInformationBlock;
+
     private PlainScreenRouteFilmsAdapter plainScreenRouteFilmsAdapter;
 
     private List<Routefilm> supportedRoutefilms;
@@ -81,7 +78,6 @@ public class PlainScreenFragment extends Fragment implements CatalogRecyclerView
     @Override
     public void recyclerViewListClicked(View v, int position) {
         recyclerView.getLayoutManager().scrollToPosition(position);
-
     }
 
     private Routefilm getSupportedRoutefilm(List<Routefilm> routefilms, Integer movieId) {
