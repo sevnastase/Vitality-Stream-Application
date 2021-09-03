@@ -27,4 +27,11 @@
         android:layout_margin="10dp"
         android:layout_height="wrap_content"/>
 
+    <Button
+        android:id="@+id/single_ble_device_connect_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="@string/single_ble_device_connect_label"/>
+
 </LinearLayout>

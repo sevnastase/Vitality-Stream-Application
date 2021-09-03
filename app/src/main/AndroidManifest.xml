@@ -47,7 +47,7 @@
     <application
         android:name=".config.application.PraxtourApplication"
         android:allowBackup="true"
-        android:banner="@drawable/route_utrechtse_heuvelrug"
+        android:banner="@drawable/tvbanner_xhdpi"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"

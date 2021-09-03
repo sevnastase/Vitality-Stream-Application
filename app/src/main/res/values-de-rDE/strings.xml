@@ -53,7 +53,7 @@
     <string name="catalog_already_downloading_message">Video wird noch heruntergeladen.</string>
     <string name="productpicker_close_button_text">Schließen</string>
     <string name="statusbar_time_title">Zeit</string>
-    <string name="statusbar_distance_title">Entfernung</string>
+    <string name="statusbar_distance_title">Strecke</string>
     <string name="statusbar_finish_distance_title">Ende</string>
     <string name="statusbar_volume_title">Lautstärke</string>
     <string name="statusbar_rpm_title">U/min</string>
@@ -81,4 +81,5 @@
     <string name="catalog_screen_distance">Distanz: %d,%d km</string>
     <string name="loading_profile_message">Profil von %s hochgeladen</string>
     <string name="catalog_download_status_message">Download-Status: %,.2f Prozent</string>
+    <string name="single_ble_device_connect_label">Verbinden</string>
 </resources>
