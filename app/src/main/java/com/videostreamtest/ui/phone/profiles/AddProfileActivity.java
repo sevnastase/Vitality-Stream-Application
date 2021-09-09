@@ -61,7 +61,7 @@ public class AddProfileActivity extends AppCompatActivity {
         response successful then proceed to ProfileActivity
          */
         SharedPreferences myPreferences = getApplication().getSharedPreferences("app",0);
-        String apikey = myPreferences.getString("apiKey", "unauthorized");
+        String apikey = myPreferences.getString("apikey", "unauthorized");
 
         String imgpath = "";
         if (avatarMaleView.getAlpha() == 1.0f) {

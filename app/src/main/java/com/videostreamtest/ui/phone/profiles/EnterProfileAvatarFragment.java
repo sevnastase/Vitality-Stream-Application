@@ -201,7 +201,7 @@ public class EnterProfileAvatarFragment extends Fragment {
         response successful then proceed to ProfileActivity
          */
         SharedPreferences myPreferences = getActivity().getSharedPreferences("app",0);
-        String apikey = myPreferences.getString("apiKey", "unauthorized");
+        String apikey = myPreferences.getString("apikey", "unauthorized");
 
         String imgpath = "";
         if (avatarMaleView.getAlpha() == 1.0f) {

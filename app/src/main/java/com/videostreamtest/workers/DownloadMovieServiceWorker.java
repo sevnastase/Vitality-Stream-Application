@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.Log;
 
@@ -24,6 +25,7 @@ import com.videostreamtest.config.entity.StandAloneDownloadStatus;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.request.MovieDownloadProgress;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import java.io.File;
@@ -79,6 +81,11 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         final String apikey = getInputData().getString("apikey");
         accountToken = apikey;
 
+        if (accountToken==null||accountToken.isEmpty()){
+            SharedPreferences myPreferences = getApplicationContext().getSharedPreferences("app",0);
+            accountToken = myPreferences.getString("apikey", "unauthorized");
+        }
+
         routefilm = new Gson().fromJson(inputDataString, Movie.class);
 
         if (DownloadHelper.isMoviePresent(getApplicationContext(), routefilm)) {
@@ -100,6 +107,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         //Transform string json to object
         if (routefilm.getMovieFileSize() == -1) {
             Log.e(TAG, "No movie filesize available");
+            LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":No movie filesize available", "ERROR", "");
             return Result.failure();
         }
 
@@ -108,21 +116,27 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
 
         if (selectedVolume.getTotalSpace()< ApplicationSettings.MINIMUM_DISK_SPACE_BYTES) {
             Log.e(TAG, "Disk not big enough for standalone subscription.");
+            LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Disk not big enough for standalone subscription.", "ERROR", "");
             return Result.failure();
         }
 
         if (canFileBeCopied(selectedVolume, totalDownloadSizeInBytes)) {
             try {
+                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Downloading started.", "INFO", "");
                 //Movie
                 download(routefilm.getMovieUrl(), routefilm.getMovieFileSize(), String.valueOf(routefilm.getId()));
             } catch (IOException ioException) {
                 Log.e(TAG, ioException.getLocalizedMessage());
                 Log.e(TAG, "Error downloading");
+                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Error downloading.", "ERROR", "");
+                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":"+ioException.getLocalizedMessage(), "ERROR", "");
+
                 return Result.failure();
             }
         } else {
             insertDownloadStatus(routefilm.getId(), -2);
             Log.e(TAG, "Cant copy file");
+            LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Not enough diskspace.", "ERROR", "");
             return Result.failure();
         }
         Data outputData = new Data.Builder()
@@ -168,6 +182,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             }
         } else {
             Log.e(TAG, "We're doomed");
+            LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Volume doesnt exist.", "ERROR", "");
             return;
         }
 

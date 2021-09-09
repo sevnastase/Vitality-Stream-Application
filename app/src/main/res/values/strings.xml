@@ -32,13 +32,13 @@
     <string name="failed_login">Failed to login!</string>
     <string name="under_construction">Unlocks later</string>
     <string name="loading_profile_message">Profile %s loading</string>
-    <string name="pre_video_message">Please start excersizing</string>
+    <string name="pre_video_message">Please start exercising</string>
     <string name="pre_video_title">Please start slowly</string>
     <string name="ant_error_message">Ant+ device not found!</string>
     <string name="ant_error_title">Ant+ plugin error</string>
     <string name="positive_button">Ok</string>
     <string name="pause_screen_title">Pause</string>
-    <string name="pause_screen_message">Start excersize if you want to continue</string>
+    <string name="pause_screen_message">Start exercise if you want to continue</string>
     <string name="finish_screen_title">Finish!</string>
     <string name="pause_screen_button_text">Back to overview</string>
     <string name="video_screen_distance">%d m</string>

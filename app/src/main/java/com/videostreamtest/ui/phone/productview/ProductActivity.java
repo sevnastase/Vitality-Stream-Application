@@ -1,18 +1,14 @@
 package com.videostreamtest.ui.phone.productview;
 
-import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -32,17 +28,16 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.receiver.BluetoothDeviceBroadcastListener;
 import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.productview.fragments.PlainScreenFragment;
 import com.videostreamtest.ui.phone.productview.fragments.TouchScreenFragment;
@@ -57,6 +52,11 @@ import com.videostreamtest.workers.DownloadSoundServiceWorker;
 import com.videostreamtest.workers.LocalMediaServerAvailableServiceWorker;
 import com.videostreamtest.workers.UpdateRegisteredMovieServiceWorker;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
@@ -97,6 +97,12 @@ public class ProductActivity extends AppCompatActivity {
         Product selectedProduct = new GsonBuilder().create().fromJson(getIntent().getExtras().getString("product_object", "{}"), Product.class);
         Log.d(ProductActivity.class.getSimpleName(), "Product ID Loaded: "+selectedProduct.getId());
 
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
+        Log.d(TAG, "Screen resolution: w:"+width+" h:"+height);
+
         //Set product logo in view
         Picasso.get()
                 .load(selectedProduct.getProductLogoButtonPath())
@@ -110,6 +116,9 @@ public class ProductActivity extends AppCompatActivity {
                 PermissionHelper.requestPermission(getApplicationContext(), this, currentConfig);
 
                 Log.d(getClass().getSimpleName(), "currentConfig pCount: "+currentConfig.getProductCount() + " Bundle pCount: 1");
+                LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Started Product: "+selectedProduct.getProductName(), "DEBUG", "");
+                LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Screensize: wxh: "+width+" x "+height, "DEBUG", "");
+                LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Localip: "+getLocalIpAddress(), "DEBUG", "");
 
                 Bundle arguments = getIntent().getExtras();
                 arguments.putString("communication_device", currentConfig.getCommunicationDevice());
@@ -365,5 +374,22 @@ public class ProductActivity extends AppCompatActivity {
             screensaverhandler.removeCallbacksAndMessages(null);
             startScreensaverHandler();
         }
+    }
+
+    public static String getLocalIpAddress() {
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
+                        return inetAddress.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            ex.printStackTrace();
+        }
+        return null;
     }
 }

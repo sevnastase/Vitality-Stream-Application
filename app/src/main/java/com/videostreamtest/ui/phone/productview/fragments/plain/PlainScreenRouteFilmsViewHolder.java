@@ -8,7 +8,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,6 +28,8 @@ import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import java.io.File;
 
 public class PlainScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder{
+    private static final String TAG = PlainScreenRouteFilmsViewHolder.class.getSimpleName();
+
     private CatalogRecyclerViewClickListener catalogRecyclerViewClickListener;
     private boolean localPlay;
     private Movie movie;
@@ -45,11 +46,6 @@ public class PlainScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder{
     public PlainScreenRouteFilmsViewHolder(@NonNull View itemView) {
         super(itemView);
         routefilmScenery = itemView.findViewById(R.id.routeImageCoverButton);
-        /*
-        TODO: Copy viewholder of current CatalogActivty -> @AvalailbleMediaViewHolder.java
-         This contains an indicator for use with a remote control (TV)
-         This does not contain a navigation arrow as it is not needed (no-touch)
-        */
     }
 
     public void bindStreamingMode(Routefilm routefilm, int position, Product selectedProduct, CommunicationDevice communicationDevice, LinearLayout routeInformationBlock, CatalogRecyclerViewClickListener catalogRecyclerViewClickListener){

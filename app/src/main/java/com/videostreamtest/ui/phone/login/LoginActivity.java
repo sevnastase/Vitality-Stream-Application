@@ -122,7 +122,7 @@ public class LoginActivity extends AppCompatActivity {
                             //Put ApiKey in sharedpreferences
                             SharedPreferences myPreferences = getApplication().getSharedPreferences("app",0);
                             SharedPreferences.Editor editor = myPreferences.edit();
-                            editor.putString("apiKey", accounttoken);
+                            editor.putString("apikey", accounttoken);
                             editor.commit();
 
                             Log.d(TAG, "Login accounttoken: "+accounttoken);
