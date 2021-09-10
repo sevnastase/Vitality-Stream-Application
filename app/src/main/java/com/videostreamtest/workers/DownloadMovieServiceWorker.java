@@ -79,7 +79,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
 
         accountToken = apikey;
 
-        LogHelper.WriteLogRule(getApplicationContext(), apikey, routefilm.getMovieTitle()+":DownloadMovieServiceWorker Started","DEBUG", "");
+//        LogHelper.WriteLogRule(getApplicationContext(), apikey, routefilm.getMovieTitle()+":DownloadMovieServiceWorker Started","DEBUG", "");
 
         if (accountToken==null||accountToken.isEmpty()){
             SharedPreferences myPreferences = getApplicationContext().getSharedPreferences("app",0);
@@ -96,7 +96,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             if (DownloadHelper.isWebserverReachable("178.62.194.237")) {
                 routefilm.setMovieUrl(routefilm.getMovieUrl().replace("https://praxmedia.praxtour.com/","http://178.62.194.237/"));
             } else {
-                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":CloudServerNotResponding", "ERROR", "");
+//                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":CloudServerNotResponding", "ERROR", "");
             }
         }
 
@@ -104,7 +104,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             if (DownloadHelper.isWebserverReachable(localMediaServerUrl)) {
                 routefilm.setMovieUrl(routefilm.getMovieUrl().replace("https://praxmedia.praxtour.com/","http://"+localMediaServerUrl+"/"));
             } else {
-                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":LocalServerNotResponding", "ERROR", "");
+//                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":LocalServerNotResponding", "ERROR", "");
             }
         }
 
@@ -124,7 +124,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         //Transform string json to object
         if (routefilm.getMovieFileSize() == -1) {
             Log.e(TAG, "No movie filesize available");
-            LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":No movie filesize available", "ERROR", "");
+//            LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":No movie filesize available", "ERROR", "");
             return Result.failure();
         }
 
@@ -139,7 +139,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
 
         if (canFileBeCopied(selectedVolume, totalDownloadSizeInBytes)) {
             try {
-                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Downloading started.", "INFO", "");
+//                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Downloading started.", "INFO", "");
                 //Movie
                 download(routefilm.getMovieUrl(), routefilm.getMovieFileSize(), String.valueOf(routefilm.getId()));
             } catch (IOException ioException) {
@@ -153,7 +153,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         } else {
             insertDownloadStatus(routefilm.getId(), -2);
             Log.e(TAG, "Cant copy file");
-            LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Not enough diskspace.", "ERROR", "");
+//            LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Not enough diskspace.", "ERROR", "");
             return Result.failure();
         }
         Data outputData = new Data.Builder()
@@ -199,7 +199,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             }
         } else {
             Log.e(TAG, "We're doomed");
-            LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Volume doesnt exist.", "ERROR", "");
+//            LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Volume doesnt exist.", "ERROR", "");
             return;
         }
 
