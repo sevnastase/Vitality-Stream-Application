@@ -118,7 +118,7 @@ public class ProductActivity extends AppCompatActivity {
                 Log.d(getClass().getSimpleName(), "currentConfig pCount: "+currentConfig.getProductCount() + " Bundle pCount: 1");
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Started Product: "+selectedProduct.getProductName(), "DEBUG", "");
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Screensize: wxh: "+width+" x "+height, "DEBUG", "");
-                LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Localip: "+getLocalIpAddress(), "DEBUG", "");
+                LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Localip: "+DownloadHelper.getLocalIpAddress(), "DEBUG", "");
 
                 Bundle arguments = getIntent().getExtras();
                 arguments.putString("communication_device", currentConfig.getCommunicationDevice());
@@ -281,7 +281,7 @@ public class ProductActivity extends AppCompatActivity {
                             totalMovieFileSizeOnDisk += routefilm.getMovieFileSize();
                         }
 
-                        if (DownloadHelper.canFileBeCopied(getApplicationContext(), totalMovieFileSizeOnDisk)) {
+                        if (DownloadHelper.canFileBeCopiedToLargestVolume(getApplicationContext(), totalMovieFileSizeOnDisk)) {
                             for (Routefilm routefilm : routefilms) {
                                 if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
                                     Constraints constraint = new Constraints.Builder()
@@ -374,22 +374,5 @@ public class ProductActivity extends AppCompatActivity {
             screensaverhandler.removeCallbacksAndMessages(null);
             startScreensaverHandler();
         }
-    }
-
-    public static String getLocalIpAddress() {
-        try {
-            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
-                NetworkInterface intf = en.nextElement();
-                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
-                    InetAddress inetAddress = enumIpAddr.nextElement();
-                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
-                        return inetAddress.getHostAddress();
-                    }
-                }
-            }
-        } catch (SocketException ex) {
-            ex.printStackTrace();
-        }
-        return null;
     }
 }

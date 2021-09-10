@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.utils.ApplicationSettings;
-import com.videostreamtest.workers.DownloadMovieServiceWorker;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,12 +19,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 public class DownloadHelper {
@@ -391,7 +395,7 @@ public class DownloadHelper {
         File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context, null);
         long space = 0;
         for (File externalStorageVolume: externalStorageVolumes) {
-            Log.d(DownloadMovieServiceWorker.class.getSimpleName(), externalStorageVolume.getAbsolutePath() + " >> Total Space ::  "+externalStorageVolume.getTotalSpace());
+            Log.d(DownloadHelper.class.getSimpleName(), externalStorageVolume.getAbsolutePath() + " >> Total Space ::  "+externalStorageVolume.getTotalSpace());
             if (externalStorageVolume.getTotalSpace() > space) {
                 space = externalStorageVolume.getTotalSpace();
                 selectedVolume = externalStorageVolume;
@@ -406,8 +410,8 @@ public class DownloadHelper {
      * @param fileSize
      * @return boolean
      */
-    public static boolean canFileBeCopied(Context context, long fileSize) {
-        return (selectStorageVolumeWithLargestFreeSpace(context).getFreeSpace() > fileSize);
+    public static boolean canFileBeCopiedToLargestVolume(Context context, long fileSize) {
+        return (selectLargestStorageVolume(context).getFreeSpace() > fileSize);
     }
 
     public static File searchMoviefolder(File boxFolder, Movie selectedMovie) {
@@ -508,5 +512,48 @@ public class DownloadHelper {
             }
         }
         return false;
+    }
+
+    public static String getLocalIpAddress() {
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
+                        return inetAddress.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
+    public static boolean isLocalMediaServerInSameNetwork(final String localMediaServerIp) {
+        final String localip = getLocalIpAddress();
+        final String localDeviceSubNetAddress = localip.substring(0, localip.lastIndexOf("."));
+        return localMediaServerIp.contains(localDeviceSubNetAddress);
+    }
+
+    public static boolean isWebserverReachable(final String ipAddress) {
+        boolean isReachable = false;
+        try {
+            SocketAddress sockaddr = new InetSocketAddress(ipAddress, 80);
+            // Create an unbound socket
+            Socket sock = new Socket();
+
+            // This method will block no more than timeoutMs.
+            // If the timeout occurs, SocketTimeoutException is thrown.
+            int timeoutMs = 2000;   // 2 seconds
+            sock.connect(sockaddr, timeoutMs);
+                isReachable = true;
+            sock.close();
+            sockaddr = null;
+        } catch (IOException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        }
+        return isReachable;
     }
 }

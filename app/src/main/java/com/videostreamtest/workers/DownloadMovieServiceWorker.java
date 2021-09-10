@@ -35,15 +35,11 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
-import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
-import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
-import retrofit2.http.Path;
-import retrofit2.http.Query;
 
 import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_URL;
 
@@ -79,6 +75,8 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         String inputDataString = inputData.getString(INPUT_ROUTEFILM_JSON_STRING); // Movie object json
         String outputFile = inputData.getString(OUTPUT_FILE_NAME); // default folder
         final String apikey = getInputData().getString("apikey");
+        final String localMediaServerUrl = getInputData().getString("localMediaServer");
+
         accountToken = apikey;
 
         if (accountToken==null||accountToken.isEmpty()){
@@ -91,6 +89,23 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         if (DownloadHelper.isMoviePresent(getApplicationContext(), routefilm)) {
             return Result.success();
         }
+
+        if (routefilm.getMovieUrl().contains("https://praxmedia.praxtour.com/")) {
+            if (DownloadHelper.isWebserverReachable("178.62.194.237")) {
+                routefilm.setMovieUrl(routefilm.getMovieUrl().replace("https://praxmedia.praxtour.com/","http://178.62.194.237/"));
+            } else {
+                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":CloudServerNotResponding", "ERROR", "");
+            }
+        }
+
+        if (DownloadHelper.isLocalMediaServerInSameNetwork(localMediaServerUrl)) {
+            if (DownloadHelper.isWebserverReachable(localMediaServerUrl)) {
+                routefilm.setMovieUrl(routefilm.getMovieUrl().replace("https://praxmedia.praxtour.com/","http://"+localMediaServerUrl+"/"));
+            } else {
+                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":LocalServerNotResponding", "ERROR", "");
+            }
+        }
+
 
         /*
         TODO: Requirements for downloading:
