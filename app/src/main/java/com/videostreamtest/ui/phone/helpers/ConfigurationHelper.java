@@ -147,7 +147,7 @@ public class ConfigurationHelper {
         return versionCode;
     }
 
-    public static PackageInfo getLocalUpdatePackageInfo(Context context) {
+    public static PackageInfo getLocalUpdatePackageInfo(final Context context) {
         final PackageManager pm = context.getPackageManager();
 //      String apkName = "example.apk";//for example, remove later
         String fullPath = "/error";

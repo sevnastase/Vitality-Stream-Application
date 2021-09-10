@@ -10,6 +10,7 @@ import androidx.work.WorkerParameters;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.data.model.Movie;
+import com.videostreamtest.ui.phone.helpers.LogHelper;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -20,6 +21,7 @@ public class LocalMediaServerAvailableServiceWorker extends Worker {
 
     private Movie routefilm;
     private String localMediaServerUrl;
+    private String apikey;
 
     public LocalMediaServerAvailableServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -31,6 +33,9 @@ public class LocalMediaServerAvailableServiceWorker extends Worker {
         Data inputData = getInputData();
         String inputDataString = inputData.getString(INPUT_ROUTEFILM_JSON_STRING); // Movie object json
         localMediaServerUrl = inputData.getString("localMediaServer");
+        apikey = inputData.getString("apikey");
+
+        LogHelper.WriteLogRule(getApplicationContext(), apikey, routefilm.getMovieTitle()+":LocalMediaCheck Started","DEBUG", "");
 
         routefilm = new Gson().fromJson(inputDataString, Movie.class);
 

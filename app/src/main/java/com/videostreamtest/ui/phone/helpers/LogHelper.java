@@ -4,6 +4,7 @@ import android.content.Context;
 
 import androidx.work.Constraints;
 import androidx.work.Data;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
@@ -37,5 +38,6 @@ public class LogHelper {
         WorkManager
                 .getInstance(applicationContext)
                 .enqueue(writeLogRequest);
+//        .enqueueUniqueWork("logger", ExistingWorkPolicy.KEEP, writeLogRequest);
     }
 }

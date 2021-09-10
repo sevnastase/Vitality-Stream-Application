@@ -107,7 +107,7 @@ public class DownloadMovieImagesServiceWorker extends Worker implements Progress
 
         if (selectedVolume.exists()) {
 
-            Log.d(DownloadMovieServiceWorker.class.getSimpleName(), "Free space selectedVolume: "+selectedVolume.getFreeSpace());
+            Log.d(DownloadMovieImagesServiceWorker.class.getSimpleName(), "Free space selectedVolume: "+selectedVolume.getFreeSpace());
 
             //Create main folder on external storage
             if (new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER).exists() &&

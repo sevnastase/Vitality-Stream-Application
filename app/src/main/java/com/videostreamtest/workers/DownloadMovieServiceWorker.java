@@ -79,6 +79,8 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
 
         accountToken = apikey;
 
+        LogHelper.WriteLogRule(getApplicationContext(), apikey, routefilm.getMovieTitle()+":DownloadMovieServiceWorker Started","DEBUG", "");
+
         if (accountToken==null||accountToken.isEmpty()){
             SharedPreferences myPreferences = getApplicationContext().getSharedPreferences("app",0);
             accountToken = myPreferences.getString("apikey", "unauthorized");

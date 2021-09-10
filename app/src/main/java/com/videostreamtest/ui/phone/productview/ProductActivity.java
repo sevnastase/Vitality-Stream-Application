@@ -281,9 +281,13 @@ public class ProductActivity extends AppCompatActivity {
                             totalMovieFileSizeOnDisk += routefilm.getMovieFileSize();
                         }
 
+                        LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(), "Movie download setup for Download","DEBUG", "");
+
                         if (DownloadHelper.canFileBeCopiedToLargestVolume(getApplicationContext(), totalMovieFileSizeOnDisk)) {
-                            for (Routefilm routefilm : routefilms) {
+                            for (final Routefilm routefilm : routefilms) {
                                 if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
+                                    LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(), routefilm.getMovieTitle()+":Movie setup for Download","DEBUG", "");
+
                                     Constraints constraint = new Constraints.Builder()
                                             .setRequiredNetworkType(NetworkType.CONNECTED)
                                             .build();
@@ -291,12 +295,7 @@ public class ProductActivity extends AppCompatActivity {
                                     Data.Builder mediaDownloader = new Data.Builder();
                                     mediaDownloader.putString("INPUT_ROUTEFILM_JSON_STRING", new GsonBuilder().create().toJson(Movie.fromRoutefilm(routefilm), Movie.class));
                                     mediaDownloader.putString("localMediaServer", currentConfig.getPraxCloudMediaServerLocalUrl());
-
-                                    OneTimeWorkRequest availabilityWorker = new OneTimeWorkRequest.Builder(LocalMediaServerAvailableServiceWorker.class)
-                                            .setConstraints(constraint)
-                                            .setInputData(mediaDownloader.build())
-                                            .addTag("local-" + routefilm.getMovieId())
-                                            .build();
+                                    mediaDownloader.putString("apikey", currentConfig.getAccountToken());
 
                                     OneTimeWorkRequest oneTimeWorkRequest = new OneTimeWorkRequest.Builder(DownloadMovieServiceWorker.class)
                                             .setConstraints(constraint)
@@ -305,9 +304,10 @@ public class ProductActivity extends AppCompatActivity {
                                             .build();
 
                                     WorkManager.getInstance(this)
-                                            .beginUniqueWork("download-movie-" + routefilm.getMovieId(), ExistingWorkPolicy.KEEP, availabilityWorker)
-                                            .then(oneTimeWorkRequest)
+                                            .beginUniqueWork("download-movie-" + routefilm.getMovieId(), ExistingWorkPolicy.KEEP, oneTimeWorkRequest)
                                             .enqueue();
+                                } else {
+                                    LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(), routefilm.getMovieTitle()+":Movie already present","DEBUG", "");
                                 }
                             }
                         } else {
