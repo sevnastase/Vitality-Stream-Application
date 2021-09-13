@@ -516,13 +516,11 @@ public class BleService extends Service {
 
                     if(result != null && result.getDevice()!=null && result.getDevice().getAddress()!=null) {
                         if (finalizedBleDeviceAddress.equals(result.getDevice().getAddress())) {
+                            bluetoothGatt.disconnect();
                             bluetoothGatt = result.getDevice().connectGatt(BleService.this, true, gattCallback, BluetoothDevice.TRANSPORT_LE);
                         }
                     }
                 }
-
-                //0000180a-0000-1000-8000-00805f9b34fb
-                //0000fc00-0000-1000-8000-00805f9b34fb
 
                 @Override
                 public void onBatchScanResults(List<ScanResult> results) {
@@ -538,11 +536,6 @@ public class BleService extends Service {
             });
 
         });
-//        String bleDeviceAddress = "";
-        if (bluetoothDefaultDeviceList.size()>0) {
-//            bleDeviceAddress =
-                    Log.d(TAG, "Address/Name of Default BLE Device: "+bluetoothDefaultDeviceList.get(0).getBleAddress()+"/"+bluetoothDefaultDeviceList.get(0).getBleName());
-        }
 
 //        if (!bleDeviceAddress.isEmpty() && bleDeviceAddress != "") {
 //            final String deviceAddress = bleDeviceAddress;

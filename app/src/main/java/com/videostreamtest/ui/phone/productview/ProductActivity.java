@@ -49,14 +49,8 @@ import com.videostreamtest.workers.DownloadMovieImagesServiceWorker;
 import com.videostreamtest.workers.DownloadMovieServiceWorker;
 import com.videostreamtest.workers.DownloadRoutepartsServiceWorker;
 import com.videostreamtest.workers.DownloadSoundServiceWorker;
-import com.videostreamtest.workers.LocalMediaServerAvailableServiceWorker;
 import com.videostreamtest.workers.UpdateRegisteredMovieServiceWorker;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
@@ -286,8 +280,6 @@ public class ProductActivity extends AppCompatActivity {
                         if (DownloadHelper.canFileBeCopiedToLargestVolume(getApplicationContext(), totalMovieFileSizeOnDisk)) {
                             for (final Routefilm routefilm : routefilms) {
                                 if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
-                                    LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(), routefilm.getMovieTitle()+":Movie setup for Download","DEBUG", "");
-
                                     Constraints constraint = new Constraints.Builder()
                                             .setRequiredNetworkType(NetworkType.CONNECTED)
                                             .build();

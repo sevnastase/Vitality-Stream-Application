@@ -920,7 +920,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         Log.d(TAG, "TimeLineEventHandler started!");
 
         HandlerThread thread = new HandlerThread("TimeLineEventHandlerStart",
-                Process.THREAD_PRIORITY_BACKGROUND);
+                Process.THREAD_PRIORITY_URGENT_DISPLAY);
         thread.start();
 
         Handler timelineHandler = new Handler(thread.getLooper());

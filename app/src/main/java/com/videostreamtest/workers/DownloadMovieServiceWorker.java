@@ -24,8 +24,8 @@ import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.StandAloneDownloadStatus;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.request.MovieDownloadProgress;
+import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
-import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import java.io.File;
@@ -35,6 +35,9 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
@@ -50,17 +53,20 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
 
     private NotificationManager notificationManager;
 
+    private DatabaseRestService databaseRestService;
+
     private long totalDownloadSizeInBytes = 0;
     private long totalDownloadedSizeInBytes = 0;
 
     private File selectedVolume;
     private Movie routefilm;
-
     private String accountToken = "";
+
+    private int currentDownloadProgress = 0;
 
     public interface PraxCloud {
         @POST("/api/route/downloadprogress")
-        void updateDownloadProgress(@Body MovieDownloadProgress progress, @Header("api-key") String accountToken);
+        Call<com.videostreamtest.data.model.response.Result> updateDownloadProgress(@Body MovieDownloadProgress progress, @Header("api-key") String accountToken);
     }
 
     public DownloadMovieServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -78,15 +84,17 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         final String localMediaServerUrl = getInputData().getString("localMediaServer");
 
         accountToken = apikey;
+        routefilm = new Gson().fromJson(inputDataString, Movie.class);
 
-//        LogHelper.WriteLogRule(getApplicationContext(), apikey, routefilm.getMovieTitle()+":DownloadMovieServiceWorker Started","DEBUG", "");
+        //Define which services you need
+        databaseRestService = new DatabaseRestService();
+        //Execute write log to cloud
+        databaseRestService.writeLog(apikey, routefilm.getMovieTitle()+":DownloadMovieServiceWorker Started","DEBUG", "");
 
         if (accountToken==null||accountToken.isEmpty()){
             SharedPreferences myPreferences = getApplicationContext().getSharedPreferences("app",0);
             accountToken = myPreferences.getString("apikey", "unauthorized");
         }
-
-        routefilm = new Gson().fromJson(inputDataString, Movie.class);
 
         if (DownloadHelper.isMoviePresent(getApplicationContext(), routefilm)) {
             return Result.success();
@@ -96,7 +104,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             if (DownloadHelper.isWebserverReachable("178.62.194.237")) {
                 routefilm.setMovieUrl(routefilm.getMovieUrl().replace("https://praxmedia.praxtour.com/","http://178.62.194.237/"));
             } else {
-//                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":CloudServerNotResponding", "ERROR", "");
+                databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":CloudServerNotResponding", "ERROR", "");
             }
         }
 
@@ -104,7 +112,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             if (DownloadHelper.isWebserverReachable(localMediaServerUrl)) {
                 routefilm.setMovieUrl(routefilm.getMovieUrl().replace("https://praxmedia.praxtour.com/","http://"+localMediaServerUrl+"/"));
             } else {
-//                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":LocalServerNotResponding", "ERROR", "");
+                databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":LocalServerNotResponding", "ERROR", "");
             }
         }
 
@@ -124,7 +132,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         //Transform string json to object
         if (routefilm.getMovieFileSize() == -1) {
             Log.e(TAG, "No movie filesize available");
-//            LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":No movie filesize available", "ERROR", "");
+            databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":No movie filesize available", "ERROR", "");
             return Result.failure();
         }
 
@@ -133,27 +141,27 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
 
         if (selectedVolume.getTotalSpace()< ApplicationSettings.MINIMUM_DISK_SPACE_BYTES) {
             Log.e(TAG, "Disk not big enough for standalone subscription.");
-            LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Disk not big enough for standalone subscription.", "ERROR", "");
+            databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":Disk not big enough for standalone subscription.", "ERROR", "");
             return Result.failure();
         }
 
         if (canFileBeCopied(selectedVolume, totalDownloadSizeInBytes)) {
             try {
-//                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Downloading started.", "INFO", "");
+                databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":Downloading started.", "INFO", "");
                 //Movie
                 download(routefilm.getMovieUrl(), routefilm.getMovieFileSize(), String.valueOf(routefilm.getId()));
             } catch (IOException ioException) {
                 Log.e(TAG, ioException.getLocalizedMessage());
                 Log.e(TAG, "Error downloading");
-                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Error downloading.", "ERROR", "");
-                LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":"+ioException.getLocalizedMessage(), "ERROR", "");
+                databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":Error downloading.", "ERROR", "");
+                databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":"+ioException.getLocalizedMessage(), "ERROR", "");
 
                 return Result.failure();
             }
         } else {
             insertDownloadStatus(routefilm.getId(), -2);
             Log.e(TAG, "Cant copy file");
-//            LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Not enough diskspace.", "ERROR", "");
+            databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":Not enough diskspace.", "ERROR", "");
             return Result.failure();
         }
         Data outputData = new Data.Builder()
@@ -199,7 +207,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             }
         } else {
             Log.e(TAG, "We're doomed");
-//            LogHelper.WriteLogRule(getApplicationContext(), accountToken, routefilm.getMovieTitle()+":Volume doesnt exist.", "ERROR", "");
+            databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":Volume doesnt exist.", "ERROR", "");
             return;
         }
 
@@ -223,21 +231,48 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
      * @param downloadProgress
      */
     private void insertDownloadStatus(int movieId, int downloadProgress) {
-        StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
-        standAloneDownloadStatus.setDownloadMovieId(movieId);
-        standAloneDownloadStatus.setMovieId(movieId);
-        standAloneDownloadStatus.setDownloadStatus(downloadProgress);
+        if (downloadProgress > currentDownloadProgress) {
+            StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
+            standAloneDownloadStatus.setDownloadMovieId(movieId);
+            standAloneDownloadStatus.setMovieId(movieId);
+            standAloneDownloadStatus.setDownloadStatus(downloadProgress);
 
-        PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(standAloneDownloadStatus);
+            PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(standAloneDownloadStatus);
 
-        //SEND UPDATE OF PROGRESS TO SERVER FOR OVERVIEW OF PROGRESS IN CRM
-//        sendProgressToPraxCloud(String accountToken, int movieId, int roundedDownloadProgress);
+            //SEND UPDATE OF PROGRESS TO SERVER FOR OVERVIEW OF PROGRESS IN CRM
+    //        sendProgressToPraxCloud(String accountToken, int movieId, int roundedDownloadProgress);
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(PRAXCLOUD_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        PraxCloud praxCloud = retrofit.create(PraxCloud.class);
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(PRAXCLOUD_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+            PraxCloud praxCloud = retrofit.create(PraxCloud.class);
+
+            MovieDownloadProgress movieDownloadProgress = new MovieDownloadProgress();
+            movieDownloadProgress.setAccountToken(accountToken);
+            movieDownloadProgress.setRoundedDownloadProgress(downloadProgress);
+            movieDownloadProgress.setMovieId(movieId);
+
+            //SYNCHRONOUS
+            //praxCloud.updateDownloadProgress(movieDownloadProgress, accountToken);
+
+            //ASYNCHRONOUS
+            Call<com.videostreamtest.data.model.response.Result> call = praxCloud.updateDownloadProgress(movieDownloadProgress, accountToken);
+            call.enqueue(new Callback<com.videostreamtest.data.model.response.Result>() {
+                @Override
+                public void onResponse(Call<com.videostreamtest.data.model.response.Result> call, Response<com.videostreamtest.data.model.response.Result> response) {
+
+                    Log.d("CallBack", " response is " + response);
+                }
+
+                @Override
+                public void onFailure(Call<com.videostreamtest.data.model.response.Result> call, Throwable t) {
+
+                    Log.d("CallBack", " Throwable is " + t);
+                }
+            });
+            currentDownloadProgress = downloadProgress;
+        }
 
     }
 
