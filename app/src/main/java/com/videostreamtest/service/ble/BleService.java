@@ -516,7 +516,9 @@ public class BleService extends Service {
 
                     if(result != null && result.getDevice()!=null && result.getDevice().getAddress()!=null) {
                         if (finalizedBleDeviceAddress.equals(result.getDevice().getAddress())) {
-                            bluetoothGatt.disconnect();
+                            if (bluetoothGatt != null) {
+                                bluetoothGatt.disconnect();
+                            }
                             bluetoothGatt = result.getDevice().connectGatt(BleService.this, true, gattCallback, BluetoothDevice.TRANSPORT_LE);
                         }
                     }
