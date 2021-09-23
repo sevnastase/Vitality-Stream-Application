@@ -3,12 +3,21 @@ package com.videostreamtest.ui.phone.productview.fragments.touch;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Process;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import fr.bmartel.speedtest.SpeedTestReport;
+import fr.bmartel.speedtest.SpeedTestSocket;
+import fr.bmartel.speedtest.inter.ISpeedTestListener;
+import fr.bmartel.speedtest.model.SpeedTestError;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,8 +32,10 @@ import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.ui.phone.catalog.CatalogRecyclerViewClickListener;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.productview.fragments.RouteInformationFragment;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
+import com.videostreamtest.utils.ApplicationSettings;
 
 import java.io.File;
 
@@ -163,7 +174,56 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
                 final Intent videoPlayer = new Intent(itemView.getContext(), VideoplayerActivity.class);
                 videoPlayer.putExtras(arguments);
 
-                itemView.getContext().startActivity(videoPlayer);
+                //Perform speed check
+
+                HandlerThread thread = new HandlerThread("Speedtest",
+                        Process.THREAD_PRIORITY_MORE_FAVORABLE);
+                thread.start();
+
+                Handler speedtestHandler = new Handler(thread.getLooper());
+                Runnable runnableSpeedTest = new Runnable() {
+                    @Override
+                    public void run() {
+                        SpeedTestSocket speedTestSocket = new SpeedTestSocket();
+
+                        // add a listener to wait for speedtest completion and progress
+                        speedTestSocket.addSpeedTestListener(new ISpeedTestListener() {
+
+                            @Override
+                            public void onCompletion(final SpeedTestReport report) {
+                                // called when download/upload is finished
+                                Log.v("speedtest", "[COMPLETED] rate in octet/s : " + report.getTransferRateOctet());
+                                Log.v("speedtest", "[COMPLETED] rate in bit/s   : " + report.getTransferRateBit());
+                                if (report.getTransferRateBit().intValue() > ApplicationSettings.SPEEDTEST_MINIMUM_SPEED.intValue()) {
+                                    itemView.getContext().startActivity(videoPlayer);
+                                } else {
+                                    LogHelper.WriteLogRule(itemView.getContext(), routefilm.getAccountToken(), "Internet Speed to low at starting movie: "+movie.getMovieTitle(), "ERROR", "");
+                                    Toast.makeText(itemView.getContext(), "Internet speed not sufficient enough" , Toast.LENGTH_LONG).show();
+                                }
+                            }
+
+                            @Override
+                            public void onError(SpeedTestError speedTestError, String errorMessage) {
+                                // called when a download/upload error occur
+                                LogHelper.WriteLogRule(itemView.getContext(), routefilm.getAccountToken(), errorMessage, "ERROR", "");
+                                Toast.makeText(itemView.getContext(), "An error occured!" , Toast.LENGTH_LONG).show();
+                            }
+
+                            @Override
+                            public void onProgress(float percent, SpeedTestReport report) {
+                                // called to notify download/upload progress
+                                Log.v("speedtest", "[PROGRESS] progress : " + percent + "%");
+                                Log.v("speedtest", "[PROGRESS] rate in octet/s : " + report.getTransferRateOctet());
+                                Log.v("speedtest", "[PROGRESS] rate in bit/s   : " + report.getTransferRateBit());
+                            }
+                        });
+
+                        speedTestSocket.startDownload("http://praxmedia.praxtour.com/1M.iso");
+                    }
+                };
+                speedtestHandler.postDelayed(runnableSpeedTest,0);
+
+
             }
         });
     }

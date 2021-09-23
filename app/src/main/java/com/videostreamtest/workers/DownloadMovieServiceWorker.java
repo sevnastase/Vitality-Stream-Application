@@ -100,9 +100,9 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             return Result.success();
         }
 
-        if (routefilm.getMovieUrl().contains("https://praxmedia.praxtour.com/")) {
+        if (routefilm.getMovieUrl().contains("http://praxmedia.praxtour.com/")) {
             if (DownloadHelper.isWebserverReachable("178.62.194.237")) {
-                routefilm.setMovieUrl(routefilm.getMovieUrl().replace("https://praxmedia.praxtour.com/","http://178.62.194.237/"));
+                routefilm.setMovieUrl(routefilm.getMovieUrl().replace("http://praxmedia.praxtour.com/","http://178.62.194.237/"));
             } else {
                 databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":CloudServerNotResponding", "ERROR", "");
             }
@@ -110,7 +110,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
 
         if (DownloadHelper.isLocalMediaServerInSameNetwork(localMediaServerUrl)) {
             if (DownloadHelper.isWebserverReachable(localMediaServerUrl)) {
-                routefilm.setMovieUrl(routefilm.getMovieUrl().replace("https://praxmedia.praxtour.com/","http://"+localMediaServerUrl+"/"));
+                routefilm.setMovieUrl(routefilm.getMovieUrl().replace("http://praxmedia.praxtour.com/","http://"+localMediaServerUrl+"/"));
             } else {
                 databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":LocalServerNotResponding", "ERROR", "");
             }

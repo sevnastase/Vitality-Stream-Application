@@ -40,7 +40,7 @@ public class NetworkInfoWorker extends Worker {
 
     public boolean isInternetAvailable() {
         try {
-            InetAddress ipAddr = InetAddress.getByName("https://praxmedia.praxtour.com/");
+            InetAddress ipAddr = InetAddress.getByName("http://praxmedia.praxtour.com/");
             boolean isActive = ipAddr.isReachable(200);
             //You can replace it with your name
             return isActive;

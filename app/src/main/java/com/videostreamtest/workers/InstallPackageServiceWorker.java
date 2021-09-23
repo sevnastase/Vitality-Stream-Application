@@ -30,7 +30,7 @@ import java.nio.channels.ReadableByteChannel;
 
 public class InstallPackageServiceWorker extends Worker implements ProgressCallBack{
     private final static String TAG = InstallPackageServiceWorker.class.getSimpleName();
-    private static final String UPDATE_URL = "https://praxmedia.praxtour.com/app";
+    private static final String UPDATE_URL = "http://praxmedia.praxtour.com/app";
 
     private File selectedVolume;
 

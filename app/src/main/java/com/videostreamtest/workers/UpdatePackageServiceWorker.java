@@ -34,7 +34,7 @@ public class UpdatePackageServiceWorker extends Worker {
     private static final String TAG = UpdatePackageServiceWorker.class.getSimpleName();
 
     private static final String UPDATE_INFO_FILE = "/output-metadata.json";
-    private static final String UPDATE_URL = "https://praxmedia.praxtour.com/app";
+    private static final String UPDATE_URL = "http://praxmedia.praxtour.com/app";
 
     private File selectedVolume;
     private int onlineVersion = -1;

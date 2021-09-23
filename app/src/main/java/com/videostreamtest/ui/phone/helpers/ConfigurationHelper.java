@@ -21,7 +21,6 @@ import com.videostreamtest.workers.ActiveProductMovieLinksServiceWorker;
 import com.videostreamtest.workers.ActiveProductsServiceWorker;
 import com.videostreamtest.workers.AvailableMediaServiceWorker;
 import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
-import com.videostreamtest.workers.NetworkInfoWorker;
 import com.videostreamtest.workers.ProfileServiceWorker;
 import com.videostreamtest.workers.SoundInformationServiceWorker;
 
@@ -43,14 +42,6 @@ public class ConfigurationHelper {
     public static void loadExternalData(Context context, final String accountToken) {
         Constraints constraint = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build();
-
-        //NetworkInfo
-        Data.Builder networkData = new Data.Builder();
-        OneTimeWorkRequest networkInfoRequest = new OneTimeWorkRequest.Builder(NetworkInfoWorker.class)
-                .setConstraints(constraint)
-                .setInputData(networkData.build())
-                .addTag("connection-status")
                 .build();
 
         //Account Configuration
