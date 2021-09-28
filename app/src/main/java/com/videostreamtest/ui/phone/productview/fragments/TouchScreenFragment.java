@@ -1,6 +1,9 @@
 package com.videostreamtest.ui.phone.productview.fragments;
 
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,6 +72,23 @@ public class TouchScreenFragment extends Fragment {
         preCachingLayoutManager.setItemPrefetchEnabled(true);
         preCachingLayoutManager.setExtraLayoutSpace(60);
         recyclerView.setLayoutManager(preCachingLayoutManager);
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
+
+        float recyclerviewHeight = (height * 0.6f);
+        recyclerView.setMinimumHeight((int)recyclerviewHeight);
+        Log.d(TouchScreenFragment.class.getSimpleName(), "RecyclerView Minimum Height: "+recyclerView.getMinimumHeight());
+
+//        recyclerView.setMinimumHeight((int) TypedValue.applyDimension(
+//                TypedValue.COMPLEX_UNIT_DIP, 400, getActivity()
+//                        .getResources().getDisplayMetrics()));
+        Log.d(TouchScreenFragment.class.getSimpleName(), "RecyclerView Minimum Height typedval: "+recyclerView.getMinimumHeight());
+        Log.d(TouchScreenFragment.class.getSimpleName(), "Density Qualifier: "+displayMetrics.densityDpi);
+        Log.d(TouchScreenFragment.class.getSimpleName(), "Density X Qualifier: "+displayMetrics.xdpi);
+        Log.d(TouchScreenFragment.class.getSimpleName(), "Density Y Qualifier: "+displayMetrics.ydpi);
 
         navigationLeftArrow.setOnClickListener(onClickView ->{
             setNavigationLeftArrow();
@@ -147,7 +167,7 @@ public class TouchScreenFragment extends Fragment {
                         if (pmsList.size()>0 && allRoutefilms.size()>0) {
                             for (Routefilm routefilm: allRoutefilms) {
                                 for (ProductMovie productMovie: pmsList) {
-                                    if (routefilm.getMovieId() == productMovie.getMovieId()) {
+                                    if (routefilm.getMovieId().intValue() == productMovie.getMovieId().intValue()) {
                                         filteredRoutefilmList.add(routefilm);
                                     }
                                 }
