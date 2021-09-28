@@ -104,6 +104,10 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
                         routefilmDao.insert(routefilm);
                     }
                 }
+            } else {
+                for (final Movie routefilm:externalRoutefilms) {
+                    routefilmDao.insert(Routefilm.fromMovie(routefilm, apikey));
+                }
             }
         }
 
@@ -133,7 +137,7 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
     private boolean isMovieMarkedForRemovalInLocalDatabase(final Routefilm localRoutefilm, final List<Movie> externalMovieList) {
         if (externalMovieList.size()>0) {
             for (final Movie externalMovie:externalMovieList) {
-                if (localRoutefilm.getMovieId()==externalMovie.getId()) {
+                if (localRoutefilm.getMovieId().intValue()==externalMovie.getId().intValue()) {
                     return false;
                 }
             }
