@@ -125,6 +125,8 @@ public class VideoplayerActivity extends AppCompatActivity {
     private LinearLayout statusDialog;
     private RelativeLayout loadingView;
 
+    private Button backToOverview;
+
     private int minSecondsLoadingView = 7;
     private boolean isLoading = true;
     private boolean sensorConnected = false;
@@ -436,11 +438,10 @@ public class VideoplayerActivity extends AppCompatActivity {
         setUp();
 
         //Pause screen init
-        final Button backToOverview = findViewById(R.id.status_dialog_return_home_button);
+        backToOverview = findViewById(R.id.status_dialog_return_home_button);
         backToOverview.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                releasePlayers();
                 finish();
             }
         });
@@ -634,7 +635,6 @@ public class VideoplayerActivity extends AppCompatActivity {
         finishFlag.setVisibility(View.GONE);
 
         videoPlayerViewModel.setStatusbarVisible(false);
-        Button backToOverview = findViewById(R.id.status_dialog_return_home_button);
         backToOverview.requestFocus();
 
         videoPlayer.setPlayWhenReady(false);
@@ -660,7 +660,6 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         if (routePaused) {
             videoPlayerViewModel.setStatusbarVisible(false);
-            Button backToOverview = findViewById(R.id.status_dialog_return_home_button);
             backToOverview.requestFocus();
         } else {
             videoPlayerViewModel.setStatusbarVisible(true);
