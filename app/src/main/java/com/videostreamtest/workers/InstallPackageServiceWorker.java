@@ -2,6 +2,7 @@ package com.videostreamtest.workers;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.BuildConfig;
+import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -33,6 +35,7 @@ public class InstallPackageServiceWorker extends Worker implements ProgressCallB
     private static final String UPDATE_URL = "http://praxmedia.praxtour.com/app";
 
     private File selectedVolume;
+    private DatabaseRestService databaseRestService = new DatabaseRestService();
 
     public InstallPackageServiceWorker(@NonNull @NotNull Context context, @NonNull @NotNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -44,8 +47,15 @@ public class InstallPackageServiceWorker extends Worker implements ProgressCallB
     public Result doWork() {
         final boolean updateAvailable = getInputData().getBoolean("update", false);
         final String updateFileName = getInputData().getString("updatefilename");
+        SharedPreferences myPreferences = getApplicationContext().getSharedPreferences("app",0);
+        final String apikey = myPreferences.getString("apikey", "");
 
         if (updateAvailable) {
+            //REMOVE ANY UPDATE FILE IF PRESENT
+            if (new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()).exists()) {
+                new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()).delete();
+            }
+
             selectedVolume = DownloadHelper.selectStorageVolumeWithLargestFreeSpace(getApplicationContext());
             try {
                 //download online file to local update folder
@@ -69,6 +79,10 @@ public class InstallPackageServiceWorker extends Worker implements ProgressCallB
                     //DELETE LOCAL UPDATE
                     new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()).delete();
                 } else {
+                    if (apikey != null && apikey != ""){
+                        databaseRestService.writeLog(apikey, "UPDATE FOUND AND REQUESTING INSTALLATION", "DEBUG", "");
+                    }
+
                     //REQUEST TO INSTALL UPDATE TO USER
                     Uri contentUri = FileProvider.getUriForFile(
                             getApplicationContext(),

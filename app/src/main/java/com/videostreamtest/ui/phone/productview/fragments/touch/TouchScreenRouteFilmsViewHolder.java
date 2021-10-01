@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -141,7 +142,12 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
         //Set product image in button
         Picasso.get()
                 .load(movie.getMovieImagepath())
-                .resize(180, 242)
+                .resize((int) TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP, 120, itemView.getContext()
+                                .getResources().getDisplayMetrics()), (int) TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP, 164, itemView.getContext()
+                                .getResources().getDisplayMetrics()))
+//                .resize(180, 242)
                 .placeholder(R.drawable.download_from_cloud_scenery)
                 .error(R.drawable.download_from_cloud_scenery)
                 .into(routefilmScenery);
@@ -205,8 +211,8 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
                             @Override
                             public void onError(SpeedTestError speedTestError, String errorMessage) {
                                 // called when a download/upload error occur
-                                LogHelper.WriteLogRule(itemView.getContext(), routefilm.getAccountToken(), errorMessage, "ERROR", "");
-                                Toast.makeText(itemView.getContext(), "An error occured!" , Toast.LENGTH_LONG).show();
+                                Log.d(TouchScreenRouteFilmsViewHolder.class.getSimpleName(), "ERROR :: "+errorMessage);
+                                Toast.makeText(itemView.getContext(), "An error occured! "+errorMessage , Toast.LENGTH_LONG).show();
                             }
 
                             @Override
@@ -222,7 +228,6 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
                     }
                 };
                 speedtestHandler.postDelayed(runnableSpeedTest,0);
-
 
             }
         });

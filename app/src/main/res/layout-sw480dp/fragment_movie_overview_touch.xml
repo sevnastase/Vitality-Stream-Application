@@ -127,7 +127,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview_available_routefilms"
         android:layout_width="wrap_content"
-        android:layout_height="400dp"
+        android:layout_height="450dp"
         android:layout_gravity="center"
         android:scrollbars="vertical"
         android:scrollbarThumbVertical="@drawable/scrollbar_shape"

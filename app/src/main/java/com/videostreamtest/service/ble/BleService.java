@@ -137,6 +137,7 @@ public class BleService extends Service {
                         connectionState = STATE_DISCONNECTED;
                         Log.i(TAG, "Disconnected from GATT server.");
                         broadcastUpdate(intentAction);
+                        gatt.close();
                     }
                 }
 
@@ -156,15 +157,6 @@ public class BleService extends Service {
                         if (CSCProfile.BATTERY_SERVICE.equals(bluetoothGattService.getUuid())) {
                             mRegisteredServices.add(bluetoothGattService);
                             Log.d(TAG, "BATTERY SERVICE Charas: "+bluetoothGattService.getCharacteristics().size());
-//                            gatt.setCharacteristicNotification(bluetoothGattService.getCharacteristic(CSCProfile.BATTERY_MEASUREMENT), true);
-//                            BluetoothGattDescriptor descriptor = bluetoothGattService.getCharacteristic(CSCProfile.BATTERY_MEASUREMENT).getDescriptor(CSCProfile.CLIENT_CONFIG);
-//                            if (descriptor != null) {
-//                                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-//                                boolean writeDescriptor = gatt.writeDescriptor(descriptor);
-//                                if (writeDescriptor) {
-//                                    Log.d(TAG, "WRITTEN DESCRIPTOR ON BATTERY SERVICE");
-//                                }
-//                            }
                             mbatteryCharacteristic = bluetoothGattService.getCharacteristic(CSCProfile.BATTERY_MEASUREMENT);
                         }
 
@@ -255,8 +247,6 @@ public class BleService extends Service {
                         }
                         Log.d(TAG, "totalDistance: "+totalDistance);
                         updateCadenceMeasurementList(cadence);
-                        //TODO: USE OBJECT AND STRINGIFY THE OBJECT(JSON) FOR USE IN THE BROADCASTRECEIVER
-//                        broadcastData(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, getLastMeasuredCadenceValue());
                         broadcastData(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, getLastMeasuredCadenceValue());
                     }
 
@@ -358,91 +348,6 @@ public class BleService extends Service {
             bluetoothAdapter.enable();
         } else {
             Log.d(TAG, "Bluetooth enabled...starting services");
-
-            //Check already bound devices for supports
-//            for (BluetoothDevice bluetoothDevice : BluetoothAdapter.getDefaultAdapter().getBondedDevices()) {
-//                Log.d(TAG, bluetoothDevice.getName());
-//
-//                Log.d(TAG, String.valueOf(bluetoothDevice.getType()));
-//                if (bluetoothDevice.getType() == BluetoothDevice.DEVICE_TYPE_LE) {
-//                    Log.d(TAG, "Device "+bluetoothDevice.getName()+" supports BLE");
-//                }
-//                //TODO: Check if there are BLE devices connected which have the CSC Profile
-//                //TODO: Show BLE Devices which are nearby and support the CSC Profile
-//                //TODO: After onCLick the device connects
-//
-//                ParcelUuid parcelUuidList[] = bluetoothDevice.getUuids();
-//                if (parcelUuidList != null && parcelUuidList.length>0) {
-//                    for (ParcelUuid parcelUuid : parcelUuidList) {
-//                        Log.d(TAG, "ParcelUuid : "+parcelUuid);
-//                        if (parcelUuid.getUuid().equals(CSCProfile.CSC_SERVICE)) {
-//                            Log.d(TAG, "Bike Cadence Found ! > "+bluetoothDevice.getName());
-//                        }
-//                        if (parcelUuid.getUuid().equals(CSCProfile.RSC_SERVICE)) {
-//                            Log.d(TAG, "Running Cadence Found! > "+bluetoothDevice.getName());
-//                        }
-//                    }
-//                }
-//
-////                if (bluetoothDevice.getName().contains("CAD-")) {
-////                    bluetoothGatt = bluetoothDevice.connectGatt(this, true, gattCallback);
-////                }
-//            }
-
-//            BluetoothLeScanner scanner = bluetoothAdapter.getBluetoothLeScanner();
-//
-//            scanner.startScan(new ScanCallback() {
-//                @Override
-//                public void onScanResult(int callbackType, ScanResult result) {
-////                    super.onScanResult(callbackType, result);
-////                    Log.d(TAG, "ScanResult :: "+result.toString());
-//
-//                    if (bluetoothGatt != null) {
-//                        scanner.stopScan(this);
-//                        return;
-//                    }
-//
-//                    if(result != null && result.getDevice()!=null && result.getDevice().getName()!=null) {
-//                        Log.d(TAG, "ScanResult NAME:: " + result.getDevice().getName());
-//                        if (result.getScanRecord().getServiceUuids()!= null) {
-//                            Log.d(TAG, "ScanResult SIZE :: " + result.getScanRecord().getServiceUuids().size());
-//                            if (result.getScanRecord().getServiceUuids().size() > 0 ) {
-//                                for (ParcelUuid parcelUuid: result.getScanRecord().getServiceUuids()) {
-//                                    Log.d(TAG, parcelUuid.toString());
-//                                    //UNKNOWN UUID GATT SERVICE > 0000fc00-0000-1000-8000-00805f9b34fb
-//                                    if (parcelUuid.getUuid().equals(CSCProfile.RSC_SERVICE)) {
-//                                        Log.d(TAG, "ScanResult :: Running sensor found ::> " + result.getDevice().getName());
-//                                    }
-//                                    if (parcelUuid.getUuid().equals(CSCProfile.CSC_SERVICE)) {
-//                                        Log.d(TAG, "ScanResult :: CYCLING sensor found ::> " + result.getDevice().getName());
-////                                        bluetoothGatt = result.getDevice().connectGatt(getApplicationContext(), true, gattCallback);
-//                                    }
-//                                    if (result.getDevice().getName().toLowerCase().contains("move")) {
-//                                        bluetoothGatt = result.getDevice().connectGatt(getApplicationContext(), true, gattCallback);
-//                                    }
-//                                    Log.d(TAG, "RSSI: "+result.getRssi());
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//
-//                //0000180a-0000-1000-8000-00805f9b34fb
-//                //0000fc00-0000-1000-8000-00805f9b34fb
-//
-//                @Override
-//                public void onBatchScanResults(List<ScanResult> results) {
-////                    super.onBatchScanResults(results);
-//                    Log.d(TAG, "ScanBatchResult :: "+results.size());
-//                }
-//
-//                @Override
-//                public void onScanFailed(int errorCode) {
-////                    super.onScanFailed(errorCode);
-//                    Log.d(TAG, "ScanFailedResult :: "+errorCode);
-//                }
-//            });
-
         }
         initialised = true;
     }
@@ -453,7 +358,6 @@ public class BleService extends Service {
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         assert bluetoothManager != null;
         BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
-//        bluetoothAdapter.disable();
         if (bluetoothAdapter == null) {
             stopSelf();
             return START_NOT_STICKY;
@@ -516,6 +420,9 @@ public class BleService extends Service {
 
                     if(result != null && result.getDevice()!=null && result.getDevice().getAddress()!=null) {
                         if (finalizedBleDeviceAddress.equals(result.getDevice().getAddress())) {
+                            if (bluetoothGatt != null) {
+                                bluetoothGatt.disconnect();
+                            }
                             bluetoothGatt = result.getDevice().connectGatt(BleService.this, true, gattCallback, BluetoothDevice.TRANSPORT_LE);
                         }
                     }
@@ -523,58 +430,16 @@ public class BleService extends Service {
 
                 @Override
                 public void onBatchScanResults(List<ScanResult> results) {
-//                    super.onBatchScanResults(results);
                     Log.d(TAG, "ScanBatchResult :: "+results.size());
                 }
 
                 @Override
                 public void onScanFailed(int errorCode) {
-//                    super.onScanFailed(errorCode);
                     Log.d(TAG, "ScanFailedResult :: "+errorCode);
                 }
             });
 
         });
-
-//        if (!bleDeviceAddress.isEmpty() && bleDeviceAddress != "") {
-//            final String deviceAddress = bleDeviceAddress;
-
-//        SharedPreferences sharedPreferences = getSharedPreferences("app", MODE_PRIVATE);
-//        if (sharedPreferences.contains(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY) && !sharedPreferences.getString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, "").isEmpty()) {
-//            final String bleDeviceAddress = sharedPreferences.getString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY,"");
-//            BluetoothLeScanner scanner = bluetoothAdapter.getBluetoothLeScanner();
-//
-//            scanner.startScan(new ScanCallback() {
-//                @Override
-//                public void onScanResult(int callbackType, ScanResult result) {
-//                    if (bluetoothGatt != null && bluetoothGatt.getDevice().getAddress().equals(bleDeviceAddress)) {
-//                        scanner.stopScan(this);
-//                        return;
-//                    }
-//
-//                    if(result != null && result.getDevice()!=null && result.getDevice().getAddress()!=null) {
-//                        if (bleDeviceAddress.equals(result.getDevice().getAddress())) {
-//                            bluetoothGatt = result.getDevice().connectGatt(BleService.this, true, gattCallback);
-//                        }
-//                    }
-//                }
-//
-//                //0000180a-0000-1000-8000-00805f9b34fb
-//                //0000fc00-0000-1000-8000-00805f9b34fb
-//
-//                @Override
-//                public void onBatchScanResults(List<ScanResult> results) {
-////                    super.onBatchScanResults(results);
-//                    Log.d(TAG, "ScanBatchResult :: "+results.size());
-//                }
-//
-//                @Override
-//                public void onScanFailed(int errorCode) {
-////                    super.onScanFailed(errorCode);
-//                    Log.d(TAG, "ScanFailedResult :: "+errorCode);
-//                }
-//            });
-//        }
 
         return Service.START_NOT_STICKY;
     }
@@ -593,8 +458,6 @@ public class BleService extends Service {
             BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
             if (bluetoothAdapter != null && bluetoothAdapter.isEnabled() && bluetoothGatt!=null) {
                 bluetoothGatt.disconnect();
-//                stopServer();
-//                stopAdvertising();
             }
             unregisterReceiver(mBluetoothReceiver);
             stopForeground(true);

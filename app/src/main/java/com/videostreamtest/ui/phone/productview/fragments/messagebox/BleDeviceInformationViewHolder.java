@@ -129,9 +129,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
             connectButton.requestFocus();
             Log.d(TAG, "CLICKED ON DEVICE ITEMVIEW : " + bleDeviceInfo.getBluetoothDevice().getName());
             saveDefaultSelectedDevice(bleDeviceInfo);
-            restartBleService();
             showConnectedMessage(bleDeviceInfo);
-            closeMessageBox();
         });
     }
 

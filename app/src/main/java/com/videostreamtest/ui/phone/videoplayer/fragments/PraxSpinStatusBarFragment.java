@@ -299,7 +299,6 @@ public class PraxSpinStatusBarFragment extends Fragment {
             if (moviePartsLayout.getChildCount()>0) {
                 moviePartsLayout.getChildAt(0).requestFocus();
             }
-            routePartsAdapter.notifyDataSetChanged();
         } else {
             loadTimer.removeCallbacksAndMessages(null);
             moviePartsLayout.setVisibility(View.GONE);

@@ -46,6 +46,7 @@ import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.ActiveProductMovieLinksServiceWorker;
+import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
 import com.videostreamtest.workers.DownloadMovieImagesServiceWorker;
 import com.videostreamtest.workers.DownloadMovieServiceWorker;
 import com.videostreamtest.workers.DownloadRoutepartsServiceWorker;
@@ -332,6 +333,14 @@ public class ProductActivity extends AppCompatActivity {
                 .build();
         WorkManager.getInstance(this)
                 .enqueueUniquePeriodicWork("sync-database-movies-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, syncDatabaseWorkRequest);
+
+        PeriodicWorkRequest productMoviePartsRequest = new PeriodicWorkRequest.Builder(UpdateRegisteredMovieServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setInputData(syncData.build())
+                .addTag("productmovieparts-link")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-database-routeparts-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productMoviePartsRequest);
+
     }
 
     private boolean isTouchScreen() {
