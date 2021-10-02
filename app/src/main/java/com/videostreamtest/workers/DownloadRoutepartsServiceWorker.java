@@ -21,7 +21,10 @@ import androidx.work.WorkerParameters;
 import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
+import com.videostreamtest.service.database.DatabaseRestService;
+import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 
@@ -59,6 +62,8 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
     }
 
     public interface PraxCloud {
+        @GET("/api/route/movies")
+        Call<List<Movie>> getRoutefilms(@Header("api-key") String accountToken);
         @GET("/api/route/movieparts/{movieId}")
         Call<List<MoviePart>> getMoviepartsOfMovieId(@Path(value = "movieId", encoded = true) Integer movieId, @Header("api-key") String accountToken);
     }
@@ -70,10 +75,6 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
         //Get Input
         final String apikey = getInputData().getString("apikey");
         final int movieId = getInputData().getInt("movie-id",0);
-
-        if (DownloadHelper.isMovieMediaPresent(getApplicationContext(), movieId)) {
-            return Result.success();
-        }
 
         // Mark the Worker as important
         String progress = "Download Routeparts";
@@ -88,6 +89,7 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
         //CHECK WHETHER THE VOLUME IS BIG ENOUGH FOR IMAGES AND MOVIES
         if (selectedVolume.getTotalSpace()< ApplicationSettings.MINIMUM_DISK_SPACE_BYTES) {
             Log.e(TAG, "Disk not big enough for standalone.");
+            new DatabaseRestService().writeLog(apikey, "[Routeparts download] Disk nog big enough for standalone.", "DEBUG", "");
             return Result.failure();
         }
 
@@ -96,29 +98,45 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         PraxCloud praxCloud = retrofit.create(PraxCloud.class);
+        Call<List<Movie>> call = praxCloud.getRoutefilms(apikey);
+        List<Movie> accountMovies = new ArrayList<>();
 
-        if (movieId != 0) {
-            Call<List<MoviePart>> call = praxCloud.getMoviepartsOfMovieId(movieId, apikey);
-            List<MoviePart> routeparts = new ArrayList<>();
-            try {
-                routeparts = call.execute().body();
-            } catch (IOException ioException) {
-                Log.e(TAG, ioException.getLocalizedMessage());
-                return Result.failure();
-            }
-            Log.d(TAG, "'Routeparts object: "+routeparts);
-            if (routeparts!= null) {
-                Log.d(TAG, "'Routeparts found: "+routeparts.size());
-            }
-            try {
-                if (routeparts != null && routeparts.size()>0) {
-                    for (final MoviePart moviePart: routeparts) {
-                        download(moviePart.getMoviepartImagepath(), Long.MAX_VALUE, String.valueOf(movieId));
-                    }
+        try {
+            accountMovies = call.execute().body();
+        } catch (IOException ioException) {
+            Log.e(TAG, ioException.getLocalizedMessage());
+        }
+        Log.d(TAG, "RouteFilms Count RetroFit :: "+accountMovies.size());
+
+        if (accountMovies != null && accountMovies.size()>0) {
+            for (final Movie movie: accountMovies) {
+                Call<List<MoviePart>> callParts = praxCloud.getMoviepartsOfMovieId(movie.getId(), apikey);
+                List<MoviePart> routeparts = new ArrayList<>();
+                try {
+                    routeparts = callParts.execute().body();
+                } catch (IOException ioException) {
+                    Log.e(TAG, ioException.getLocalizedMessage());
+                    return Result.failure();
                 }
-            } catch (IOException ioException) {
-                Log.e(TAG, ioException.getLocalizedMessage());
-                return Result.failure();
+
+                if (routeparts!= null) {
+                    Log.d(TAG, "'Routeparts found: "+routeparts.size());
+                }
+
+                try {
+                    if (routeparts != null && routeparts.size()>0) {
+                        for (final MoviePart moviePart: routeparts) {
+                            String moviePartImageName = new File(moviePart.getMoviepartImagepath()).getName();
+                            String pathname = selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieId+"/"+moviePartImageName;
+                            if (!new File(pathname).exists()) {
+                                download(moviePart.getMoviepartImagepath(), Long.MAX_VALUE, String.valueOf(movieId));
+                            }
+                        }
+                    }
+                } catch (IOException ioException) {
+                    Log.e(TAG, ioException.getLocalizedMessage());
+                    return Result.failure();
+                }
             }
         }
 

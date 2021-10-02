@@ -46,7 +46,6 @@ import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.ActiveProductMovieLinksServiceWorker;
-import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
 import com.videostreamtest.workers.DownloadMovieImagesServiceWorker;
 import com.videostreamtest.workers.DownloadMovieServiceWorker;
 import com.videostreamtest.workers.DownloadRoutepartsServiceWorker;
@@ -114,11 +113,18 @@ public class ProductActivity extends AppCompatActivity {
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Started Product: "+selectedProduct.getProductName(), "DEBUG", "");
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Screensize: wxh: "+width+" x "+height, "DEBUG", "");
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Localip: "+DownloadHelper.getLocalIpAddress(), "DEBUG", "");
+                LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Density: sw-"+this.getResources().getDisplayMetrics().densityDpi, "DEBUG", "");
 
                 Bundle arguments = getIntent().getExtras();
                 arguments.putString("communication_device", currentConfig.getCommunicationDevice());
 
+                //PERIODIC ACTIONS FOR DATABASE
                 syncMovieDatabasePeriodically(currentConfig.getAccountToken());
+
+                //PERIODIC ACTIONS FOR STANDALONE SPECIFIC
+                if (currentConfig.isLocalPlay()) {
+                    periodicSyncDownloadMovieRouteParts(currentConfig.getAccountToken());
+                }
                 loadFragmentBasedOnScreenType(arguments);
 
                 appBuildNumber.setText(ConfigurationHelper.getVersionNumber(getApplicationContext())+":"+currentConfig.getAccountToken());
@@ -158,7 +164,7 @@ public class ProductActivity extends AppCompatActivity {
         super.onResume();
         downloadMovieSupportImages();
         downloadSound();
-        downloadMovieRouteParts();
+
         downloadLocalMovies();
     }
 
@@ -237,31 +243,22 @@ public class ProductActivity extends AppCompatActivity {
         });
     }
 
-    private void downloadMovieRouteParts() {
-        productViewModel.getCurrentConfig().observe(this, currentConfig -> {
-            if (currentConfig != null) {
-                productViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(this, routefilms -> {
-                    if (routefilms.size() > 0 && currentConfig.isLocalPlay()) {
-                        for (Routefilm routefilm : routefilms) {
-                            Data.Builder mediaDownloader = new Data.Builder();
-                            mediaDownloader.putString("apikey",  currentConfig.getAccountToken());
-                            mediaDownloader.putInt("movie-id", routefilm.getMovieId());
-                            Constraints constraint = new Constraints.Builder()
-                                    .setRequiredNetworkType(NetworkType.CONNECTED)
-                                    .build();
-                            OneTimeWorkRequest routepartsWorkRequest = new OneTimeWorkRequest.Builder(DownloadRoutepartsServiceWorker.class)
-                                    .setConstraints(constraint)
-                                    .setInputData(mediaDownloader.build())
-                                    .addTag("routeparts-routefilm-"+routefilm.getMovieId())
-                                    .build();
-                            WorkManager.getInstance(this)
-                                    .beginUniqueWork("download-movieparts-"+routefilm.getMovieId(), ExistingWorkPolicy.KEEP, routepartsWorkRequest)
-                                    .enqueue();
-                        }
-                    }
-                });
-            }
-        });
+    private void periodicSyncDownloadMovieRouteParts(final String apikey) {
+        Data.Builder mediaDownloader = new Data.Builder();
+        mediaDownloader.putString("apikey", apikey);
+
+        Constraints constraint = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        PeriodicWorkRequest routepartsDownloadRequest = new PeriodicWorkRequest.Builder(DownloadRoutepartsServiceWorker.class, 35, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .setInputData(mediaDownloader.build())
+                .addTag("download-movieparts")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-database-pms-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, routepartsDownloadRequest);
+
     }
 
     private void downloadLocalMovies() {
@@ -340,7 +337,6 @@ public class ProductActivity extends AppCompatActivity {
                 .build();
         WorkManager.getInstance(this)
                 .enqueueUniquePeriodicWork("sync-database-routeparts-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productMoviePartsRequest);
-
     }
 
     private boolean isTouchScreen() {

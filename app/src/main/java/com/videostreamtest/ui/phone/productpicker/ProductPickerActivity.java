@@ -1,15 +1,10 @@
 package com.videostreamtest.ui.phone.productpicker;
 
 import android.Manifest;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
-import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,45 +13,37 @@ import android.os.Looper;
 import android.os.Process;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.location.LocationManagerCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Constraints;
+import androidx.work.Data;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
-import com.fasterxml.jackson.databind.deser.BuilderBasedDeserializer;
 import com.google.android.material.navigation.NavigationView;
 import com.videostreamtest.R;
-import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.service.ble.BleService;
-import com.videostreamtest.service.ble.callback.BleScanCallback;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
-import com.videostreamtest.ui.phone.productview.fragments.messagebox.BleDeviceInformationAdapter;
-import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.workers.PeriodicInstallPackageServiceWorker;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
@@ -141,6 +128,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
             if (config != null) {
                 PermissionHelper.requestPermission(getApplicationContext(), this, config);
 
+                checkForUpdatePeriodically(config.getAccountToken());
                 // Add action onClick to signout button
                 signoutButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -386,6 +374,22 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         }
         drawerLayout.closeDrawer(GravityCompat.START);
         return false;
+    }
+
+    private void checkForUpdatePeriodically(final String apikey) {
+        Data.Builder syncData = new Data.Builder();
+        syncData.putString("apikey",  apikey);
+        Constraints constraint = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        PeriodicWorkRequest productUpdaterRequest = new PeriodicWorkRequest.Builder(PeriodicInstallPackageServiceWorker.class, 20, TimeUnit.MINUTES)
+                .setInputData(syncData.build())
+                .setConstraints(constraint)
+                .addTag("product-updater")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-product-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productUpdaterRequest);
     }
 
 }
