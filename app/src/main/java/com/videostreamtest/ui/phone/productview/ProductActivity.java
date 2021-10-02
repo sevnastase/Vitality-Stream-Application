@@ -51,6 +51,7 @@ import com.videostreamtest.workers.DownloadMovieServiceWorker;
 import com.videostreamtest.workers.DownloadRoutepartsServiceWorker;
 import com.videostreamtest.workers.DownloadSoundServiceWorker;
 import com.videostreamtest.workers.UpdateRegisteredMovieServiceWorker;
+import com.videostreamtest.workers.UpdateRoutePartsServiceWorker;
 
 import java.util.concurrent.TimeUnit;
 
@@ -331,9 +332,9 @@ public class ProductActivity extends AppCompatActivity {
         WorkManager.getInstance(this)
                 .enqueueUniquePeriodicWork("sync-database-movies-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, syncDatabaseWorkRequest);
 
-        PeriodicWorkRequest productMoviePartsRequest = new PeriodicWorkRequest.Builder(UpdateRegisteredMovieServiceWorker.class, 15, TimeUnit.MINUTES)
+        PeriodicWorkRequest productMoviePartsRequest = new PeriodicWorkRequest.Builder(UpdateRoutePartsServiceWorker.class, 15, TimeUnit.MINUTES)
                 .setInputData(syncData.build())
-                .addTag("productmovieparts-link")
+                .addTag("movieparts-link")
                 .build();
         WorkManager.getInstance(this)
                 .enqueueUniquePeriodicWork("sync-database-routeparts-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productMoviePartsRequest);
