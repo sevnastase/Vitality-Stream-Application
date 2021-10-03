@@ -54,7 +54,6 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
     private NotificationManager notificationManager;
 
     private File selectedVolume;
-    private int[] movieIdList;
 
     public DownloadRoutepartsServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -74,7 +73,6 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
         Data inputData = getInputData();
         //Get Input
         final String apikey = getInputData().getString("apikey");
-        final int movieId = getInputData().getInt("movie-id",0);
 
         // Mark the Worker as important
         String progress = "Download Routeparts";
@@ -111,7 +109,7 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
         if (accountMovies != null && accountMovies.size()>0) {
             for (final Movie movie: accountMovies) {
                 Call<List<MoviePart>> callParts = praxCloud.getMoviepartsOfMovieId(movie.getId(), apikey);
-                List<MoviePart> routeparts = new ArrayList<>();
+                final List<MoviePart> routeparts;
                 try {
                     routeparts = callParts.execute().body();
                 } catch (IOException ioException) {
@@ -127,9 +125,9 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
                     if (routeparts != null && routeparts.size()>0) {
                         for (final MoviePart moviePart: routeparts) {
                             String moviePartImageName = new File(moviePart.getMoviepartImagepath()).getName();
-                            String pathname = selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieId+"/"+moviePartImageName;
+                            String pathname = selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movie.getId().intValue()+"/"+moviePartImageName;
                             if (!new File(pathname).exists()) {
-                                download(moviePart.getMoviepartImagepath(), Long.MAX_VALUE, String.valueOf(movieId));
+                                download(moviePart.getMoviepartImagepath(), Long.MAX_VALUE, String.valueOf(movie.getId().intValue()));
                             }
                         }
                     }

@@ -50,6 +50,7 @@ import com.videostreamtest.workers.DownloadMovieImagesServiceWorker;
 import com.videostreamtest.workers.DownloadMovieServiceWorker;
 import com.videostreamtest.workers.DownloadRoutepartsServiceWorker;
 import com.videostreamtest.workers.DownloadSoundServiceWorker;
+import com.videostreamtest.workers.SoundInformationServiceWorker;
 import com.videostreamtest.workers.UpdateRegisteredMovieServiceWorker;
 import com.videostreamtest.workers.UpdateRoutePartsServiceWorker;
 
@@ -318,6 +319,7 @@ public class ProductActivity extends AppCompatActivity {
                 .build();
 
         PeriodicWorkRequest productMovieRequest = new PeriodicWorkRequest.Builder(ActiveProductMovieLinksServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraint)
                 .setInputData(syncData.build())
                 .addTag("productmovie-link")
                 .build();
@@ -333,11 +335,20 @@ public class ProductActivity extends AppCompatActivity {
                 .enqueueUniquePeriodicWork("sync-database-movies-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, syncDatabaseWorkRequest);
 
         PeriodicWorkRequest productMoviePartsRequest = new PeriodicWorkRequest.Builder(UpdateRoutePartsServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraint)
                 .setInputData(syncData.build())
                 .addTag("movieparts-link")
                 .build();
         WorkManager.getInstance(this)
                 .enqueueUniquePeriodicWork("sync-database-routeparts-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productMoviePartsRequest);
+
+        PeriodicWorkRequest productMovieSoundsRequest = new PeriodicWorkRequest.Builder(SoundInformationServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .setInputData(syncData.build())
+                .addTag("moviesounds-sync")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-database-sounds-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productMovieSoundsRequest);
     }
 
     private boolean isTouchScreen() {

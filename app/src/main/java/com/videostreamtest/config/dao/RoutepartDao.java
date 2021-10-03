@@ -23,6 +23,9 @@ public interface RoutepartDao {
     @Delete
     void delete(Routepart routepart);
 
+    @Query("DELETE FROM routepart_table WHERE movie_id = :movieId")
+    public void deleteMoviepartsOfMovie(Integer movieId);
+
     @Query("SELECT * FROM routepart_table WHERE movie_id = :movieId ORDER BY moviepart_framenumber ASC")
     LiveData<List<Routepart>> getRoutepartsOfMovieId(Integer movieId);
 }

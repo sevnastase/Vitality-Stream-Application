@@ -11,6 +11,7 @@ import androidx.work.WorkerParameters;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.EffectSound;
+import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.SoundItem;
 
 import java.io.IOException;
@@ -36,6 +37,8 @@ public class SoundInformationServiceWorker extends Worker {
     }
 
     public interface PraxCloud {
+        @GET("/api/route/movies")
+        Call<List<Movie>> getRoutefilms(@Header("api-key") String accountToken);
         @GET("/api/sound/")
         Call<List<SoundItem>> getSounds(@Header("api-key") String accountToken);
         @GET("/api/sound/background/{movie_id}")
@@ -49,7 +52,6 @@ public class SoundInformationServiceWorker extends Worker {
     public Result doWork() {
         //Get Input
         final String apikey = getInputData().getString("apikey");
-        final int[] movieIdList = getInputData().getIntArray("movie-id-list");
 
         //Pre-define output
         Data output = new Data.Builder().build();
@@ -61,6 +63,15 @@ public class SoundInformationServiceWorker extends Worker {
 
         PraxCloud praxCloud = retrofit.create(PraxCloud.class);
 
+        //Get LIST OF linked MOVIES
+        Call<List<Movie>> movieListCall = praxCloud.getRoutefilms(apikey);
+        List<Movie> routefilms = new ArrayList<>();
+        try {
+            routefilms = movieListCall.execute().body();
+        } catch (IOException ioException) {
+            Log.e(TAG, ioException.getLocalizedMessage());
+        }
+
         //Get the active sound items available
         Call<List<SoundItem>> callSounds = praxCloud.getSounds(apikey);
         try {
@@ -69,12 +80,10 @@ public class SoundInformationServiceWorker extends Worker {
             Log.e(TAG, ioException.getLocalizedMessage());
         }
 
-        //For every linked movie get the sound indexes
-        if (movieIdList != null && movieIdList.length >0) {
-            //Update sound information for every movie
-            for (int mId : movieIdList) {
+        if (routefilms != null && routefilms.size()>0) {
+            for (final Movie routefilm: routefilms) {
                 //Update background sounds
-                Call<List<BackgroundSound>> callBackgroundSounds = praxCloud.getBackgroundSounds(mId, apikey);
+                Call<List<BackgroundSound>> callBackgroundSounds = praxCloud.getBackgroundSounds(routefilm.getId().intValue(), apikey);
                 List<BackgroundSound> backgroundSounds = new ArrayList<>();
                 try {
                     backgroundSounds = callBackgroundSounds.execute().body();
@@ -82,10 +91,10 @@ public class SoundInformationServiceWorker extends Worker {
                     Log.e(TAG, ioException.getLocalizedMessage());
                 }
 
-                registerBackgroundSounds(backgroundSounds, mId);
+                registerBackgroundSounds(backgroundSounds, routefilm.getId().intValue());
 
                 //Update effect sounds
-                Call<List<EffectSound>> callEffectSounds = praxCloud.getEffectSounds(mId, apikey);
+                Call<List<EffectSound>> callEffectSounds = praxCloud.getEffectSounds(routefilm.getId().intValue(), apikey);
                 List<EffectSound> effectSounds = new ArrayList<>();
                 try {
                     effectSounds = callEffectSounds.execute().body();
@@ -93,8 +102,7 @@ public class SoundInformationServiceWorker extends Worker {
                     Log.e(TAG, ioException.getLocalizedMessage());
                 }
 
-                registerEffectSounds(effectSounds, mId);
-
+                registerEffectSounds(effectSounds, routefilm.getId().intValue());
             }
         }
 

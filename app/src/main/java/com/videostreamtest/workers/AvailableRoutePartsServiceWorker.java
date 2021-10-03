@@ -72,6 +72,7 @@ public class AvailableRoutePartsServiceWorker extends Worker {
 
                 //DATABASE INJECTION
                 final RoutepartDao routepartDao = PraxtourDatabase.getDatabase(getApplicationContext()).routepartDao();
+
                 if (routeparts.size()>0) {
                     for (MoviePart part: routeparts) {
                         Routepart routepart = new Routepart();

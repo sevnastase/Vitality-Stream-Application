@@ -72,6 +72,7 @@ public class UpdateRoutePartsServiceWorker extends Worker {
 
         if (routefilms != null && routefilms.size()>0) {
             for (final Movie movie: routefilms) {
+
                 insertRoutepart(movie.getId(), apikey);
             }
         }
@@ -97,6 +98,7 @@ public class UpdateRoutePartsServiceWorker extends Worker {
         //DATABASE INJECTION
         final RoutepartDao routepartDao = PraxtourDatabase.getDatabase(getApplicationContext()).routepartDao();
         if (routeparts.size()>0) {
+            routepartDao.deleteMoviepartsOfMovie(movieId);
             for (MoviePart part: routeparts) {
                 Routepart routepart = new Routepart();
                 routepart.setRoutepartId(part.getId());
