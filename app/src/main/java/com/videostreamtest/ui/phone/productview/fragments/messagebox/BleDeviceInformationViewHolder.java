@@ -156,13 +156,6 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
 
     }
 
-    private void restartBleService() {
-        itemView.getContext().stopService(new Intent(itemView.getContext().getApplicationContext(), BleService.class));
-
-        Intent bleServiceIntent = new Intent(itemView.getContext().getApplicationContext(), BleService.class);
-        itemView.getContext().startService(bleServiceIntent);
-    }
-
     private void showConnectedMessage(final BleDeviceInfo bleDeviceInfo) {
         Toast.makeText(itemView.getContext(), "Succesfully connected to "+bleDeviceInfo.getBluetoothDevice().getName()+"!", Toast.LENGTH_LONG).show();
     }

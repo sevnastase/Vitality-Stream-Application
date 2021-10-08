@@ -82,4 +82,5 @@
     <string name="catalog_screen_distance">Distance: %d,%d km</string>
     <string name="loading_profile_message">Profil de %s téléchargé</string>
     <string name="single_ble_device_connect_label">Se connecter</string>
+    <string name="video_player_wait_sensor_disconnect">Attendre la déconnexion du capteur.</string>
 </resources>

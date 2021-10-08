@@ -34,6 +34,7 @@ public class PlainScreenFragment extends Fragment implements CatalogRecyclerView
     private PlainScreenRouteFilmsAdapter plainScreenRouteFilmsAdapter;
 
     private List<Routefilm> supportedRoutefilms;
+    private Product selectedProduct;
 
     @Nullable
     @Override
@@ -41,11 +42,19 @@ public class PlainScreenFragment extends Fragment implements CatalogRecyclerView
         View view = inflater.inflate(R.layout.fragment_movie_overview_plain, container, false);
         productViewModel = new ViewModelProvider(requireActivity()).get(ProductViewModel.class);
 
+        selectedProduct = new GsonBuilder().create().fromJson(getArguments().getString("product_object", "{}"), Product.class);
+        CommunicationDevice communicationDevice = ConfigurationHelper.getCommunicationDevice(getArguments().getString("communication_device"));
+
         routeInformationBlock = view.findViewById(R.id.overlay_route_information);
+
+        plainScreenRouteFilmsAdapter = new PlainScreenRouteFilmsAdapter(selectedProduct, communicationDevice);
+        plainScreenRouteFilmsAdapter.setRouteInformationBlock(routeInformationBlock);
+        plainScreenRouteFilmsAdapter.setCatalogRecyclerViewClickListener(PlainScreenFragment.this);
 
         recyclerView = view.findViewById(R.id.recyclerview_available_routefilms);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new GridLayoutManager(view.getContext(),4));
+        recyclerView.setAdapter(plainScreenRouteFilmsAdapter);
 
         return view;
     }
@@ -60,16 +69,8 @@ public class PlainScreenFragment extends Fragment implements CatalogRecyclerView
     private void loadAvailableMediaScenery() {
         productViewModel.getCurrentConfig().observe(getViewLifecycleOwner(), currentConfig -> {
             if (currentConfig != null) {
-                Product selectedProduct = new GsonBuilder().create().fromJson(getArguments().getString("product_object", "{}"), Product.class);
                 productViewModel.getProductMovies(currentConfig.getAccountToken(), selectedProduct.getId()).observe(getViewLifecycleOwner(), routefilms -> {
-                    CommunicationDevice communicationDevice = ConfigurationHelper.getCommunicationDevice(getArguments().getString("communication_device"));
-
-                    plainScreenRouteFilmsAdapter = new PlainScreenRouteFilmsAdapter(routefilms.toArray(new Routefilm[0]), selectedProduct, communicationDevice);
-                    plainScreenRouteFilmsAdapter.setRouteInformationBlock(routeInformationBlock);
-                    plainScreenRouteFilmsAdapter.setCatalogRecyclerViewClickListener(PlainScreenFragment.this);
-
-                    recyclerView.setAdapter(plainScreenRouteFilmsAdapter);
-                    recyclerView.getAdapter().notifyDataSetChanged();
+                    plainScreenRouteFilmsAdapter.updateRoutefilmList(routefilms);
                 });
             }
         });

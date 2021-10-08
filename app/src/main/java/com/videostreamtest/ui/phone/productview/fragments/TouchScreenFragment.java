@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.GsonBuilder;
@@ -41,6 +42,8 @@ public class TouchScreenFragment extends Fragment {
 
     private ProductViewModel productViewModel;
 
+    private Product selectedProduct;
+
     private TouchScreenRouteFilmsAdapter touchScreenRouteFilmsAdapter;
     private LinearLayout routeInformationBlock;
     private LinearLayout deviceConnectionInformationBlock;
@@ -57,6 +60,9 @@ public class TouchScreenFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_movie_overview_touch, container, false);
         productViewModel = new ViewModelProvider(requireActivity()).get(ProductViewModel.class);
 
+        selectedProduct = new GsonBuilder().create().fromJson(getArguments().getString("product_object", "{}"), Product.class);
+        CommunicationDevice communicationDevice = ConfigurationHelper.getCommunicationDevice(getArguments().getString("communication_device"));
+
         navigationLeftArrow = view.findViewById(R.id.left_navigation_arrow);
         navigationRightArrow = view.findViewById(R.id.right_navigation_arrow);
         navigationUpArrow = view.findViewById(R.id.up_navigation_arrow);
@@ -65,21 +71,19 @@ public class TouchScreenFragment extends Fragment {
         routeInformationBlock = view.findViewById(R.id.overlay_route_information);
         deviceConnectionInformationBlock = view.findViewById(R.id.overlay_connection_info_box);
 
+        touchScreenRouteFilmsAdapter = new TouchScreenRouteFilmsAdapter(selectedProduct, communicationDevice);
+        touchScreenRouteFilmsAdapter.setRouteInformationBlock(routeInformationBlock);
 
         recyclerView = view.findViewById(R.id.recyclerview_available_routefilms);
         recyclerView.setHasFixedSize(true);
-        PreCachingLayoutManager preCachingLayoutManager = new PreCachingLayoutManager(view.getContext(),4);
-        preCachingLayoutManager.setItemPrefetchEnabled(true);
-        preCachingLayoutManager.setExtraLayoutSpace(60);
-        recyclerView.setLayoutManager(preCachingLayoutManager);
+        recyclerView.setLayoutManager(new GridLayoutManager(view.getContext(),4));
+        recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
         int width = displayMetrics.widthPixels;
 
-        float recyclerviewHeight = (height * 0.6f);
-        recyclerView.setMinimumHeight((int)recyclerviewHeight);
         Log.d(TouchScreenFragment.class.getSimpleName(), "RecyclerView Minimum Height: "+recyclerView.getMinimumHeight());
 
 //        recyclerView.setMinimumHeight((int) TypedValue.applyDimension(
@@ -159,8 +163,6 @@ public class TouchScreenFragment extends Fragment {
     private void loadAvailableMediaScenery() {
         productViewModel.getCurrentConfig().observe(getViewLifecycleOwner(), currentConfig -> {
             if (currentConfig != null) {
-                Product selectedProduct = new GsonBuilder().create().fromJson(getArguments().getString("product_object", "{}"), Product.class);
-
                 productViewModel.getPMS(selectedProduct.getId()).observe(getViewLifecycleOwner(), pmsList -> {
                     productViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(getViewLifecycleOwner(), allRoutefilms -> {
                         List<Routefilm> filteredRoutefilmList = new ArrayList<>();
@@ -173,12 +175,7 @@ public class TouchScreenFragment extends Fragment {
                                 }
                             }
 
-                            CommunicationDevice communicationDevice = ConfigurationHelper.getCommunicationDevice(getArguments().getString("communication_device"));
-
-                            touchScreenRouteFilmsAdapter = new TouchScreenRouteFilmsAdapter(filteredRoutefilmList.toArray(new Routefilm[0]), selectedProduct, communicationDevice);
-                            touchScreenRouteFilmsAdapter.setRouteInformationBlock(routeInformationBlock);
-
-                            recyclerView.setAdapter(touchScreenRouteFilmsAdapter);
+                            touchScreenRouteFilmsAdapter.updateRoutefilmList(filteredRoutefilmList);
                         } else {
                             Toast.makeText(getActivity().getApplicationContext(), getString(R.string.product_view_loading_data_message), Toast.LENGTH_LONG).show();
                         }

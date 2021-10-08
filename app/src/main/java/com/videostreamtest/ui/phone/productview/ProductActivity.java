@@ -156,8 +156,8 @@ public class ProductActivity extends AppCompatActivity {
         });
 
         if (!selectedProduct.getCommunicationType().toLowerCase().contains("none")) {
-            Intent bleService = new Intent(getApplicationContext(), BleService.class);
-            startService(bleService);
+//            Intent bleService = new Intent(getApplicationContext(), BleService.class);
+//            startService(bleService);
         }
     }
 

@@ -30,7 +30,7 @@ public class PermissionHelper {
 
     public static void requestPermission(Context context, Activity activity, Configuration configuration) {
         List<String> permissions = new ArrayList<>();
-
+        Log.d(TAG, "Checking permissions for Build Version Code "+Build.VERSION.SDK_INT);
         // Check if Android M or higher
         // Android M is also our least target build sdk
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

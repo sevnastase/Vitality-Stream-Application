@@ -16,24 +16,28 @@ import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.ui.phone.catalog.CatalogRecyclerViewClickListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TouchScreenRouteFilmsAdapter extends  RecyclerView.Adapter<TouchScreenRouteFilmsViewHolder> {
     private static final String TAG = TouchScreenRouteFilmsAdapter.class.getSimpleName();
 
     private int selectedMovie = 0;
 
-    private Routefilm[] routefilms;
+    private List<Routefilm> routefilmList = new ArrayList<>();
+
     private Product selectedProduct;
     private CommunicationDevice communicationDevice;
 
     private boolean localPlay;
+
     private CatalogRecyclerViewClickListener catalogRecyclerViewClickListener;
     private LinearLayout routeInformationBlock;
 
-    public TouchScreenRouteFilmsAdapter(final Routefilm[] routefilms, final Product enteredProduct, final CommunicationDevice communicationDevice) {
-        this.routefilms = routefilms;
-        this.selectedProduct = enteredProduct;
+    public TouchScreenRouteFilmsAdapter(final Product activeProduct, final CommunicationDevice communicationDevice) {
+        this.selectedProduct = activeProduct;
         this.communicationDevice = communicationDevice;
-        localPlay = (enteredProduct.getSupportStreaming()==0);
+        localPlay = (activeProduct.getSupportStreaming()==0);
     }
 
     public void setCatalogRecyclerViewClickListener(final CatalogRecyclerViewClickListener catalogRecyclerViewClickListener) {
@@ -42,6 +46,52 @@ public class TouchScreenRouteFilmsAdapter extends  RecyclerView.Adapter<TouchScr
 
     public void setRouteInformationBlock(final LinearLayout routeInformationBlock) {
         this.routeInformationBlock = routeInformationBlock;
+    }
+
+    public void updateRoutefilmList(final List<Routefilm> requestedRoutefilmList) {
+        boolean hasUpdates = false;
+        if (requestedRoutefilmList != null && requestedRoutefilmList.size()>0) {
+            for (final Routefilm routefilm: requestedRoutefilmList) {
+                if (!isRoutefilmPresent(routefilm)) {
+                    this.routefilmList.add(routefilm);
+                    hasUpdates = true;
+                }
+            }
+            for (final Routefilm routefilm: this.routefilmList) {
+                if (isRoutefilmRemoved(routefilm, requestedRoutefilmList)) {
+                    this.routefilmList.remove(routefilm);
+                    hasUpdates = true;
+                }
+            }
+            if (hasUpdates) {
+                notifyDataSetChanged();
+            }
+        }
+    }
+
+    private boolean isRoutefilmRemoved(final Routefilm routefilm, final List<Routefilm> requestedRoutefilmList) {
+        boolean isRemoved = true;
+        if (requestedRoutefilmList!= null && requestedRoutefilmList.size()>0) {
+            for (final Routefilm film: requestedRoutefilmList) {
+                if (routefilm.getMovieId().intValue() == film.getMovieId().intValue()) {
+                    isRemoved = false;
+                }
+            }
+        }
+        return isRemoved;
+    }
+
+    private boolean isRoutefilmPresent(final Routefilm routefilm) {
+        if (this.routefilmList.size()>0) {
+            for (final Routefilm film: this.routefilmList) {
+                if (routefilm.getMovieId().intValue() == film.getMovieId().intValue()) {
+                    return routefilm.getMovieId().intValue() == film.getMovieId().intValue();
+                }
+            }
+            return false;
+        } else {
+            return false;
+        }
     }
 
     @NonNull
@@ -65,11 +115,11 @@ public class TouchScreenRouteFilmsAdapter extends  RecyclerView.Adapter<TouchScr
         }
         holder.itemView.setSelected(selectedMovie == position);
 
-        if (routefilms != null && routefilms.length > 0) {
+        if (routefilmList != null && routefilmList.size() > 0) {
             if (selectedProduct.getSupportStreaming()>0) {
-                holder.bindStreaming(routefilms[position], selectedProduct, communicationDevice, position, routeInformationBlock, catalogRecyclerViewClickListener);
+                holder.bindStreaming(routefilmList.get(position), selectedProduct, communicationDevice, position, routeInformationBlock, catalogRecyclerViewClickListener);
             } else {
-                holder.bindStandalone(routefilms[position], selectedProduct, communicationDevice, position, routeInformationBlock, catalogRecyclerViewClickListener);
+                holder.bindStandalone(routefilmList.get(position), selectedProduct, communicationDevice, position, routeInformationBlock, catalogRecyclerViewClickListener);
             }
         }
     }
@@ -83,12 +133,12 @@ public class TouchScreenRouteFilmsAdapter extends  RecyclerView.Adapter<TouchScr
     }
 
     public Routefilm getItemAt(final int position) {
-        return routefilms[position];
+        return routefilmList.get(position);
     }
 
     @Override
     public int getItemCount() {
         //Define maximum items to show
-        return routefilms.length;
+        return routefilmList.size();
     }
 }

@@ -15,9 +15,14 @@ public class ApplicationSettings {
 
     public final static int DEFAULT_SOUND_VOLUME = 80;
 
+    public final static float DEFAULT_DENSITY_DPI = 320;
+
+    //INTERNAL (BUS) COMMUNICATION
     public final static String COMMUNICATION_INTENT_FILTER = "com.fitstream.sensor.DATA";
 
     public static final String PRAXCLOUD_URL = "http://188.166.100.139:8080";
+
+    //STANDALONE
     public static final String DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER = "/Praxtour";
     public static final String DEFAULT_LOCAL_SOUND_STORAGE_FOLDER = "/Sound";
     public static final String DEFAULT_LOCAL_UPDATE_STORAGE_FOLDER = "/Update";

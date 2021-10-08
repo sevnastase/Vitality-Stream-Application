@@ -132,10 +132,20 @@ public class BleDeviceInformationBoxFragment extends Fragment {
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        if (scanner != null) {
+            scanner.stopScan(bleScanCallback);
+            Log.d(TAG, "BLE Scanning stopped. [VIEW PAUSED]");
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         if (scanner != null) {
             scanner.stopScan(bleScanCallback);
+            Log.d(TAG, "BLE Scanning stopped.");
         }
     }
 

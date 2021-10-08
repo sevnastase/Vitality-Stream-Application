@@ -32,12 +32,6 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
         @Override
         protected String doInBackground(String... strings) {
             int rpmReceived = intent.getIntExtra(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, 0);
-            String serviceStatus = intent.getStringExtra(CadenceSensorConstants.BIKE_CADENCE_STATUS);
-
-            if(serviceStatus == null) {
-                serviceStatus = "Active";
-            }
-            Log.d(TAG, "ServiceStatus: "+serviceStatus);
 
             Log.d(TAG, "Action: " + intent.getAction() + "\n");
             Log.d(TAG, "Intent cadence received: "+rpmReceived+"\n");

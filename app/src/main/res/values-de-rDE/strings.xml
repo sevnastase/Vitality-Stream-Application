@@ -82,4 +82,5 @@
     <string name="loading_profile_message">Profil von %s hochgeladen</string>
     <string name="catalog_download_status_message">Download-Status: %,.2f Prozent</string>
     <string name="single_ble_device_connect_label">Verbinden</string>
+    <string name="video_player_wait_sensor_disconnect">Warten bis der Sensor getrennt ist.</string>
 </resources>

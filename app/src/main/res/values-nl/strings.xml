@@ -82,4 +82,5 @@
     <string name="signal_strength_indicator_low_signal_value">Slecht</string>
     <string name="signal_strength_indicator_very_low_signal_value">Erg slecht</string>
     <string name="single_ble_device_connect_label">Verbinden</string>
+    <string name="video_player_wait_sensor_disconnect">Wacht op ontkoppelen sensor.</string>
 </resources>

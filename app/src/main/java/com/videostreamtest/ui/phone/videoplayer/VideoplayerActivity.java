@@ -1,12 +1,20 @@
 package com.videostreamtest.ui.phone.videoplayer;
 
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.Process;
 import android.util.Log;
@@ -45,9 +53,8 @@ import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.enums.CommunicationType;
-import com.videostreamtest.receiver.CadenceSensorBroadcastReceiver;
 import com.videostreamtest.service.ant.AntPlusService;
-import com.videostreamtest.service.ble.BleService;
+import com.videostreamtest.service.ble.BleWrapper;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.ProductHelper;
@@ -63,11 +70,8 @@ import com.videostreamtest.utils.RpmVectorLookupTable;
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
-import org.videolan.libvlc.RendererItem;
-import org.videolan.libvlc.interfaces.IMedia;
 import org.videolan.libvlc.util.VLCVideoLayout;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,6 +84,7 @@ import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
  */
 public class VideoplayerActivity extends AppCompatActivity {
     private static final String TAG = VideoplayerActivity.class.getSimpleName();
+
     private static final int MAX_PAUSE_TIME_SEC = 55;
     private VideoPlayerViewModel videoPlayerViewModel;
 
@@ -120,8 +125,6 @@ public class VideoplayerActivity extends AppCompatActivity {
     private boolean isSoundOnDevice = false;
     private boolean isLocalPlay = false;
 
-    private CadenceSensorBroadcastReceiver cadenceSensorBroadcastReceiver;
-
     private LinearLayout statusDialog;
     private RelativeLayout loadingView;
 
@@ -141,6 +144,10 @@ public class VideoplayerActivity extends AppCompatActivity {
     private boolean routePaused = false;
     private int pauseTimer = 0;
     private boolean routeFinished = false;
+
+    //BLE
+    private BleWrapper bleWrapper;
+    private boolean backToOverviewWaitForSensor = false;
 
     //VLC stuff
     private LibVLC createLibVLC() {
@@ -442,7 +449,15 @@ public class VideoplayerActivity extends AppCompatActivity {
         backToOverview.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                finish();
+                if (bleWrapper != null) {
+                    bleWrapper.disconnect();
+                    backToOverviewWaitForSensor = true;
+
+                    backToOverview.setClickable(false);
+                    backToOverview.setText(R.string.video_player_wait_sensor_disconnect);
+                    //HANDLED FURTHER in #setTimeLineEventVideoPlayer()
+                }
+
             }
         });
 
@@ -563,12 +578,11 @@ public class VideoplayerActivity extends AppCompatActivity {
                     default:
                 }
                 Log.d(TAG, "RPM: "+rpm+" sensorConnected: "+sensorConnected);
-
                 /* Pause mechanism  */
                 //Only show pause screen while the video is not in loading state
                 if (!isLoading) {
                     //If the average measurement is 0 and the route is not paused then pause and show pause screen
-                    if (getAverageCadenceMeasurements() == 0 && !routePaused) {
+                    if (getAverageCadenceMeasurements() == 0 && !routePaused && !(communicationType == CommunicationType.NONE)) {
                         togglePauseScreen();
                     } else {
                         //If the route is paused and the average measurement is higher then 0 then unpause en remove pause screen
@@ -822,11 +836,6 @@ public class VideoplayerActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         stopSensorService();
-        try {
-            this.unregisterReceiver(cadenceSensorBroadcastReceiver);
-        } catch (IllegalArgumentException illegalArgumentException) {
-            Log.e(TAG, illegalArgumentException.getLocalizedMessage());
-        }
         releasePlayers();
         playerView.setPlayer(null);
     }
@@ -963,15 +972,23 @@ public class VideoplayerActivity extends AppCompatActivity {
 
                 //PAUSE TIMER
                 if (routePaused) {
-                    if (pauseTimer > MAX_PAUSE_TIME_SEC) {
+                    if (pauseTimer > MAX_PAUSE_TIME_SEC && !backToOverviewWaitForSensor) {
                         VideoplayerActivity.this.finish();
                     } else {
                         pauseTimer++;
                     }
 
-                    if (pauseTimer % 10 == 0) {
-                        startSensorService();
+                    Log.d(TAG, "backToOverviewSensorWait = "+backToOverviewWaitForSensor);
+
+                    if (backToOverviewWaitForSensor) {
+                        bleWrapper = null;
+                        VideoplayerActivity.this.finish();
                     }
+
+
+//                    if (pauseTimer % 10 == 0) {
+//                        startSensorService();
+//                    }
                 }
             }
         };
@@ -1124,10 +1141,6 @@ public class VideoplayerActivity extends AppCompatActivity {
 //        initializeEffectSoundPlayer();
 //        prepareEffectSoundPlayer();
 
-        //START DATA RECEIVERS
-        if (communicationType != CommunicationType.NONE) {
-            startSensorDataReceiver();
-        }
     }
 
     private void startSensorService() {
@@ -1139,20 +1152,14 @@ public class VideoplayerActivity extends AppCompatActivity {
                     startService(antplusService);
                     break;
                 case BLE:
-                    //Start BLE service to connect with cadence sensor
-                    Intent bleService = new Intent(getApplicationContext(), BleService.class);
-                    startService(bleService);
+                    //Start BLE to connect with sensor device
+                    bleWrapper = new BleWrapper();
+                    bleWrapper.initBle(this);
+                    bleWrapper.connectDefaultBleDevice();
                 default:
                     //NONE
             }
         }
-    }
-
-    private void startSensorDataReceiver() {
-        //Register the cadence sensor data broadcast receiver
-        cadenceSensorBroadcastReceiver = new CadenceSensorBroadcastReceiver();
-        IntentFilter filter = new IntentFilter(ApplicationSettings.COMMUNICATION_INTENT_FILTER);
-        this.registerReceiver(cadenceSensorBroadcastReceiver, filter);
     }
 
     private void initializeVlcVideoPlayer() {
@@ -1412,8 +1419,12 @@ public class VideoplayerActivity extends AppCompatActivity {
                 stopService(antplusService);
                 break;
             case BLE:
-                final Intent bleService = new Intent(getApplicationContext(), BleService.class);
-                stopService(bleService);
+//                final Intent bleService = new Intent(getApplicationContext(), BleService.class);
+//                stopService(bleService);
+                if (bleWrapper != null) {
+                    bleWrapper.disconnect();
+                    bleWrapper = null;
+                }
                 break;
             default:
         }
