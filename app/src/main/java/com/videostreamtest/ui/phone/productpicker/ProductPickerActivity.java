@@ -35,6 +35,7 @@ import androidx.work.WorkManager;
 
 import com.google.android.material.navigation.NavigationView;
 import com.videostreamtest.R;
+import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
@@ -129,6 +130,10 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                 PermissionHelper.requestPermission(getApplicationContext(), this, config);
 
                 checkForUpdatePeriodically(config.getAccountToken());
+
+
+                LogHelper.WriteLogRule(getApplicationContext(), config.getAccountToken(),"isTouchscreen: "+isTouchScreen(), "DEBUG", "");
+
                 // Add action onClick to signout button
                 signoutButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -285,6 +290,10 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
     @Override
     protected void onResume() {
         super.onResume();
+    }
+
+    private boolean isTouchScreen() {
+        return getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
     }
 
     private void initScreensaverHandler() {
