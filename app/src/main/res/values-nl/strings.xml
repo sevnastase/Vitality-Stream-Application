@@ -31,7 +31,7 @@
     <string name="pause_screen_button_text">Terug naar overzicht</string>
     <string name="video_screen_distance">%d m</string>
     <string name="video_screen_rpm">%d</string>
-    <string name="loading_message">Blijf trappen</string>
+    <string name="loading_message">Blijf bewegen</string>
     <string name="dead_device_screen_title">Sensor niet verbonden</string>
     <string name="dead_device_screen_message">Kon geen connectie maken met sensor. Herstart de film en probeer het opnieuw.</string>
     <string name="catalog_screen_distance">Afstand: %d,%d km</string>

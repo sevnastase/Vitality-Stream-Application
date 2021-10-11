@@ -46,7 +46,7 @@ public class BleWrapper {
     private BluetoothGattCallback bluetoothGattCallback;
 
     //CADENCE MEASUREMENT SMOOTHEN ALGORITHM
-    private int cadenceMeasurements[] = new int[4];
+    private int cadenceMeasurements[] = new int[8];
     private int cadenceMeasurementIndex = 0;
 
     //CADENCE CACHE FOR CALCULATING RPM VALUE
