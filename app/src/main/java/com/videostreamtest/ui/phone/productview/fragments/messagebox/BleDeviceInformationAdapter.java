@@ -4,6 +4,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -46,12 +47,18 @@ public class BleDeviceInformationAdapter extends RecyclerView.Adapter<BleDeviceI
     @Override
     public void onBindViewHolder(@NonNull @NotNull BleDeviceInformationViewHolder holder, int position) {
         Log.d(TAG, "Binding ble device info to viewholders");
+        holder.itemView.setSelected(selectedBleDeviceInfo==position);
+        Log.d(TAG, "selectedBleDeviceInfoId: "+selectedBleDeviceInfo+", position: "+position);
+
+        if (bleDeviceInfoList != null && bleDeviceInfoList.size() > 0) {
+            Log.d(TAG, "position intended: "+position);
+            holder.bind(bleDeviceInfoList.get(position), productViewModel, this, position);
+        }
+
         if (selectedBleDeviceInfo == position) {
             holder.itemView.requestFocus();
-        }
-        holder.itemView.setSelected(selectedBleDeviceInfo==position);
-        if (bleDeviceInfoList != null && bleDeviceInfoList.size() > 0) {
-            holder.bind(bleDeviceInfoList.get(position), productViewModel, position);
+            Button connectButton = holder.itemView.findViewById(R.id.single_ble_device_connect_button);
+            connectButton.requestFocus();
         }
     }
 
@@ -62,6 +69,10 @@ public class BleDeviceInformationAdapter extends RecyclerView.Adapter<BleDeviceI
         } else {
             return bleDeviceInfoList.size();
         }
+    }
+
+    public void setSelectedBleDeviceId(final int position) {
+        this.selectedBleDeviceInfo = position;
     }
 
     public List<BleDeviceInfo> getAllBleDeviceInfo() {

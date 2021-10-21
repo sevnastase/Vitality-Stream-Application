@@ -12,4 +12,8 @@
         android:id="@+id/bleDeviceInformationBoxFragment"
         android:name="com.videostreamtest.ui.phone.productview.fragments.messagebox.BleDeviceInformationBoxFragment"
         android:label="BleDeviceInformationBoxFragment" />
+    <fragment
+        android:id="@+id/logoutFragment"
+        android:name="com.videostreamtest.ui.phone.productpicker.fragments.LogoutFragment"
+        android:label="LogoutFragment" />
 </navigation>

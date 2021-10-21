@@ -78,14 +78,14 @@
     <string name="product_view_loading_data_message">Loading data...</string>
     <string name="menu_nav_home_title">Home</string>
     <string name="menu_nav_ble_settings_title">BLE settings</string>
-    <string name="settings_ble_activity_sensor_overview_header">Activity Sensor Overview</string>
+    <string name="settings_ble_activity_sensor_overview_header">Selected Sensor</string>
     <string name="settings_ble_name_header">Name:</string>
     <string name="settings_ble_value_placeholder_no_device">No device</string>
     <string name="settings_ble_battery_header">Battery:</string>
     <string name="settings_ble_battery_value_placeholder">--%</string>
     <string name="settings_ble_signal_strength_header">Signal strength:</string>
     <string name="settings_ble_signal_strength_value_placeholder">None</string>
-    <string name="settings_ble_connect_to_device_header">Select device to connect:</string>
+    <string name="settings_ble_connect_to_device_header">Start moving sensor to activate the sensor. \nClick on the SELECT button to select the sensor where the Select button is shown in green.\nSelect sensor device:</string>
     <string name="productpicker_settings_button_text">Settings</string>
     <string name="signal_strength_indicator_no_signal_value">No signal</string>
     <string name="signal_strength_indicator_excellent_signal_value">Excellent</string>
@@ -93,6 +93,5 @@
     <string name="signal_strength_indicator_good_signal_value">Good</string>
     <string name="signal_strength_indicator_low_signal_value">Low</string>
     <string name="signal_strength_indicator_very_low_signal_value">Very low</string>
-    <string name="single_ble_device_connect_label">Connect</string>
-    <string name="video_player_wait_sensor_disconnect">Wait for BLE device to disconnect...</string>
+    <string name="single_ble_device_connect_label">Select</string>
 </resources>

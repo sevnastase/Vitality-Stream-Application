@@ -1,6 +1,7 @@
 package com.videostreamtest.ui.phone.helpers;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
@@ -41,6 +42,10 @@ public class ViewHelper {
         } else {
             Log.e(TAG, "ERROR RETRIEVING IMAGE INFORMATION");
         }
+    }
+
+    public static boolean isTouchScreen(final Context context) {
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
     }
 
     private static List<Integer> getExternalImageSize(final String url) {

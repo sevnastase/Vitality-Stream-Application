@@ -52,7 +52,6 @@ public class BleScanCallback extends ScanCallback {
                             } else {
                                 addNearbyBleDeviceToList(result.getDevice(), result.getRssi(), "CYCLING");
                             }
-//                                        bluetoothGatt = result.getDevice().connectGatt(getApplicationContext(), true, gattCallback);
                         }
                         Log.d(TAG, "RSSI: "+result.getRssi());
                     }

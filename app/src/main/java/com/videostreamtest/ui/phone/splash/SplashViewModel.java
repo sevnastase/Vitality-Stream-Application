@@ -7,7 +7,9 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Configuration;
+import com.videostreamtest.config.repository.BluetoothDefaultDeviceRepository;
 import com.videostreamtest.config.repository.ConfigurationRepository;
 import com.videostreamtest.config.repository.ProductRepository;
 import com.videostreamtest.config.repository.ProfileRepository;
@@ -20,6 +22,7 @@ public class SplashViewModel extends AndroidViewModel {
     private ConfigurationRepository configurationRepository;
     private ProductRepository productRepository;
     private ProfileRepository profileRepository;
+    private BluetoothDefaultDeviceRepository bluetoothDefaultDeviceRepository;
 
     private final LiveData<Configuration> currentConfig;
     private final LiveData<List<Configuration>> allConfigurations;
@@ -33,6 +36,7 @@ public class SplashViewModel extends AndroidViewModel {
         configurationRepository = new ConfigurationRepository(application);
         productRepository = new ProductRepository(application);
         profileRepository = new ProfileRepository(application);
+        bluetoothDefaultDeviceRepository = new BluetoothDefaultDeviceRepository(application);
 
         allConfigurations = configurationRepository.getConfigurations();
         currentConfig = configurationRepository.getCurrentConfiguration();
@@ -48,6 +52,10 @@ public class SplashViewModel extends AndroidViewModel {
 
     public void insertProduct(final com.videostreamtest.config.entity.Product product) {
         productRepository.insert(product);
+    }
+
+    public void insertBluetoothDefaultDevice(final BluetoothDefaultDevice bluetoothDefaultDevice) {
+        bluetoothDefaultDeviceRepository.insertBluetoothDefaultDevice(bluetoothDefaultDevice);
     }
 
     public LiveData<List<com.videostreamtest.config.entity.Profile>> getAccountProfiles() {

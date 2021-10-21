@@ -31,7 +31,7 @@
     <string name="pause_screen_button_text">Terug naar overzicht</string>
     <string name="video_screen_distance">%d m</string>
     <string name="video_screen_rpm">%d</string>
-    <string name="loading_message">Blijf bewegen</string>
+    <string name="loading_message">Blijf trappen</string>
     <string name="dead_device_screen_title">Sensor niet verbonden</string>
     <string name="dead_device_screen_message">Kon geen connectie maken met sensor. Herstart de film en probeer het opnieuw.</string>
     <string name="catalog_screen_distance">Afstand: %d,%d km</string>
@@ -66,14 +66,14 @@
     <string name="product_view_loading_data_message">Bezig met ophalen van informatie...</string>
     <string name="menu_nav_home_title">Startscherm</string>
     <string name="menu_nav_ble_settings_title">BLE instellingen</string>
-    <string name="settings_ble_activity_sensor_overview_header">Huidig sensor activiteit</string>
+    <string name="settings_ble_activity_sensor_overview_header">Geselecteerde sensor</string>
     <string name="settings_ble_name_header">Naam:</string>
     <string name="settings_ble_value_placeholder_no_device">Niet aanwezig</string>
     <string name="settings_ble_battery_header">Batterij:</string>
     <string name="settings_ble_battery_value_placeholder">--%</string>
     <string name="settings_ble_signal_strength_header">Signaalsterkte:</string>
     <string name="settings_ble_signal_strength_value_placeholder">Geen</string>
-    <string name="settings_ble_connect_to_device_header">Selecteer apparaat om mee te verbinden:</string>
+    <string name="settings_ble_connect_to_device_header">Beweeg sensor om de sensor te activeren. \nKlik op de knop Selecteer om de sensor te selecteren. \nSelecteer standaard sensor:</string>
     <string name="productpicker_settings_button_text">Instellingen</string>
     <string name="signal_strength_indicator_no_signal_value">Geen signaal</string>
     <string name="signal_strength_indicator_excellent_signal_value">Uitstekend</string>
@@ -81,6 +81,5 @@
     <string name="signal_strength_indicator_good_signal_value">Goed</string>
     <string name="signal_strength_indicator_low_signal_value">Slecht</string>
     <string name="signal_strength_indicator_very_low_signal_value">Erg slecht</string>
-    <string name="single_ble_device_connect_label">Verbinden</string>
-    <string name="video_player_wait_sensor_disconnect">Wacht op ontkoppelen sensor.</string>
+    <string name="single_ble_device_connect_label">Selecteer</string>
 </resources>

@@ -136,6 +136,15 @@
                     android:textSize="12sp"
                     android:text="@string/settings_ble_signal_strength_value_placeholder"/>
             </LinearLayout>
+            <Button
+                android:id="@+id/ble_sensor_disconnect_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:text="@string/cast_disconnect"
+                android:background="@null"
+                android:backgroundTint="@android:color/holo_red_dark"
+                android:textColor="@color/exo_white"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -144,7 +153,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|center_horizontal"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -157,6 +167,7 @@
                 android:layout_gravity="center"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxLines="5"
                 android:textColor="@color/exo_white"
                 android:text="@string/settings_ble_connect_to_device_header" />
         </LinearLayout>

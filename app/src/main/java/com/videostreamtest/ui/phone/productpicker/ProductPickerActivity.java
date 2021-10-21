@@ -13,9 +13,11 @@ import android.os.Looper;
 import android.os.Process;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,6 +26,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
+import androidx.navigation.NavGraph;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.Constraints;
@@ -35,6 +38,8 @@ import androidx.work.WorkManager;
 
 import com.google.android.material.navigation.NavigationView;
 import com.videostreamtest.R;
+import com.videostreamtest.config.entity.Product;
+import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
@@ -131,8 +136,22 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
 
                 checkForUpdatePeriodically(config.getAccountToken());
 
-
                 LogHelper.WriteLogRule(getApplicationContext(), config.getAccountToken(),"isTouchscreen: "+isTouchScreen(), "DEBUG", "");
+
+                productPickerViewModel.getAccountProducts(config.getAccountToken(), !config.isLocalPlay()).observe(this, products -> {
+                    if (products!=null && products.size()>0) {
+                        boolean sensorNeeded = false;
+                        for (final Product product: products) {
+                            if (!product.getCommunicationType().equals("NONE")) {
+                                sensorNeeded = true;
+                            }
+                        }
+                        if (sensorNeeded) {
+                            startBleService();
+                        }
+                    }
+                });
+//                startBleService();
 
                 // Add action onClick to signout button
                 signoutButton.setOnClickListener(new View.OnClickListener() {
@@ -156,6 +175,10 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                     }
                 });
 
+                if (config.isLocalPlay()) {
+                    hideMenuItem(R.id.nav_logout);
+                }
+
                 settingsButton.setOnClickListener(onClickedView -> {
                     Log.d(TAG,"Settings clicked!");
                     if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -164,7 +187,6 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                         drawerLayout.openDrawer(GravityCompat.START);
 
                         if (navView.getCheckedItem()!= null) {
-//                            navView.getCheckedItem().setChecked(false);
                             navView.requestFocus();
                         } else {
                             navView.requestFocus();
@@ -172,106 +194,11 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                     }
                 });
 
-                if(config.isLocalPlay()) {
+//                if(config.isLocalPlay()) {
                     signoutButton.setVisibility(View.GONE);
-                }
-
-//                productPickerViewModel.getAccountProducts(config.getAccountToken(), !config.isLocalPlay()).observe(this, products ->{
-//
-//                    List<Product> productList = new ArrayList<>();
-//                    if (products.size()>0) {
-//                        for (com.videostreamtest.config.entity.Product extProd : products) {
-//                            Product addProd = new Product();
-//                            addProd.setId(extProd.getUid());
-//                            addProd.setDefaultSettingsId(0);
-//                            addProd.setProductLogoButtonPath(extProd.getProductLogoButtonPath());
-//                            addProd.setSupportStreaming(extProd.getSupportStreaming());
-//                            addProd.setProductName(extProd.getProductName());
-//                            addProd.setBlocked(extProd.getBlocked());
-//                            addProd.setCommunicationType(extProd.getCommunicationType());
-//                            productList.add(addProd);
-//                        }
-//                    }
-//
-//                    ProductPickerAdapter productPickerAdapter = new ProductPickerAdapter(productList.toArray(new Product[0]));
-//                    //set adapter to recyclerview
-//                    productOverview.setAdapter(productPickerAdapter);
-//                    //set recyclerview visible
-//                    productOverview.setVisibility(View.VISIBLE);
-//
-//                    //For UI alignment in center with less then 5 products
-//                    int spanCount = 5;
-//                    if (products.size() < 5) {
-//                        spanCount = products.size();
-//                    }
-//                    //Grid Layout met een max 5 kolommen breedte
-//                    final GridLayoutManager gridLayoutManager = new GridLayoutManager(this,spanCount);
-//                    //Zet de layoutmanager erin
-//                    productOverview.setLayoutManager(gridLayoutManager);
-//                    findViewById(android.R.id.content).invalidate();
-//                });
+//                }
             }
         });
-
-//        // Check if Android M or higher
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            // Show alert dialog to the user saying a separate permission is needed
-//            requestPermissions(new String[]{
-//                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-//                    Manifest.permission.INTERNET,
-//                    Manifest.permission.ACCESS_NETWORK_STATE,
-//                    Manifest.permission.BLUETOOTH,
-//                    Manifest.permission.BLUETOOTH_ADMIN,
-//                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-//                    Manifest.permission.READ_EXTERNAL_STORAGE
-//            }, 2323);
-//        }
-//
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-//            if (ContextCompat.checkSelfPermission(getApplicationContext(),
-//                    Manifest.permission.ACCESS_COARSE_LOCATION)
-//                    != PackageManager.PERMISSION_GRANTED) {
-//                ActivityCompat.requestPermissions(
-//                        ProductPickerActivity.this,
-//                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-//                        2323);
-//            }
-//        }
-//
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//            if (ContextCompat.checkSelfPermission(getApplicationContext(),
-//                    Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-//                    != PackageManager.PERMISSION_GRANTED) {
-//                ActivityCompat.requestPermissions(
-//                        ProductPickerActivity.this,
-//                        new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION},
-//                        2323);
-//            }
-//            if (ContextCompat.checkSelfPermission(getApplicationContext(),
-//                    Manifest.permission.ACCESS_FINE_LOCATION)
-//                    != PackageManager.PERMISSION_GRANTED) {
-//                ActivityCompat.requestPermissions(
-//                        ProductPickerActivity.this,
-//                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-//                        2323);
-//            }
-//        }getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)
-
-
-//
-//        Intent intent = new Intent(getApplicationContext(), BleService.class);
-//        startService(intent);
-//
-//        bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
-//        assert bluetoothManager != null;
-//        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
-//
-//        scanner = bluetoothAdapter.getBluetoothLeScanner();
-//
-//        final BleDeviceInformationAdapter bleDeviceInformationAdapter = new BleDeviceInformationAdapter(productViewModel);
-//        bleScanCallback = new BleScanCallback(bleDeviceInformationAdapter);
-//        scanner.startScan(bleScanCallback);
-
     }
 
     @Override
@@ -380,6 +307,9 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
             case R.id.nav_home:
                 navController.navigate(R.id.productPickerFragment);
                 break;
+            case R.id.nav_logout:
+                navController.navigate(R.id.logoutFragment);
+                break;
         }
         drawerLayout.closeDrawer(GravityCompat.START);
         return false;
@@ -399,6 +329,30 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                 .build();
         WorkManager.getInstance(this)
                 .enqueueUniquePeriodicWork("sync-product-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productUpdaterRequest);
+    }
+
+    private void startBleService() {
+        final String bluetoothDeviceAddress = getSharedPreferences("app", MODE_PRIVATE).getString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, "NONE");
+        if (bluetoothDeviceAddress.equals("NONE") || bluetoothDeviceAddress.equals("")) {
+            Toast.makeText(this, "Please select sensor to connect with.", Toast.LENGTH_LONG).show();
+            NavHostFragment navHostFragment =
+                    (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+            NavController navController = navHostFragment.getNavController();
+            if (navController.getCurrentDestination().getId() != R.id.bleDeviceInformationBoxFragment) {
+                navController.navigate(R.id.bleDeviceInformationBoxFragment);
+            }
+        } else {
+            Intent bleService = new Intent(getApplicationContext(), BleService.class);
+            startService(bleService);
+        }
+    }
+
+    private void hideMenuItem(final int id)
+    {
+        if (navView != null) {
+            Menu nav_Menu = navView.getMenu();
+            nav_Menu.findItem(id).setVisible(false);
+        }
     }
 
 }

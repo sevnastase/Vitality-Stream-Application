@@ -1,16 +1,19 @@
 package com.videostreamtest.workers;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.work.Data;
 import androidx.work.ForegroundInfo;
@@ -112,7 +115,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             if (DownloadHelper.isWebserverReachable(localMediaServerUrl)) {
                 routefilm.setMovieUrl(routefilm.getMovieUrl().replace("http://praxmedia.praxtour.com/","http://"+localMediaServerUrl+"/"));
             } else {
-                databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":LocalServerNotResponding", "ERROR", "");
+                databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":LocalServerNotResponding,"+localMediaServerUrl, "ERROR", "");
             }
         }
 
@@ -201,7 +204,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             //Create movie folder named by movie ID
             if (new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder).exists() &&
                     new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder).isDirectory()) {
-                Log.d(TAG, "movieID folder exists");
+                Log.d(TAG, "movieID folder exists ("+movieIdFolder+")");
             } else {
                 new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder).mkdir();
             }
@@ -211,6 +214,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             return;
         }
 
+//        FileOutputStream fileOutputStream = getApplicationContext().openFileOutput(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder+"/"+fileName, Context.MODE_PRIVATE);
         FileOutputStream fileOutputStream = new FileOutputStream(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder+"/"+fileName);
         fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
     }

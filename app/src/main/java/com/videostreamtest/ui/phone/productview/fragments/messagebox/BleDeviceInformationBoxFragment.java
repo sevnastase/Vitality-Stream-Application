@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
@@ -28,7 +29,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
+import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.service.ble.callback.BleScanCallback;
+import com.videostreamtest.ui.phone.helpers.BleHelper;
+import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 
@@ -49,7 +53,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
     private TextView deviceBatterylevelLabel;
     private TextView deviceNameLabel;
 
-    private Button closeButton;
+    private Button disconnectButton;
     private TextView deviceLabel;
     private RecyclerView showBleDevicesRecyclerView;
 
@@ -60,7 +64,6 @@ public class BleDeviceInformationBoxFragment extends Fragment {
 
         productViewModel = new ViewModelProvider(requireActivity()).get(ProductViewModel.class);
 
-//        closeButton = view.findViewById(R.id.current_connected_device_close_button);
         deviceLabel = view.findViewById(R.id.messagebox_connected_device_label);
         showBleDevicesRecyclerView = view.findViewById(R.id.messagebox_available_ble_devices);
 
@@ -68,18 +71,29 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         deviceBatterylevelLabel = view.findViewById(R.id.current_connected_device_battery_label);
         deviceNameLabel = view.findViewById(R.id.current_connected_device_label);
 
-//        closeButton.setOnClickListener(onClickView -> {
-//            closeMessageBox();
-//        });
+        disconnectButton = view.findViewById(R.id.ble_sensor_disconnect_button);
+        disconnectButton.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    final Drawable border = v.getContext().getDrawable(R.drawable.imagebutton_red_border);
+                    disconnectButton.setBackground(border);
+                } else {
+                    disconnectButton.setBackground(null);
+                }
+            }
+        });
 
-//        initOnFocusChangeCloseMessageboxButtonListener();
+        if (ViewHelper.isTouchScreen(getActivity())) {
+            final Drawable border = getActivity().getDrawable(R.drawable.imagebutton_red_border);
+            disconnectButton.setBackground(border);
+        }
 
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-//        closeButton.requestFocus();
         // Bluetooth Low Energy
         bluetoothManager = (BluetoothManager) getActivity().getSystemService(BLUETOOTH_SERVICE);
         assert bluetoothManager != null;
@@ -107,37 +121,16 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         }
 
         loadBluetoothDefaultDeviceInformation();
-
-        if (checkBluetoothSupport(bluetoothAdapter)) {
-
-            scanner = bluetoothAdapter.getBluetoothLeScanner();
-
-            final BleDeviceInformationAdapter bleDeviceInformationAdapter = new BleDeviceInformationAdapter(productViewModel);
-            bleScanCallback = new BleScanCallback(bleDeviceInformationAdapter);
-            scanner.startScan(bleScanCallback);
-
-            showBleDevicesRecyclerView.setHasFixedSize(true);
-
-            //Maak lineaire layoutmanager en zet deze op horizontaal
-            LinearLayoutManager layoutManager
-                    = new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false);
-
-            //Zet de layoutmanager erin
-            showBleDevicesRecyclerView.setLayoutManager(layoutManager);
-            showBleDevicesRecyclerView.setAdapter(bleDeviceInformationAdapter);
-
-        } else {
-            showWarningBleNotSupported();
-        }
+        initDisconnectButtonOnClickListener();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if (scanner != null && bleScanCallback!= null) {
-            scanner.stopScan(bleScanCallback);
-            Log.d(TAG, "BLE Scanning stopped. [VIEW PAUSED]");
-        }
+//        if (scanner != null && bleScanCallback!= null) {
+//            scanner.stopScan(bleScanCallback);
+//            Log.d(TAG, "BLE Scanning stopped. [VIEW PAUSED]");
+//        }
     }
 
     @Override
@@ -154,14 +147,36 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         assert bluetoothManager != null;
         BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
         LinearLayout linearLayoutConnectionDeviceSummary = getView().findViewById(R.id.overlay_connection_info_box);
-        if (bluetoothAdapter!= null) {
+
+        if (bluetoothAdapter != null) {
             bluetoothAdapter.enable();
             linearLayoutConnectionDeviceSummary.setVisibility(View.VISIBLE);
 
             productViewModel.getBluetoothDefaultDevices().observe(getViewLifecycleOwner(), bluetoothDefaultDevices -> {
                 if (bluetoothDefaultDevices != null && bluetoothDefaultDevices.size()>0) {
+                    LinearLayout searchSensorLayout = getView().findViewById(R.id.overlay_messagebox_connection_info_summary);
+                    LinearLayout sensorStatusView = getView().findViewById(R.id.overlay_connection_info_box);
+
+                    if (!bluetoothDefaultDevices.get(0).getBleAddress().equals("NONE")
+                            && !bluetoothDefaultDevices.get(0).getBleAddress().equals("") //&& !deviceAddress.equals("NONE")
+                        ) {
+                        searchSensorLayout.setVisibility(View.GONE);
+                        sensorStatusView.setVisibility(View.VISIBLE);
+                    } else {
+                        searchSensorLayout.setVisibility(View.VISIBLE);
+                        sensorStatusView.setVisibility(View.GONE);
+                    }
+
+                    if (scanner != null && sensorStatusView.getVisibility() == View.VISIBLE) {
+                        scanner.flushPendingScanResults(bleScanCallback);
+                        scanner.stopScan(bleScanCallback);
+                    } else {
+                        startScanForDevices(bluetoothManager.getAdapter());
+                    }
+
                     BluetoothDefaultDevice bluetoothDefaultDevice =  bluetoothDefaultDevices.get(0);
-                    if (bluetoothDefaultDevice.getBleName() != null && !bluetoothDefaultDevice.getBleName().isEmpty()) {
+                    if (bluetoothDefaultDevice.getBleName() != null && !bluetoothDefaultDevice.getBleName().isEmpty()
+                        && !bluetoothDefaultDevices.get(0).getBleAddress().equals("NONE")) {
                         deviceNameLabel.setText(bluetoothDefaultDevice.getBleName());
                         if (!bluetoothDefaultDevice.getBleBatterylevel().isEmpty() && bluetoothDefaultDevice.getBleBatterylevel()!="") {
                             deviceBatterylevelLabel.setText(bluetoothDefaultDevice.getBleBatterylevel() + "%");
@@ -213,22 +228,54 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         }
     }
 
-//    private void initOnFocusChangeCloseMessageboxButtonListener() {
-//        closeButton.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-//            @Override
-//            public void onFocusChange(View v, boolean hasFocus) {
-//
-//                closeButton.setSelected(true);
-//                if (hasFocus) {
-//                    final Drawable border = getContext().getDrawable(R.drawable.imagebutton_blue_border);
-//                    closeButton.setBackground(border);
-//                    closeButton.setBackgroundTintMode(PorterDuff.Mode.ADD);
-//                } else {
-//                    final Drawable border = getContext().getDrawable(R.drawable.imagebutton_red_border);
-//                    closeButton.setBackground(border);
-//                    closeButton.setBackgroundTintMode(PorterDuff.Mode.SRC_OVER);
-//                }
-//            }
-//        });
-//    }
+    private void startScanForDevices(final BluetoothAdapter bluetoothAdapter) {
+        if (checkBluetoothSupport(bluetoothAdapter)) {
+            scanner = bluetoothAdapter.getBluetoothLeScanner();
+
+            final BleDeviceInformationAdapter bleDeviceInformationAdapter = new BleDeviceInformationAdapter(productViewModel);
+            bleScanCallback = new BleScanCallback(bleDeviceInformationAdapter);
+            scanner.startScan(bleScanCallback);
+
+            /**
+             * First idea is to write NONE to the room database of default ble device on logout
+             */
+            showBleDevicesRecyclerView.setHasFixedSize(true);
+
+            //Maak lineaire layoutmanager en zet deze op horizontaal
+            LinearLayoutManager layoutManager
+                    = new LinearLayoutManager(getView().getContext(), LinearLayoutManager.VERTICAL, false);
+
+            //Zet de layoutmanager erin
+            showBleDevicesRecyclerView.setLayoutManager(layoutManager);
+            showBleDevicesRecyclerView.setAdapter(bleDeviceInformationAdapter);
+        } else {
+            showWarningBleNotSupported();
+        }
+    }
+
+    private void initDisconnectButtonOnClickListener() {
+        disconnectButton.setOnClickListener((viewClicked) ->{
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, "NONE");
+            editor.commit();
+
+            BluetoothDefaultDevice bluetoothDefaultDevice = new BluetoothDefaultDevice();
+            bluetoothDefaultDevice.setBleId(1);
+            bluetoothDefaultDevice.setBleAddress("NONE");
+            bluetoothDefaultDevice.setBleName("");
+            bluetoothDefaultDevice.setBleSensorType("");
+            bluetoothDefaultDevice.setBleSignalStrength("--");
+            bluetoothDefaultDevice.setBleBatterylevel("--");
+            productViewModel.insertBluetoothDefaultDevice(bluetoothDefaultDevice);
+
+            Intent bleService = new Intent(getActivity().getApplicationContext(), BleService.class);
+            getActivity().startService(bleService);
+//            LinearLayout searchSensorLayout = getView().findViewById(R.id.overlay_messagebox_connection_info_summary);
+//            searchSensorLayout.setVisibility(View.VISIBLE);
+//            LinearLayout sensorStatusView = getView().findViewById(R.id.overlay_connection_info_box);
+//            sensorStatusView.setVisibility(View.GONE);
+            startScanForDevices(bluetoothManager.getAdapter());
+        });
+    }
 }

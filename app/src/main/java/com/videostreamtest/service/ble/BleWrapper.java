@@ -330,12 +330,7 @@ public class BleWrapper {
                             public void run() {
                                 if (bluetoothGatt == null) {
                                     try {
-                                        if (result.getDevice().getBondState() == BluetoothDevice.BOND_BONDED){
-                                            Log.d(TAG, "Bonded with device: "+result.getDevice().getName());
-                                        } else {
-//                                            result.getDevice().createBond();
-                                        }
-                                        bluetoothGatt = result.getDevice().connectGatt(context, true, bluetoothGattCallback, BluetoothDevice.TRANSPORT_LE);
+                                        bluetoothGatt = result.getDevice().connectGatt(context, false, bluetoothGattCallback, BluetoothDevice.TRANSPORT_LE);
                                     } catch (IllegalArgumentException exception) {
                                         Log.w(TAG, "Device not found with provided address. > "+exception.getLocalizedMessage());
                                     }
@@ -363,18 +358,19 @@ public class BleWrapper {
         scanner.startScan(scanCallback);
     }
 
-    public void connectDefaultBleDevice() {
+    public boolean connectDefaultBleDevice() {
         if (context == null) {
             Log.w(TAG, "Context not initialized, forgot to call initBle()?");
-            return;
+            return false;
         }
         SharedPreferences sharedPreferences = context.getSharedPreferences("app", Context.MODE_PRIVATE);
         final String bleDeviceAddress = sharedPreferences.getString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, "NONE");
         if (bleDeviceAddress == "NONE") {
             Log.w(TAG, "bleDeviceAddress not set, forgot to select default device through settings menu?");
-            return;
+            return false;
         }
         connectBleDevice(bleDeviceAddress);
+        return true;
     }
 
     public void disconnect() {

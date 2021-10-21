@@ -3,8 +3,10 @@ package com.videostreamtest.ui.phone.splash;
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,13 +32,16 @@ import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.android.play.core.tasks.Task;
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
+import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.ProductType;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
+import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.ui.phone.productview.ProductActivity;
 import com.videostreamtest.ui.phone.profiles.ProfilesActivity;
+import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.InstallPackageServiceWorker;
 import com.videostreamtest.workers.UpdatePackageServiceWorker;
 
@@ -99,6 +104,25 @@ public class SplashActivity extends AppCompatActivity {
                                     for (final com.videostreamtest.config.entity.Product p : products) {
                                         Log.d(TAG, "Product ID :: " + p.getUid() + " :: Product name :: " + p.getProductName());
                                     }
+
+                                    //SENSOR CHECK
+                                    SharedPreferences sharedPreferences = getSharedPreferences("app" , Context.MODE_PRIVATE);
+                                    String deviceAddress = sharedPreferences.getString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY,"NONE");
+
+                                    if (deviceAddress.equals("NONE") || deviceAddress.equals("")) {
+                                        BluetoothDefaultDevice bluetoothDefaultDevice = new BluetoothDefaultDevice();
+                                        bluetoothDefaultDevice.setBleId(1);
+                                        bluetoothDefaultDevice.setBleAddress("NONE");
+                                        bluetoothDefaultDevice.setBleName("");
+                                        bluetoothDefaultDevice.setBleSensorType("");
+                                        bluetoothDefaultDevice.setBleSignalStrength("--");
+                                        bluetoothDefaultDevice.setBleBatterylevel("--");
+                                        splashViewModel.insertBluetoothDefaultDevice(bluetoothDefaultDevice);
+
+                                        Log.d(TAG, "Sensor Device internal db synced with internal in-memory value");
+                                        LogHelper.WriteLogRule(getApplicationContext(), config.getAccountToken(), "Sensor device not registered in app memory." ,"DEBUG", "");
+                                    }
+
                                     startActivity(new Intent(SplashActivity.this, ProductPickerActivity.class));
                                     SplashActivity.this.finish();
                                 }

@@ -24,7 +24,12 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
+import android.os.Process;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -116,6 +121,38 @@ public class BleService extends Service {
     private int cadenceMeasurements[] = new int[8];
     private int cadenceMeasurementIndex = 0;
 
+    private Looper serviceLooper;
+    private ServiceHandler serviceHandler;
+
+    // Handler that receives messages from the thread
+    private final class ServiceHandler extends Handler {
+        public ServiceHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            Log.d(TAG, "msg startId: "+msg.arg1);
+            bluetoothDeviceAddress = getSharedPreferences("app", MODE_PRIVATE).getString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, "NONE");
+            Log.d(TAG, "device addr: "+bluetoothDeviceAddress);
+            if (bluetoothGatt == null) {
+                //No connection so try a new connection with default device
+                startScan();
+            } else {
+                //Disconnect
+                if (bluetoothDeviceAddress.equals("NONE") || bluetoothDeviceAddress.equals("")) {
+                    bluetoothGatt.close();
+                    stopSelf(msg.arg1);
+                } else {
+                    startScan();
+                }
+            }
+            // Stop the service using the startId, so that we don't stop
+            // the service in the middle of handling another job
+//            stopSelf(msg.arg1);
+        }
+    }
+
     // Various callback methods defined by the BLE API.
     private final BluetoothGattCallback gattCallback =
             new BluetoothGattCallback() {
@@ -126,11 +163,8 @@ public class BleService extends Service {
                 @Override
                 public void onConnectionStateChange(BluetoothGatt gatt, int status,
                                                     int newState) {
-                    String intentAction;
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        intentAction = ACTION_GATT_CONNECTED;
                         connectionState = STATE_CONNECTED;
-                        broadcastUpdate(intentAction);
                         Log.i(TAG, "Connected to GATT server.");
                         if (gatt.getDevice()!=null) {
                             Log.i(TAG, "Connected to GATT server {" + gatt.getDevice().getName() + "}");
@@ -139,10 +173,8 @@ public class BleService extends Service {
                                 gatt.discoverServices());
 
                     } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                        intentAction = ACTION_GATT_DISCONNECTED;
                         connectionState = STATE_DISCONNECTED;
                         Log.i(TAG, "Disconnected from GATT server.");
-                        broadcastUpdate(intentAction);
                         gatt.close();
                         bluetoothGatt = null;
                     }
@@ -222,8 +254,8 @@ public class BleService extends Service {
                     Log.d(TAG, "Device Name: " + gatt.getDevice().getName());
                     Log.d(TAG, "Device Address: " + gatt.getDevice().getAddress());
 
-                    if (bluetoothDeviceAddress!= null && bluetoothDeviceAddress != "" &&
-                            gatt.getDevice().getAddress()==bluetoothDeviceAddress) {
+                    if (bluetoothDeviceAddress!= null && !bluetoothDeviceAddress.equals("") &&
+                            gatt.getDevice().getAddress().equals(bluetoothDeviceAddress)) {
                         Log.d(TAG, "Selected Device Triggered");
 
                         if (characteristic.getUuid().equals(CSCProfile.RSC_MEASUREMENT)) {
@@ -349,26 +381,18 @@ public class BleService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "BLE Service created");
+        HandlerThread thread = new HandlerThread("ServiceStartArguments",
+                Process.THREAD_PRIORITY_URGENT_DISPLAY);
+        thread.start();
+
+        // Get the HandlerThread's Looper and use it for our Handler
+        serviceLooper = thread.getLooper();
+        serviceHandler = new ServiceHandler(serviceLooper);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-        bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
-        assert bluetoothManager != null;
-        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
-
-        if (!checkBluetoothSupport(bluetoothAdapter)) {
-            Log.e(TAG, "Bluetooth LE isn't supported. This won't run");
-            stopSelf();
-            return START_NOT_STICKY;
-        }
-        if (!bluetoothAdapter.isEnabled()) {
-            Log.d(TAG, "Bluetooth is currently disabled...enabling");
-            bluetoothAdapter.enable();
-        }
-        initialised = true;
-        Log.d(TAG, "Bluetooth enabled...");
+        initialised = init();
 
         Log.d(TAG, "BLE Service onStartCommand");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -403,62 +427,9 @@ public class BleService extends Service {
             startForeground(ONGOING_NOTIFICATION_ID, notification);
         }
 
-        bluetoothDefaultDeviceList = new ArrayList<>();
-        PraxtourDatabase.databaseWriterExecutor.execute( () -> {
-            bluetoothDefaultDeviceList = PraxtourDatabase.getDatabase(getApplicationContext()).bluetoothDefaultDeviceDao().getRawBluetoothDefaultDevice(1);
-            Log.d(TAG, "BLE DEFAULT DEVICE Size: "+bluetoothDefaultDeviceList.size());
-            String bleDeviceAddress = "";
-            if (bluetoothDefaultDeviceList.size()>0) {
-                bleDeviceAddress = bluetoothDefaultDeviceList.get(0).getBleAddress();
-                Log.d(TAG, "Address/Name of Default BLE Device: "+bluetoothDefaultDeviceList.get(0).getBleAddress()+"/"+bluetoothDefaultDeviceList.get(0).getBleName());
-            }
-
-            final String finalizedBleDeviceAddress = bleDeviceAddress;
-            bluetoothDeviceAddress = bleDeviceAddress;
-
-//            try {
-//
-//                final BluetoothDevice sensorDevice = bluetoothAdapter.getRemoteDevice(bleDeviceAddress);
-//                if (bluetoothGatt != null && bluetoothGatt.getDevice() !=null
-//                && bluetoothGatt.getDevice().getAddress() !=null && bluetoothGatt.getDevice().getAddress() != bleDeviceAddress) {
-//                    bluetoothGatt.disconnect();
-//                }
-//                if (bluetoothGatt == null) {
-//                    bluetoothGatt = sensorDevice.connectGatt(getApplicationContext(), true, gattCallback, BluetoothDevice.TRANSPORT_LE);
-//                }
-//            } catch (IllegalArgumentException exception) {
-//                Log.w(TAG, "Device not found with provided address.");
-//            }
-
-            scanner = bluetoothAdapter.getBluetoothLeScanner();
-
-            scanCallback = new ScanCallback() {
-                @Override
-                public void onScanResult(int callbackType, ScanResult result) {
-
-                    if(result != null && result.getDevice()!=null && result.getDevice().getAddress() != null) {
-                        if (finalizedBleDeviceAddress.equals(result.getDevice().getAddress())) {
-                            if (bluetoothGatt == null) {
-                                bluetoothGatt = result.getDevice().connectGatt(getApplicationContext(), true, gattCallback, BluetoothDevice.TRANSPORT_LE);
-                            }
-                        }
-                    }
-                }
-
-                @Override
-                public void onBatchScanResults(List<ScanResult> results) {
-                    Log.d(TAG, "ScanBatchResult :: "+results.size());
-                }
-
-                @Override
-                public void onScanFailed(int errorCode) {
-                    Log.d(TAG, "ScanFailedResult :: "+errorCode);
-                }
-            };
-
-            scanner.startScan(scanCallback);
-
-        });
+        Message msg = serviceHandler.obtainMessage();
+        msg.arg1 = startId;
+        serviceHandler.sendMessage(msg);
 
         return Service.START_STICKY;
     }
@@ -484,6 +455,58 @@ public class BleService extends Service {
             }
             stopForeground(true);
         }
+    }
+
+    private boolean init() {
+        bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        if(bluetoothManager == null) {
+            return false;
+        }
+        bluetoothAdapter = bluetoothManager.getAdapter();
+
+        if (!checkBluetoothSupport(bluetoothAdapter)) {
+            Log.e(TAG, "Bluetooth LE isn't supported. This won't run");
+            return false;
+        }
+        if (!bluetoothAdapter.isEnabled()) {
+            Log.d(TAG, "Bluetooth is currently disabled...enabling");
+            bluetoothAdapter.enable();
+        }
+        Log.d(TAG, "Bluetooth enabled...");
+        return true;
+    }
+
+    private void startScan() {
+        scanner = bluetoothAdapter.getBluetoothLeScanner();
+
+        scanCallback = new ScanCallback() {
+            @Override
+            public void onScanResult(int callbackType, ScanResult result) {
+
+                if(result != null && result.getDevice()!=null && result.getDevice().getAddress() != null) {
+                    if (bluetoothDeviceAddress.equals(result.getDevice().getAddress())) {
+                        if (bluetoothGatt == null) {
+                            bluetoothGatt = result.getDevice().connectGatt(getApplicationContext(), true, gattCallback, BluetoothDevice.TRANSPORT_LE);
+                            scanner.stopScan(this);
+                        } else {
+                            scanner.stopScan(this);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onBatchScanResults(List<ScanResult> results) {
+                Log.d(TAG, "ScanBatchResult :: "+results.size());
+            }
+
+            @Override
+            public void onScanFailed(int errorCode) {
+                Log.d(TAG, "ScanFailedResult :: "+errorCode);
+            }
+        };
+
+        scanner.startScan(scanCallback);
     }
 
     private void broadcastUpdate(final String action) {

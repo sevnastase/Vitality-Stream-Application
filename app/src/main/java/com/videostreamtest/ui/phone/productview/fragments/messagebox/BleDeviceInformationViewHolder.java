@@ -4,11 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,7 +39,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
         super(itemView);
     }
 
-    public void bind(BleDeviceInfo bleDeviceInfo, ProductViewModel productViewModel, int position) {
+    public void bind(BleDeviceInfo bleDeviceInfo, ProductViewModel productViewModel, final BleDeviceInformationAdapter bleDeviceInformationAdapter, int position) {
         this.productViewModel = productViewModel;
 
         this.connectButton = itemView.findViewById(R.id.single_ble_device_connect_button);
@@ -65,6 +67,23 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
 
         TextView deviceConnectionStrengthText = itemView.findViewById(R.id.single_ble_device_connection_strength);
         deviceConnectionStrengthText.setText(BleHelper.getRssiStrengthIndicator(itemView.getContext().getApplicationContext(), bleDeviceInfo.getConnectionStrength()));
+
+        connectButton.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    final Drawable border = v.getContext().getDrawable(R.drawable.imagebutton_red_border);
+                    connectButton.setBackground(border);
+                    connectButton.setTextColor(Color.WHITE);
+                    drawSelectionBorder();
+                    bleDeviceInformationAdapter.setSelectedBleDeviceId(position);
+                } else {
+                    connectButton.setBackground(null);
+                    connectButton.setTextColor(Color.BLACK);
+                    undrawSelectionBorder();
+                }
+            }
+        });
     }
 
     private void initBorders() {
@@ -157,6 +176,9 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
     }
 
     private void showConnectedMessage(final BleDeviceInfo bleDeviceInfo) {
+        Intent bleService = new Intent(itemView.getContext().getApplicationContext(), BleService.class);
+        itemView.getContext().startService(bleService);
+
         Toast.makeText(itemView.getContext(), "Succesfully connected to "+bleDeviceInfo.getBluetoothDevice().getName()+"!", Toast.LENGTH_LONG).show();
     }
 
