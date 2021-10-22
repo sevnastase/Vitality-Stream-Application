@@ -179,48 +179,6 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
         fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
     }
 
-    /**
-     * Check which volume has the largest free space and use that volumen for copying.
-     * @return
-     */
-    private File selectStorageVolumeWithLargestFreeSpace() {
-        File selectedVolume = null;
-        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(getApplicationContext(), null);
-        long freeSpace = 0;
-        for (File externalStorageVolume: externalStorageVolumes) {
-            Log.d(DownloadRoutepartsServiceWorker.class.getSimpleName(), externalStorageVolume.getAbsolutePath() + " >> Free ::  "+externalStorageVolume.getFreeSpace());
-            if (externalStorageVolume.getFreeSpace() > freeSpace) {
-                freeSpace = externalStorageVolume.getFreeSpace();
-                selectedVolume = externalStorageVolume;
-            }
-        }
-        return selectedVolume;
-    }
-
-    /**
-     * Check whether file can be copied, on other words check if there is enough free space.
-     * @param externalVolume
-     * @param fileSize
-     * @return
-     */
-    private boolean canFileBeCopied(File externalVolume, long fileSize) {
-        return (externalVolume.getFreeSpace() > fileSize);
-    }
-
-    /**
-     * Insert download status for movie based on id
-     * @param movieId
-     * @param downloadProgress
-     */
-    private void insertDownloadStatus(int movieId, int downloadProgress) {
-        StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
-        standAloneDownloadStatus.setDownloadMovieId(movieId);
-        standAloneDownloadStatus.setMovieId(movieId);
-        standAloneDownloadStatus.setDownloadStatus(downloadProgress);
-
-        PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(standAloneDownloadStatus);
-    }
-
     @Override
     public void callback(CallbackByteChannel rbc, double progress) {
 //        System.out.println(rbc.getReadSoFar());
