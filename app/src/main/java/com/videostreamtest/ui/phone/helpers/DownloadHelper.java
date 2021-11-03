@@ -1,6 +1,7 @@
 package com.videostreamtest.ui.phone.helpers;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.util.Log;
 
@@ -10,10 +11,16 @@ import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.utils.ApplicationSettings;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -24,9 +31,13 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class DownloadHelper {
     private static final String TAG = DownloadHelper.class.getSimpleName();
@@ -57,7 +68,7 @@ public class DownloadHelper {
 
         File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
         for (File externalStorageVolume: externalStorageVolumes) {
-            String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/" + movie.getId();
+            String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/" + movie.getId().intValue();
             File possibleMovieLocation = new File(pathname);
             if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
                 long totalSizeOnDisk = 0;
@@ -171,6 +182,9 @@ public class DownloadHelper {
             mapFilename = new File(mapUrl.getFile()).getName();
         } catch (MalformedURLException e) {
             Log.e(TAG, e.getLocalizedMessage());
+            SharedPreferences sharedPreferences = context.getSharedPreferences("app", MODE_PRIVATE);
+            String apikey = sharedPreferences.getString("apikey", "");
+            LogHelper.WriteLogRule(context, apikey, "ERROR: [SET LOCAL MEDIA] [TITLE:"+movie.getMovieTitle()+"] "+e.getLocalizedMessage(), "ERROR", "");
             return;
         }
         File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
@@ -197,9 +211,11 @@ public class DownloadHelper {
             moviePartFileName = new File(moviePartUrl.getFile()).getName();
         } catch (MalformedURLException e) {
             Log.e(TAG, e.getLocalizedMessage());
+            SharedPreferences myPreferences = context.getSharedPreferences("app",0);
+            final String accounttoken = myPreferences.getString("apikey", "unauthorized");
+            LogHelper.WriteLogRule(context, accounttoken, "Routepart-url: "+moviePart.getMoviepartImagepath()+" can't be downloaded.", "ERROR",  "");
             return null;
         }
-        File file;
         File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
         for (File externalStorageVolume: externalStorageVolumes) {
             String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + moviePart.getMovieId();
@@ -383,6 +399,16 @@ public class DownloadHelper {
         return null;
     }
 
+    public static void deleteMovieFolder(final File movieFullPathLocation) {
+        File files[] = movieFullPathLocation.listFiles();
+        if (files.length>0) {
+            for (File entry: files) {
+                entry.delete();
+            }
+        }
+        movieFullPathLocation.delete();
+    }
+
     private static boolean isRoutefilmFolderOnStorage(File storageDirectory) {
         if (storageDirectory.listFiles().length>0) {
             for (File item: storageDirectory.listFiles()) {
@@ -452,5 +478,45 @@ public class DownloadHelper {
             Log.e(TAG, e.getLocalizedMessage());
         }
         return isReachable;
+    }
+
+    public static String calculateMD5(final File file) {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            Log.e(TAG, "Exception while getting digest", e);
+            return null;
+        }
+
+        InputStream is;
+        try {
+            is = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            Log.e(TAG, "Exception while getting FileInputStream", e);
+            return null;
+        }
+
+        byte[] buffer = new byte[8192];
+        int read;
+        try {
+            while ((read = is.read(buffer)) > 0) {
+                digest.update(buffer, 0, read);
+            }
+            byte[] md5sum = digest.digest();
+            BigInteger bigInt = new BigInteger(1, md5sum);
+            String output = bigInt.toString(16);
+            // Fill to 32 chars
+            output = String.format("%32s", output).replace(' ', '0');
+            return output;
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to process file for MD5", e);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Exception on closing MD5 input stream", e);
+            }
+        }
     }
 }

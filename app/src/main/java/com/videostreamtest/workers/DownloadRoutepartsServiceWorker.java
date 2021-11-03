@@ -104,7 +104,9 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
         } catch (IOException ioException) {
             Log.e(TAG, ioException.getLocalizedMessage());
         }
-        Log.d(TAG, "RouteFilms Count RetroFit :: "+accountMovies.size());
+        if (accountMovies!=null) {
+            Log.d(TAG, "RouteFilms Count RetroFit :: " + accountMovies.size());
+        }
 
         if (accountMovies != null && accountMovies.size()>0) {
             for (final Movie movie: accountMovies) {

@@ -31,12 +31,17 @@ import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -53,6 +58,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
     private static final String TAG = DownloadMovieServiceWorker.class.getSimpleName();
     private static final String INPUT_ROUTEFILM_JSON_STRING = "INPUT_ROUTEFILM_JSON_STRING";
     private static final String OUTPUT_FILE_NAME = "OUTPUT_FILE_NAME";
+    private static final String CHECKSUM_DIGEST_MD5_FILENAME = "checksum_digest.md5";
 
     private NotificationManager notificationManager;
 
@@ -153,6 +159,18 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
                 databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":Downloading started.", "INFO", "");
                 //Movie
                 download(routefilm.getMovieUrl(), routefilm.getMovieFileSize(), String.valueOf(routefilm.getId()));
+
+                final String checksumDigest = DownloadHelper.calculateMD5(new File(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+routefilm.getId()+"/"+new File(routefilm.getMovieUrl()).getName()));
+                final String externalChecksum = getExternalChecksumDigest(routefilm);
+
+                //Compare the checksums
+                if (!checksumDigest.equals(externalChecksum)) {
+                    new File(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+routefilm.getId()+"/"+new File(routefilm.getMovieUrl()).getName()).delete();
+                    databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+": Data Integrity Error! File Corrupted!", "ERROR", "");
+                    return Result.retry();
+                    //TODO: keep track of attempts for avoiding infinite downloading loop e.g. when a disk is corrupt.
+                }
+
             } catch (IOException ioException) {
                 Log.e(TAG, ioException.getLocalizedMessage());
                 Log.e(TAG, "Error downloading");
@@ -277,7 +295,38 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             });
             currentDownloadProgress = downloadProgress;
         }
+    }
 
+    private String getExternalChecksumDigest(final Movie movie) {
+        String checksum = "";
+        try {
+            // Create a URL for the desired page
+            URL url = new URL(getBaseUrl(movie.getMovieUrl())+CHECKSUM_DIGEST_MD5_FILENAME);
+
+            // Read all the text returned by the server
+            BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+            String str;
+            int linenumber = 0;
+            while ((str = in.readLine()) != null) {
+                // str is one line of text; readLine() strips the newline character(s)
+                Log.d(TAG, str);
+                if (linenumber ==0) {
+                    checksum = str;
+                }
+                linenumber++;
+            }
+            in.close();
+        } catch (MalformedURLException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+        } catch (IOException e) {
+            Log.e(TAG,e.getLocalizedMessage());
+        }
+
+        return checksum;
+    }
+
+    private String getBaseUrl(final String url) {
+        return url.substring(0, url.lastIndexOf(File.separator)+1);
     }
 
     @Override

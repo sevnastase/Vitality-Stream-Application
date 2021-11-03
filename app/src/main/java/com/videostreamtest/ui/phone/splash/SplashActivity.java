@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.Constraints;
 import androidx.work.NetworkType;
@@ -36,6 +37,7 @@ import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.ProductType;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
+import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
@@ -69,8 +71,6 @@ public class SplashActivity extends AppCompatActivity {
 
         requestDrawOverlayPermission();
 
-//        resetBluetoothAdapter();
-
         loadTimer = new Handler(Looper.getMainLooper());
 
         checkForUpdates();
@@ -79,10 +79,12 @@ public class SplashActivity extends AppCompatActivity {
         splashViewModel.getCurrentConfig().observe(this, config -> {
             if (config != null) {
                 loadTimer.removeCallbacksAndMessages(null);
+
+                //TODO: Check if current apikey is valid, else logout
+
                 Log.d(TAG, "Token :: " + config.getAccountToken() + " > Current =  " + config.isCurrent());
                 //If there's internet, retrieve account info and/or synchronize data
                 ConfigurationHelper.loadExternalData(this, config.getAccountToken());
-
 
                 /**
                  * TODO  if accounttoken is valid (create worker)
@@ -122,7 +124,12 @@ public class SplashActivity extends AppCompatActivity {
                                         Log.d(TAG, "Sensor Device internal db synced with internal in-memory value");
                                         LogHelper.WriteLogRule(getApplicationContext(), config.getAccountToken(), "Sensor device not registered in app memory." ,"DEBUG", "");
                                     }
+                                    //TODO
+                                    //Check if Sound present or Download sound
 
+                                    //Check data integrity
+
+                                    //If Done correctly go to Productpicker and start have fun!
                                     startActivity(new Intent(SplashActivity.this, ProductPickerActivity.class));
                                     SplashActivity.this.finish();
                                 }
@@ -268,7 +275,7 @@ public class SplashActivity extends AppCompatActivity {
         // Check if Android M or higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Show alert dialog to the user saying a separate permission is needed
-            requestPermissions(new String[]{Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE);
+            requestPermissions(new String[]{Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Manifest.permission.INSTALL_PACKAGES, Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE);
             if(!Settings.canDrawOverlays(this)) {
                Log.d(TAG, "checkpermission "+getPackageManager().checkPermission(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, getPackageName())) ;
             }

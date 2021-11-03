@@ -59,6 +59,7 @@ import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.service.ble.BleWrapper;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.ProductHelper;
 import com.videostreamtest.ui.phone.result.ResultActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFilmStatusBarFragment;
@@ -153,7 +154,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     //VLC stuff
     private LibVLC createLibVLC() {
         final List<String> args = new ArrayList<>();
-        args.add("-vvv");
+//        args.add("-vvv");
         args.add("--sout-all");
         args.add("--aout=opensles");
 //      args.add("--drop-late-frames");
@@ -207,7 +208,6 @@ public class VideoplayerActivity extends AppCompatActivity {
                                 if (trackDescription.id > id) {
                                     id = trackDescription.id;
                                 }
-//                                Log.d(TAG, "Name:" + trackDescription.name + " :: id:" + trackDescription.id);
                             }
                             if (id > 0 && mediaPlayer.getVideoTrack() != id) {
                                 mediaPlayer.setVideoTrack(id);
@@ -237,24 +237,23 @@ public class VideoplayerActivity extends AppCompatActivity {
         mediaPlayer.attachViews(videoLayout, null, false, false);
 
         //This loads the given videoUri to the media
-        if (mediaPlayer.getMedia() == null) {
-            if (isLocalPlay) {
-                //VIDEO
-                final Media media = new Media(libVLC, videoUri);
-                //Streaming
-//                media.setHWDecoderEnabled(true, false);
-//                media.addOption(":clock-jitter=0");
-//                media.addOption(":clock-synchro=0");
-                //end
-                mediaPlayer.setMedia(media);
-                media.release();
-            } else {
-                //VIDEO
-                final Media media = new Media(libVLC, Uri.parse(videoUri));
-                mediaPlayer.setMedia(media);
-                media.release();
-            }
+        if (isLocalPlay) {
+            //VIDEO
+            final Media media = new Media(libVLC, videoUri);
+            //Streaming
+//            media.setHWDecoderEnabled(true, false);
+//          media.addOption(":clock-jitter=0");
+//          media.addOption(":clock-synchro=0");
+            //end
+            mediaPlayer.setMedia(media);
+            media.release();
+        } else {
+            //VIDEO
+            final Media media = new Media(libVLC, Uri.parse(videoUri));
+            mediaPlayer.setMedia(media);
+            media.release();
         }
+
         setVideoFeatures();
 
         mediaPlayer.setRate(1.0f);
@@ -435,9 +434,6 @@ public class VideoplayerActivity extends AppCompatActivity {
             public void onClick(View v) {
                 backToOverviewWaitForSensor = true;
                 backToOverview.setClickable(false);
-//                if (bleWrapper != null) {
-//                    bleWrapper.disconnect();
-//                }
                 //HANDLED FURTHER in #setTimeLineEventVideoPlayer()
             }
         });
@@ -566,7 +562,9 @@ public class VideoplayerActivity extends AppCompatActivity {
                             }
                             break;
                         case ACTIVE:
-
+                            if (mediaPlayer!= null) {
+                                mediaPlayer.setRate(1.0f);
+                            }
                             break;
                         case NONE:
                             // This clause will never be executed as there is no rpm data
@@ -768,7 +766,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        pausePlayer();
+//        pausePlayer();
     }
 
     @Override
@@ -812,11 +810,32 @@ public class VideoplayerActivity extends AppCompatActivity {
         videoPlayerViewModel.setStatusbarVisible(true);
 //        videoPlayer.play();
 
-        if (mediaPlayer ==null) {
-            setMediaPlayer();
-        } else {
+//        if (mediaPlayer ==null) {
+//            setMediaPlayer();
+//        } else {
+//            setVideoFeatures();
+//            mediaPlayer.play();
+//        }
+
+        if(!mediaPlayer.isPlaying()) {
             setVideoFeatures();
             mediaPlayer.play();
+        }
+
+        SharedPreferences sharedPreferences = getSharedPreferences("app", MODE_PRIVATE);
+        String apikey = sharedPreferences.getString("apikey", "");
+
+        //Add some log rules to test content of mediaplayer
+        if (selectedProduct.getProductName().toLowerCase().contains("praxfilm") ||
+            selectedProduct.getProductName().toLowerCase().contains("praxspin")) {
+            LogHelper.WriteLogRule(this, apikey, "MediaPlayer initialised: " + (mediaPlayer != null), "DEBUG", "");
+            if (mediaPlayer != null) {
+                LogHelper.WriteLogRule(this, apikey, "MediaPlayer.getMedia() initialised: " + (mediaPlayer.getMedia() != null), "DEBUG", "");
+                if (mediaPlayer.getMedia() != null) {
+                    LogHelper.WriteLogRule(this, apikey, "MediaPlayer.getMedia().getUri().toString(): " + mediaPlayer.getMedia().getUri().toString(), "DEBUG", "");
+                }
+            }
+            LogHelper.WriteLogRule(this, apikey, "Video Path: " + videoUri, "DEBUG", "");
         }
 
         if (getCurrentBackgroundSoundByCurrentPostion() != null) {
@@ -846,16 +865,6 @@ public class VideoplayerActivity extends AppCompatActivity {
             }
         }
         return selectedBackgroundSound;
-    }
-
-    //TODO: implement later in fragment if needed
-    private void setFocusOnCurrentRoutePart() {
-        if(availableRoutePartsAdapter != null) {
-            int currentPositionS = (int)(videoPlayer.getCurrentPosition() / 1000);
-            int currentFrameNumber = currentPositionS * 30;
-            availableRoutePartsAdapter.setSelectedMoviePart(currentFrameNumber);
-            routePartsRecyclerview.getAdapter().notifyDataSetChanged();
-        }
     }
 
     private void waitUntilVideoIsReady() {
@@ -961,11 +970,6 @@ public class VideoplayerActivity extends AppCompatActivity {
                         startSensorService();
                         VideoplayerActivity.this.finish();
                     }
-
-
-//                    if (pauseTimer % 10 == 0) {
-//                        startSensorService();
-//                    }
                 }
             }
         };

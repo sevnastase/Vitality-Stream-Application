@@ -1,8 +1,10 @@
 package com.videostreamtest.ui.phone.productview.fragments.plain;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -22,10 +24,13 @@ import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.ui.phone.catalog.CatalogRecyclerViewClickListener;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.productview.fragments.RouteInformationFragment;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 
 import java.io.File;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class PlainScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder{
     private static final String TAG = PlainScreenRouteFilmsViewHolder.class.getSimpleName();
@@ -85,6 +90,10 @@ public class PlainScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder{
             //Set local movie paths
             DownloadHelper.setLocalMedia(itemView.getContext(), this.movie);
         }
+
+        SharedPreferences sharedPreferences = itemView.getContext().getSharedPreferences("app", MODE_PRIVATE);
+        String apikey = sharedPreferences.getString("apikey", "");
+        LogHelper.WriteLogRule(itemView.getContext(), apikey, "[DEBUG] "+movie.getMovieTitle()+": isMovieOndevice: "+isMovieOnDevice, "DEBUG", "");
 
         //PreSet Cover for size
         if (localPlay && isMovieOnDevice) {
@@ -222,10 +231,14 @@ public class PlainScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder{
         titleView.setText(toString().format(itemView.getContext().getString(R.string.catalog_selected_route_title), movie.getMovieTitle()));
         titleView.setVisibility(View.VISIBLE);
 
-        float meters = movie.getMovieLength();
-        int km = (int) (meters / 1000f);
-        int hectometers = (int) ((meters - (km * 1000f)) / 100f);
-        distanceView.setText(toString().format(itemView.getContext().getString(R.string.catalog_screen_distance), km, hectometers));
+        if (selectedProduct.getProductName().toLowerCase().contains("praxfilm")) {
+            distanceView.setText(String.format("Duration: %d minutes", ((movie.getMovieLength()/movie.getRecordedFps())/60)));
+        } else {
+            float meters = movie.getMovieLength();
+            int km = (int) (meters / 1000f);
+            int hectometers = (int) ((meters - (km * 1000f)) / 100f);
+            distanceView.setText(toString().format(itemView.getContext().getString(R.string.catalog_screen_distance), km, hectometers));
+        }
 
         //Set Route Information map
         if (localPlay && isMovieOnDevice) {

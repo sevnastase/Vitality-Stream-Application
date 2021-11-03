@@ -1,5 +1,6 @@
 package com.videostreamtest.workers;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -7,8 +8,10 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.work.Data;
@@ -19,6 +22,7 @@ import com.videostreamtest.BuildConfig;
 import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import org.jetbrains.annotations.NotNull;
@@ -92,6 +96,13 @@ public class InstallPackageServiceWorker extends Worker implements ProgressCallB
                             getApplicationContext(),
                             BuildConfig.APPLICATION_ID + ".provider",
                             new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()));
+
+                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.INSTALL_PACKAGES) != PackageManager.PERMISSION_GRANTED){
+                        Toast.makeText(getApplicationContext(), "No permission to install update!", Toast.LENGTH_LONG).show();
+                        if (apikey != null && apikey != ""){
+                            databaseRestService.writeLog(apikey, "No permission to install update!", "ERROR", "");
+                        }
+                    }
 
                     Intent autoUpdatePackage = new Intent(Intent.ACTION_VIEW);
                     autoUpdatePackage.setAction(Intent.ACTION_INSTALL_PACKAGE);

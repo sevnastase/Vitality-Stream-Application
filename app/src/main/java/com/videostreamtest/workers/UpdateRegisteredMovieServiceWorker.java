@@ -1,6 +1,7 @@
 package com.videostreamtest.workers;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -11,9 +12,14 @@ import com.videostreamtest.config.dao.RoutefilmDao;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
+import com.videostreamtest.service.database.DatabaseRestService;
+import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
+import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.utils.ApplicationSettings;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +36,8 @@ import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_URL;
 public class UpdateRegisteredMovieServiceWorker extends Worker {
 
     private final static String TAG = UpdatePackageServiceWorker.class.getSimpleName();
+    private DatabaseRestService databaseRestService;
+    private String accountToken;
 
     public UpdateRegisteredMovieServiceWorker(@NonNull @NotNull Context context, @NonNull @NotNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -46,6 +54,12 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
     public Result doWork() {
         //Get Input
         final String apikey = getInputData().getString("apikey");
+        databaseRestService = new DatabaseRestService();
+
+        if (accountToken==null||accountToken.isEmpty()){
+            SharedPreferences myPreferences = getApplicationContext().getSharedPreferences("app",0);
+            accountToken = myPreferences.getString("apikey", "unauthorized");
+        }
 
         //API CALL
         Retrofit retrofit = new Retrofit.Builder()
@@ -93,6 +107,7 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
                 if (markedForRemoval.size()>0) {
                     Log.d(TAG, "localRoutefilms marked for removal: "+markedForRemoval.size());
                     for (final Routefilm routefilm:markedForRemoval) {
+                        deletePhysicalMovie(Movie.fromRoutefilm(routefilm));
                         routefilmDao.delete(routefilm);
                     }
                 }
@@ -121,6 +136,22 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
             c. Notify recyclerview adapter of recent change if any, do nothing when nothing has changed
          */
         return Result.success();
+    }
+
+    private boolean deletePhysicalMovie(final Movie movie) {
+        final File externalStorageVolume = DownloadHelper.selectLargestStorageVolume(getApplicationContext());
+        String existingPathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + movie.getId();
+        File existingMovieLocation = new File(existingPathname);
+
+        //Delete folder before flatten en renaming the other
+        if (existingMovieLocation.exists()) {
+            DownloadHelper.deleteMovieFolder(existingMovieLocation);
+            databaseRestService.writeLog(accountToken, movie.getMovieTitle()+": Deleted succesfully!", "INFO", "");
+            return true;
+        } else {
+            databaseRestService.writeLog(accountToken, movie.getMovieTitle()+": [ERROR] Movie not found on disk!", "ERROR", "");
+            return true;
+        }
     }
 
     private boolean movieAlreadyPresentInLocalDatabase(final Movie externalMovie, final List<Routefilm> localMovieList) {

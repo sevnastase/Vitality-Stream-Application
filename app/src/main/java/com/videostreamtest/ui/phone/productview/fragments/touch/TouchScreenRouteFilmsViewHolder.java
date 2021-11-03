@@ -69,7 +69,11 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
 
         isMovieOnDevice = DownloadHelper.isMoviePresent(itemView.getContext(), movie);
         isSoundOnDevice = DownloadHelper.isSoundPresent(itemView.getContext());
-        isMovieSupportImagesOnDevice = DownloadHelper.isMovieImagesPresent(itemView.getContext(), movie.getId());
+        if (selectedProduct.getProductName().toLowerCase().contains("praxfilm")) {
+            isMovieSupportImagesOnDevice = true;
+        } else {
+            isMovieSupportImagesOnDevice = DownloadHelper.isMovieImagesPresent(itemView.getContext(), movie.getId());
+        }
 
         if (isMovieSupportImagesOnDevice) {
             DownloadHelper.setLocalMedia(itemView.getContext(), movie);
@@ -294,10 +298,14 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
         titleView.setText(toString().format(itemView.getContext().getString(R.string.catalog_selected_route_title), movie.getMovieTitle()));
         titleView.setVisibility(View.VISIBLE);
 
-        float meters = movie.getMovieLength();
-        int km = (int) (meters / 1000f);
-        int hectometers = (int) ((meters - (km * 1000f)) / 100f);
-        distanceView.setText(toString().format(itemView.getContext().getString(R.string.catalog_screen_distance), km, hectometers));
+        if (selectedProduct.getProductName().toLowerCase().contains("praxfilm")) {
+            distanceView.setText(String.format("Duration: %d minutes", ((movie.getMovieLength()/movie.getRecordedFps())/60)));
+        } else {
+            float meters = movie.getMovieLength();
+            int km = (int) (meters / 1000f);
+            int hectometers = (int) ((meters - (km * 1000f)) / 100f);
+            distanceView.setText(toString().format(itemView.getContext().getString(R.string.catalog_screen_distance), km, hectometers));
+        }
 
         //Set Route Information map
         if (localPlay && isMovieSupportImagesOnDevice) {

@@ -22,6 +22,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.ExistingPeriodicWorkPolicy;
@@ -48,6 +49,7 @@ import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.ActiveProductMovieLinksServiceWorker;
+import com.videostreamtest.workers.DataIntegrityCheckServiceWorker;
 import com.videostreamtest.workers.DownloadMovieImagesServiceWorker;
 import com.videostreamtest.workers.DownloadMovieServiceWorker;
 import com.videostreamtest.workers.DownloadRoutepartsServiceWorker;
@@ -128,6 +130,8 @@ public class ProductActivity extends AppCompatActivity {
                 //PERIODIC ACTIONS FOR STANDALONE SPECIFIC
                 if (currentConfig.isLocalPlay()) {
                     periodicSyncDownloadMovieRouteParts(currentConfig.getAccountToken());
+//                    periodicCheckMovieFileDataIntegrity(currentConfig.getAccountToken()); TODO: Make available through Account Config
+//                    startSingleDataIntegrityWorker(currentConfig.getAccountToken());
                 }
                 loadFragmentBasedOnScreenType(arguments);
 
@@ -268,6 +272,42 @@ public class ProductActivity extends AppCompatActivity {
 
     }
 
+    private void startSingleDataIntegrityWorker(final String apikey) {
+        Data.Builder mediaDownloader = new Data.Builder();
+        mediaDownloader.putString("apikey", apikey);
+
+        //COSNTRAINTS
+        Constraints constraint = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+        OneTimeWorkRequest oneTimeWorkRequest = new OneTimeWorkRequest.Builder(DataIntegrityCheckServiceWorker.class)
+                .setConstraints(constraint)
+                .setInputData(mediaDownloader.build())
+                .addTag("data-integrity")
+                .build();
+
+        WorkManager.getInstance(this)
+                .beginUniqueWork("data-integrity", ExistingWorkPolicy.KEEP, oneTimeWorkRequest)
+                .enqueue();
+    }
+
+    private void periodicCheckMovieFileDataIntegrity(final String apikey) {
+        Data.Builder mediaDownloader = new Data.Builder();
+        mediaDownloader.putString("apikey", apikey);
+
+        Constraints constraint = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        PeriodicWorkRequest checkMovieFileDataIntegrityRequest = new PeriodicWorkRequest.Builder(DataIntegrityCheckServiceWorker.class, 8, TimeUnit.HOURS)
+                .setConstraints(constraint)
+                .setInputData(mediaDownloader.build())
+                .addTag("check-data-integrity")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("check-data-integrity-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, checkMovieFileDataIntegrityRequest);
+    }
+
     private void downloadLocalMovies() {
         productViewModel.getCurrentConfig().observe(this, currentConfig -> {
             if (currentConfig != null && isStoragePermissionGranted()) {
@@ -280,7 +320,7 @@ public class ProductActivity extends AppCompatActivity {
                             totalMovieFileSizeOnDisk += routefilm.getMovieFileSize();
                         }
 
-                        LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(), "Movie download setup for Download","DEBUG", "");
+                        LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(), "AllMovieDownloader ready to download","DEBUG", "");
 
                         if (DownloadHelper.canFileBeCopiedToLargestVolume(getApplicationContext(), totalMovieFileSizeOnDisk)) {
                             for (final Routefilm routefilm : routefilms) {
@@ -297,6 +337,10 @@ public class ProductActivity extends AppCompatActivity {
                                     OneTimeWorkRequest oneTimeWorkRequest = new OneTimeWorkRequest.Builder(DownloadMovieServiceWorker.class)
                                             .setConstraints(constraint)
                                             .setInputData(mediaDownloader.build())
+                                            .setBackoffCriteria(
+                                                    BackoffPolicy.LINEAR,
+                                                    OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
+                                                    TimeUnit.MILLISECONDS)
                                             .addTag("routefilm-" + routefilm.getMovieId())
                                             .build();
 
