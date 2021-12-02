@@ -82,10 +82,6 @@ public class AvailableMediaViewHolder extends RecyclerView.ViewHolder {
         this.routeInfoTextLayoutBlock = routeInfoTextLayoutBlock;
 
         movieCoverImage = itemView.findViewById(R.id.routeImageCoverButton);
-        movieDescription = itemView.findViewById(R.id.movie_description);
-
-        movieDescription.setTextColor(Color.WHITE);
-        movieDescription.setText("");
 
         if (localPlay) {
             Log.d(TAG, "LocalPlay activated");

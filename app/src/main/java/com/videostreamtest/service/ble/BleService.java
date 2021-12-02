@@ -58,9 +58,9 @@ public class BleService extends Service {
         }
     }
 
-    private static final int ONGOING_NOTIFICATION_ID = 9999;
-    private static final String CHANNEL_DEFAULT_IMPORTANCE = "csc_ble_channel";
-    private static final String MAIN_CHANNEL_NAME = "CscService";
+//    private static final int ONGOING_NOTIFICATION_ID = 9999;
+//    private static final String CHANNEL_DEFAULT_IMPORTANCE = "csc_ble_channel";
+//    private static final String MAIN_CHANNEL_NAME = "CscService";
 
     private List<BluetoothDefaultDevice> bluetoothDefaultDeviceList;
 
@@ -395,37 +395,37 @@ public class BleService extends Service {
         initialised = init();
 
         Log.d(TAG, "BLE Service onStartCommand");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel(CHANNEL_DEFAULT_IMPORTANCE, MAIN_CHANNEL_NAME);
-
-            // Create the PendingIntent
-            PendingIntent notifyPendingIntent = PendingIntent.getActivity(
-                    this,
-                    0,
-                    new Intent(this.getApplicationContext(), ProfilesActivity.class),
-                    PendingIntent.FLAG_UPDATE_CURRENT);
-
-            // build a notification
-            Notification notification =
-                    new Notification.Builder(this, CHANNEL_DEFAULT_IMPORTANCE)
-                            .setContentTitle(getText(R.string.app_name))
-                            .setContentText("Active")
-                            .setAutoCancel(true)
-                            .setContentIntent(notifyPendingIntent)
-                            .setTicker(getText(R.string.app_name))
-                            .build();
-
-            startForeground(ONGOING_NOTIFICATION_ID, notification);
-        } else {
-            Notification notification = new NotificationCompat.Builder(this, CHANNEL_DEFAULT_IMPORTANCE)
-                    .setContentTitle(getString(R.string.app_name))
-                    .setContentText("Active")
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setAutoCancel(true)
-                    .build();
-
-            startForeground(ONGOING_NOTIFICATION_ID, notification);
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            createNotificationChannel(CHANNEL_DEFAULT_IMPORTANCE, MAIN_CHANNEL_NAME);
+//
+//            // Create the PendingIntent
+//            PendingIntent notifyPendingIntent = PendingIntent.getActivity(
+//                    this,
+//                    0,
+//                    new Intent(this.getApplicationContext(), ProfilesActivity.class),
+//                    PendingIntent.FLAG_UPDATE_CURRENT);
+//
+//            // build a notification
+//            Notification notification =
+//                    new Notification.Builder(this, CHANNEL_DEFAULT_IMPORTANCE)
+//                            .setContentTitle(getText(R.string.app_name))
+//                            .setContentText("Active")
+//                            .setAutoCancel(true)
+//                            .setContentIntent(notifyPendingIntent)
+//                            .setTicker(getText(R.string.app_name))
+//                            .build();
+//
+//            startForeground(ONGOING_NOTIFICATION_ID, notification);
+//        } else {
+//            Notification notification = new NotificationCompat.Builder(this, CHANNEL_DEFAULT_IMPORTANCE)
+//                    .setContentTitle(getString(R.string.app_name))
+//                    .setContentText("Active")
+//                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//                    .setAutoCancel(true)
+//                    .build();
+//
+//            startForeground(ONGOING_NOTIFICATION_ID, notification);
+//        }
 
         Message msg = serviceHandler.obtainMessage();
         msg.arg1 = startId;
@@ -453,7 +453,7 @@ public class BleService extends Service {
             if (scanner != null) {
                 scanner.stopScan(scanCallback);
             }
-            stopForeground(true);
+//            stopForeground(true);
         }
     }
 
@@ -477,6 +477,9 @@ public class BleService extends Service {
     }
 
     private void startScan() {
+        if (bluetoothAdapter == null) {
+            return;
+        }
         scanner = bluetoothAdapter.getBluetoothLeScanner();
 
         scanCallback = new ScanCallback() {

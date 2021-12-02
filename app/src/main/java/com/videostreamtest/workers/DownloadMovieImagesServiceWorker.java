@@ -49,7 +49,7 @@ public class DownloadMovieImagesServiceWorker extends Worker implements Progress
         routefilm = new Gson().fromJson(inputDataString, Movie.class);
 
         //CHECK IF MOVIE IMAGES ARE ALREADY PRESENT
-        if (DownloadHelper.isMovieImagesPresent(getApplicationContext(), routefilm.getId())) {
+        if (DownloadHelper.isMovieImagesPresent(getApplicationContext(), routefilm)) {
             return Result.success();
         }
         //CHECK IF IMAGE SIZE AVAILABLE

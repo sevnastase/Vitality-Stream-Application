@@ -90,25 +90,25 @@ public class DownloadHelper {
     /**
      * Check if movie folder contains any routeparts media
      * @param context
-     * @param movieId
+     * @param movie
      * @return boolean
      */
-    public static boolean isMovieImagesPresent(final Context context, final int movieId){
+    public static boolean isMovieImagesPresent(final Context context, final Movie movie){
         File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
         for (File externalStorageVolume: externalStorageVolumes) {
-            String pathname = externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieId;
+            String pathname = externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movie.getId().intValue();
             File possibleMovieLocation = new File(pathname);
             if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
                 int foundMovieImage = 0;
                 for (File file: possibleMovieLocation.listFiles()) {
-                    if (file.getName().toLowerCase().equals("map.jpg") && file.getName().toLowerCase().endsWith(".jpg")) {
+                    if (file.getName().equals(new File(movie.getMovieRouteinfoPath()).getName())) {
                         foundMovieImage++;
                     }
-                    if (file.getName().toLowerCase().equals("scenery.jpg") && file.getName().toLowerCase().endsWith(".jpg")) {
+                    if (file.getName().equals(new File(movie.getMovieImagepath()).getName())) {
                         foundMovieImage++;
                     }
                 }
-                if (foundMovieImage == 2) {
+                if (foundMovieImage >= 1) {
                     return true;
                 }
             }
@@ -486,6 +486,10 @@ public class DownloadHelper {
             digest = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
             Log.e(TAG, "Exception while getting digest", e);
+            return null;
+        }
+
+        if (!file.exists()) {
             return null;
         }
 

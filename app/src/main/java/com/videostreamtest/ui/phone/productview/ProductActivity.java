@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -42,6 +43,7 @@ import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
+import com.videostreamtest.ui.phone.productview.fragments.AbstractProductScreenFragment;
 import com.videostreamtest.ui.phone.productview.fragments.PlainScreenFragment;
 import com.videostreamtest.ui.phone.productview.fragments.TouchScreenFragment;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
@@ -153,6 +155,8 @@ public class ProductActivity extends AppCompatActivity {
         });
     }
 
+
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -186,19 +190,42 @@ public class ProductActivity extends AppCompatActivity {
     }
 
     private void loadFragmentBasedOnScreenType(final Bundle arguments) {
-        if (isTouchScreen()) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .setReorderingAllowed(true)
-                    .replace(R.id.fragment_container_view, TouchScreenFragment.class, arguments)
-                    .commit();
-        } else {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .setReorderingAllowed(true)
-                    .replace(R.id.fragment_container_view, PlainScreenFragment.class, arguments)
-                    .commit();
-        }
+//        Log.d(TAG, "Hardware: "+Build.HARDWARE);
+//        Log.d(TAG, "Manufacturer: "+Build.MANUFACTURER);
+//        Log.d(TAG, "Device: "+Build.DEVICE);
+//        Log.d(TAG, "Board: "+Build.BOARD);
+//        Log.d(TAG, "Brand: "+Build.BRAND);
+//        Log.d(TAG, "Model: "+Build.MODEL);
+//        Log.d(TAG, "Product: "+Build.PRODUCT);
+//        Log.d(TAG, "Bootloader: "+Build.BOOTLOADER);
+//        if (Build.SUPPORTED_ABIS.length>0) {
+//            Log.d(TAG, "ABIS length: "+Build.SUPPORTED_ABIS.length);
+//            for (String abi : Build.SUPPORTED_ABIS) {
+//                Log.d(TAG, "ABIS item: "+abi);
+//            }
+//        }
+        Log.d(TAG, "Memory Mb: "+(ConfigurationHelper.getMemorySizeInBytes(getApplicationContext())/1024/1024));
+        Log.d(TAG, "Memory Gb: "+(ConfigurationHelper.getMemorySizeInBytes(getApplicationContext())/1024/1024/1024));
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(R.id.fragment_container_view, AbstractProductScreenFragment.class, arguments)
+                .commit();
+
+//        if (isTouchScreen()) {
+//            getSupportFragmentManager()
+//                    .beginTransaction()
+//                    .setReorderingAllowed(true)
+//                    .replace(R.id.fragment_container_view, TouchScreenFragment.class, arguments)
+//                    .commit();
+//        } else {
+//            getSupportFragmentManager()
+//                    .beginTransaction()
+//                    .setReorderingAllowed(true)
+//                    .replace(R.id.fragment_container_view, PlainScreenFragment.class, arguments)
+//                    .commit();
+//        }
     }
 
     private void downloadSound() {

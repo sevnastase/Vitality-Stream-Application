@@ -69,6 +69,7 @@ public class TouchScreenFragment extends Fragment {
         navigationDownArrow = view.findViewById(R.id.down_navigation_arrow);
 
         routeInformationBlock = view.findViewById(R.id.overlay_route_information);
+
         deviceConnectionInformationBlock = view.findViewById(R.id.overlay_connection_info_box);
 
         touchScreenRouteFilmsAdapter = new TouchScreenRouteFilmsAdapter(selectedProduct, communicationDevice);
@@ -83,8 +84,6 @@ public class TouchScreenFragment extends Fragment {
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
         int width = displayMetrics.widthPixels;
-
-        Log.d(TouchScreenFragment.class.getSimpleName(), "RecyclerView Minimum Height: "+recyclerView.getMinimumHeight());
 
 //        recyclerView.setMinimumHeight((int) TypedValue.applyDimension(
 //                TypedValue.COMPLEX_UNIT_DIP, 400, getActivity()

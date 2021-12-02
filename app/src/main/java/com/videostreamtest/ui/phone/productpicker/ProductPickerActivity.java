@@ -17,7 +17,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -334,7 +333,6 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
     private void startBleService() {
         final String bluetoothDeviceAddress = getSharedPreferences("app", MODE_PRIVATE).getString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, "NONE");
         if (bluetoothDeviceAddress.equals("NONE") || bluetoothDeviceAddress.equals("")) {
-            Toast.makeText(this, "Please select sensor to connect with.", Toast.LENGTH_LONG).show();
             NavHostFragment navHostFragment =
                     (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
             NavController navController = navHostFragment.getNavController();

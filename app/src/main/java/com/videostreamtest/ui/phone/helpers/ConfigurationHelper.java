@@ -1,5 +1,6 @@
 package com.videostreamtest.ui.phone.helpers;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -195,5 +196,18 @@ public class ConfigurationHelper {
      */
     public float convertDpToPx(Context context, float dp) {
         return dp * context.getResources().getDisplayMetrics().density;
+    }
+
+    /**
+     * Returns the available ammount of RAM of your Android device in Bytes e.g 1567342592 (1.5GB)
+     * @return {Long}
+     */
+    public static long getMemorySizeInBytes(final Context context) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        activityManager.getMemoryInfo(memoryInfo);
+        long totalMemory = memoryInfo.totalMem;
+
+        return totalMemory;
     }
 }

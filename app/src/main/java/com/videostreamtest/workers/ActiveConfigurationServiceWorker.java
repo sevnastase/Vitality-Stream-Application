@@ -40,6 +40,7 @@ public class ActiveConfigurationServiceWorker extends Worker {
     public Result doWork() {
         //Get Input
         final String apikey = getInputData().getString("apikey");
+        final String password = getInputData().getString("password");
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(PRAXCLOUD_URL)
@@ -57,20 +58,30 @@ public class ActiveConfigurationServiceWorker extends Worker {
         }
 
         final ConfigurationDao configurationDao = PraxtourDatabase.getDatabase(getApplicationContext()).configurationDao();
-        configurationDao.updateCurrentConfiguration(
-                accountConfiguration.isLocalPlay(),
-                accountConfiguration.isBootOnStart(),
-                accountConfiguration.getCommunicationDevice(),
-                accountConfiguration.isUpdatePraxCloud(),
-                accountConfiguration.getPraxCloudMediaServerUrl(),
-                accountConfiguration.getPraxCloudMediaServerLocalUrl());
+        Data output = new Data.Builder().build();
 
-        //Pre-define output
-        Data output = new Data.Builder()
-                .putString("apikey", apikey)
-                .putBoolean("isStreamingAccount", !accountConfiguration.isLocalPlay())
-                .putString("configurationObject", new GsonBuilder().create().toJson(accountConfiguration, Configuration.class))
-                .build();
+        if (accountConfiguration!= null) {
+            configurationDao.updateCurrentConfiguration(
+                    accountConfiguration.isLocalPlay(),
+                    accountConfiguration.isBootOnStart(),
+                    accountConfiguration.getCommunicationDevice(),
+                    accountConfiguration.isUpdatePraxCloud(),
+                    accountConfiguration.getPraxCloudMediaServerUrl(),
+                    accountConfiguration.getPraxCloudMediaServerLocalUrl());
+
+            //Pre-define output
+            output = new Data.Builder()
+                    .putString("apikey", apikey)
+                    .putString("password", password)
+                    .putBoolean("isStreamingAccount", !accountConfiguration.isLocalPlay())
+                    .putString("configurationObject", new GsonBuilder().create().toJson(accountConfiguration, Configuration.class))
+                    .build();
+        } else {
+            output = new Data.Builder()
+                    .putString("apikey", apikey)
+                    .putString("password", password)
+                    .build();
+        }
 
         return Result.success(output);
     }

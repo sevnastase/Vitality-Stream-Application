@@ -36,6 +36,15 @@ public class RoutePartsAdapter extends RecyclerView.Adapter<RoutePartsViewHolder
         }
     }
 
+    public void setRouteparts(final List<Routepart> routeparts) {
+        if (routeparts.size()>0) {
+            movieParts = new MoviePart[routeparts.size()];
+            for (int partIndex = 0; partIndex<routeparts.size();partIndex++) {
+                movieParts[partIndex] = MoviePart.fromRoutepartEntity(routeparts.get(partIndex));
+            }
+        }
+    }
+
     public void setSelectedMoviePart(final int frameNumber) {
         int position = 0;
         //movieparts array moet er zijn en gevuld
@@ -79,6 +88,10 @@ public class RoutePartsAdapter extends RecyclerView.Adapter<RoutePartsViewHolder
 
     @Override
     public int getItemCount() {
-        return movieParts.length;
+        if (movieParts!= null) {
+            return movieParts.length;
+        } else {
+            return 0;
+        }
     }
 }

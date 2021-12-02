@@ -1,7 +1,6 @@
 package com.videostreamtest.service.ble.callback;
 
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.os.ParcelUuid;
@@ -9,7 +8,7 @@ import android.util.Log;
 
 import com.videostreamtest.data.model.BleDeviceInfo;
 import com.videostreamtest.service.ble.CSCProfile;
-import com.videostreamtest.ui.phone.productview.fragments.messagebox.BleDeviceInformationAdapter;
+import com.videostreamtest.ui.phone.productview.fragments.messagebox.ble.BleDeviceInformationAdapter;
 
 import java.util.List;
 

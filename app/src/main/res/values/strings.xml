@@ -94,4 +94,16 @@
     <string name="signal_strength_indicator_low_signal_value">Low</string>
     <string name="signal_strength_indicator_very_low_signal_value">Very low</string>
     <string name="single_ble_device_connect_label">Select</string>
+    <string name="error_message_general">Internet speedtest failed, please upgrade or check connection!</string>
+    <string name="error_message_speedtest">The internet speedtest failed.\nThe measured speed is %d Mbps and the minimum needed speed is %d Mbps.</string>
+    <string name="ble_not_supported_or_turned_on">Bluetooth Low Energy not supported or turned on.</string>
+    <string name="ble_choose_connected_device_toast_message">Please select sensor to connect with.</string>
+    <string name="ble_device_lack_permission_message">No background location permission set which is mandatory for Bluetooth.</string>
+    <string name="permission_error_message">A permission is not granted at the moment, click on the \'%s\' button to open the settings view or request the missing permission.</string>
+    <string name="show_settings_button">Open Settings</string>
+    <string name="retry_permission_check_button">Retry</string>
+    <string name="permission_settings_text_ble_permission">Ask BLE permissions</string>
+    <string name="permission_settings_text_location_permission">Ask location permissions</string>
+    <string name="statusbar_time_indicator">Time</string>
+    <string name="action_sign_out_short">Logout</string>
 </resources>

@@ -75,22 +75,53 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
                         });
             }
         } else {
-            if (isLocalPlay) {
-                //Set routepart cover
-                Picasso.get()
-                        .load(DownloadHelper.getLocalMediaRoutepart(itemView.getContext(), moviePart))
-                        .resize(130, 70)
-                        .placeholder(R.drawable.placeholder_movieparts)
-                        .error(R.drawable.placeholder_movieparts)
-                        .into(moviePartCoverImage);
+            //PLAIN SCREEN
+
+            //PRAXFILM SPECIFIC
+            if (moviePart.getMoviepartImagepath().contains("nummer_")) {
+                int partNumber = Integer.parseInt(moviePart.getMoviepartImagepath().replaceAll("\\D+",""));
+                switch (partNumber) {
+                    case 1:
+                        moviePartCoverImage.setImageDrawable(itemView.getContext().getDrawable(R.drawable.nummer_1_wit));
+                        break;
+                    case 2:
+                        moviePartCoverImage.setImageDrawable(itemView.getContext().getDrawable(R.drawable.nummer_2_wit));
+                        break;
+                    case 3:
+                        moviePartCoverImage.setImageDrawable(itemView.getContext().getDrawable(R.drawable.nummer_3_wit));
+                        break;
+                    case 4:
+                        moviePartCoverImage.setImageDrawable(itemView.getContext().getDrawable(R.drawable.nummer_4_wit));
+                        break;
+                    case 5:
+                        moviePartCoverImage.setImageDrawable(itemView.getContext().getDrawable(R.drawable.nummer_5_wit));
+                        break;
+                    case 6:
+                        moviePartCoverImage.setImageDrawable(itemView.getContext().getDrawable(R.drawable.nummer_6_wit));
+                        break;
+                    default:
+                        moviePartCoverImage.setImageDrawable(itemView.getContext().getDrawable(R.drawable.nummer_1_wit));
+                }
+
             } else {
-                //Set routepart cover
-                Picasso.get()
-                        .load(moviePart.getMoviepartImagepath())
-                        .resize(130, 70)
-                        .placeholder(R.drawable.placeholder_movieparts)
-                        .error(R.drawable.placeholder_movieparts)
-                        .into(moviePartCoverImage);
+                //PRAXSPIN && PRAXFIT
+                if (isLocalPlay) {
+                    //Set routepart cover
+                    Picasso.get()
+                            .load(DownloadHelper.getLocalMediaRoutepart(itemView.getContext(), moviePart))
+                            .resize(130, 70)
+                            .placeholder(R.drawable.placeholder_movieparts)
+                            .error(R.drawable.placeholder_movieparts)
+                            .into(moviePartCoverImage);
+                } else {
+                    //Set routepart cover
+                    Picasso.get()
+                            .load(moviePart.getMoviepartImagepath())
+                            .resize(130, 70)
+                            .placeholder(R.drawable.placeholder_movieparts)
+                            .error(R.drawable.placeholder_movieparts)
+                            .into(moviePartCoverImage);
+                }
             }
         }
 
@@ -124,7 +155,7 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
             @Override
             public void onClick(View v) {
                 moviePartCoverImage.requestFocus();
-                VideoplayerActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber());
+                VideoplayerActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
             }
         });
     }

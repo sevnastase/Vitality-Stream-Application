@@ -31,6 +31,7 @@ public class LoginServiceWorker extends Worker {
         //Store outcome in the output data model
         output = new Data.Builder()
                 .putString("apikey", result)
+                .putString("password", password)
                 .build();
         //Return result with data output
         return Result.success(output);

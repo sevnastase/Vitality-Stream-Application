@@ -61,10 +61,11 @@ public class ProfileServiceWorker extends Worker {
         List<Profile> accountProfiles = new ArrayList<>();
         try {
             accountProfiles = call.execute().body();
+            Log.d(TAG, "AccountProfiles Count RetroFit :: "+accountProfiles.size());
         } catch (IOException ioException) {
             Log.e(TAG, ioException.getLocalizedMessage());
         }
-        Log.d(TAG, "AccountProfiles Count RetroFit :: "+accountProfiles.size());
+
 
         final ProfileDao profileDao = PraxtourDatabase.getDatabase(getApplicationContext()).profileDao();
             if (accountProfiles.size() > 0) {

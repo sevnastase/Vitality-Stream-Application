@@ -38,7 +38,6 @@
         <LinearLayout
             android:id="@+id/overlay_connection_info_summary"
             android:layout_gravity="center|center_horizontal"
-            android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -46,51 +45,31 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:orientation="horizontal">
                 <TextView
+                    android:id="@+id/error_message"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
+                    android:gravity="center"
                     android:layout_margin="5dp"
                     android:textStyle="bold"
                     android:focusable="false"
                     android:textColor="@color/exo_white"
                     android:textSize="12sp"
-                    android:text="Please enter the password to logout."/>
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-                <EditText
-                    android:id="@+id/password"
-                    android:layout_width="150dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:alpha="0.95"
-                    android:background="#ffffff"
-                    android:hint="@string/prompt_password"
-                    android:imeActionLabel="@string/action_sign_out_short"
-                    android:imeOptions="actionSend"
-                    android:inputType="textPassword"
-                    android:selectAllOnFocus="true"
-                    android:textAlignment="center"
-                    android:nextFocusDown="@id/account_logout_button"
-                    android:nextFocusRight="@id/account_logout_button" />
+                    android:text="@string/error_message_general"/>
             </LinearLayout>
 
         </LinearLayout>
         <Button
-            android:id="@+id/account_logout_button"
+            android:id="@+id/error_message_back_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:padding="10dp"
-            android:text="Logout"
-            android:background="@null"
+            android:focusable="true"
+            android:text="Back"
+            android:background="@drawable/imagebutton_red_border"
             android:backgroundTint="@android:color/holo_red_dark"
             android:textColor="@color/exo_white"/>
     </LinearLayout>

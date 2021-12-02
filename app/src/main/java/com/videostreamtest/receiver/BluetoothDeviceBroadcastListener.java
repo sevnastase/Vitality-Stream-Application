@@ -6,9 +6,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.videostreamtest.constants.CadenceSensorConstants;
-import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
-
 public class BluetoothDeviceBroadcastListener extends BroadcastReceiver {
     private static final String TAG = BluetoothDeviceBroadcastListener.class.getSimpleName();
 

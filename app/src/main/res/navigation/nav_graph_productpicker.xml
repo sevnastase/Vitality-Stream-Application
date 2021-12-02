@@ -10,10 +10,14 @@
         android:label="ProductPickerFragment" />
     <fragment
         android:id="@+id/bleDeviceInformationBoxFragment"
-        android:name="com.videostreamtest.ui.phone.productview.fragments.messagebox.BleDeviceInformationBoxFragment"
+        android:name="com.videostreamtest.ui.phone.productview.fragments.messagebox.ble.BleDeviceInformationBoxFragment"
         android:label="BleDeviceInformationBoxFragment" />
     <fragment
         android:id="@+id/logoutFragment"
         android:name="com.videostreamtest.ui.phone.productpicker.fragments.LogoutFragment"
         android:label="LogoutFragment" />
+    <fragment
+        android:id="@+id/permissionErrorMessage"
+        android:name="com.videostreamtest.ui.phone.productview.fragments.messagebox.errors.NoPermissionsMessageFragment"
+        android:label="NoPermissionsFragment" />
 </navigation>

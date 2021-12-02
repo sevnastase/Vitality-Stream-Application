@@ -175,8 +175,8 @@
         <service
             android:name=".service.ble.BleService"
             android:icon="@drawable/ic_launcher_background"
-            android:foregroundServiceType="location"
             android:label="BleService" />
+<!--            android:foregroundServiceType="location"-->
 
         <receiver android:name=".receiver.OnBootCompletedBroadcastReceiver"
             android:enabled="true"

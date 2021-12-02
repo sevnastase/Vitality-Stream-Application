@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.productview.fragments.messagebox;
+package com.videostreamtest.ui.phone.productview.fragments.messagebox.ble;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;

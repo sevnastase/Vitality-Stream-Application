@@ -4,10 +4,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,11 +24,7 @@ import androidx.work.WorkManager;
 
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
-import com.videostreamtest.config.dao.ConfigurationDao;
-import com.videostreamtest.config.dao.ProfileDao;
-import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Configuration;
-import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.workers.ActiveConfigurationServiceWorker;
 import com.videostreamtest.workers.LoginServiceWorker;
@@ -53,6 +52,17 @@ public class LoginActivity extends AppCompatActivity {
         final EditText username = findViewById(R.id.username);
         final EditText password = findViewById(R.id.password);
         progressBar = findViewById(R.id.loading);
+
+        password.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    handled = loginButton.callOnClick();
+                }
+                return handled;
+            }
+        });
 
         loginButton.setOnClickListener(new View.OnClickListener(){
                @Override
@@ -109,6 +119,8 @@ public class LoginActivity extends AppCompatActivity {
                         progressBar.setVisibility(View.VISIBLE);
 
                         final String accounttoken = workInfo.getOutputData().getString("apikey");
+                        final String receivedPassword = workInfo.getOutputData().getString("password");
+
                         final boolean isStreamingAccount = workInfo.getOutputData().getBoolean("isStreamingAccount", false);
                         final com.videostreamtest.data.model.response.Configuration config = new GsonBuilder().create().fromJson(workInfo.getOutputData().getString("configurationObject"), com.videostreamtest.data.model.response.Configuration.class);
 
@@ -123,6 +135,7 @@ public class LoginActivity extends AppCompatActivity {
                             SharedPreferences myPreferences = getApplication().getSharedPreferences("app",0);
                             SharedPreferences.Editor editor = myPreferences.edit();
                             editor.putString("apikey", accounttoken);
+                            editor.putString("password", receivedPassword);
                             editor.commit();
 
                             Log.d(TAG, "Login accounttoken: "+accounttoken);

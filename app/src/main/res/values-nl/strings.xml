@@ -82,4 +82,14 @@
     <string name="signal_strength_indicator_low_signal_value">Slecht</string>
     <string name="signal_strength_indicator_very_low_signal_value">Erg slecht</string>
     <string name="single_ble_device_connect_label">Selecteer</string>
+    <string name="error_message_general">Internet snelheidstest gefaald!</string>
+    <string name="ble_not_supported_or_turned_on">Bluetooth Low Energy niet ondersteund of staat niet aan.</string>
+    <string name="error_message_speedtest">De internet snelheidstest faalt.  \nEr is %d Mbps gemeten en het minimum is %d Mbps.</string>
+    <string name="retry_permission_check_button">Opnieuw laden</string>
+    <string name="show_settings_button">Open instellingen</string>
+    <string name="permission_error_message">Een permissie is niet toegestaan. Wijzig deze in de instellingen, klik op de knop \'%s\' om de instellingen te openen.</string>
+    <string name="statusbar_time_indicator">Tijd</string>
+    <string name="permission_settings_text_ble_permission">Vraag om BLE permissie</string>
+    <string name="permission_settings_text_location_permission">Vraag om locatie permissie</string>
+    <string name="action_sign_out_short">Uitloggen</string>
 </resources>

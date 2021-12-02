@@ -72,7 +72,7 @@ public class TouchScreenRouteFilmsViewHolder extends RecyclerView.ViewHolder {
         if (selectedProduct.getProductName().toLowerCase().contains("praxfilm")) {
             isMovieSupportImagesOnDevice = true;
         } else {
-            isMovieSupportImagesOnDevice = DownloadHelper.isMovieImagesPresent(itemView.getContext(), movie.getId());
+            isMovieSupportImagesOnDevice = DownloadHelper.isMovieImagesPresent(itemView.getContext(), movie);
         }
 
         if (isMovieSupportImagesOnDevice) {

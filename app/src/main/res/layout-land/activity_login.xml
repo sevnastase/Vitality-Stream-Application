@@ -53,7 +53,7 @@
             android:background="#ffffff"
             android:hint="@string/prompt_password"
             android:imeActionLabel="@string/action_sign_in_short"
-            android:imeOptions="actionDone"
+            android:imeOptions="actionSend"
             android:inputType="textPassword"
             android:selectAllOnFocus="true"
             android:textAlignment="center"

@@ -88,7 +88,7 @@ public class PraxFitStatusBarFragment extends Fragment {
         stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
 
         Bundle arguments = getArguments();
-        if (arguments!= null) {
+        if (arguments != null) {
             isLocalPlay = arguments.getBoolean("localPlay");
         }
 

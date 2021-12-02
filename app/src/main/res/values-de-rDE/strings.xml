@@ -82,4 +82,5 @@
     <string name="loading_profile_message">Profil von %s hochgeladen</string>
     <string name="catalog_download_status_message">Download-Status: %,.2f Prozent</string>
     <string name="single_ble_device_connect_label">Selektieren</string>
+    <string name="statusbar_time_indicator">Zeit</string>
 </resources>

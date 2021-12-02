@@ -337,8 +337,29 @@ public class VideoplayerActivity extends AppCompatActivity {
                 getSupportFragmentManager()
                         .beginTransaction()
                         .setReorderingAllowed(true)
-                        .replace(R.id.videoplayer_framelayout_statusbar, PraxFilmStatusBarFragment.class, null)
+                        .replace(R.id.videoplayer_framelayout_statusbar, PraxFilmStatusBarFragment.class, arguments)
                         .commit();
+
+//                //Pass movie details with a second based timer TODO:move to setTimeLineEvent method in this class
+//                Handler praxFilmHandler = new Handler();
+//                Runnable runnableMovieDetails = new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        if (mediaPlayer != null && !routeFinished) {
+//                            Log.d(TAG, "TIME "+mediaPlayer.getTime());
+//                            videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getTime());
+//                            if (mediaPlayer.getMedia()!= null && mediaPlayer.getMedia().getDuration() != -1) {
+//                                Log.d(TAG, "DURATION "+mediaPlayer.getMedia().getDuration());
+//                                videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getMedia().getDuration());
+//                            }
+//
+//                        }
+//                        if (!routeFinished) {
+//                            praxFilmHandler.postDelayed(this::run, 1000);
+//                        }
+//                    }
+//                };
+//                praxFilmHandler.postDelayed(runnableMovieDetails, 0);
 
             }
             if (selectedProduct.getProductName().contains("PraxSpin")) {
@@ -880,9 +901,13 @@ public class VideoplayerActivity extends AppCompatActivity {
             public void run() {
                 if (mediaPlayer != null) {
                     if (mediaPlayer!=null) {
-                        Log.d(TAG, "Seekable: "+mediaPlayer.isSeekable());
-                        Log.d(TAG, "Time available: "+mediaPlayer.getTime());
-                        Log.d(TAG, "Length available: "+mediaPlayer.getLength());
+                        try {
+                            Log.d(TAG, "Seekable: " + mediaPlayer.isSeekable());
+                            Log.d(TAG, "Time available: " + mediaPlayer.getTime());
+                            Log.d(TAG, "Length available: " + mediaPlayer.getLength());
+                        } catch (Exception exception) {
+                            Log.e(TAG, exception.getLocalizedMessage());
+                        }
                     }
                     if (    (currentSecond >= minSecondsLoadingView) &&
                             isPraxtourMediaPlayerReady() &&
@@ -921,17 +946,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         Runnable runnableMovieDetails = new Runnable() {
             @Override
             public void run() {
-                if (mediaPlayer!=null) {
-                    //Is media seekable
-                    Log.d(TAG, "Seekable: "+mediaPlayer.isSeekable());
-                    //Current position in ms
-                    Log.d(TAG, "Time available: "+mediaPlayer.getTime());
-                    //Total length of video in ms
-                    Log.d(TAG, "Length available: "+mediaPlayer.getLength());
-                }
-
                 if (mediaPlayer != null && !routeFinished) {
-
                     if (mediaPlayer.getTime()/1000L < 2) {
                         mediaPlayer.setVolume(ApplicationSettings.DEFAULT_SOUND_VOLUME);
                     }
@@ -951,32 +966,38 @@ public class VideoplayerActivity extends AppCompatActivity {
 
                     //set to new
                     checkBackgroundSoundMedia();
-
-//                    checkEffectSoundMedia();
-                    timelineHandler.postDelayed(this::run, 1000);
                 }
 
                 //PAUSE TIMER
                 if (routePaused) {
-                    if (pauseTimer > MAX_PAUSE_TIME_SEC && !backToOverviewWaitForSensor) {
-                        VideoplayerActivity.this.finish();
+                    if (pauseTimer > MAX_PAUSE_TIME_SEC || backToOverviewWaitForSensor) {
+                        stopVideoplayer();
                     } else {
                         pauseTimer++;
                     }
+                }
 
+                if (routeFinished) {
                     Log.d(TAG, "backToOverviewSensorWait = "+backToOverviewWaitForSensor);
-
                     if (backToOverviewWaitForSensor) {
-                        startSensorService();
-                        VideoplayerActivity.this.finish();
+                        stopVideoplayer();
                     }
                 }
+
+                timelineHandler.postDelayed(this::run, 1000);
             }
         };
 
         if (!routeFinished) {
             timelineHandler.postDelayed(runnableMovieDetails, 0);
         }
+    }
+
+    private void stopVideoplayer() {
+        if (backgroundSoundPlayer != null && backgroundSoundPlayer.isPlaying()) {
+            backgroundSoundPlayer.stop();
+        }
+        VideoplayerActivity.this.finish();
     }
 
     private void checkBackgroundSoundMedia() {

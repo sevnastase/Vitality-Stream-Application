@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.productview.fragments.messagebox;
+package com.videostreamtest.ui.phone.productview.fragments.messagebox.ble;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -8,8 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,12 +18,15 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -31,7 +34,6 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.service.ble.callback.BleScanCallback;
-import com.videostreamtest.ui.phone.helpers.BleHelper;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -116,21 +118,22 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
+                != PackageManager.PERMISSION_GRANTED
+        && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             Log.d(TAG, "No ACCESS_BACKGROUND_LOCATION permission.");
         }
 
-        loadBluetoothDefaultDeviceInformation();
-        initDisconnectButtonOnClickListener();
+        if (hasBluetoothPermissions()) {
+            loadBluetoothDefaultDeviceInformation();
+            initDisconnectButtonOnClickListener();
+        } else {
+            showNoPermissionsMessagefragment();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-//        if (scanner != null && bleScanCallback!= null) {
-//            scanner.stopScan(bleScanCallback);
-//            Log.d(TAG, "BLE Scanning stopped. [VIEW PAUSED]");
-//        }
     }
 
     @Override
@@ -185,14 +188,15 @@ public class BleDeviceInformationBoxFragment extends Fragment {
                             deviceConnectionStrengthLabel.setText(bluetoothDefaultDevice.getBleSignalStrength());
                         }
                     } else {
-                        deviceNameLabel.setText("No device");
-                        deviceConnectionStrengthLabel.setText("No device");
-                        deviceBatterylevelLabel.setText("0%");
+                        deviceNameLabel.setText(getString(R.string.settings_ble_value_placeholder_no_device));
+                        deviceConnectionStrengthLabel.setText(getString(R.string.settings_ble_value_placeholder_no_device));
+                        deviceBatterylevelLabel.setText(getString(R.string.settings_ble_battery_value_placeholder));
                     }
                 }
             });
         } else {
             linearLayoutConnectionDeviceSummary.setVisibility(View.GONE);
+            showWarningBleNotSupported();
         }
     }
 
@@ -206,6 +210,47 @@ public class BleDeviceInformationBoxFragment extends Fragment {
     private void showWarningBleNotSupported() {
         deviceLabel.setText("Bluetooth Low Energy not supported or turned on.");
         showBleDevicesRecyclerView.setVisibility(View.GONE);
+        TextView unsupportedMessage = getActivity().findViewById(R.id.ble_not_supported_message);
+        unsupportedMessage.setVisibility(View.VISIBLE);
+    }
+
+    private boolean hasBluetoothPermissions() {
+        boolean permissionsAcquired = true;
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "No ACCES_COARSE_LOCATION permission.");
+            permissionsAcquired = false;
+        }
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.BLUETOOTH_ADMIN)
+                != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "No BLUETOOTH_ADMIN permission.");
+            permissionsAcquired = false;
+        }
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.BLUETOOTH)
+                != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "No BLUETOOTH permission.");
+            permissionsAcquired = false;
+        }
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                != PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+                ) {
+            Log.d(TAG, "No ACCESS_BACKGROUND_LOCATION permission.");
+            permissionsAcquired = false;
+        }
+        return permissionsAcquired;
+    }
+
+    private void showNoPermissionsMessagefragment() {
+        NavHostFragment navHostFragment =
+                (NavHostFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+        NavController navController = navHostFragment.getNavController();
+        if (navController.getCurrentDestination().getId() == R.id.bleDeviceInformationBoxFragment) {
+            navController.navigate(R.id.permissionErrorMessage);
+        }
     }
 
     private boolean checkBluetoothSupport(final BluetoothAdapter bluetoothAdapter) {
@@ -220,16 +265,9 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         return true;
     }
 
-    private void showCurrentConnectedDevice(final TextView deviceLabel) {
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("app" , Context.MODE_PRIVATE);
-        String deviceName = sharedPreferences.getString(ApplicationSettings.DEFAULT_BLE_DEVICE_NAME_KEY,"");
-        if (deviceName != null && !deviceName.isEmpty()) {
-            deviceLabel.setText("Current: "+deviceName);
-        }
-    }
-
     private void startScanForDevices(final BluetoothAdapter bluetoothAdapter) {
         if (checkBluetoothSupport(bluetoothAdapter)) {
+            Toast.makeText(getActivity(), getString(R.string.ble_choose_connected_device_toast_message), Toast.LENGTH_LONG).show();
             scanner = bluetoothAdapter.getBluetoothLeScanner();
 
             final BleDeviceInformationAdapter bleDeviceInformationAdapter = new BleDeviceInformationAdapter(productViewModel);
@@ -271,10 +309,6 @@ public class BleDeviceInformationBoxFragment extends Fragment {
 
             Intent bleService = new Intent(getActivity().getApplicationContext(), BleService.class);
             getActivity().startService(bleService);
-//            LinearLayout searchSensorLayout = getView().findViewById(R.id.overlay_messagebox_connection_info_summary);
-//            searchSensorLayout.setVisibility(View.VISIBLE);
-//            LinearLayout sensorStatusView = getView().findViewById(R.id.overlay_connection_info_box);
-//            sensorStatusView.setVisibility(View.GONE);
             startScanForDevices(bluetoothManager.getAdapter());
         });
     }

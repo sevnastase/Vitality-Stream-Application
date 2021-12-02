@@ -77,11 +77,10 @@ public class SplashActivity extends AppCompatActivity {
 
         //New way
         splashViewModel.getCurrentConfig().observe(this, config -> {
-            if (config != null) {
+            if (config != null || !getSharedPreferences("app", MODE_PRIVATE).getString("apikey","").equals("")) {
                 loadTimer.removeCallbacksAndMessages(null);
-
-                //TODO: Check if current apikey is valid, else logout
-
+            }
+            if (config != null) {
                 Log.d(TAG, "Token :: " + config.getAccountToken() + " > Current =  " + config.isCurrent());
                 //If there's internet, retrieve account info and/or synchronize data
                 ConfigurationHelper.loadExternalData(this, config.getAccountToken());
