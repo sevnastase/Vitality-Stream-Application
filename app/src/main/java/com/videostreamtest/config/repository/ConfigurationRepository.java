@@ -38,6 +38,12 @@ public class ConfigurationRepository {
         return mConfigurations;
     }
 
+    public void deleteAllConfigurations(){
+        PraxtourDatabase.databaseWriterExecutor.execute( () -> {
+            configurationDao.nukeTable();
+        });
+    }
+
     public boolean isLocalAccountValid() {
         Configuration currentConfig = this.currentConfig.getValue();
         if (currentConfig == null) {

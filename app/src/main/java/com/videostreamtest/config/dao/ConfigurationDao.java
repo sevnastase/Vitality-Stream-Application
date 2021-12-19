@@ -23,6 +23,9 @@ public interface ConfigurationDao {
     @Delete
     void delete(Configuration configuration);
 
+    @Query("DELETE FROM configuration_table")
+    void nukeTable();
+
     @Query("SELECT * FROM configuration_table ct")
     LiveData<List<Configuration>> getConfigurations();
 

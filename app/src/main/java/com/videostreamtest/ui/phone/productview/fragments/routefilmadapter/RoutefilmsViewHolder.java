@@ -9,13 +9,11 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
 import android.util.Log;
-import android.util.Printer;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,12 +29,8 @@ import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.ui.phone.catalog.CatalogRecyclerViewClickListener;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
-import com.videostreamtest.ui.phone.helpers.ViewHelper;
-import com.videostreamtest.ui.phone.productpicker.fragments.ProductPickerFragment;
-import com.videostreamtest.ui.phone.productview.fragments.AbstractProductScreenFragment;
 import com.videostreamtest.ui.phone.productview.fragments.RouteInformationFragment;
 import com.videostreamtest.ui.phone.productview.fragments.messagebox.errors.SpeedtestErrorFragment;
-import com.videostreamtest.ui.phone.productview.fragments.touch.TouchScreenRouteFilmsViewHolder;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 
@@ -320,7 +314,7 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
                     @Override
                     public void onError(SpeedTestError speedTestError, String errorMessage) {
                         // called when a download/upload error occur
-                        Log.d(TouchScreenRouteFilmsViewHolder.class.getSimpleName(), "ERROR :: "+errorMessage);
+                        Log.d(getClass().getSimpleName(), "ERROR :: "+errorMessage);
                         AppCompatActivity activity = (AppCompatActivity) itemView.getContext();
                         activity.getSupportFragmentManager()
                                 .beginTransaction()

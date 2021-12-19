@@ -2,23 +2,26 @@ package com.videostreamtest.ui.phone.login;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.Constraints;
 import androidx.work.Data;
+import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
@@ -28,6 +31,9 @@ import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.workers.ActiveConfigurationServiceWorker;
 import com.videostreamtest.workers.LoginServiceWorker;
+import com.videostreamtest.workers.ServerStatusServiceWorker;
+
+import java.util.concurrent.TimeUnit;
 
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = LoginActivity.class.getSimpleName();
@@ -47,37 +53,65 @@ public class LoginActivity extends AppCompatActivity {
         Log.d(this.getClass().getSimpleName(), "Density: "+this.getResources().getDisplayMetrics());
 
         //Link layout to code components
-        final Button loginButton = findViewById(R.id.login);
-        final Button registerButton = findViewById(R.id.registerButton);
-        final EditText username = findViewById(R.id.username);
-        final EditText password = findViewById(R.id.password);
+//        final Button loginButton = findViewById(R.id.login);
+//        final Button registerButton = findViewById(R.id.registerButton);
+//        final EditText username = findViewById(R.id.username);
+//        final EditText password = findViewById(R.id.password);
         progressBar = findViewById(R.id.loading);
 
-        password.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                boolean handled = false;
-                if (actionId == EditorInfo.IME_ACTION_SEND) {
-                    handled = loginButton.callOnClick();
+//        password.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+//            @Override
+//            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+//                boolean handled = false;
+//                if (actionId == EditorInfo.IME_ACTION_SEND) {
+//                    handled = loginButton.callOnClick();
+//                }
+//                return handled;
+//            }
+//        });
+//
+//        loginButton.setOnClickListener(new View.OnClickListener(){
+//               @Override
+//               public void onClick(View v) {
+//                    login(username.getText().toString(),password.getText().toString());
+//               }
+//           }
+//        );
+//        registerButton.setOnClickListener(new View.OnClickListener(){
+//               @Override
+//               public void onClick(View v) {
+//                    Toast.makeText(getApplicationContext(), getString(R.string.under_construction), Toast.LENGTH_LONG).show();
+//               }
+//           }
+//        );
+
+        startPeriodicGetServerOnlineStatusWorker();
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        loginViewModel.getServerStatusLiveData().observe(this, serverStatus -> {
+            if(serverStatus != null) {
+                final ImageView serverStatusIndicator = findViewById(R.id.server_status_indicator);
+                final TextView networkUnreachableDialog = findViewById(R.id.warning_contact_network_admin_dialog_text);
+                final View fragment = findViewById(R.id.login_form_fragment_frame);
+                final EditText usernameInput = fragment.findViewById(R.id.login_insert_username_input);
+                if(serverStatus.isServerOnline()) {
+                    usernameInput.setEnabled(true);
+                    usernameInput.setBackgroundColor(Color.WHITE);
+                    networkUnreachableDialog.setVisibility(View.GONE);
+                    serverStatusIndicator.setImageDrawable(getDrawable(R.drawable.ic_checked));
+                    serverStatusIndicator.setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_ATOP);
+                } else {
+                    usernameInput.setEnabled(false);
+                    usernameInput.setBackgroundColor(Color.LTGRAY);
+                    networkUnreachableDialog.setVisibility(View.VISIBLE);
+                    serverStatusIndicator.setImageDrawable(getDrawable(R.drawable.ic_close));
+                    serverStatusIndicator.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
                 }
-                return handled;
             }
         });
-
-        loginButton.setOnClickListener(new View.OnClickListener(){
-               @Override
-               public void onClick(View v) {
-                    login(username.getText().toString(),password.getText().toString());
-               }
-           }
-        );
-        registerButton.setOnClickListener(new View.OnClickListener(){
-               @Override
-               public void onClick(View v) {
-                    Toast.makeText(getApplicationContext(), getString(R.string.under_construction), Toast.LENGTH_LONG).show();
-               }
-           }
-        );
     }
 
     private void login(final String username, final String password) {
@@ -157,5 +191,17 @@ public class LoginActivity extends AppCompatActivity {
 
                     }
                 });
+    }
+
+    private void startPeriodicGetServerOnlineStatusWorker() {
+        Constraints constraint = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+        PeriodicWorkRequest serverStatusRequester = new PeriodicWorkRequest.Builder(ServerStatusServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .addTag("server-online-status")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("server-online-status", ExistingPeriodicWorkPolicy.REPLACE, serverStatusRequester);
     }
 }

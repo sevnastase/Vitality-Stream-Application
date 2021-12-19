@@ -40,7 +40,7 @@ public class LogoutFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_logout_block, container, false);
 
-        productPickerViewModel = new ViewModelProvider(requireActivity()).get(ProductPickerViewModel.class);;
+        productPickerViewModel = new ViewModelProvider(requireActivity()).get(ProductPickerViewModel.class);
 
         logoutButton = view.findViewById(R.id.account_logout_button);
         password = view.findViewById(R.id.password);

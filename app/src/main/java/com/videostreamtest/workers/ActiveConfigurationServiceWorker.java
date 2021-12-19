@@ -12,8 +12,11 @@ import com.google.gson.GsonBuilder;
 import com.videostreamtest.config.dao.ConfigurationDao;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.data.model.response.Configuration;
+import com.videostreamtest.data.model.response.Product;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -33,6 +36,8 @@ public class ActiveConfigurationServiceWorker extends Worker {
     public interface PraxCloud {
         @GET("/api/users/current/configuration")
         Call<Configuration> getAccountConfiguration(@Header("api-key") String accountToken);
+        @GET("/api/users/current/subscriptions")
+        Call<List<Product>> getActiveProducts(@Header("api-key") String accountToken);
     }
 
     @NonNull
@@ -60,6 +65,23 @@ public class ActiveConfigurationServiceWorker extends Worker {
         final ConfigurationDao configurationDao = PraxtourDatabase.getDatabase(getApplicationContext()).configurationDao();
         Data output = new Data.Builder().build();
 
+        //ActiveProducts retrieval
+        /**
+         * Return active products count
+         */
+
+        Call<List<Product>> allAccountProducts = praxCloud.getActiveProducts(apikey);
+        List<Product> activeProducts = new ArrayList<>();
+        try {
+            activeProducts = allAccountProducts.execute().body();
+        } catch (IOException ioException) {
+            Log.e(TAG, ioException.getLocalizedMessage());
+        }
+        int activeProductsCount = 0;
+        if (activeProducts != null) {
+            activeProductsCount = activeProducts.size();
+        }
+
         if (accountConfiguration!= null) {
             configurationDao.updateCurrentConfiguration(
                     accountConfiguration.isLocalPlay(),
@@ -73,6 +95,7 @@ public class ActiveConfigurationServiceWorker extends Worker {
             output = new Data.Builder()
                     .putString("apikey", apikey)
                     .putString("password", password)
+                    .putInt("active-products-count", activeProductsCount)
                     .putBoolean("isStreamingAccount", !accountConfiguration.isLocalPlay())
                     .putString("configurationObject", new GsonBuilder().create().toJson(accountConfiguration, Configuration.class))
                     .build();
@@ -80,6 +103,7 @@ public class ActiveConfigurationServiceWorker extends Worker {
             output = new Data.Builder()
                     .putString("apikey", apikey)
                     .putString("password", password)
+                    .putInt("active-products-count", activeProductsCount)
                     .build();
         }
 

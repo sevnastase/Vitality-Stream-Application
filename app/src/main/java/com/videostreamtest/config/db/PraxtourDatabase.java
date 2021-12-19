@@ -7,6 +7,7 @@ import androidx.room.AutoMigration;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.room.TypeConverters;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
@@ -20,6 +21,7 @@ import com.videostreamtest.config.dao.ProductMovieDao;
 import com.videostreamtest.config.dao.ProfileDao;
 import com.videostreamtest.config.dao.RoutefilmDao;
 import com.videostreamtest.config.dao.RoutepartDao;
+import com.videostreamtest.config.dao.ServerStatusDao;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Configuration;
@@ -29,7 +31,9 @@ import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.config.entity.Profile;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.entity.Routepart;
+import com.videostreamtest.config.entity.ServerStatus;
 import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.typeconverter.Converters;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,8 +48,10 @@ import java.util.concurrent.Executors;
         BackgroundSound.class,
         EffectSound.class,
         ProductMovie.class,
-        BluetoothDefaultDevice.class
-}, version = 2, exportSchema = true)
+        BluetoothDefaultDevice.class,
+        ServerStatus.class
+}, version = 3, exportSchema = true)
+@TypeConverters({Converters.class})
 public abstract class PraxtourDatabase extends RoomDatabase {
     private final static String TAG = PraxtourDatabase.class.getSimpleName();
     private static volatile PraxtourDatabase INSTANCE;
@@ -54,6 +60,7 @@ public abstract class PraxtourDatabase extends RoomDatabase {
     public static final ExecutorService databaseWriterExecutor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
     public abstract ConfigurationDao configurationDao();
+    public abstract ServerStatusDao serverStatusDao();
     public abstract ProductDao productDao();
     public abstract ProfileDao profileDao();
     public abstract RoutefilmDao routefilmDao();
@@ -78,6 +85,17 @@ public abstract class PraxtourDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_2_3 = new Migration(2, 3) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE `serverstatus_table` ("
+                    + "`serverstatus_id` INTEGER NOT NULL, "
+                    + "`server_online` INTEGER NOT NULL, "
+                    + "`server_last_online_timestamp` INTEGER,"
+                    +" PRIMARY KEY(`serverstatus_id`))");
+        }
+    };
+
 
     public static PraxtourDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
@@ -87,7 +105,7 @@ public abstract class PraxtourDatabase extends RoomDatabase {
                             PraxtourDatabase.class,
                             "configuration_database")
                             .addCallback(sRoomDatabaseCallback)
-                            .addMigrations(MIGRATION_1_2)
+                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                             .build();
                 }
             }

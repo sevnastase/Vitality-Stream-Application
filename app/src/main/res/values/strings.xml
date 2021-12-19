@@ -106,4 +106,9 @@
     <string name="permission_settings_text_location_permission">Ask location permissions</string>
     <string name="statusbar_time_indicator">Time</string>
     <string name="action_sign_out_short">Logout</string>
+    <string name="login_form_enter_username">Enter username</string>
+    <string name="login_form_enter_username_hint">Username</string>
+    <string name="login_form_enter_password">Enter password</string>
+    <string name="login_form_enter_password_hint">Password</string>
+    <string name="profile_add_form_previous_button_text">Previous</string>
 </resources>

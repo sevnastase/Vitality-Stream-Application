@@ -154,4 +154,26 @@ public class DatabaseRestService {
         return "failed";
     }
 
+    public boolean isOnline() {
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .build();
+        final String getActiveProductsUrl = url+"/server/status";
+        final Request request = new Request.Builder()
+                .url(getActiveProductsUrl)
+                .get()
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            String body = response.body().string();
+            Log.d("DatabaseService","Response got filled in :: "+body);
+            return (!body.isEmpty() && body.contains("streamserver"));
+        } catch (IOException exception) {
+            Log.e(TAG, exception.getLocalizedMessage());
+            return false;
+        }
+    }
+
 }

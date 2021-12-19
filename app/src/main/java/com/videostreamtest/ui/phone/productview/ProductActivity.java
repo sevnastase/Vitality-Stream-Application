@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
-import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -44,8 +43,6 @@ import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.productview.fragments.AbstractProductScreenFragment;
-import com.videostreamtest.ui.phone.productview.fragments.PlainScreenFragment;
-import com.videostreamtest.ui.phone.productview.fragments.TouchScreenFragment;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
@@ -171,22 +168,24 @@ public class ProductActivity extends AppCompatActivity {
         resetScreensaverTimer();
     }
 
-    public boolean isStoragePermissionGranted() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (getApplicationContext().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
+    public boolean isStoragePermissionGranted(final boolean isLocalPlay) {
+        if (isLocalPlay) {
+            if (Build.VERSION.SDK_INT >= 23) {
+                if (getApplicationContext().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    Log.v(TAG, "Permission is granted");
+                    return true;
+                } else {
+                    Log.v(TAG, "Permission is revoked");
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                    return false;
+                }
+            } else { //permission is automatically granted on sdk<23 upon installation
                 Log.v(TAG, "Permission is granted");
                 return true;
-            } else {
-                Log.v(TAG, "Permission is revoked");
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                return false;
             }
         }
-        else { //permission is automatically granted on sdk<23 upon installation
-            Log.v(TAG,"Permission is granted");
-            return true;
-        }
+        return false;
     }
 
     private void loadFragmentBasedOnScreenType(final Bundle arguments) {
@@ -337,7 +336,7 @@ public class ProductActivity extends AppCompatActivity {
 
     private void downloadLocalMovies() {
         productViewModel.getCurrentConfig().observe(this, currentConfig -> {
-            if (currentConfig != null && isStoragePermissionGranted()) {
+            if (currentConfig != null && isStoragePermissionGranted(currentConfig.isLocalPlay())) {
                 productViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(this, routefilms -> {
                     if (routefilms.size()>0 && currentConfig.isLocalPlay()) {
                         //CHECK IF ALL MOVIES FIT TO DISK

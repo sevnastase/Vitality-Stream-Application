@@ -268,13 +268,13 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Manifest.permission.INTERNET,
                     Manifest.permission.ACCESS_NETWORK_STATE,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
+//                    Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.BLUETOOTH,
                     Manifest.permission.BLUETOOTH_ADMIN,
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION, //ANDROID 10 FOR BLE
-                    Manifest.permission.ACCESS_COARSE_LOCATION, //ANDROID 10 OR OLDER THEN 7.0 FOR BLE
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE
+//                    Manifest.permission.ACCESS_BACKGROUND_LOCATION, //ANDROID 10 FOR BLE
+//                    Manifest.permission.ACCESS_COARSE_LOCATION, //ANDROID 10 OR OLDER THEN 7.0 FOR BLE
+//                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//                    Manifest.permission.READ_EXTERNAL_STORAGE
             }, 2323);
             if (checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED){
                 Log.d(TAG, "BLUETOOTH PERMISSION GRANTED");
