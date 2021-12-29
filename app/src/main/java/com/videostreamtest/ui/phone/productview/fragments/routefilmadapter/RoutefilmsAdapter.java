@@ -41,22 +41,11 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
 
     //ROUTE INFORMATION BLOCK LISTENER
     private CatalogRecyclerViewClickListener catalogRecyclerViewClickListener;
-    private LinearLayout routeInformationBlock;
 
     public RoutefilmsAdapter(final Product activeProduct, final CommunicationDevice communicationDevice, final ProductViewModel productViewModel, final Context applicationContext) {
         this.selectedProduct = activeProduct;
         this.communicationDevice = communicationDevice;
         this.productViewModel = productViewModel;
-
-//        productViewModel.getCurrentConfig().observe(, currentConfig -> {
-//            if (currentConfig != null) {
-//                productViewModel.getProductMovies(currentConfig.getAccountToken(), selectedProduct.getId().intValue()).observe(getViewLifecycleOwner(), routefilms -> {
-//                    routefilmsAdapter.updateRoutefilmList(routefilms);
-//                });
-//            } else {
-//                Toast.makeText(getActivity().getApplicationContext(), getString(R.string.product_view_loading_data_message), Toast.LENGTH_LONG).show();
-//            }
-//        });
     }
 
     @NonNull
@@ -75,13 +64,13 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
     public void onBindViewHolder(@NonNull @NotNull RoutefilmsViewHolder holder, int position) {
         holder.itemView.setSelected(selectedRoutefilm == position);
         if (selectedRoutefilm == position) {
-            ImageButton routeSceneryImage = holder.itemView.findViewById(R.id.routeImageCoverButton);
+            final ImageButton routeSceneryImage = holder.itemView.findViewById(R.id.routeImageCoverButton);
             routeSceneryImage.setFocusableInTouchMode(true);
             routeSceneryImage.setFocusable(true);
             routeSceneryImage.requestFocus();
         }
         if (routefilmList != null && routefilmList.size() > 0) {
-            holder.bindProduct(routefilmList.get(position), selectedProduct, communicationDevice, this, position, routeInformationBlock, catalogRecyclerViewClickListener);
+            holder.bindProduct(routefilmList.get(position), selectedProduct, communicationDevice, position, catalogRecyclerViewClickListener);
         }
     }
 
@@ -97,10 +86,6 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
     //SETTERS FOR INFORMATION BLOCK
     public void setCatalogRecyclerViewClickListener(final CatalogRecyclerViewClickListener catalogRecyclerViewClickListener) {
         this.catalogRecyclerViewClickListener = catalogRecyclerViewClickListener;
-    }
-
-    public void setRouteInformationBlock(final LinearLayout routeInformationBlock) {
-        this.routeInformationBlock = routeInformationBlock;
     }
 
     //ROUTEFILMS ADAPTER LIST MUTATION METHODS

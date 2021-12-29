@@ -9,6 +9,7 @@ import androidx.room.Query;
 import androidx.room.Update;
 
 import com.videostreamtest.config.entity.Product;
+import com.videostreamtest.config.entity.Routefilm;
 
 import java.util.List;
 
@@ -28,4 +29,7 @@ public interface ProductDao {
 
     @Query("SELECT * FROM product_table pt WHERE pt.account_token = :accountToken AND product_support_streaming = :isStreamAccount AND pt.product_blocked = 0 ")
     LiveData<List<Product>> getAccountProducts(final String accountToken, final boolean isStreamAccount);
+
+    @Query("SELECT pt.* FROM product_table pt INNER JOIN usage_tracker_table utt ON pt.uid = utt.selected_product")
+    LiveData<Product> getSelectedProduct();
 }

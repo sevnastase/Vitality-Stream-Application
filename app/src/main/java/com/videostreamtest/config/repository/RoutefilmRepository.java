@@ -26,4 +26,8 @@ public class RoutefilmRepository {
     public LiveData<List<Routefilm>> getAllProductRoutefilms(final String accountToken, final Integer productId) {
         return routefilmDao.getProductRoutefilms(accountToken, productId);
     }
+
+    public LiveData<Routefilm> getSelectedRoutefilm() {
+        return routefilmDao.getSelectedRoutefilm();
+    }
 }

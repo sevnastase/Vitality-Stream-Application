@@ -14,6 +14,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,6 +29,7 @@ import com.videostreamtest.ui.phone.catalog.CatalogRecyclerViewClickListener;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.fragments.routefilmadapter.RoutefilmsAdapter;
+import com.videostreamtest.ui.phone.productview.fragments.routeinfo.RouteInfoFragment;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
 public class AbstractProductScreenFragment extends Fragment implements CatalogRecyclerViewClickListener {
@@ -74,8 +77,8 @@ public class AbstractProductScreenFragment extends Fragment implements CatalogRe
         routeInformationBlock = view.findViewById(R.id.overlay_route_information);
 
         routefilmsAdapter = new RoutefilmsAdapter(selectedProduct, communicationDevice, productViewModel, getActivity().getApplicationContext());
-        routefilmsAdapter.setRouteInformationBlock(routeInformationBlock);
-        routefilmsAdapter.setRouteInformationBlock(routeInformationBlock);
+//        routefilmsAdapter.setRouteInformationBlock(routeInformationBlock);
+//        routefilmsAdapter.setRouteInformationBlock(routeInformationBlock);
 
         recyclerView = view.findViewById(R.id.recyclerview_available_routefilms);
         recyclerView.setHasFixedSize(true);
@@ -114,6 +117,20 @@ public class AbstractProductScreenFragment extends Fragment implements CatalogRe
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+//        FragmentManager fragmentManager = getParentFragmentManager();
+//        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+//
+//        RouteInfoFragment routeInfoFragment = new RouteInfoFragment();
+//        fragmentTransaction.replace(R.id.routeinformation_fragment, routeInfoFragment);
+//        fragmentTransaction.commit();
+
+        getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(R.id.routeinformation_fragment, RouteInfoFragment.class, null)
+                .commit();
+
         loadNavigationArrows();
         loadAvailableMediaScenery();
     }

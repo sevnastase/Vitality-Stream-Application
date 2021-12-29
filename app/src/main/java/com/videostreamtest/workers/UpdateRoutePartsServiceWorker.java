@@ -14,6 +14,7 @@ import com.videostreamtest.config.entity.Routepart;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.service.database.DatabaseRestService;
+import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,13 +36,6 @@ public class UpdateRoutePartsServiceWorker extends Worker {
 
     public UpdateRoutePartsServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
-    }
-
-    public interface PraxCloud {
-        @GET("/api/route/movieparts/{movie_id}")
-        Call<List<MoviePart>> getRoutepartsOfMovieId(@Path (value = "movie_id", encoded = true) Integer movieId, @Header("api-key") String accountToken);
-        @GET("/api/route/movies")
-        Call<List<Movie>> getRoutefilms(@Header("api-key") String accountToken);
     }
 
     @NonNull

@@ -165,6 +165,7 @@ public class PasswordFragment extends Fragment {
                             newConfig.setPraxCloudMediaServerLocalUrl(config.getPraxCloudMediaServerLocalUrl());
                             newConfig.setPraxCloudMediaServerUrl(config.getPraxCloudMediaServerUrl());
                             loginViewModel.insert(newConfig);
+                            loginViewModel.insertUsageTracker(accounttoken);
 
                             arguments.putBoolean("authorized", true);
                             arguments.putString("username", username);

@@ -1,20 +1,16 @@
 package com.videostreamtest.ui.phone.videoplayer;
 
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.content.ComponentName;
-import android.content.Context;
+import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
+import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.IBinder;
 import android.os.Looper;
 import android.os.Process;
 import android.util.Log;
@@ -30,7 +26,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -65,7 +60,6 @@ import com.videostreamtest.ui.phone.result.ResultActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFilmStatusBarFragment;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFitStatusBarFragment;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxSpinStatusBarFragment;
-import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.RpmVectorLookupTable;
@@ -77,10 +71,6 @@ import org.videolan.libvlc.util.VLCVideoLayout;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
-import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
 
 /**
  * Full-screen videoplayer activity
@@ -105,10 +95,6 @@ public class VideoplayerActivity extends AppCompatActivity {
     private LibVLC libVLC;
     private boolean vlcLoaded = false;
     private boolean isBestStreamLoaded = false;
-
-    //TODO: for later replacement or removal
-    private RecyclerView routePartsRecyclerview;
-    private RoutePartsAdapter availableRoutePartsAdapter;
 
     private String videoUri;
     private int movieId = 0;
@@ -160,7 +146,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 //      args.add("--drop-late-frames");
         //LOCAL PLAY
         args.add("--file-caching=45000");
-        args.add("--no-avcodec-hurry-up");//ATTEMPT TO SOLVE GREY SCREEN PROBLEM
+        args.add("--no-avcodec-hurry-up");//ATTEMPT TO SOLVE GREY SCREEN PROBLEM D67
         //STREAMING
         args.add("--network-caching=20000");
 

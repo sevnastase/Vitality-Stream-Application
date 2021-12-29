@@ -9,10 +9,12 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Configuration;
+import com.videostreamtest.config.entity.tracker.UsageTracker;
 import com.videostreamtest.config.repository.BluetoothDefaultDeviceRepository;
 import com.videostreamtest.config.repository.ConfigurationRepository;
 import com.videostreamtest.config.repository.ProductRepository;
 import com.videostreamtest.config.repository.ProfileRepository;
+import com.videostreamtest.config.repository.UsageTrackerRepository;
 import com.videostreamtest.data.model.Profile;
 import com.videostreamtest.data.model.response.Product;
 
@@ -23,6 +25,7 @@ public class SplashViewModel extends AndroidViewModel {
     private ProductRepository productRepository;
     private ProfileRepository profileRepository;
     private BluetoothDefaultDeviceRepository bluetoothDefaultDeviceRepository;
+    private UsageTrackerRepository usageTrackerRepository;
 
     private final LiveData<Configuration> currentConfig;
     private final LiveData<List<Configuration>> allConfigurations;
@@ -37,6 +40,7 @@ public class SplashViewModel extends AndroidViewModel {
         productRepository = new ProductRepository(application);
         profileRepository = new ProfileRepository(application);
         bluetoothDefaultDeviceRepository = new BluetoothDefaultDeviceRepository(application);
+        usageTrackerRepository = new UsageTrackerRepository(application);
 
         allConfigurations = configurationRepository.getConfigurations();
         currentConfig = configurationRepository.getCurrentConfiguration();
@@ -96,5 +100,19 @@ public class SplashViewModel extends AndroidViewModel {
 
     public void setWorkerProgress(final Integer wprogress){
         workerProgress.setValue(wprogress);
+    }
+
+    public LiveData<UsageTracker> getUsageTrackers(final String accounttoken) {
+        return usageTrackerRepository.getUsageTrackers(accounttoken);
+    }
+
+    public void resetUsageTracker(final String accounttoken) {
+        final UsageTracker usageTracker = new UsageTracker();
+        usageTracker.setAccounttoken(accounttoken);
+        usageTracker.setSelectedProduct(0);
+        usageTracker.setSelectedMovie(0);
+        usageTracker.setSelectedBackgroundSound(0);
+        usageTracker.setSelectedProfile(0);
+        usageTrackerRepository.insertNewUsageTrackerInformationObject(usageTracker);
     }
 }

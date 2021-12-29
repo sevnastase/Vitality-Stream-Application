@@ -13,6 +13,7 @@ import com.videostreamtest.config.dao.ConfigurationDao;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.data.model.response.Configuration;
 import com.videostreamtest.data.model.response.Product;
+import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,13 +32,6 @@ public class ActiveConfigurationServiceWorker extends Worker {
 
     public ActiveConfigurationServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
-    }
-
-    public interface PraxCloud {
-        @GET("/api/users/current/configuration")
-        Call<Configuration> getAccountConfiguration(@Header("api-key") String accountToken);
-        @GET("/api/users/current/subscriptions")
-        Call<List<Product>> getActiveProducts(@Header("api-key") String accountToken);
     }
 
     @NonNull

@@ -20,7 +20,7 @@ public class ViewHelper {
 
     public static void loadImage(Context context, final ImageButton imageButton, final String imageUrl, final int defaultWidth, final int defaultHeight){
         int dpi = context.getResources().getDisplayMetrics().densityDpi;
-        float dpiRatio = dpi / ApplicationSettings.DEFAULT_DENSITY_DPI;
+        float dpiRatio = dpi / ApplicationSettings.RECOMMENDED_DENSITY_DPI;
         float pixelWidth = defaultWidth * dpiRatio;
         float pixelHeight = defaultHeight * dpiRatio;
 

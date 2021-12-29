@@ -26,6 +26,7 @@ import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.SoundItem;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -61,11 +62,6 @@ public class DownloadSoundServiceWorker extends Worker implements ProgressCallBa
     public DownloadSoundServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-    }
-
-    public interface PraxCloud {
-        @GET("/api/sound/")
-        Call<List<SoundItem>> getSounds(@Header("api-key") String accountToken);
     }
 
     @NonNull

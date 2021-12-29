@@ -9,14 +9,17 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.config.entity.ServerStatus;
+import com.videostreamtest.config.entity.tracker.UsageTracker;
 import com.videostreamtest.config.repository.ConfigurationRepository;
 import com.videostreamtest.config.repository.ServerStatusRepository;
+import com.videostreamtest.config.repository.UsageTrackerRepository;
 
 import java.util.List;
 
 public class LoginViewModel extends AndroidViewModel {
     private ConfigurationRepository configurationRepository;
     private ServerStatusRepository serverStatusRepository;
+    private UsageTrackerRepository usageTrackerRepository;
 
     private final LiveData<Configuration> currentConfig;
     private final LiveData<List<Configuration>> allConfigurations;
@@ -30,6 +33,7 @@ public class LoginViewModel extends AndroidViewModel {
         super(application);
         configurationRepository = new ConfigurationRepository(application);
         serverStatusRepository = new ServerStatusRepository(application);
+        usageTrackerRepository = new UsageTrackerRepository(application);
 
         currentConfig = configurationRepository.getCurrentConfiguration();
         allConfigurations = configurationRepository.getConfigurations();
@@ -84,5 +88,11 @@ public class LoginViewModel extends AndroidViewModel {
 
     public void deleteAllKnownConfigurations() {
         configurationRepository.deleteAllConfigurations();
+    }
+
+    public void insertUsageTracker(final String accounttoken) {
+        final UsageTracker usageTracker = new UsageTracker();
+        usageTracker.setAccounttoken(accounttoken);
+        usageTrackerRepository.insertNewUsageTrackerInformationObject(usageTracker);
     }
 }

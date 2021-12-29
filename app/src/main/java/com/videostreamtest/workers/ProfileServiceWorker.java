@@ -18,6 +18,7 @@ import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.data.model.Profile;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.service.database.DatabaseRestService;
+import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,11 +37,6 @@ public class ProfileServiceWorker extends Worker {
 
     public ProfileServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
-    }
-
-    public interface PraxCloud {
-        @GET("/api/users/current/profiles")
-        Call<List<Profile>> getAccountProfiles(@Header("api-key") String accountToken);
     }
 
     @NonNull

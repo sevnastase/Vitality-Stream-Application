@@ -1,5 +1,7 @@
 package com.videostreamtest.workers;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_URL;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -20,11 +22,10 @@ import androidx.work.WorkerParameters;
 
 import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
+import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.StandAloneDownloadStatus;
 import com.videostreamtest.data.model.Movie;
-import com.videostreamtest.data.model.MoviePart;
-import com.videostreamtest.service.database.DatabaseRestService;
-import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
+import com.videostreamtest.data.model.response.SoundItem;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.webinterface.PraxCloud;
@@ -41,22 +42,21 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.GET;
-import retrofit2.http.Header;
-import retrofit2.http.Path;
 
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_URL;
-
-public class DownloadRoutepartsServiceWorker extends Worker implements ProgressCallBack {
-    private static final String TAG = DownloadRoutepartsServiceWorker.class.getSimpleName();
+public class DownloadFlagsServiceWorker extends Worker implements ProgressCallBack {
+    private static final String TAG = DownloadFlagsServiceWorker.class.getSimpleName();
     private static final String INPUT_ROUTEFILM_JSON_STRING = "INPUT_ROUTEFILM_JSON_STRING";
     private static final String SOUND_FOLDER = "sound";
 
     private NotificationManager notificationManager;
 
-    private File selectedVolume;
+    private long totalDownloadSizeInBytes = 0;
+    private long totalDownloadedSizeInBytes = 0;
 
-    public DownloadRoutepartsServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+    private File selectedVolume;
+    private Movie routefilm;
+
+    public DownloadFlagsServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
     }
@@ -69,71 +69,37 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
         final String apikey = getInputData().getString("apikey");
 
         // Mark the Worker as important
-        String progress = "Download Routeparts";
+        String progress = "Download Flags";
         setForegroundAsync(createForegroundInfo(progress));
         Data outputData = new Data.Builder()
-                .putString("progress-notification", "Downloading routeparts.")
+                .putString("progress-notification", "Downloading sound.")
                 .build();
         setProgressAsync(outputData);
 
         //Select largest volume
         selectedVolume = DownloadHelper.selectLargestStorageVolume(getApplicationContext());
-        //CHECK WHETHER THE VOLUME IS BIG ENOUGH FOR IMAGES AND MOVIES
-        if (selectedVolume.getTotalSpace()< ApplicationSettings.MINIMUM_DISK_SPACE_BYTES) {
-            Log.e(TAG, "Disk not big enough for standalone.");
-            new DatabaseRestService().writeLog(apikey, "[Routeparts download] Disk nog big enough for standalone.", "DEBUG", "");
-            return Result.failure();
-        }
+        List<Flag> flagList = new ArrayList<>();
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(PRAXCLOUD_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         PraxCloud praxCloud = retrofit.create(PraxCloud.class);
-        Call<List<Movie>> call = praxCloud.getRoutefilms(apikey);
-        List<Movie> accountMovies = new ArrayList<>();
 
+        //Get all the flags available
+        Call<List<Flag>> callSounds = praxCloud.getFlags(apikey);
         try {
-            accountMovies = call.execute().body();
-        } catch (IOException ioException) {
-            Log.e(TAG, ioException.getLocalizedMessage());
-        }
-        if (accountMovies!=null) {
-            Log.d(TAG, "RouteFilms Count RetroFit :: " + accountMovies.size());
-        }
+            flagList = callSounds.execute().body();
 
-        if (accountMovies != null && accountMovies.size()>0) {
-            for (final Movie movie: accountMovies) {
-                Call<List<MoviePart>> callParts = praxCloud.getRoutepartsOfMovieId(movie.getId(), apikey);
-                final List<MoviePart> routeparts;
-                try {
-                    routeparts = callParts.execute().body();
-                } catch (IOException ioException) {
-                    Log.e(TAG, ioException.getLocalizedMessage());
-                    return Result.failure();
-                }
-
-                if (routeparts!= null) {
-                    Log.d(TAG, "'Routeparts found: "+routeparts.size());
-                }
-
-                try {
-                    if (routeparts != null && routeparts.size()>0) {
-                        for (final MoviePart moviePart: routeparts) {
-                            String moviePartImageName = new File(moviePart.getMoviepartImagepath()).getName();
-                            String pathname = selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movie.getId().intValue()+"/"+moviePartImageName;
-                            if (!new File(pathname).exists()) {
-                                download(moviePart.getMoviepartImagepath(), Long.MAX_VALUE, String.valueOf(movie.getId().intValue()));
-                            }
-                        }
-                    }
-                } catch (IOException ioException) {
-                    Log.e(TAG, ioException.getLocalizedMessage());
-                    return Result.failure();
+            if (flagList.size()>0) {
+                for (Flag flag : flagList) {
+                    download(flag.getFlagUrl(), Long.MAX_VALUE);
                 }
             }
+        } catch (IOException ioException) {
+            Log.e(TAG, ioException.getLocalizedMessage());
+            return Result.failure();
         }
-
         return Result.success();
     }
 
@@ -143,36 +109,49 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
      * @param expectedSize
      * @throws IOException
      */
-    private void download(final String inputPath, final long expectedSize, final String movieIdFolder) throws IOException {
+    private void download(final String inputPath, final long expectedSize) throws IOException {
         URL inputUrl = new URL(inputPath);
 
         ReadableByteChannel readableByteChannel = new CallbackByteChannel(Channels.newChannel(inputUrl.openStream()), expectedSize, this);
         String fileName = new File(inputUrl.getFile()).getName();
 
         if (selectedVolume.exists()) {
+            Log.d(DownloadFlagsServiceWorker.class.getSimpleName(), "Free space selectedVolume: "+selectedVolume.getFreeSpace());
 
             //Create main folder on external storage if not already there
-            if (new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER).exists() &&
-                    new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER).isDirectory()) {
-            } else {
-                new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER).mkdir();
-            }
+            if (new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER).exists() &&
+                    new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER).isDirectory()) {
 
-            //Create movie folder named by movie ID
-            if (new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder).exists() &&
-                    new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder).isDirectory()) {
-                Log.d(TAG, "movieID folder exists");
-            } else {
-                new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder).mkdir();
-            }
+                Log.d(DownloadFlagsServiceWorker.class.getSimpleName(), "Folder "+ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER+" exists");
 
+            } else {
+                new File(selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER).mkdir();
+            }
         } else {
-            Log.e(TAG, "We're doomed");
+            Log.e(DownloadFlagsServiceWorker.class.getSimpleName(), "We're doomed");
             return;
         }
 
-        FileOutputStream fileOutputStream = new FileOutputStream(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder+"/"+fileName);
+        if (new File(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER+"/"+fileName).exists()) {
+            return;
+        }
+
+        FileOutputStream fileOutputStream = new FileOutputStream(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER+"/"+fileName);
         fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+    }
+
+    /**
+     * Insert download status for movie based on id
+     * @param movieId
+     * @param downloadProgress
+     */
+    private void insertDownloadStatus(int movieId, int downloadProgress) {
+        StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
+        standAloneDownloadStatus.setDownloadMovieId(movieId);
+        standAloneDownloadStatus.setMovieId(movieId);
+        standAloneDownloadStatus.setDownloadStatus(downloadProgress);
+
+        PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(standAloneDownloadStatus);
     }
 
     @Override

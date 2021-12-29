@@ -13,6 +13,7 @@ import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.EffectSound;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.SoundItem;
+import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,17 +35,6 @@ public class SoundInformationServiceWorker extends Worker {
 
     public SoundInformationServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
-    }
-
-    public interface PraxCloud {
-        @GET("/api/route/movies")
-        Call<List<Movie>> getRoutefilms(@Header("api-key") String accountToken);
-        @GET("/api/sound/")
-        Call<List<SoundItem>> getSounds(@Header("api-key") String accountToken);
-        @GET("/api/sound/background/{movie_id}")
-        Call<List<BackgroundSound>> getBackgroundSounds(@Path(value = "movie_id", encoded = true) Integer movieId, @Header("api-key") String accountToken);
-        @GET("/api/sound/effects/{movie_id}")
-        Call<List<EffectSound>> getEffectSounds(@Path(value = "movie_id", encoded = true) Integer movieId, @Header("api-key") String accountToken);
     }
 
     @NonNull

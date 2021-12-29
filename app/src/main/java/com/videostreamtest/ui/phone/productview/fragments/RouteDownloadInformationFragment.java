@@ -1,7 +1,6 @@
 package com.videostreamtest.ui.phone.productview.fragments;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,23 +11,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.work.Constraints;
-import androidx.work.Data;
-import androidx.work.ExistingWorkPolicy;
-import androidx.work.NetworkType;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
 
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.Movie;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
-import com.videostreamtest.workers.DownloadMovieServiceWorker;
 
-public class RouteInformationFragment extends Fragment {
-    private static final String TAG = RouteInformationFragment.class.getSimpleName();
+public class RouteDownloadInformationFragment extends Fragment {
+    private static final String TAG = RouteDownloadInformationFragment.class.getSimpleName();
     private ProductViewModel productViewModel;
+
     private TextView routeInfoTitleText;
     private TextView routeInfoTitleProgressText;
     private ImageButton backButton;

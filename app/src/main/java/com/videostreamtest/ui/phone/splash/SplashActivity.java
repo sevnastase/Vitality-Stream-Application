@@ -1,13 +1,10 @@
 package com.videostreamtest.ui.phone.splash;
 
 import android.Manifest;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,7 +15,6 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.Constraints;
 import androidx.work.NetworkType;
@@ -31,18 +27,12 @@ import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
 import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.android.play.core.tasks.Task;
-import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
-import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.enums.ProductType;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
-import com.videostreamtest.ui.phone.productview.ProductActivity;
-import com.videostreamtest.ui.phone.profiles.ProfilesActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.InstallPackageServiceWorker;
 import com.videostreamtest.workers.UpdatePackageServiceWorker;
@@ -69,6 +59,7 @@ public class SplashActivity extends AppCompatActivity {
         splashViewModel = new ViewModelProvider(this).get(SplashViewModel.class);
         splashViewModel.setWorkerProgress(0);
 
+        checkForRecommendedScreenDpi();
         requestDrawOverlayPermission();
 
         loadTimer = new Handler(Looper.getMainLooper());
@@ -84,6 +75,8 @@ public class SplashActivity extends AppCompatActivity {
                 Log.d(TAG, "Token :: " + config.getAccountToken() + " > Current =  " + config.isCurrent());
                 //If there's internet, retrieve account info and/or synchronize data
                 ConfigurationHelper.loadExternalData(this, config.getAccountToken());
+
+                splashViewModel.resetUsageTracker(config.getAccountToken());
 
                 /**
                  * TODO  if accounttoken is valid (create worker)
@@ -190,6 +183,14 @@ public class SplashActivity extends AppCompatActivity {
 
     }
 
+    private void checkForRecommendedScreenDpi(){
+        final int densityDpi = getApplicationContext().getResources().getDisplayMetrics().densityDpi;
+        if ( densityDpi < ApplicationSettings.RECOMMENDED_DENSITY_DPI) {
+            Toast.makeText(getApplicationContext(), "The screen density is not optimal for this app. \nPlease upgrade your hardware or change device for an optimal experience.", Toast.LENGTH_LONG).show();
+            LogHelper.WriteLogRule(getApplicationContext(), getSharedPreferences("app" , Context.MODE_PRIVATE).getString("apikey", ""), "The screen density is not optimal for this app. Please upgrade your hardware or change device for an optimal experience. Client Density: "+densityDpi ,"ERROR", "");
+        }
+    }
+
     private void checkForUpdates() {
         boolean updatedByGPS = ConfigurationHelper.verifyInstalledByGooglePlayStore(getApplicationContext());
 
@@ -247,29 +248,6 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
-    private ProductType getProductType(final String productName, final boolean supportStreaming) {
-        // Default value is PRAXFIT STREAM
-        ProductType returnValue = ProductType.PRAXFIT_STREAM;
-        // Walk through list of known product types
-        for (ProductType productType: ProductType.values()) {
-            // if product name contains product type name
-            if (productName.contains(getProductTypeBasics(productType)[0])) {
-                // if product which contains the producttype name also contains streaming edition
-                if (supportStreaming && getProductTypeBasics(productType)[1].equalsIgnoreCase("stream")){
-                    //return streaming product type
-                    returnValue = productType;
-                } else {
-                    // else return stand-alone product type
-                    returnValue = productType;
-                }
-            }
-        }return returnValue;
-    }
-
-    private String[] getProductTypeBasics(final ProductType productType) {
-        return productType.name().split("_");
-    }
-
     private void requestDrawOverlayPermission() {
         // Check if Android M or higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -279,33 +257,6 @@ public class SplashActivity extends AppCompatActivity {
                Log.d(TAG, "checkpermission "+getPackageManager().checkPermission(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, getPackageName())) ;
             }
         }
-    }
-
-    private void resetBluetoothAdapter() {
-        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
-        assert bluetoothManager != null;
-        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
-        if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
-            bluetoothAdapter.disable();
-            Toast.makeText(this, "Bluetooth restarting...", Toast.LENGTH_LONG).show();
-        }
-
-        Handler resetBleHandler = new Handler();
-        Runnable bleDeviceRunnable = new Runnable() {
-            @Override
-            public void run() {
-                BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
-                assert bluetoothManager != null;
-                BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
-                if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
-                    bluetoothAdapter.enable();
-                    Toast.makeText(SplashActivity.this, "Bluetooth succesfully started!", Toast.LENGTH_LONG).show();
-                }
-            }
-        };
-
-        resetBleHandler.postDelayed(bleDeviceRunnable, 8000);
-
     }
 
 }

@@ -16,16 +16,21 @@ import com.videostreamtest.config.dao.BluetoothDefaultDeviceDao;
 import com.videostreamtest.config.dao.ConfigurationDao;
 import com.videostreamtest.config.dao.DownloadStatusDao;
 import com.videostreamtest.config.dao.EffectSoundDao;
+import com.videostreamtest.config.dao.FlagDao;
+import com.videostreamtest.config.dao.MovieFlagDao;
 import com.videostreamtest.config.dao.ProductDao;
 import com.videostreamtest.config.dao.ProductMovieDao;
 import com.videostreamtest.config.dao.ProfileDao;
 import com.videostreamtest.config.dao.RoutefilmDao;
 import com.videostreamtest.config.dao.RoutepartDao;
 import com.videostreamtest.config.dao.ServerStatusDao;
+import com.videostreamtest.config.dao.tracker.UsageTrackerDao;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.config.entity.EffectSound;
+import com.videostreamtest.config.entity.Flag;
+import com.videostreamtest.config.entity.MovieFlag;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.config.entity.Profile;
@@ -33,6 +38,7 @@ import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.entity.Routepart;
 import com.videostreamtest.config.entity.ServerStatus;
 import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.tracker.UsageTracker;
 import com.videostreamtest.config.entity.typeconverter.Converters;
 
 import java.util.concurrent.ExecutorService;
@@ -49,8 +55,11 @@ import java.util.concurrent.Executors;
         EffectSound.class,
         ProductMovie.class,
         BluetoothDefaultDevice.class,
-        ServerStatus.class
-}, version = 3, exportSchema = true)
+        ServerStatus.class,
+        Flag.class,
+        MovieFlag.class,
+        UsageTracker.class
+}, version = 6, exportSchema = true)
 @TypeConverters({Converters.class})
 public abstract class PraxtourDatabase extends RoomDatabase {
     private final static String TAG = PraxtourDatabase.class.getSimpleName();
@@ -62,6 +71,8 @@ public abstract class PraxtourDatabase extends RoomDatabase {
     public abstract ConfigurationDao configurationDao();
     public abstract ServerStatusDao serverStatusDao();
     public abstract ProductDao productDao();
+    public abstract MovieFlagDao movieFlagDao();
+    public abstract FlagDao flagDao();
     public abstract ProfileDao profileDao();
     public abstract RoutefilmDao routefilmDao();
     public abstract DownloadStatusDao downloadStatusDao();
@@ -69,6 +80,7 @@ public abstract class PraxtourDatabase extends RoomDatabase {
     public abstract BackgroundSoundDao backgroundSoundDao();
     public abstract EffectSoundDao effectSoundDao();
     public abstract ProductMovieDao productMovieDao();
+    public abstract UsageTrackerDao usageTrackerDao();
     public abstract BluetoothDefaultDeviceDao bluetoothDefaultDeviceDao();
 
     static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -96,6 +108,43 @@ public abstract class PraxtourDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE `flags_table` ("
+                    + "`flag_id` INTEGER, "
+                    + "`country_iso` TEXT NOT NULL DEFAULT '', "
+                    + "`country_name` TEXT NOT NULL DEFAULT '',"
+                    + "`flag_filesize` INTEGER,"
+                    + "`flag_url` TEXT,"
+                    +" PRIMARY KEY(`flag_id`))");
+        }
+    };
+
+    static final Migration MIGRATION_4_5 = new Migration(4, 5) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE `movieflags_table` ("
+                    + "`movieflag_id` INTEGER, "
+                    + "`movie_id` INTEGER, "
+                    + "`flag_id` INTEGER,"
+                    +" PRIMARY KEY(`movieflag_id`))");
+        }
+    };
+
+    static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE `usage_tracker_table` ("
+                    + "`tracker_accountoken` TEXT NOT NULL DEFAULT '', "
+                    + "`selected_product` INTEGER NOT NULL DEFAULT 0, "
+                    + "`selected_movie` INTEGER NOT NULL DEFAULT 0, "
+                    + "`selected_background_sound` INTEGER NOT NULL DEFAULT 0,"
+                    + "`selected_profile` INTEGER NOT NULL DEFAULT 0,"
+                    +" PRIMARY KEY(`tracker_accountoken`))");
+        }
+    };
+
 
     public static PraxtourDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
@@ -105,7 +154,12 @@ public abstract class PraxtourDatabase extends RoomDatabase {
                             PraxtourDatabase.class,
                             "configuration_database")
                             .addCallback(sRoomDatabaseCallback)
-                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                            .addMigrations(
+                                    MIGRATION_1_2,
+                                    MIGRATION_2_3,
+                                    MIGRATION_3_4,
+                                    MIGRATION_4_5,
+                                    MIGRATION_5_6)
                             .build();
                 }
             }

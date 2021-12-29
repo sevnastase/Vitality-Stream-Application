@@ -13,6 +13,7 @@ import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.data.model.response.ProductMovieRecord;
+import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,11 +32,6 @@ public class ActiveProductMovieLinksServiceWorker extends Worker {
 
     public ActiveProductMovieLinksServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
-    }
-
-    public interface PraxCloud {
-        @GET("/api/productmovies")
-        Call<List<ProductMovieRecord>> getAllProductMovies(@Header("api-key") String accountToken);
     }
 
     @NonNull

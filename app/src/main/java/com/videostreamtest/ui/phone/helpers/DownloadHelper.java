@@ -7,6 +7,7 @@ import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
+import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -165,6 +166,31 @@ public class DownloadHelper {
     }
 
     /**
+     * Check if sound folder with content is located on any (connected) local storage device within provided context
+     * @param context
+     * @return boolean
+     */
+    public static boolean isFlagsLocalPresent(final Context context){
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            String pathname = externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER;
+            File possibleMovieLocation = new File(pathname);
+            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>1) {
+                long totalSizeOnDisk = 0;
+
+                for (File file: possibleMovieLocation.listFiles()) {
+                    totalSizeOnDisk += file.length();
+                }
+
+                if (totalSizeOnDisk > 0L) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Adjust object url's to local storage paths
      * @param context
      * @param movie
@@ -244,6 +270,35 @@ public class DownloadHelper {
             }
         }
         return soundItemUri;
+    }
+
+    /**
+     * Get local Flag File object
+     * @param context
+     * @param flagItem
+     * @return
+     */
+    public static File getLocalFlag(final Context context, final Flag flagItem) {
+        String flagFileName = "";
+        try {
+            URL flagUrl = new URL(flagItem.getFlagUrl());
+            flagFileName = new File(flagUrl.getFile()).getName();
+        } catch (MalformedURLException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+            SharedPreferences myPreferences = context.getSharedPreferences("app",0);
+            final String accounttoken = myPreferences.getString("apikey", "unauthorized");
+            LogHelper.WriteLogRule(context, accounttoken, "Flag-url: "+flagItem.getFlagUrl()+" can't be downloaded.", "ERROR",  "");
+            return null;
+        }
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER;
+            File possibleFlagLocation = new File(pathname);
+            if (possibleFlagLocation.exists() && possibleFlagLocation.listFiles().length>0) {
+                return new File(pathname+"/"+flagFileName);
+            }
+        }
+        return null;
     }
 
     /**

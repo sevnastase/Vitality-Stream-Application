@@ -36,4 +36,7 @@ public interface RoutefilmDao {
             "WHERE rt.account_token = :accountToken AND pmt.product_id = :productId AND pmt.movie_id = rt.movie_id " +
             "ORDER BY rt.movie_title ASC")
     LiveData<List<Routefilm>> getProductRoutefilms(final String accountToken, final Integer productId);
+
+    @Query("SELECT rt.* FROM routefilm_table rt INNER JOIN usage_tracker_table utt ON rt.movie_id = utt.selected_movie")
+    LiveData<Routefilm> getSelectedRoutefilm();
 }

@@ -73,11 +73,6 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
 
     private int currentDownloadProgress = 0;
 
-    public interface PraxCloud {
-        @POST("/api/route/downloadprogress")
-        Call<com.videostreamtest.data.model.response.Result> updateDownloadProgress(@Body MovieDownloadProgress progress, @Header("api-key") String accountToken);
-    }
-
     public DownloadMovieServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
         notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -264,35 +259,35 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             //SEND UPDATE OF PROGRESS TO SERVER FOR OVERVIEW OF PROGRESS IN CRM
     //        sendProgressToPraxCloud(String accountToken, int movieId, int roundedDownloadProgress);
 
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(PRAXCLOUD_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-            PraxCloud praxCloud = retrofit.create(PraxCloud.class);
-
-            MovieDownloadProgress movieDownloadProgress = new MovieDownloadProgress();
-            movieDownloadProgress.setAccountToken(accountToken);
-            movieDownloadProgress.setRoundedDownloadProgress(downloadProgress);
-            movieDownloadProgress.setMovieId(movieId);
+//            Retrofit retrofit = new Retrofit.Builder()
+//                    .baseUrl(PRAXCLOUD_URL)
+//                    .addConverterFactory(GsonConverterFactory.create())
+//                    .build();
+//            PraxCloud praxCloud = retrofit.create(PraxCloud.class);
+//
+//            MovieDownloadProgress movieDownloadProgress = new MovieDownloadProgress();
+//            movieDownloadProgress.setAccountToken(accountToken);
+//            movieDownloadProgress.setRoundedDownloadProgress(downloadProgress);
+//            movieDownloadProgress.setMovieId(movieId);
 
             //SYNCHRONOUS
             //praxCloud.updateDownloadProgress(movieDownloadProgress, accountToken);
 
-            //ASYNCHRONOUS
-            Call<com.videostreamtest.data.model.response.Result> call = praxCloud.updateDownloadProgress(movieDownloadProgress, accountToken);
-            call.enqueue(new Callback<com.videostreamtest.data.model.response.Result>() {
-                @Override
-                public void onResponse(Call<com.videostreamtest.data.model.response.Result> call, Response<com.videostreamtest.data.model.response.Result> response) {
-
-                    Log.d("CallBack", " response is " + response);
-                }
-
-                @Override
-                public void onFailure(Call<com.videostreamtest.data.model.response.Result> call, Throwable t) {
-
-                    Log.d("CallBack", " Throwable is " + t);
-                }
-            });
+//            //ASYNCHRONOUS
+//            Call<com.videostreamtest.data.model.response.Result> call = praxCloud.updateDownloadProgress(movieDownloadProgress, accountToken);
+//            call.enqueue(new Callback<com.videostreamtest.data.model.response.Result>() {
+//                @Override
+//                public void onResponse(Call<com.videostreamtest.data.model.response.Result> call, Response<com.videostreamtest.data.model.response.Result> response) {
+//
+//                    Log.d("CallBack", " response is " + response);
+//                }
+//
+//                @Override
+//                public void onFailure(Call<com.videostreamtest.data.model.response.Result> call, Throwable t) {
+//
+//                    Log.d("CallBack", " Throwable is " + t);
+//                }
+//            });
             currentDownloadProgress = downloadProgress;
         }
     }

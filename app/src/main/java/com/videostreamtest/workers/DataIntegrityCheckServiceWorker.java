@@ -18,6 +18,7 @@ import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -43,11 +44,6 @@ public class DataIntegrityCheckServiceWorker extends Worker {
     private static final String CHECKSUM_DIGEST_MD5_FILENAME = "checksum_digest.md5";
 
     private DatabaseRestService databaseRestService;
-
-    public interface PraxCloud {
-        @GET("/api/route/movies")
-        Call<List<Movie>> getRoutefilms(@Header("api-key") String accountToken);
-    }
 
     public DataIntegrityCheckServiceWorker(@NonNull @NotNull Context context, @NonNull @NotNull WorkerParameters workerParams) {
         super(context, workerParams);

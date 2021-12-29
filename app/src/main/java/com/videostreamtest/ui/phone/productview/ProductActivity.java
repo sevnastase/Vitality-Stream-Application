@@ -49,11 +49,14 @@ import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.ActiveProductMovieLinksServiceWorker;
 import com.videostreamtest.workers.DataIntegrityCheckServiceWorker;
+import com.videostreamtest.workers.DownloadFlagsServiceWorker;
 import com.videostreamtest.workers.DownloadMovieImagesServiceWorker;
 import com.videostreamtest.workers.DownloadMovieServiceWorker;
 import com.videostreamtest.workers.DownloadRoutepartsServiceWorker;
 import com.videostreamtest.workers.DownloadSoundServiceWorker;
 import com.videostreamtest.workers.SoundInformationServiceWorker;
+import com.videostreamtest.workers.SyncFlagsServiceWorker;
+import com.videostreamtest.workers.SyncMovieFlagsServiceWorker;
 import com.videostreamtest.workers.UpdateRegisteredMovieServiceWorker;
 import com.videostreamtest.workers.UpdateRoutePartsServiceWorker;
 
@@ -93,6 +96,12 @@ public class ProductActivity extends AppCompatActivity {
         signoutButton = findViewById(R.id.product_logout_button);
         productLogo = findViewById(R.id.product_logo_view);
         appBuildNumber = findViewById(R.id.app_build_number);
+
+        productViewModel.getSelectedProduct().observe(this, selectedProductId -> {
+            if (selectedProductId != null) {
+                Log.d(TAG, "selectedProductId :: " + selectedProductId.getUid());
+            }
+        });
 
         Product selectedProduct = new GsonBuilder().create().fromJson(getIntent().getExtras().getString("product_object", "{}"), Product.class);
         Log.d(ProductActivity.class.getSimpleName(), "Product ID Loaded: "+selectedProduct.getId());
@@ -157,6 +166,7 @@ public class ProductActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        downloadFlags();
         downloadMovieSupportImages();
         downloadSound();
         downloadLocalMovies();
@@ -242,6 +252,27 @@ public class ProductActivity extends AppCompatActivity {
 
                     WorkManager.getInstance(this)
                             .beginUniqueWork("download-sound", ExistingWorkPolicy.KEEP, downloadSoundWorker)
+                            .enqueue();
+                }
+            }
+        });
+    }
+
+    private void downloadFlags() {
+        productViewModel.getCurrentConfig().observe(this, currentConfig -> {
+            if (currentConfig != null) {
+                if (currentConfig.isLocalPlay()) {
+                    Constraints constraint = new Constraints.Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build();
+
+                    OneTimeWorkRequest downloadFlagsWorker = new OneTimeWorkRequest.Builder(DownloadFlagsServiceWorker.class)
+                            .setConstraints(constraint)
+                            .setInputData(new Data.Builder().putString("apikey", currentConfig.getAccountToken()).build())
+                            .build();
+
+                    WorkManager.getInstance(this)
+                            .beginUniqueWork("download-sound", ExistingWorkPolicy.KEEP, downloadFlagsWorker)
                             .enqueue();
                 }
             }
@@ -424,6 +455,22 @@ public class ProductActivity extends AppCompatActivity {
                 .build();
         WorkManager.getInstance(this)
                 .enqueueUniquePeriodicWork("sync-database-sounds-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productMovieSoundsRequest);
+
+        PeriodicWorkRequest flagRequest = new PeriodicWorkRequest.Builder(SyncFlagsServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .setInputData(syncData.build())
+                .addTag("flags-sync")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-database-flags", ExistingPeriodicWorkPolicy.REPLACE, flagRequest);
+
+        PeriodicWorkRequest movieflagRequest = new PeriodicWorkRequest.Builder(SyncMovieFlagsServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .setInputData(syncData.build())
+                .addTag("movieflags-sync")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-database-movieflags", ExistingPeriodicWorkPolicy.REPLACE, movieflagRequest);
     }
 
     private boolean isTouchScreen() {

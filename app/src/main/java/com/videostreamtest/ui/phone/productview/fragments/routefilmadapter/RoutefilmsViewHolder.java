@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
+import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
@@ -29,7 +30,7 @@ import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.ui.phone.catalog.CatalogRecyclerViewClickListener;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
-import com.videostreamtest.ui.phone.productview.fragments.RouteInformationFragment;
+import com.videostreamtest.ui.phone.productview.fragments.RouteDownloadInformationFragment;
 import com.videostreamtest.ui.phone.productview.fragments.messagebox.errors.SpeedtestErrorFragment;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -49,11 +50,9 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
     //INIT VARIABLES
     private CatalogRecyclerViewClickListener catalogRecyclerViewClickListener;
     private CommunicationDevice communicationDevice;
-    private LinearLayout routeInformationBlock;
     private Product selectedProduct;
     private Movie movie;
     private int position =0;
-    private RoutefilmsAdapter routefilmsAdapter;
 
     //VIEW ELEMENTS
     private ImageButton routefilmScenery;
@@ -71,16 +70,12 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
     public void bindProduct(final Routefilm routefilm,
                             final Product selectedProduct,
                             final CommunicationDevice communicationDevice,
-                            final RoutefilmsAdapter routefilmsAdapter,
                             final int position,
-                            final LinearLayout routeInformationBlock,
                             final CatalogRecyclerViewClickListener catalogRecyclerViewClickListener) {
         this.movie = Movie.fromRoutefilm(routefilm);
         this.selectedProduct = selectedProduct;
         this.communicationDevice = communicationDevice;
-        this.routefilmsAdapter = routefilmsAdapter;
         this.position = position;
-        this.routeInformationBlock = routeInformationBlock;
         this.catalogRecyclerViewClickListener = catalogRecyclerViewClickListener;
 
         //Get APIKEY for write cloud log
@@ -113,42 +108,52 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
     }
 
     private void updateRouteInformationBlock() {
-        if(movie == null || routeInformationBlock == null) {
+        if (movie == null) {
             return;
         }
 
-        TextView titleView = routeInformationBlock.findViewById(R.id.selected_route_title);
-        TextView distanceView = routeInformationBlock.findViewById(R.id.selected_route_distance);
-        ImageView routeInformationMap = routeInformationBlock.findViewById(R.id.selected_route_infomap_two);
 
-        titleView.setText(toString().format(itemView.getContext().getString(R.string.catalog_selected_route_title), movie.getMovieTitle()));
-        titleView.setVisibility(View.VISIBLE);
+        PraxtourDatabase.databaseWriterExecutor.execute(()->{
+            PraxtourDatabase.getDatabase(itemView.getContext()).usageTrackerDao().setSelectedMovie(apikey, movie.getId());
+        });
 
-        if (selectedProduct.getProductName().toLowerCase().contains("praxfilm")) {
-            distanceView.setText(String.format("Duration: %d minutes", ((movie.getMovieLength()/movie.getRecordedFps())/60)));
-        } else {
-            float meters = movie.getMovieLength();
-            int km = (int) (meters / 1000f);
-            int hectometers = (int) ((meters - (km * 1000f)) / 100f);
-            distanceView.setText(toString().format(itemView.getContext().getString(R.string.catalog_screen_distance), km, hectometers));
-        }
-
-        //Set Route Information map
-        if (selectedProduct.getSupportStreaming()==0 && performStaticChecks(selectedProduct)) {
-            Picasso.get()
-                    .load(new File(movie.getMovieRouteinfoPath()))
-                    .fit()
-                    .placeholder(R.drawable.placeholder_map)
-                    .error(R.drawable.placeholder_map)
-                    .into(routeInformationMap);
-        } else {
-            Picasso.get()
-                    .load(movie.getMovieRouteinfoPath())
-                    .fit()
-                    .placeholder(R.drawable.placeholder_map)
-                    .error(R.drawable.placeholder_map)
-                    .into(routeInformationMap);
-        }
+//        if(movie == null || routeInformationBlock == null) {
+//            return;
+//        }
+//
+//        TextView titleView = routeInformationBlock.findViewById(R.id.selected_route_title);
+//        TextView distanceView = routeInformationBlock.findViewById(R.id.selected_route_distance);
+//        ImageView routeInformationMap = routeInformationBlock.findViewById(R.id.selected_route_infomap_two);
+//        ImageView routeCountryFlag = routeInformationBlock.findViewById(R.id.selected_route_country);
+//
+//        titleView.setText(toString().format(itemView.getContext().getString(R.string.catalog_selected_route_title), movie.getMovieTitle()));
+//        titleView.setVisibility(View.VISIBLE);
+//
+//        if (selectedProduct.getProductName().toLowerCase().contains("praxfilm")) {
+//            distanceView.setText(String.format("Duration: %d minutes", ((movie.getMovieLength()/movie.getRecordedFps())/60)));
+//        } else {
+//            float meters = movie.getMovieLength();
+//            int km = (int) (meters / 1000f);
+//            int hectometers = (int) ((meters - (km * 1000f)) / 100f);
+//            distanceView.setText(toString().format(itemView.getContext().getString(R.string.catalog_screen_distance), km, hectometers));
+//        }
+//
+//        //Set Route Information map
+//        if (selectedProduct.getSupportStreaming()==0 && performStaticChecks(selectedProduct)) {
+//            Picasso.get()
+//                    .load(new File(movie.getMovieRouteinfoPath()))
+//                    .fit()
+//                    .placeholder(R.drawable.placeholder_map)
+//                    .error(R.drawable.placeholder_map)
+//                    .into(routeInformationMap);
+//        } else {
+//            Picasso.get()
+//                    .load(movie.getMovieRouteinfoPath())
+//                    .fit()
+//                    .placeholder(R.drawable.placeholder_map)
+//                    .error(R.drawable.placeholder_map)
+//                    .into(routeInformationMap);
+//        }
     }
 
     private void initOnFocusChangeListener() {
@@ -221,7 +226,7 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
             AppCompatActivity activity = (AppCompatActivity) onClickedView.getContext();
             activity.getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.fragment_container_view, RouteInformationFragment.class, generateBundleParameters())
+                    .replace(R.id.fragment_container_view, RouteDownloadInformationFragment.class, generateBundleParameters())
                     .addToBackStack("routeinfo")
                     .commit();
         });
