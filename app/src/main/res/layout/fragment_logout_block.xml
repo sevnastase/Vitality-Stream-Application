@@ -92,6 +92,10 @@
             android:text="Logout"
             android:background="@null"
             android:backgroundTint="@android:color/holo_red_dark"
-            android:textColor="@color/exo_white"/>
+            android:textColor="@color/exo_white"
+            android:nextFocusUp="@id/password"
+            android:nextFocusLeft="@id/password"
+            android:nextFocusDown="@id/account_logout_button"
+            android:nextFocusRight="@id/account_logout_button"/>
     </LinearLayout>
 </LinearLayout>

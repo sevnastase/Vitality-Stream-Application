@@ -58,14 +58,11 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
     private final static String TAG = ProductPickerActivity.class.getSimpleName();
 
     private ProductPickerViewModel productPickerViewModel;
-    private RecyclerView productOverview;
-    private boolean refreshData = false;
 
     private DrawerLayout drawerLayout;
     private NavigationView navView;
 
     private Button settingsButton;
-    private Button signoutButton;
 
     private Handler screensaverhandler;
     private Looper screensaverLooper;
@@ -89,45 +86,9 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         initScreensaverHandler();
         startScreensaverHandler();
 
+        settingsButton = findViewById(R.id.productpicker_settings_button);
         drawerLayout = findViewById(R.id.drawer_layout);
         navView = drawerLayout.findViewById(R.id.nav_view);
-
-        /*
-        Settings button
-         */
-        settingsButton = findViewById(R.id.productpicker_settings_button);
-        settingsButton.setOnFocusChangeListener((onFocusedView, hasFocus) -> {
-            if (hasFocus) {
-                final Drawable border = onFocusedView.getContext().getDrawable(R.drawable.imagebutton_blue_border);
-                settingsButton.setBackground(border);
-            } else {
-                settingsButton.setBackground(null);
-            }
-        });
-
-         /*
-        Logout button
-         */
-        signoutButton = findViewById(R.id.productpicker_logout_button);
-        signoutButton.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    final Drawable border = v.getContext().getDrawable(R.drawable.imagebutton_blue_border);
-                    signoutButton.setBackground(border);
-                } else {
-                    signoutButton.setBackground(null);
-                }
-            }
-        });
-
-        /*
-        Haal de producten op om vervolgens in de recyclerview weer te geven
-         */
-
-        //Koppel de recyclerView aan de layout xml
-//        productOverview = findViewById(R.id.recyclerview_products);
-//        productOverview.setHasFixedSize(true);
 
         productPickerViewModel.getCurrentConfig().observe(this, config -> {
             if (config != null) {
@@ -150,29 +111,6 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                         }
                     }
                 });
-//                startBleService();
-
-                // Add action onClick to signout button
-                signoutButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        SharedPreferences sp = getApplication().getSharedPreferences("app",0);
-                        SharedPreferences.Editor editor = sp.edit();
-                        editor.clear();
-                        editor.commit();
-                        Log.d(TAG, "Finish productpicker");
-
-                        config.setCurrent(false);
-                        productPickerViewModel.updateConfiguration(config);
-
-                        //Cancel all workers (in case of downloading)
-                        WorkManager
-                                .getInstance(getApplicationContext())
-                                .cancelAllWork();
-
-                        ProductPickerActivity.this.finish();
-                    }
-                });
 
                 if (config.isLocalPlay()) {
                     hideMenuItem(R.id.nav_logout);
@@ -192,10 +130,6 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                         }
                     }
                 });
-
-//                if(config.isLocalPlay()) {
-                    signoutButton.setVisibility(View.GONE);
-//                }
             }
         });
     }

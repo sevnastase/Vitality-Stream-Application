@@ -6,10 +6,38 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
 
+        <!-- ProductPicker drawer (navigation slider) -->
         <item name="colorNavigationItem">@color/menu_item_color_state</item>
         <item name="colorNavigationItemSelected">@color/black</item>
         <item name="colorNavigationItemIconTintFocused">@color/black</item>
         <item name="drawableNavigationItemBackground">@drawable/menu_background_color_state</item>
+    </style>
+
+    <style name="AppTheme.ProductMainButton">
+        <!-- Buttons -->
+        <item name="android:background">@drawable/transparant_product_main_button</item>
+        <item name="android:textColor">@color/exo_white</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="AppTheme.ProductPickerMainButton">
+        <!-- Buttons -->
+        <item name="android:background">@drawable/transparant_productpicker_main_button</item>
+        <item name="android:textColor">@color/exo_white</item>
+        <item name="android:textSize">8sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="AppTheme.DefaultButton">
+        <!-- Buttons -->
+        <item name="android:background">@drawable/transparant_default_button</item>
+        <item name="android:textColor">#FFFFF0</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="SplashScreenTheme" parent="Theme.AppCompat.NoActionBar">

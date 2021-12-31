@@ -42,6 +42,7 @@ import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
+import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.fragments.AbstractProductScreenFragment;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
@@ -149,14 +150,14 @@ public class ProductActivity extends AppCompatActivity {
                 signoutButton.setOnClickListener(view -> {
                     ProductActivity.this.finish();
                 });
-                signoutButton.setOnFocusChangeListener((view, hasFocus) -> {
-                    if (hasFocus) {
-                        final Drawable border = getDrawable(R.drawable.imagebutton_blue_border);
-                        signoutButton.setBackground(border);
-                    } else {
-                        signoutButton.setBackground(null);
-                    }
-                });
+//                signoutButton.setOnFocusChangeListener((view, hasFocus) -> {
+//                    if (hasFocus) {
+//                        final Drawable border = getDrawable(R.drawable.imagebutton_blue_border);
+//                        signoutButton.setBackground(border);
+//                    } else {
+//                        signoutButton.setBackground(null);
+//                    }
+//                });
             }
         });
     }

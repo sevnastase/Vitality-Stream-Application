@@ -19,4 +19,6 @@
     <attr name="colorNavigationItemSelected" format="color" />
     <attr name="drawableNavigationItemBackground" format="reference" />
 
+    <!-- App Button styles -->
+    <attr name="transparantUIButton" format="reference"/>
 </resources>

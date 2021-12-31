@@ -26,9 +26,7 @@
     <Button
         android:id="@+id/login_goto_location_permission_button"
         android:text="@string/profile_add_form_next_button_text"
-        android:background="@drawable/imagebutton_blue_border"
-        android:backgroundTint="#009fff"
-        android:textColor="#FFFFF0"
+        style="@style/AppTheme.DefaultButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dp"

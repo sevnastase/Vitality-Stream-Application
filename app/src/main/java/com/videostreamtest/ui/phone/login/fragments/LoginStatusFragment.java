@@ -116,6 +116,7 @@ public class LoginStatusFragment extends Fragment {
                         .navigate(R.id.action_loginStatusFragment_to_usernameFragment);
             });
         }
+        nextButton.requestFocus();
     }
 
     private List<String> getStoragePermissionsForRequest() {

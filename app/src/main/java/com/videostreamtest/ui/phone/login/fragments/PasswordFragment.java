@@ -3,9 +3,11 @@ package com.videostreamtest.ui.phone.login.fragments;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -26,6 +28,7 @@ import androidx.work.WorkManager;
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Configuration;
+import com.videostreamtest.ui.phone.listeners.PraxFormOnEditorActionListener;
 import com.videostreamtest.ui.phone.login.LoginViewModel;
 import com.videostreamtest.workers.ActiveConfigurationServiceWorker;
 import com.videostreamtest.workers.LoginServiceWorker;
@@ -53,18 +56,6 @@ public class PasswordFragment extends Fragment {
         nextButton = view.findViewById(R.id.login_goto_login_result_button);
         previousButton = view.findViewById(R.id.login_goto_username_button);
 
-        nextButton.setOnClickListener((onClickedView)-> {
-            if (passwordInput.getText().length() > 0) {
-                loginViewModel.setPassword(passwordInput.getText().toString());
-            }
-        });
-
-        previousButton.setOnClickListener((onClickedView)-> {
-            passwordInput.getText().clear();
-            NavHostFragment.findNavController(PasswordFragment.this)
-                    .navigate(R.id.action_passwordFragment_to_usernameFragment);
-        });
-
         return view;
     }
 
@@ -86,6 +77,12 @@ public class PasswordFragment extends Fragment {
             }
         });
 
+        previousButton.setOnClickListener((onClickedView)-> {
+            passwordInput.getText().clear();
+            NavHostFragment.findNavController(PasswordFragment.this)
+                    .navigate(R.id.action_passwordFragment_to_usernameFragment);
+        });
+
         nextButton.setOnClickListener((onClickedView)-> {
             if (passwordInput.getText().length() > 0) {
                 loginViewModel.setPassword(passwordInput.getText().toString());
@@ -96,6 +93,10 @@ public class PasswordFragment extends Fragment {
                 });
             }
         });
+
+        final PraxFormOnEditorActionListener praxFormOnEditorActionListener = new PraxFormOnEditorActionListener(nextButton);
+        passwordInput.setOnEditorActionListener(praxFormOnEditorActionListener);
+        passwordInput.requestFocus();
     }
 
     private void login(final String username, final String password) {

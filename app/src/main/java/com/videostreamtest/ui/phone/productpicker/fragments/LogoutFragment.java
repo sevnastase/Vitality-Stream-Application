@@ -22,6 +22,7 @@ import androidx.work.WorkManager;
 
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Configuration;
+import com.videostreamtest.ui.phone.listeners.PraxFormOnEditorActionListener;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerViewModel;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
@@ -64,16 +65,7 @@ public class LogoutFragment extends Fragment {
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 
         productPickerViewModel.getCurrentConfig().observe(getViewLifecycleOwner(), config -> {
-            password.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                @Override
-                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                    boolean handled = false;
-                    if (actionId == EditorInfo.IME_ACTION_SEND) {
-                        handled = logoutButton.callOnClick();
-                    }
-                    return handled;
-                }
-            });
+            password.setOnEditorActionListener(new PraxFormOnEditorActionListener(logoutButton));
             logoutButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

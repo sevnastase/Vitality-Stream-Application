@@ -10,33 +10,15 @@
 
     <Button
         android:id="@+id/productpicker_settings_button"
+        style="@style/AppTheme.ProductPickerMainButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dp"
         android:layout_margin="8dp"
         android:layout_gravity="start|bottom"
-        android:src="@drawable/ic_baseline_settings_24"
-        android:background="@null"
         android:text="@string/productpicker_settings_button_text"
-        android:textColor="@android:color/white"
-        android:textSize="8sp"
-        app:layout_constraintStart_toEndOf="@id/productpicker_logout_button"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
-    <Button
-        android:id="@+id/productpicker_logout_button"
-        android:layout_gravity="start|bottom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@null"
-        android:backgroundTint="@android:color/holo_red_dark"
-        android:textColor="@android:color/white"
-        android:text="@string/productpicker_signout_button_text"
-        android:textSize="8sp"
-        android:padding="10dp"
-        android:layout_margin="8dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent" />
 
     <androidx.drawerlayout.widget.DrawerLayout
         xmlns:tools="http://schemas.android.com/tools"
