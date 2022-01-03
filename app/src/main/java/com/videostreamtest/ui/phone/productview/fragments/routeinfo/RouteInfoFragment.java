@@ -1,8 +1,6 @@
 package com.videostreamtest.ui.phone.productview.fragments.routeinfo;
 
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,6 +50,10 @@ public class RouteInfoFragment extends Fragment {
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         productViewModel = new ViewModelProvider(requireActivity()).get(ProductViewModel.class);
+
+        if (view.getContext()==null) {
+            return;
+        }
 
         productViewModel.getSelectedProduct().observe(requireActivity(), selectedProduct->{
             if (selectedProduct != null) {

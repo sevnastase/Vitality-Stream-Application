@@ -25,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.exoplayer2.C;
@@ -56,10 +57,13 @@ import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.ProductHelper;
+import com.videostreamtest.ui.phone.helpers.SoundHelper;
+import com.videostreamtest.ui.phone.productview.fragments.AbstractProductScreenFragment;
 import com.videostreamtest.ui.phone.result.ResultActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFilmStatusBarFragment;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFitStatusBarFragment;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxSpinStatusBarFragment;
+import com.videostreamtest.ui.phone.videoplayer.fragments.alerts.NoAudioAlertFragment;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.RpmVectorLookupTable;
@@ -936,6 +940,21 @@ public class VideoplayerActivity extends AppCompatActivity {
                     if (mediaPlayer.getTime()/1000L < 2) {
                         mediaPlayer.setVolume(ApplicationSettings.DEFAULT_SOUND_VOLUME);
                     }
+                    if (mediaPlayer.isPlaying() && !hasSound()) {
+                        String errorRule = "No Sound Detected!";
+                        if (backgroundSoundTriggers.size()>0) {
+                            errorRule +=" BackgroundItem loaded: "+backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri.getPath().toString();
+                        }
+                        LogHelper.WriteLogRule(getApplicationContext(), getSharedPreferences("app", MODE_PRIVATE).getString("apikey",""), errorRule, "DEBUG", "");
+
+                        Fragment searchFragment = getSupportFragmentManager().findFragmentByTag("NoAudioAlert");
+                        if (searchFragment == null) {
+                            getSupportFragmentManager()
+                                    .beginTransaction()
+                                    .add(R.id.videoplayer_framelayout_statusbar, NoAudioAlertFragment.class, null, "NoAudioAlert")
+                                    .commit();
+                        }
+                    }
 
                     //check for current backgroundsound
                     BackgroundSound backgroundSound = getCurrentBackgroundSoundByCurrentPostion();
@@ -1217,17 +1236,6 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
     }
 
-//    private void initializeEffectSoundPlayer() {
-//        if (effectSoundPlayer == null) {
-//            final MediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(this);
-//            DefaultLoadControl defaultLoadControl = new DefaultLoadControl.Builder().setPrioritizeTimeOverSizeThresholds(true).build();
-//            effectSoundPlayer = new SimpleExoPlayer.Builder(this).setLoadControl(defaultLoadControl).setMediaSourceFactory(mediaSourceFactory).build();
-//
-//            PlaybackParameters playbackParameters  = new PlaybackParameters(1.0f, PlaybackParameters.DEFAULT.pitch);
-//            effectSoundPlayer.setPlaybackParameters(playbackParameters);
-//        }
-//    }
-
     private void prepareVideoMediaSource(Uri mUri) {
         final MediaItem mediaItem = MediaItem.fromUri(mUri);
         videoPlayer.setMediaItem(mediaItem);
@@ -1422,6 +1430,28 @@ public class VideoplayerActivity extends AppCompatActivity {
                 break;
             default:
         }
+    }
+
+    private boolean hasSound() {
+        boolean backgroundPlayer = backgroundSoundPlayer != null;
+        boolean backgroundItemLoaded = true;
+        boolean videoVolume = mediaPlayer.getVolume() >0;
+        if (backgroundSoundTriggers.size()>0) {
+            backgroundPlayer = backgroundSoundPlayer != null && backgroundSoundPlayer.isPlaying();
+            backgroundItemLoaded = backgroundSoundPlayer.getCurrentMediaItem() != null && !backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri.toString().isEmpty();
+            videoVolume = true;
+        }
+        boolean backgroundSoundPlayerVolume = backgroundSoundPlayer.getVolume()>0;
+        boolean backgroundSoundDeviceMuted = backgroundSoundPlayer.isDeviceMuted();
+
+        boolean video = mediaPlayer!=null && mediaPlayer.isPlaying();
+
+        boolean systemSoundMode = SoundHelper.hasSystemSound(getApplicationContext());
+
+        return backgroundPlayer && backgroundSoundPlayerVolume
+                && !backgroundSoundDeviceMuted && backgroundItemLoaded
+                && video && videoVolume
+                && systemSoundMode;
     }
 
 }

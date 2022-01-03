@@ -112,11 +112,11 @@ public abstract class PraxtourDatabase extends RoomDatabase {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
             database.execSQL("CREATE TABLE `flags_table` ("
-                    + "`flag_id` INTEGER, "
+                    + "`flag_id` INTEGER NOT NULL DEFAULT null, "
                     + "`country_iso` TEXT NOT NULL DEFAULT '', "
                     + "`country_name` TEXT NOT NULL DEFAULT '',"
-                    + "`flag_filesize` INTEGER,"
-                    + "`flag_url` TEXT,"
+                    + "`flag_filesize` INTEGER NOT NULL DEFAULT null,"
+                    + "`flag_url` TEXT NOT NULL DEFAULT '',"
                     +" PRIMARY KEY(`flag_id`))");
         }
     };
@@ -125,9 +125,9 @@ public abstract class PraxtourDatabase extends RoomDatabase {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
             database.execSQL("CREATE TABLE `movieflags_table` ("
-                    + "`movieflag_id` INTEGER, "
-                    + "`movie_id` INTEGER, "
-                    + "`flag_id` INTEGER,"
+                    + "`movieflag_id` INTEGER NOT NULL DEFAULT null, "
+                    + "`movie_id` INTEGER NOT NULL DEFAULT null, "
+                    + "`flag_id` INTEGER NOT NULL DEFAULT null,"
                     +" PRIMARY KEY(`movieflag_id`))");
         }
     };
