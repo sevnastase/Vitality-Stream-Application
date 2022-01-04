@@ -35,6 +35,7 @@ import androidx.work.WorkManager;
 import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
+import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
@@ -130,7 +131,7 @@ public class ProductActivity extends AppCompatActivity {
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Localip: "+DownloadHelper.getLocalIpAddress(), "DEBUG", "");
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Density: sw-"+this.getResources().getDisplayMetrics().densityDpi, "DEBUG", "");
 
-                Bundle arguments = getIntent().getExtras();
+                final Bundle arguments = getIntent().getExtras();
                 arguments.putString("communication_device", currentConfig.getCommunicationDevice());
 
                 //PERIODIC ACTIONS FOR DATABASE
@@ -145,7 +146,6 @@ public class ProductActivity extends AppCompatActivity {
                 loadFragmentBasedOnScreenType(arguments);
 
                 appBuildNumber.setText(ConfigurationHelper.getVersionNumber(getApplicationContext())+":"+currentConfig.getAccountToken());
-
 
                 signoutButton.setOnClickListener(view -> {
                     ProductActivity.this.finish();
@@ -222,20 +222,6 @@ public class ProductActivity extends AppCompatActivity {
                 .setReorderingAllowed(true)
                 .replace(R.id.fragment_container_view, AbstractProductScreenFragment.class, arguments)
                 .commit();
-
-//        if (isTouchScreen()) {
-//            getSupportFragmentManager()
-//                    .beginTransaction()
-//                    .setReorderingAllowed(true)
-//                    .replace(R.id.fragment_container_view, TouchScreenFragment.class, arguments)
-//                    .commit();
-//        } else {
-//            getSupportFragmentManager()
-//                    .beginTransaction()
-//                    .setReorderingAllowed(true)
-//                    .replace(R.id.fragment_container_view, PlainScreenFragment.class, arguments)
-//                    .commit();
-//        }
     }
 
     private void downloadSound() {

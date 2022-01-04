@@ -23,6 +23,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
+import com.videostreamtest.config.db.PraxtourDatabase;
+import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.ui.phone.catalog.CatalogRecyclerViewClickListener;
@@ -30,9 +32,13 @@ import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.fragments.routefilmadapter.RoutefilmsAdapter;
 import com.videostreamtest.ui.phone.productview.fragments.routeinfo.RouteInfoFragment;
+import com.videostreamtest.ui.phone.productview.fragments.routeinfo.RoutefilmOverviewFragment;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
-public class AbstractProductScreenFragment extends Fragment implements CatalogRecyclerViewClickListener {
+import java.util.ArrayList;
+import java.util.List;
+
+public class AbstractProductScreenFragment extends Fragment {
     private static final String TAG = AbstractProductScreenFragment.class.getSimpleName();
 
     //Static final Strings for navigation arrow urls
@@ -46,14 +52,10 @@ public class AbstractProductScreenFragment extends Fragment implements CatalogRe
 
     //Passed arguments by Bundle
     private Product selectedProduct;
-    private CommunicationDevice communicationDevice;
 
-    //View elements
-    private LinearLayout routeInformationBlock;
-    private RecyclerView recyclerView;
-
-    //Routefilms adapter
-    private RoutefilmsAdapter routefilmsAdapter;
+    private String apikey;
+    private int currentposition;
+    private List<Routefilm> routefilmsList = new ArrayList<>();
 
     //TouchScreen Elements
     private LinearLayout navigationPad;
@@ -69,21 +71,21 @@ public class AbstractProductScreenFragment extends Fragment implements CatalogRe
         //Data model
         productViewModel = new ViewModelProvider(requireActivity()).get(ProductViewModel.class);
 
+        apikey = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
+
         //Bundle arguments
-        selectedProduct = new GsonBuilder().create().fromJson(getArguments().getString("product_object", "{}"), Product.class);
-        communicationDevice = ConfigurationHelper.getCommunicationDevice(getArguments().getString("communication_device"));
+//        selectedProduct = new GsonBuilder().create().fromJson(getArguments().getString("product_object", "{}"), Product.class);
+//        communicationDevice = ConfigurationHelper.getCommunicationDevice(getArguments().getString("communication_device"));
 
         //Views [GENERAL]
-        routeInformationBlock = view.findViewById(R.id.overlay_route_information);
+//        routeInformationBlock = view.findViewById(R.id.overlay_route_information);
 
-        routefilmsAdapter = new RoutefilmsAdapter(selectedProduct, communicationDevice, productViewModel, getActivity().getApplicationContext());
-//        routefilmsAdapter.setRouteInformationBlock(routeInformationBlock);
-//        routefilmsAdapter.setRouteInformationBlock(routeInformationBlock);
-
-        recyclerView = view.findViewById(R.id.recyclerview_available_routefilms);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new GridLayoutManager(view.getContext(),4));
-        recyclerView.setAdapter(routefilmsAdapter);
+//        routefilmsAdapter = new RoutefilmsAdapter(selectedProduct, communicationDevice, productViewModel, getActivity().getApplicationContext());
+//
+//        recyclerView = view.findViewById(R.id.recyclerview_available_routefilms);
+//        recyclerView.setHasFixedSize(true);
+//        recyclerView.setLayoutManager(new GridLayoutManager(view.getContext(),4));
+//        recyclerView.setAdapter(routefilmsAdapter);
 
         //Views [TOUCH-SCREEN SPECIFIC]
         navigationPad = view.findViewById(R.id.navigation_pad);
@@ -108,7 +110,6 @@ public class AbstractProductScreenFragment extends Fragment implements CatalogRe
             });
         } else {
             navigationPad.setVisibility(View.GONE);
-            routefilmsAdapter.setCatalogRecyclerViewClickListener(this);
         }
 
         return view;
@@ -118,29 +119,30 @@ public class AbstractProductScreenFragment extends Fragment implements CatalogRe
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-//        FragmentManager fragmentManager = getParentFragmentManager();
-//        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-//
-//        RouteInfoFragment routeInfoFragment = new RouteInfoFragment();
-//        fragmentTransaction.replace(R.id.routeinformation_fragment, routeInfoFragment);
-//        fragmentTransaction.commit();
+        productViewModel.getSelectedProduct().observe(getViewLifecycleOwner(), selectedProduct-> {
+            if (selectedProduct != null && this.selectedProduct == null) {
+                this.selectedProduct = Product.fromProductEntity(selectedProduct);
+                loadNavigationArrows();
+            }
+        });
+
+        loadProductMovies();
+
+        productViewModel.getSelectedRoutefilm().observe(getViewLifecycleOwner(), routefilm ->{
+            if (routefilm != null) {
+                this.currentposition = getCurrentPosition(routefilm);
+            }
+        });
 
         getActivity().getSupportFragmentManager()
                 .beginTransaction()
                 .setReorderingAllowed(true)
                 .replace(R.id.routeinformation_fragment, RouteInfoFragment.class, null)
+                .replace(R.id.routefilm_overview_fragment, RoutefilmOverviewFragment.class, null)
                 .commit();
 
-        loadNavigationArrows();
-        loadAvailableMediaScenery();
-    }
-
-    @Override
-    public void recyclerViewListClicked(View v, int position) {
-        if (!ViewHelper.isTouchScreen(getActivity())) {
-            routefilmsAdapter.setSelectedRoutefilm(position);
-            recyclerView.getLayoutManager().scrollToPosition(position);
-        }
+//        loadNavigationArrows();
+//        loadAvailableMediaScenery();
     }
 
     //NAVIGATION ARROWS
@@ -166,85 +168,82 @@ public class AbstractProductScreenFragment extends Fragment implements CatalogRe
     }
 
     private void setNavigationLeftArrow() {
-        if (routefilmsAdapter != null) {
-            int currentPosition = routefilmsAdapter.getSelectedRoutefilm();
-            int nextPosition = 0;
-            if (currentPosition == 0) {
-                nextPosition = recyclerView.getAdapter().getItemCount() - 1;
-            } else {
-                nextPosition = currentPosition - 1;
-            }
-            routefilmsAdapter.setSelectedRoutefilm(nextPosition);
-            recyclerView.getAdapter().notifyDataSetChanged();
-
-            recyclerView.getLayoutManager().scrollToPosition(nextPosition);
+        if (currentposition > 0) {
+            PraxtourDatabase.databaseWriterExecutor.execute(()->{
+                PraxtourDatabase.getDatabase(getActivity())
+                        .usageTrackerDao()
+                        .setSelectedMovie(apikey, routefilmsList.get(currentposition-1).getMovieId().intValue());
+            });
         }
     }
 
     private void setNavigationRightArrow() {
-        if (routefilmsAdapter != null) {
-            int currentPosition = routefilmsAdapter.getSelectedRoutefilm();
-            int nextPosition = 0;
-            if (currentPosition == (recyclerView.getAdapter().getItemCount() - 1)) {
-                nextPosition = 0;
-            } else {
-                nextPosition = currentPosition + 1;
-            }
-            routefilmsAdapter.setSelectedRoutefilm(nextPosition);
-            recyclerView.getAdapter().notifyDataSetChanged();
-
-            recyclerView.getLayoutManager().scrollToPosition(nextPosition);
+        if (currentposition != routefilmsList.size()-1 && currentposition < routefilmsList.size()-1) {
+            PraxtourDatabase.databaseWriterExecutor.execute(()->{
+                PraxtourDatabase.getDatabase(getActivity())
+                        .usageTrackerDao()
+                        .setSelectedMovie(apikey, routefilmsList.get(currentposition+1).getMovieId().intValue());
+            });
         }
     }
 
     private void setNavigationUpArrow() {
-        if (routefilmsAdapter != null) {
-            int currentPosition = routefilmsAdapter.getSelectedRoutefilm();
-            int nextPosition = 0;
-
-            if (currentPosition <= 3) {
-                nextPosition = currentPosition;
-            } else {
-                nextPosition = currentPosition - 4;
-            }
-
-            routefilmsAdapter.setSelectedRoutefilm(nextPosition);
-            recyclerView.getAdapter().notifyDataSetChanged();
-
-            recyclerView.getLayoutManager().scrollToPosition(nextPosition);
-        }
+//        if (routefilmsAdapter != null) {
+//            int currentPosition = routefilmsAdapter.getSelectedRoutefilm();
+//            int nextPosition = 0;
+//
+//            if (currentPosition <= 3) {
+//                nextPosition = currentPosition;
+//            } else {
+//                nextPosition = currentPosition - 4;
+//            }
+//
+//            routefilmsAdapter.setSelectedRoutefilm(nextPosition);
+//            recyclerView.getAdapter().notifyDataSetChanged();
+//
+//            recyclerView.getLayoutManager().scrollToPosition(nextPosition);
+//        }
     }
 
     private void setNavigationDownArrow() {
-        if (routefilmsAdapter != null) {
-            int currentPosition = routefilmsAdapter.getSelectedRoutefilm();
-            int nextPosition = 0;
-
-            //TODO: SMOOTH CHECK BECAUSE LAGGY UX NOW
-            if (currentPosition >= ((recyclerView.getAdapter().getItemCount() - 1) - 4)) {
-                nextPosition = currentPosition;
-            } else {
-                nextPosition = currentPosition + 4;
-            }
-
-            routefilmsAdapter.setSelectedRoutefilm(nextPosition);
-            recyclerView.getAdapter().notifyDataSetChanged();
-
-            recyclerView.getLayoutManager().scrollToPosition(nextPosition);
-        }
+//        if (routefilmsAdapter != null) {
+//            int currentPosition = routefilmsAdapter.getSelectedRoutefilm();
+//            int nextPosition = 0;
+//
+//            //TODO: SMOOTH CHECK BECAUSE LAGGY UX NOW
+//            if (currentPosition >= ((recyclerView.getAdapter().getItemCount() - 1) - 4)) {
+//                nextPosition = currentPosition;
+//            } else {
+//                nextPosition = currentPosition + 4;
+//            }
+//
+//            routefilmsAdapter.setSelectedRoutefilm(nextPosition);
+//            recyclerView.getAdapter().notifyDataSetChanged();
+//
+//            recyclerView.getLayoutManager().scrollToPosition(nextPosition);
+//        }
     }
 
-    //LOAD AVAILABLE SCENERY
-    private void loadAvailableMediaScenery() {
-        final String apikey = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
+    private void loadProductMovies() {
         if (!apikey.equals("")) {
-            productViewModel.getProductMovies(apikey, selectedProduct.getId().intValue())
+            productViewModel.getProductMovies(apikey)
                     .observe(getViewLifecycleOwner(), routefilms -> {
-                routefilmsAdapter.updateRoutefilmList(routefilms);
-                if (routefilmsAdapter.getItemCount()>0 && routefilmsAdapter.getSelectedRoutefilm()==0) {
-                    routefilmsAdapter.notifyDataSetChanged();
+                if (routefilms != null) {
+                    this.routefilmsList = routefilms;
                 }
             });
         }
+    }
+
+    private int getCurrentPosition(final Routefilm routefilm) {
+        int index = -1;
+        if (routefilmsList != null && routefilmsList.size()>0) {
+            for (int searchIndex = 0; searchIndex < routefilmsList.size();searchIndex++ ) {
+                if (routefilm.getMovieId().intValue() == routefilmsList.get(searchIndex).getMovieId().intValue()) {
+                    index = searchIndex;
+                }
+            }
+        }
+        return index;
     }
 }

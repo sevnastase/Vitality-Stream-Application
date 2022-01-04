@@ -12,8 +12,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.exoplayer2.util.Log;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
+import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
@@ -34,6 +36,7 @@ public class RouteInfoFragment extends Fragment {
     private ImageView movieMapView;
 
     private Product selectedProduct;
+    private int selectedRoutefilmId = 0;
 
     @Nullable
     @Override
@@ -51,20 +54,18 @@ public class RouteInfoFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         productViewModel = new ViewModelProvider(requireActivity()).get(ProductViewModel.class);
 
-        if (view.getContext()==null) {
-            return;
-        }
-
         productViewModel.getSelectedProduct().observe(requireActivity(), selectedProduct->{
             if (selectedProduct != null) {
                 this.selectedProduct = selectedProduct;
             }
         });
 
+        setMovieFlag();
+
         productViewModel.getSelectedRoutefilm().observe(requireActivity(), selectedMovie -> {
-            if (selectedMovie!= null) {
+            if (selectedMovie!= null && selectedMovie.getMovieId()!= selectedRoutefilmId) {
+                selectedRoutefilmId = selectedMovie.getMovieId();
                 setMovieTitle(selectedMovie.getMovieTitle());
-                setMovieFlag();
 
                 final Movie routefilmMovie = Movie.fromRoutefilm(selectedMovie);
                 setMovieMap(routefilmMovie);
@@ -84,6 +85,7 @@ public class RouteInfoFragment extends Fragment {
         // CAUSE: In ProductActivity/Fragment we walk through every item to align the borders correctly
         productViewModel.getFlagOfMovie().observe(getViewLifecycleOwner(), flag -> {
             if (flag!=null) {
+                Log.d(TAG, String.format("Flag data: ISO>%s id>%d", flag.getFlagCountryIso(), flag.getId()));
                 if (movieFlagView.getVisibility() == View.GONE) {
                     movieFlagView.setVisibility(View.VISIBLE);
                 }
@@ -106,6 +108,10 @@ public class RouteInfoFragment extends Fragment {
                 movieFlagView.setVisibility(View.GONE);
             }
         });
+    }
+
+    private boolean isFlagOfSelectedMovie(final Flag flag) {
+        return false;
     }
 
     private void setMovieMap(final Movie selectedMovie){

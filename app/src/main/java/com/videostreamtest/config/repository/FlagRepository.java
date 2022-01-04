@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.videostreamtest.config.dao.FlagDao;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Flag;
+import com.videostreamtest.config.entity.MovieFlag;
 
 import java.util.List;
 
@@ -23,6 +24,10 @@ public class FlagRepository {
 
     public LiveData<Flag> getFlagOfMovie() {
         return flagDao.getFlagFromSelectedMovie();
+    }
+
+    public LiveData<MovieFlag> getMovieFlagOfMovie() {
+        return flagDao.getMovieFlagFromSelectedMovie();
     }
 
     public LiveData<Flag> getSelectedFlag() {

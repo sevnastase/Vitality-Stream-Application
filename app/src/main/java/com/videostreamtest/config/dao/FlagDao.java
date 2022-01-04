@@ -33,6 +33,11 @@ public interface FlagDao {
     @Query("SELECT * FROM flags_table ft WHERE ft.flag_id = :flagId LIMIT 1")
     LiveData<Flag> getFlag(final Integer flagId);
 
-    @Query("SELECT ft.flag_id, country_iso, country_name, flag_filesize, flag_url FROM flags_table ft INNER JOIN movieflags_table mft ON ft.flag_id = mft.flag_id INNER JOIN usage_tracker_table utt ON mft.movie_id = utt.selected_movie LIMIT 1")
+    @Query("SELECT ft.* FROM flags_table ft "+
+            "INNER JOIN movieflags_table mft ON mft.flag_id = ft.flag_id "+
+            "INNER JOIN usage_tracker_table utt ON utt.selected_movie = mft.movie_id LIMIT 1")
     LiveData<Flag> getFlagFromSelectedMovie();
+
+    @Query("SELECT mft.* FROM movieflags_table mft INNER JOIN usage_tracker_table utt ON mft.movie_id = utt.selected_movie LIMIT 1")
+    LiveData<MovieFlag> getMovieFlagFromSelectedMovie();//INNER JOIN flags_table ft ON mft.flag_id = ft.flag_id
 }

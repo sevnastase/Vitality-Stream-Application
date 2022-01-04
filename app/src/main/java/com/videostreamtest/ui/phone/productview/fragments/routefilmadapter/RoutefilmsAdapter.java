@@ -25,6 +25,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.Route;
+
 public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolder> {
     private static final String TAG = RoutefilmsAdapter.class.getSimpleName();
 
@@ -39,12 +41,8 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
     private List<Routefilm> routefilmList = new ArrayList<>();
     private int selectedRoutefilm = 0;
 
-    //ROUTE INFORMATION BLOCK LISTENER
-    private CatalogRecyclerViewClickListener catalogRecyclerViewClickListener;
-
-    public RoutefilmsAdapter(final Product activeProduct, final CommunicationDevice communicationDevice, final ProductViewModel productViewModel, final Context applicationContext) {
+    public RoutefilmsAdapter(final Product activeProduct, final ProductViewModel productViewModel) {
         this.selectedProduct = activeProduct;
-        this.communicationDevice = communicationDevice;
         this.productViewModel = productViewModel;
     }
 
@@ -70,7 +68,7 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
             routeSceneryImage.requestFocus();
         }
         if (routefilmList != null && routefilmList.size() > 0) {
-            holder.bindProduct(routefilmList.get(position), selectedProduct, communicationDevice, position, catalogRecyclerViewClickListener);
+            holder.bindProduct(routefilmList.get(position), selectedProduct, position);
         }
     }
 
@@ -83,15 +81,14 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
         }
     }
 
-    //SETTERS FOR INFORMATION BLOCK
-    public void setCatalogRecyclerViewClickListener(final CatalogRecyclerViewClickListener catalogRecyclerViewClickListener) {
-        this.catalogRecyclerViewClickListener = catalogRecyclerViewClickListener;
-    }
-
     //ROUTEFILMS ADAPTER LIST MUTATION METHODS
     public void setSelectedRoutefilm(int position) {
         this.selectedRoutefilm = position;
 //        notifyDataSetChanged();
+    }
+
+    public List<Routefilm> getRoutefilmList() {
+        return this.routefilmList;
     }
 
     public int getSelectedRoutefilm() {return this.selectedRoutefilm;}

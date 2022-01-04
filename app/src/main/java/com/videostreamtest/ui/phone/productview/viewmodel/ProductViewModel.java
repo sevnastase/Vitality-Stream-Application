@@ -13,6 +13,7 @@ import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.config.entity.EffectSound;
 import com.videostreamtest.config.entity.Flag;
+import com.videostreamtest.config.entity.MovieFlag;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.config.entity.Routefilm;
@@ -63,6 +64,9 @@ public class ProductViewModel extends AndroidViewModel {
     public LiveData<Flag> getFlagOfMovie() {
         return flagRepository.getFlagOfMovie();
     }
+    public LiveData<MovieFlag> getMovieFlagOfMovie() {
+        return flagRepository.getMovieFlagOfMovie();
+    }
 
     public LiveData<List<Flag>> getAllFlags() {
         return flagRepository.getAllFlags();
@@ -72,8 +76,8 @@ public class ProductViewModel extends AndroidViewModel {
         return routefilmRepository.getAllRoutefilms(accountToken);
     }
 
-    public LiveData<List<Routefilm>> getProductMovies(final String accountToken, final Integer productId) {
-        return routefilmRepository.getAllProductRoutefilms(accountToken, productId);
+    public LiveData<List<Routefilm>> getProductMovies(final String accountToken) {
+        return routefilmRepository.getAllProductRoutefilms(accountToken);
     }
 
     public LiveData<List<ProductMovie>> getPMS(final Integer productId) {
