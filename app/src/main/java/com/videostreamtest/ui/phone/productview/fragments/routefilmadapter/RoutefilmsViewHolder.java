@@ -17,6 +17,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.GsonBuilder;
@@ -81,9 +83,9 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
         //LOAD VIEW ELEMENT
         routefilmScenery = itemView.findViewById(R.id.routeImageCoverButton);
 
+        initMovie(selectedProduct);
         if (performStaticChecks(selectedProduct)) {
             //READY TO PLAY CLAUSE
-            initMovie(selectedProduct);
             initVideoPlayer(generateBundleParameters());
             initStartListeners(selectedProduct);
         } else {
@@ -92,33 +94,36 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
         }
 
         initMovieImages(selectedProduct);
+        initOnFocusChangeListener(selectedProduct);
         initView();
+        itemView.invalidate();
     }
 
     private void initView() {
         initBorders();
-        initOnFocusChangeListener();
+
         if(itemView.isSelected()) {
             updateRouteInformationBlock();
         }
     }
 
     private void updateRouteInformationBlock() {
-        if (movie == null && !ViewHelper.isTouchScreen(itemView.getContext())) {
+        if (movie == null) {
             return;
         }
-
-        PraxtourDatabase.databaseWriterExecutor.execute(()->{
-            PraxtourDatabase.getDatabase(itemView.getContext()).usageTrackerDao().setSelectedMovie(apikey, movie.getId());
-        });
     }
 
-    private void initOnFocusChangeListener() {
+    private void initOnFocusChangeListener(final Product selectedProduct) {
         routefilmScenery.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 itemView.setSelected(true);
                 if (hasFocus) {
+                    if (selectedProduct.getSupportStreaming()==0) {
+                        PraxtourDatabase.databaseWriterExecutor.execute(()->{
+                            PraxtourDatabase.getDatabase(itemView.getContext()).usageTrackerDao().setSelectedMovie(apikey, movie.getId());
+                        });
+                    }
                     drawSelectionBorder();
                     updateRouteInformationBlock();
                 } else {
@@ -176,19 +181,26 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
     }
 
     private void initDownloadListeners() {
-        routefilmScenery.setOnClickListener((onClickedView) ->{
+        routefilmScenery.setOnClickListener((onClickedView) -> {
             AppCompatActivity activity = (AppCompatActivity) onClickedView.getContext();
-            activity.getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container_view, RouteDownloadInformationFragment.class, generateBundleParameters())
-                    .addToBackStack("routeinfo")
-                    .commit();
+            NavHostFragment navHostFragment =
+                    (NavHostFragment) activity.getSupportFragmentManager().findFragmentById(R.id.product_fragment_view);
+            NavController navController = navHostFragment.getNavController();
+            navController.navigate(R.id.downloadsFragment);
+//            activity.getSupportFragmentManager()
+//                    .beginTransaction()
+//                    .replace(R.id.fragment_container_view, RouteDownloadInformationFragment.class, generateBundleParameters())
+//                    .addToBackStack("routeinfo")
+//                    .commit();
         });
     }
 
     private void initStartListeners(final Product selectedProduct) {
         routefilmScenery.setOnClickListener((onClickedView) -> {
             updateRouteInformationBlock();
+            PraxtourDatabase.databaseWriterExecutor.execute(()->{
+                PraxtourDatabase.getDatabase(itemView.getContext()).usageTrackerDao().setSelectedMovie(apikey, movie.getId());
+            });
             if (selectedProduct.getSupportStreaming()==0) {
                 itemView.getContext().startActivity(videoPlayer);
             } else {

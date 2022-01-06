@@ -54,7 +54,7 @@ public class RouteInfoFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         productViewModel = new ViewModelProvider(requireActivity()).get(ProductViewModel.class);
 
-        productViewModel.getSelectedProduct().observe(requireActivity(), selectedProduct->{
+        productViewModel.getSelectedProduct().observe(getViewLifecycleOwner(), selectedProduct->{
             if (selectedProduct != null) {
                 this.selectedProduct = selectedProduct;
             }
@@ -62,7 +62,7 @@ public class RouteInfoFragment extends Fragment {
 
         setMovieFlag();
 
-        productViewModel.getSelectedRoutefilm().observe(requireActivity(), selectedMovie -> {
+        productViewModel.getSelectedRoutefilm().observe(getViewLifecycleOwner(), selectedMovie -> {
             if (selectedMovie!= null && selectedMovie.getMovieId()!= selectedRoutefilmId) {
                 selectedRoutefilmId = selectedMovie.getMovieId();
                 setMovieTitle(selectedMovie.getMovieTitle());
@@ -76,13 +76,16 @@ public class RouteInfoFragment extends Fragment {
     }
 
     private void setMovieTitle(final String movieTitle) {
-        movieTitleView.setText(toString().format(getString(R.string.catalog_selected_route_title), movieTitle));
-        movieTitleView.setVisibility(View.VISIBLE);
+        try {
+            movieTitleView.setText(toString().format(getString(R.string.catalog_selected_route_title), movieTitle));
+            movieTitleView.setVisibility(View.VISIBLE);
+        } catch (Exception exception) {
+            Log.e(TAG, exception.getLocalizedMessage());
+        }
     }
 
     private void setMovieFlag() {
         // FIXME: Causes flickering flag at beginning.
-        // CAUSE: In ProductActivity/Fragment we walk through every item to align the borders correctly
         productViewModel.getFlagOfMovie().observe(getViewLifecycleOwner(), flag -> {
             if (flag!=null) {
                 Log.d(TAG, String.format("Flag data: ISO>%s id>%d", flag.getFlagCountryIso(), flag.getId()));
@@ -110,14 +113,10 @@ public class RouteInfoFragment extends Fragment {
         });
     }
 
-    private boolean isFlagOfSelectedMovie(final Flag flag) {
-        return false;
-    }
-
     private void setMovieMap(final Movie selectedMovie){
         //Set Route Information map
         if (isAvailableForLocalLoading(selectedMovie)) {
-            DownloadHelper.setLocalMedia(requireActivity(), selectedMovie);
+            DownloadHelper.setLocalMedia(getContext(), selectedMovie);
             Picasso.get()
                     .load(new File(selectedMovie.getMovieRouteinfoPath()))
                     .fit()

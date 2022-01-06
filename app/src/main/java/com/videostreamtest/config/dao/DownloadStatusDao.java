@@ -26,4 +26,10 @@ public interface DownloadStatusDao {
 
     @Query("SELECT * FROM download_table WHERE download_movie_id = :movieId")
     LiveData<StandAloneDownloadStatus> getDownloadStatus(final Integer movieId);
+
+    @Query("SELECT * FROM download_table")
+    LiveData<List<StandAloneDownloadStatus>> getAllDownloadStatus();
+
+    @Query("SELECT * FROM download_table dt WHERE dt.download_status < 100 ORDER BY dt.download_status DESC")
+    LiveData<List<StandAloneDownloadStatus>> getAllActiveDownloadStatus();
 }

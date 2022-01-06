@@ -254,40 +254,9 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             standAloneDownloadStatus.setMovieId(movieId);
             standAloneDownloadStatus.setDownloadStatus(downloadProgress);
 
-            PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(standAloneDownloadStatus);
-
-            //SEND UPDATE OF PROGRESS TO SERVER FOR OVERVIEW OF PROGRESS IN CRM
-    //        sendProgressToPraxCloud(String accountToken, int movieId, int roundedDownloadProgress);
-
-//            Retrofit retrofit = new Retrofit.Builder()
-//                    .baseUrl(PRAXCLOUD_URL)
-//                    .addConverterFactory(GsonConverterFactory.create())
-//                    .build();
-//            PraxCloud praxCloud = retrofit.create(PraxCloud.class);
-//
-//            MovieDownloadProgress movieDownloadProgress = new MovieDownloadProgress();
-//            movieDownloadProgress.setAccountToken(accountToken);
-//            movieDownloadProgress.setRoundedDownloadProgress(downloadProgress);
-//            movieDownloadProgress.setMovieId(movieId);
-
-            //SYNCHRONOUS
-            //praxCloud.updateDownloadProgress(movieDownloadProgress, accountToken);
-
-//            //ASYNCHRONOUS
-//            Call<com.videostreamtest.data.model.response.Result> call = praxCloud.updateDownloadProgress(movieDownloadProgress, accountToken);
-//            call.enqueue(new Callback<com.videostreamtest.data.model.response.Result>() {
-//                @Override
-//                public void onResponse(Call<com.videostreamtest.data.model.response.Result> call, Response<com.videostreamtest.data.model.response.Result> response) {
-//
-//                    Log.d("CallBack", " response is " + response);
-//                }
-//
-//                @Override
-//                public void onFailure(Call<com.videostreamtest.data.model.response.Result> call, Throwable t) {
-//
-//                    Log.d("CallBack", " Throwable is " + t);
-//                }
-//            });
+            PraxtourDatabase.databaseWriterExecutor.execute(()->{
+                PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(standAloneDownloadStatus);
+            });
             currentDownloadProgress = downloadProgress;
         }
     }

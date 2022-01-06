@@ -18,11 +18,51 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.fragment.app.FragmentContainerView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/fragment_container_view"
+    <androidx.drawerlayout.widget.DrawerLayout
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/product_drawer_layout"
+        android:focusable="false"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:theme="@style/CardView.Dark"
+        tools:openDrawer="start">
+
+        <fragment
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/product_fragment_view"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            app:defaultNavHost="true"
+            app:navGraph="@navigation/nav_graph_product"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/product_nav_view"
+            style="@style/Widget.Custom.NavigationView"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/imagebutton_blue_border"
+            android:backgroundTint="@color/black_dark_overlay"
+            android:layout_gravity="start"
+            android:fitsSystemWindows="true"
+            app:headerLayout="@layout/nav_header_main"
+            app:menu="@menu/product_menu" />
+    </androidx.drawerlayout.widget.DrawerLayout>
+
+    <Button
+        android:id="@+id/product_menu_button"
+        style="@style/AppTheme.ProductPickerMainButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_gravity="start|bottom"
+        android:text="@string/product_menu_button_text"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/app_build_number" />
 
     <Button
         android:id="@+id/product_logout_button"
@@ -30,12 +70,12 @@
         android:layout_gravity="start|bottom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
         android:text="@string/productpicker_close_button_text"
-        android:padding="15dp"
-        android:layout_margin="26dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        android:padding="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintStart_toEndOf="@id/product_menu_button"
+        app:layout_constraintBottom_toTopOf="@id/app_build_number"/>
     <TextView
         android:id="@+id/app_build_number"
         android:layout_width="wrap_content"
@@ -43,7 +83,7 @@
         android:layout_marginLeft="15dp"
         android:textColor="#D3D3D3"
         android:textSize="10sp"
-        app:layout_constraintTop_toBottomOf="@id/product_logout_button"
+        android:layout_marginBottom="5dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         />

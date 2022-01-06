@@ -15,13 +15,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.enums.CommunicationDevice;
-import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.productview.fragments.routefilmadapter.RoutefilmsAdapter;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
@@ -38,6 +35,7 @@ public class RoutefilmOverviewFragment extends Fragment {
     private RoutefilmsAdapter routefilmsAdapter;
 
     private Product fragmentProduct;
+    private int selectedRoutefilmPosition = 0;
 
     @Nullable
     @Override
@@ -60,9 +58,14 @@ public class RoutefilmOverviewFragment extends Fragment {
 
         final String apikey = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
 
+        PraxtourDatabase.databaseWriterExecutor.execute(()->{
+            PraxtourDatabase.getDatabase(requireActivity()).usageTrackerDao().setSelectedMovie(apikey, 0);
+        });
+
         productViewModel.getSelectedProduct().observe(getViewLifecycleOwner(), selectedProduct-> {
             if (selectedProduct != null) {
                 Log.d(TAG, selectedProduct.getProductName());
+
                 if(routefilmsAdapter == null) {
                     fragmentProduct = Product.fromProductEntity(selectedProduct);
                     routefilmsAdapter = new RoutefilmsAdapter(fragmentProduct, productViewModel);
@@ -74,18 +77,39 @@ public class RoutefilmOverviewFragment extends Fragment {
         if (!apikey.equals("")) {
             productViewModel.getProductMovies(apikey)
                     .observe(getViewLifecycleOwner(), routefilms -> {
-
                         if(routefilms !=null && routefilmsAdapter!=null) {
                             routefilmsAdapter.updateRoutefilmList(routefilms);
-//                            if (routefilmsAdapter.getItemCount() == routefilms.size() && routefilmsAdapter.getSelectedRoutefilm()==0) {
-//                                PraxtourDatabase.databaseWriterExecutor.execute(()->{
-//                                    PraxtourDatabase.getDatabase(requireActivity()).usageTrackerDao().setSelectedMovie(apikey, routefilmsAdapter.getRoutefilmList().get(0).getMovieId());
-//                                });
+//                            if (routefilmsAdapter.getItemCount() == routefilms.size()
+//                                    && routefilmsAdapter.getCurrentSelectedRoutefilmPosition()==0) {
 //                                routefilmOverview.getAdapter().notifyDataSetChanged();
 //                            }
                         }
                     });
         }
+
+        productViewModel.getSelectedRoutefilm().observe(getViewLifecycleOwner(), selectedRoutefilm -> {
+            if (selectedRoutefilm != null) {
+                Log.d(TAG, String.format("selectedRoutefilm: id>%d", selectedRoutefilm.getMovieId()));
+                Log.d(TAG, String.format("selectedRoutefilmIntVal: id>%d", selectedRoutefilm.getMovieId().intValue()));
+                selectedRoutefilmPosition = routefilmsAdapter.getSelectedRoutefilmPosition(selectedRoutefilm);
+                if (selectedRoutefilmPosition != routefilmsAdapter.getCurrentSelectedRoutefilmPosition()) {
+                    routefilmOverview.getLayoutManager().scrollToPosition(selectedRoutefilmPosition);
+                    routefilmsAdapter.setSelectedRoutefilm(selectedRoutefilmPosition);
+                    if (fragmentProduct.getSupportStreaming()==1) {
+                        routefilmOverview.getAdapter().notifyDataSetChanged();
+                    }
+                }
+            } else {
+                if (routefilmsAdapter != null
+                        && routefilmsAdapter.getItemCount()>0
+                        && routefilmsAdapter.getRoutefilmList().size()>0) {
+                    PraxtourDatabase.databaseWriterExecutor.execute(()->{
+                        PraxtourDatabase.getDatabase(requireActivity()).usageTrackerDao().setSelectedMovie(apikey, routefilmsAdapter.getRoutefilmList().get(0).getMovieId().intValue());
+                    });
+                }
+
+            }
+        });
 
         Integer layoutHeightRecyclerView = 0;
         switch (getResources().getDisplayMetrics().densityDpi) {
@@ -110,27 +134,6 @@ public class RoutefilmOverviewFragment extends Fragment {
             //convert dpi to pixels
             int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, layoutHeightRecyclerView, getResources().getDisplayMetrics());
             params.height = height;
-        }
-
-        productViewModel.getSelectedRoutefilm().observe(getViewLifecycleOwner(), selectedRoutefilm -> {
-            if (selectedRoutefilm != null) {
-                Log.d(TAG, String.format("selectedRoutefilm: id>%d", selectedRoutefilm.getMovieId()));
-                Log.d(TAG, String.format("selectedRoutefilmIntVal: id>%d", selectedRoutefilm.getMovieId().intValue()));
-                setSelectedRoutefilm(selectedRoutefilm);
-            }
-        });
-    }
-
-    private void setSelectedRoutefilm(final Routefilm routefilm) {
-        if (routefilmsAdapter != null && routefilmsAdapter.getItemCount() >0) {
-            int oldPos = routefilmsAdapter.getSelectedRoutefilm();
-            for (int pos = 0; pos < routefilmsAdapter.getRoutefilmList().size();pos++) {
-                if (routefilmsAdapter.getRoutefilmList().get(pos).getMovieId().intValue() == routefilm.getMovieId().intValue() && oldPos!= pos) {
-                    routefilmOverview.getLayoutManager().scrollToPosition(pos);
-                    routefilmsAdapter.setSelectedRoutefilm(pos);
-                    routefilmOverview.getAdapter().notifyDataSetChanged();
-                }
-            }
         }
     }
 }

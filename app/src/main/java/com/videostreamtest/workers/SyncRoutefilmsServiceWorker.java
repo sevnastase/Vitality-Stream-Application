@@ -9,13 +9,10 @@ import androidx.work.ListenableWorker;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import com.videostreamtest.config.dao.ProfileDao;
 import com.videostreamtest.config.dao.RoutefilmDao;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
-import com.videostreamtest.data.model.Profile;
-import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import java.io.IOException;
@@ -25,16 +22,17 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.GET;
-import retrofit2.http.Header;
 
 import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_URL;
 
-public class AvailableMediaServiceWorker extends Worker {
+public class SyncRoutefilmsServiceWorker extends Worker {
 
-    private static final String TAG = AvailableMediaServiceWorker.class.getSimpleName();
+    private static final String TAG = SyncRoutefilmsServiceWorker.class.getSimpleName();
 
-    public AvailableMediaServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+    private List<Routefilm> appRoutefilms = null;
+    private List<Movie> cloudRoutefilms = null;
+
+    public SyncRoutefilmsServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
 
@@ -54,23 +52,24 @@ public class AvailableMediaServiceWorker extends Worker {
 
         PraxCloud praxCloud = retrofit.create(PraxCloud.class);
         Call<List<Movie>> call = praxCloud.getRoutefilms(apikey);
-        List<Movie> routefilms = new ArrayList<>();
+        cloudRoutefilms = new ArrayList<>();
         try {
-            routefilms = call.execute().body();
+            cloudRoutefilms = call.execute().body();
         } catch (IOException ioException) {
             Log.e(TAG, ioException.getLocalizedMessage());
         }
-        Log.d(TAG, "RouteFilms Count RetroFit :: "+routefilms.size());
+        Log.d(TAG, "RouteFilms Count RetroFit :: "+cloudRoutefilms.size());
 
         //PREPARE ARRAY OF INTEGERS WITH MOVIE ID'S
         ArrayList<Integer> availableMovieIds = new ArrayList<>();
 
         //DATABASE INJECTION
         final RoutefilmDao routefilmDao = PraxtourDatabase.getDatabase(getApplicationContext()).routefilmDao();
+        appRoutefilms = routefilmDao.getLocalRoutefilms(apikey);
         //CHECK: Fill in the first attempt, let the rest be synchronised by the UpdateRegisteredMovieServiceWorker
 //        routefilmDao.nukeTable();
-        if (routefilms.size() > 0) {
-            for (final Movie routefilm: routefilms) {
+        if (cloudRoutefilms != null && cloudRoutefilms.size() > 0) {
+            for (final Movie routefilm: cloudRoutefilms) {
                 final com.videostreamtest.config.entity.Routefilm dbRoutefilm = new com.videostreamtest.config.entity.Routefilm();
                 dbRoutefilm.setAccountToken(apikey);
                 dbRoutefilm.setMovieId(routefilm.getId());
@@ -88,7 +87,12 @@ public class AvailableMediaServiceWorker extends Worker {
 
                 availableMovieIds.add(routefilm.getId());
 
-                long result = routefilmDao.insert(dbRoutefilm);
+                if (!isRoutefilmInApp(dbRoutefilm)) {
+                    long result = routefilmDao.insert(dbRoutefilm);
+                }
+                if (!isRoutefilmInCloud(dbRoutefilm)) {
+                    routefilmDao.delete(dbRoutefilm);
+                }
             }
             Log.d(TAG, "All routefilms been synchronized");
         }
@@ -106,5 +110,27 @@ public class AvailableMediaServiceWorker extends Worker {
 
         //Return result with data output
         return ListenableWorker.Result.success(output);
+    }
+
+    private boolean isRoutefilmInApp(final Routefilm routefilm) {
+        if (appRoutefilms != null && appRoutefilms.size()>0) {
+            for (final Routefilm appFilm: appRoutefilms) {
+                if (routefilm.getMovieId().intValue() == appFilm.getMovieId().intValue()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isRoutefilmInCloud(final Routefilm routefilm) {
+        if (cloudRoutefilms != null && cloudRoutefilms.size()>0) {
+            for (final Movie film: cloudRoutefilms) {
+                if (routefilm.getMovieId().intValue() == film.getId().intValue()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

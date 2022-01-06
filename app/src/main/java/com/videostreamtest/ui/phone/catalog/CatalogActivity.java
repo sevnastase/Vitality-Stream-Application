@@ -1,7 +1,6 @@
 package com.videostreamtest.ui.phone.catalog;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,23 +16,13 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.work.Data;
-import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
-import com.videostreamtest.config.entity.Profile;
 import com.videostreamtest.config.entity.Routefilm;
-import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
-import com.videostreamtest.workers.AvailableMediaServiceWorker;
-
-import java.io.File;
 
 public class CatalogActivity extends AppCompatActivity implements CatalogRecyclerViewClickListener {
     private final static String TAG = CatalogActivity.class.getSimpleName();

@@ -111,4 +111,8 @@
     <string name="login_form_enter_password">Enter password</string>
     <string name="login_form_enter_password_hint">Password</string>
     <string name="profile_add_form_previous_button_text">Previous</string>
+    <string name="menu_nav_routes_title">Routes</string>
+    <string name="menu_nav_results_title">Results</string>
+    <string name="menu_nav_downloads_title">Downloads</string>
+    <string name="product_menu_button_text">Menu</string>
 </resources>

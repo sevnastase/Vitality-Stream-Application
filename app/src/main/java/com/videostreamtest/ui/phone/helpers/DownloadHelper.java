@@ -8,6 +8,7 @@ import android.util.Log;
 import androidx.core.content.ContextCompat;
 
 import com.videostreamtest.config.entity.Flag;
+import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -221,6 +222,41 @@ public class DownloadHelper {
                 movie.setMovieUrl(pathname+"/"+movieFileName);
                 movie.setMovieImagepath(pathname+"/"+sceneryFileName);
                 movie.setMovieRouteinfoPath(pathname+"/"+mapFilename);
+            }
+        }
+    }
+
+    /**
+     * Adjust object url's to local storage paths
+     * @param context
+     * @param routefilm
+     */
+    public static void setLocalMedia(final Context context, final Routefilm routefilm) {
+        String movieFileName = "";
+        String sceneryFileName = "";
+        String mapFilename = "";
+        try {
+            URL movieUrl = new URL(routefilm.getMovieUrl());
+            movieFileName = new File(movieUrl.getFile()).getName();
+            URL sceneryUrl = new URL(routefilm.getMovieImagepath());
+            sceneryFileName = new File(sceneryUrl.getFile()).getName();
+            URL mapUrl = new URL(routefilm.getMovieRouteinfoPath());
+            mapFilename = new File(mapUrl.getFile()).getName();
+        } catch (MalformedURLException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+            SharedPreferences sharedPreferences = context.getSharedPreferences("app", MODE_PRIVATE);
+            String apikey = sharedPreferences.getString("apikey", "");
+            LogHelper.WriteLogRule(context, apikey, "ERROR: [SET LOCAL MEDIA] [TITLE:"+routefilm.getMovieTitle()+"] "+e.getLocalizedMessage(), "ERROR", "");
+            return;
+        }
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + routefilm.getMovieId().intValue();
+            File possibleMovieLocation = new File(pathname);
+            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
+                routefilm.setMovieUrl(pathname+"/"+movieFileName);
+                routefilm.setMovieImagepath(pathname+"/"+sceneryFileName);
+                routefilm.setMovieRouteinfoPath(pathname+"/"+mapFilename);
             }
         }
     }

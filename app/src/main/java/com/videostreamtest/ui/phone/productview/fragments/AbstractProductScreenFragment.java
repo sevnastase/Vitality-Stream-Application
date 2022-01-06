@@ -129,7 +129,7 @@ public class AbstractProductScreenFragment extends Fragment {
         loadProductMovies();
 
         productViewModel.getSelectedRoutefilm().observe(getViewLifecycleOwner(), routefilm ->{
-            if (routefilm != null) {
+            if (routefilm != null && this.currentposition != getCurrentPosition(routefilm)) {
                 this.currentposition = getCurrentPosition(routefilm);
             }
         });
@@ -178,7 +178,7 @@ public class AbstractProductScreenFragment extends Fragment {
     }
 
     private void setNavigationRightArrow() {
-        if (currentposition != routefilmsList.size()-1 && currentposition < routefilmsList.size()-1) {
+        if (currentposition < routefilmsList.size()-1) {
             PraxtourDatabase.databaseWriterExecutor.execute(()->{
                 PraxtourDatabase.getDatabase(getActivity())
                         .usageTrackerDao()

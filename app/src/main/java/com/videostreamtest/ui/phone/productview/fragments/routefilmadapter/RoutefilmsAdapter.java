@@ -1,14 +1,10 @@
 package com.videostreamtest.ui.phone.productview.fragments.routefilmadapter;
 
-import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,15 +13,12 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
-import com.videostreamtest.ui.phone.catalog.CatalogRecyclerViewClickListener;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import okhttp3.Route;
 
 public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolder> {
     private static final String TAG = RoutefilmsAdapter.class.getSimpleName();
@@ -84,25 +77,31 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
     //ROUTEFILMS ADAPTER LIST MUTATION METHODS
     public void setSelectedRoutefilm(int position) {
         this.selectedRoutefilm = position;
-//        notifyDataSetChanged();
     }
 
     public List<Routefilm> getRoutefilmList() {
         return this.routefilmList;
     }
 
-    public int getSelectedRoutefilm() {return this.selectedRoutefilm;}
+    public int getCurrentSelectedRoutefilmPosition() {return this.selectedRoutefilm;}
 
-    //TODO: CHANGE TO BleDeviceInformationAdapter like behaviour
+    public int getSelectedRoutefilmPosition(final Routefilm routefilm) {
+        if (routefilmList != null && routefilmList.size()>0) {
+            for (int filmIndex = 0; filmIndex<routefilmList.size();filmIndex++) {
+                if (routefilm.getMovieId().intValue()==routefilmList.get(filmIndex).getMovieId().intValue()) {
+                    return filmIndex;
+                }
+            }
+        }
+        return 0;
+    }
+
     public void updateRoutefilmList(final List<Routefilm> requestedRoutefilmList) {
         if (requestedRoutefilmList != null && requestedRoutefilmList.size()>0) {
             for (final Routefilm routefilm: requestedRoutefilmList) {
                 if (!isRoutefilmPresent(routefilm)) {
                     this.routefilmList.add(routefilm);
-//                    notifyItemInserted(routefilmList.indexOf(routefilm));
-//                    if (this.routefilmList.size() == (requestedRoutefilmList.size()-1)) {
-                        notifyDataSetChanged();
-//                    }
+                    notifyDataSetChanged();
                 }
             }
             for (final Routefilm routefilm: this.routefilmList) {
@@ -116,15 +115,14 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
     }
 
     private boolean isRoutefilmRemoved(final Routefilm routefilm, final List<Routefilm> requestedRoutefilmList) {
-        boolean isRemoved = true;
         if (requestedRoutefilmList!= null && requestedRoutefilmList.size()>0) {
             for (final Routefilm film: requestedRoutefilmList) {
                 if (routefilm.getMovieId().intValue() == film.getMovieId().intValue()) {
-                    isRemoved = false;
+                    return false;
                 }
             }
         }
-        return isRemoved;
+        return true;
     }
 
     private boolean isRoutefilmPresent(final Routefilm routefilm) {

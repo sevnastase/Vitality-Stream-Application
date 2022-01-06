@@ -4,7 +4,6 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.Environment;
 
 import androidx.core.content.ContextCompat;
 import androidx.core.content.pm.PackageInfoCompat;
@@ -20,7 +19,7 @@ import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.ActiveConfigurationServiceWorker;
 import com.videostreamtest.workers.ActiveProductMovieLinksServiceWorker;
 import com.videostreamtest.workers.ActiveProductsServiceWorker;
-import com.videostreamtest.workers.AvailableMediaServiceWorker;
+import com.videostreamtest.workers.SyncRoutefilmsServiceWorker;
 import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
 import com.videostreamtest.workers.ProfileServiceWorker;
 import com.videostreamtest.workers.SoundInformationServiceWorker;
@@ -75,7 +74,7 @@ public class ConfigurationHelper {
         //Routefilms
         Data.Builder routeFilmdata = new Data.Builder();
         routeFilmdata.putString("apikey", accountToken);
-        OneTimeWorkRequest routefilmsRequest = new OneTimeWorkRequest.Builder(AvailableMediaServiceWorker.class)
+        OneTimeWorkRequest routefilmsRequest = new OneTimeWorkRequest.Builder(SyncRoutefilmsServiceWorker.class)
                 .setConstraints(constraint)
                 .setInputData(routeFilmdata.build())
                 .addTag("routefilms")

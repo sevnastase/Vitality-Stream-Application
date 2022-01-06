@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_routes"
+            android:icon="@drawable/ic_baseline_home_white_24"
+            android:title="@string/menu_nav_routes_title" />
+        <item
+            android:id="@+id/nav_results"
+            android:icon="@drawable/ic_results"
+            android:title="@string/menu_nav_results_title" />
+        <item
+            android:id="@+id/nav_downloads"
+            android:icon="@drawable/ic_cloud_download"
+            android:title="@string/menu_nav_downloads_title" />
+    </group>
+</menu>

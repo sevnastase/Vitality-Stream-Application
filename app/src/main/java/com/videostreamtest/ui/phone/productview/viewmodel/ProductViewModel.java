@@ -93,6 +93,14 @@ public class ProductViewModel extends AndroidViewModel {
         return downloadStatusRepository.getDownloadStatus(movieId);
     }
 
+    public LiveData<List<StandAloneDownloadStatus>> getAllDownloadStatus() {
+        return downloadStatusRepository.getAllDownloadStatus();
+    }
+
+    public LiveData<List<StandAloneDownloadStatus>> getAllActiveDownloadStatus() {
+        return downloadStatusRepository.getAllActiveDownloadStatus();
+    }
+
     public LiveData<List<BackgroundSound>> getBackgroundSounds(final Integer movieId) {
         return backgroundSoundRepository.getBackgroundSounds(movieId);
     }

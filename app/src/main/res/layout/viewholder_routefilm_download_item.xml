@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/routefilm_viewholder_item"
+    android:orientation="horizontal"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/imagebutton_blue_border"
+    android:backgroundTint="@color/black_overlay">
+    <ImageButton
+        android:id="@+id/routefilm_download_item_scenery"
+        android:background="@null"
+        android:src="@drawable/scenery_placeholder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"/>
+    <View
+        android:layout_width="15dp"
+        android:layout_height="wrap_content" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <TextView
+            android:id="@+id/routefilm_download_item_progressbar_title_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/exo_white"
+            android:textSize="16dp"
+            android:textStyle="bold"/>
+        <SeekBar
+            android:id="@+id/routefilm_download_item_progressbar"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/routefilm_download_item_progressbar_title_label"
+            android:focusable="false"
+            android:progressDrawable="@drawable/praxfilm_progress_drawable"
+            android:splitTrack="false"
+            android:thumb="@drawable/bicycle_thumb_praxfilm"
+            android:thumbOffset="0dp" />
+        <TextView
+            android:id="@+id/routefilm_download_item_progressbar_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/routefilm_download_item_progressbar"
+            android:textColor="@color/exo_white"
+            android:textSize="16dp"
+            android:textStyle="bold"/>
+    </RelativeLayout>
+
+
+</LinearLayout>

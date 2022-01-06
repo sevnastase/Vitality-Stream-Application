@@ -1,9 +1,9 @@
 package com.videostreamtest.ui.phone.productview;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,16 +12,23 @@ import android.os.Looper;
 import android.os.Process;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
 import androidx.work.Data;
@@ -32,6 +39,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
+import com.google.android.material.navigation.NavigationView;
 import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
@@ -43,8 +51,6 @@ import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
-import com.videostreamtest.ui.phone.helpers.ViewHelper;
-import com.videostreamtest.ui.phone.productview.fragments.AbstractProductScreenFragment;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
@@ -68,17 +74,24 @@ import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
 
-public class ProductActivity extends AppCompatActivity {
+import org.jetbrains.annotations.NotNull;
+
+public class ProductActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private final static String TAG = ProductActivity.class.getSimpleName();
 
     private ProductViewModel productViewModel;
     private Button signoutButton;
+    private Button menuButton;
     private ImageView productLogo;
     private TextView appBuildNumber;
+    private DrawerLayout drawerLayout;
+    private NavigationView navView;
 
     private Handler screensaverhandler;
     private Looper screensaverLooper;
     private Runnable screensaverRunnable;
+
+    private Product selectedProduct;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -98,21 +111,12 @@ public class ProductActivity extends AppCompatActivity {
         signoutButton = findViewById(R.id.product_logout_button);
         productLogo = findViewById(R.id.product_logo_view);
         appBuildNumber = findViewById(R.id.app_build_number);
+        menuButton = findViewById(R.id.product_menu_button);
+        drawerLayout = findViewById(R.id.product_drawer_layout);
+        navView = drawerLayout.findViewById(R.id.product_nav_view);
 
-        productViewModel.getSelectedProduct().observe(this, selectedProductId -> {
-            if (selectedProductId != null) {
-                Log.d(TAG, "selectedProductId :: " + selectedProductId.getUid());
-            }
-        });
-
-        Product selectedProduct = new GsonBuilder().create().fromJson(getIntent().getExtras().getString("product_object", "{}"), Product.class);
+        selectedProduct = new GsonBuilder().create().fromJson(getIntent().getExtras().getString("product_object", "{}"), Product.class);
         Log.d(ProductActivity.class.getSimpleName(), "Product ID Loaded: "+selectedProduct.getId());
-
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
-        int width = displayMetrics.widthPixels;
-        Log.d(TAG, "Screen resolution: w:"+width+" h:"+height);
 
         //Set product logo in view
         Picasso.get()
@@ -122,17 +126,47 @@ public class ProductActivity extends AppCompatActivity {
                 .error(R.drawable.placeholder_button)
                 .into(productLogo);
 
+        if (selectedProduct.getSupportStreaming()==1) {
+            hideMenuItem(R.id.nav_downloads);
+        }
+
+        menuButton.setOnClickListener((clickedView) -> {
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START);
+
+                if (navView.getCheckedItem()!= null) {
+                    navView.requestFocus();
+                } else {
+                    navView.requestFocus();
+                }
+            }
+        });
+
+        signoutButton.setOnClickListener(view -> {
+            ProductActivity.this.finish();
+        });
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        navView.setNavigationItemSelectedListener(this);
+
         productViewModel.getCurrentConfig().observe(this, currentConfig ->{
             if (currentConfig != null) {
                 PermissionHelper.requestPermission(getApplicationContext(), this, currentConfig);
 
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                int height = displayMetrics.heightPixels;
+                int width = displayMetrics.widthPixels;
+                Log.d(TAG, "Screen resolution: w:"+width+" h:"+height);
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Started Product: "+selectedProduct.getProductName(), "DEBUG", "");
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Screensize: wxh: "+width+" x "+height, "DEBUG", "");
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Localip: "+DownloadHelper.getLocalIpAddress(), "DEBUG", "");
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Density: sw-"+this.getResources().getDisplayMetrics().densityDpi, "DEBUG", "");
-
-                final Bundle arguments = getIntent().getExtras();
-                arguments.putString("communication_device", currentConfig.getCommunicationDevice());
 
                 //PERIODIC ACTIONS FOR DATABASE
                 syncMovieDatabasePeriodically(currentConfig.getAccountToken());
@@ -143,26 +177,13 @@ public class ProductActivity extends AppCompatActivity {
 //                    periodicCheckMovieFileDataIntegrity(currentConfig.getAccountToken()); TODO: Make available through Account Config
 //                    startSingleDataIntegrityWorker(currentConfig.getAccountToken());
                 }
-                loadFragmentBasedOnScreenType(arguments);
+                logRamMemory();
 
                 appBuildNumber.setText(ConfigurationHelper.getVersionNumber(getApplicationContext())+":"+currentConfig.getAccountToken());
 
-                signoutButton.setOnClickListener(view -> {
-                    ProductActivity.this.finish();
-                });
-//                signoutButton.setOnFocusChangeListener((view, hasFocus) -> {
-//                    if (hasFocus) {
-//                        final Drawable border = getDrawable(R.drawable.imagebutton_blue_border);
-//                        signoutButton.setBackground(border);
-//                    } else {
-//                        signoutButton.setBackground(null);
-//                    }
-//                });
             }
         });
     }
-
-
 
     @Override
     protected void onResume() {
@@ -177,6 +198,26 @@ public class ProductActivity extends AppCompatActivity {
     public void onUserInteraction() {
         super.onUserInteraction();
         resetScreensaverTimer();
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull @NotNull MenuItem menuItem) {
+        NavHostFragment navHostFragment =
+                (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.product_fragment_view);
+        NavController navController = navHostFragment.getNavController();
+        switch (menuItem.getItemId()) {
+            case R.id.nav_routes:
+                navController.navigate(R.id.routeFragment);
+                break;
+            case R.id.nav_results:
+//                navController.navigate(R.id.productPickerFragment);
+                break;
+            case R.id.nav_downloads:
+                navController.navigate(R.id.downloadsFragment);
+                break;
+        }
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return false;
     }
 
     public boolean isStoragePermissionGranted(final boolean isLocalPlay) {
@@ -199,7 +240,7 @@ public class ProductActivity extends AppCompatActivity {
         return false;
     }
 
-    private void loadFragmentBasedOnScreenType(final Bundle arguments) {
+    private void logRamMemory() {
 //        Log.d(TAG, "Hardware: "+Build.HARDWARE);
 //        Log.d(TAG, "Manufacturer: "+Build.MANUFACTURER);
 //        Log.d(TAG, "Device: "+Build.DEVICE);
@@ -216,12 +257,14 @@ public class ProductActivity extends AppCompatActivity {
 //        }
         Log.d(TAG, "Memory Mb: "+(ConfigurationHelper.getMemorySizeInBytes(getApplicationContext())/1024/1024));
         Log.d(TAG, "Memory Gb: "+(ConfigurationHelper.getMemorySizeInBytes(getApplicationContext())/1024/1024/1024));
+    }
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .setReorderingAllowed(true)
-                .replace(R.id.fragment_container_view, AbstractProductScreenFragment.class, arguments)
-                .commit();
+    private void hideMenuItem(final int id)
+    {
+        if (navView != null) {
+            Menu nav_Menu = navView.getMenu();
+            nav_Menu.findItem(id).setVisible(false);
+        }
     }
 
     private void downloadSound() {
