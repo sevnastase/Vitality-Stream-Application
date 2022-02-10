@@ -46,7 +46,7 @@
             android:backgroundTint="@color/black_dark_overlay"
             android:layout_gravity="start"
             android:fitsSystemWindows="true"
-            app:headerLayout="@layout/nav_header_main"
+            app:headerLayout="@layout/nav_header_productview"
             app:menu="@menu/product_menu" />
     </androidx.drawerlayout.widget.DrawerLayout>
 
@@ -61,6 +61,7 @@
         android:layout_gravity="start|bottom"
         android:text="@string/product_menu_button_text"
         android:textSize="14sp"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/app_build_number" />
 

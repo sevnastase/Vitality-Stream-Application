@@ -93,6 +93,10 @@ public class LoginViewModel extends AndroidViewModel {
     public void insertUsageTracker(final String accounttoken) {
         final UsageTracker usageTracker = new UsageTracker();
         usageTracker.setAccounttoken(accounttoken);
+        usageTracker.setSelectedProduct(0);
+        usageTracker.setSelectedProfile(0);
+        usageTracker.setSelectedMovie(0);
+        usageTracker.setSelectedBackgroundSound(0);
         usageTrackerRepository.insertNewUsageTrackerInformationObject(usageTracker);
     }
 }

@@ -3,6 +3,8 @@ package com.videostreamtest.ui.phone.productview.fragments;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,9 +23,13 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.GsonBuilder;
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
+import com.videostreamtest.config.entity.Flag;
+import com.videostreamtest.config.entity.MovieFlag;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
@@ -47,15 +53,26 @@ public class AbstractProductScreenFragment extends Fragment {
     private static final String NAVIGATION_UP_ARROW = "http://188.166.100.139:8080/api/dist/img/buttons/arrow_up_blue.png";
     private static final String NAVIGATION_DOWN_ARROW = "http://188.166.100.139:8080/api/dist/img/buttons/arrow_down_blue.png";
 
+    private int refreshOverviewCounter = 0;
+
     //Data Model
     private ProductViewModel productViewModel;
 
-    //Passed arguments by Bundle
+    //Data
     private Product selectedProduct;
 
     private String apikey;
     private int currentposition;
     private List<Routefilm> routefilmsList = new ArrayList<>();
+    private List<Flag> flags = new ArrayList<>();
+    private List<MovieFlag> movieFlags = new ArrayList<>();
+
+    //Routeinformation block
+    private LinearLayout routeInformationBlock;
+
+    //Routefilms overview
+    private RoutefilmsAdapter routefilmsAdapter;
+    private RecyclerView routefilmOverview;
 
     //TouchScreen Elements
     private LinearLayout navigationPad;
@@ -63,6 +80,10 @@ public class AbstractProductScreenFragment extends Fragment {
     private ImageButton navigationRightArrow;
     private ImageButton navigationUpArrow;
     private ImageButton navigationDownArrow;
+
+    private boolean routefilmsLoaded = false;
+    private boolean flagsLoaded = false;
+    private boolean movieFlagsLoaded = false;
 
     @Nullable
     @Override
@@ -73,19 +94,12 @@ public class AbstractProductScreenFragment extends Fragment {
 
         apikey = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
 
-        //Bundle arguments
-//        selectedProduct = new GsonBuilder().create().fromJson(getArguments().getString("product_object", "{}"), Product.class);
-//        communicationDevice = ConfigurationHelper.getCommunicationDevice(getArguments().getString("communication_device"));
-
-        //Views [GENERAL]
-//        routeInformationBlock = view.findViewById(R.id.overlay_route_information);
-
-//        routefilmsAdapter = new RoutefilmsAdapter(selectedProduct, communicationDevice, productViewModel, getActivity().getApplicationContext());
-//
-//        recyclerView = view.findViewById(R.id.recyclerview_available_routefilms);
-//        recyclerView.setHasFixedSize(true);
-//        recyclerView.setLayoutManager(new GridLayoutManager(view.getContext(),4));
-//        recyclerView.setAdapter(routefilmsAdapter);
+        //Routeinformation block
+        routeInformationBlock = view.findViewById(R.id.overlay_route_information);
+        //Routefilm overview
+        routefilmOverview = view.findViewById(R.id.recyclerview_available_routefilms);
+        routefilmOverview.setHasFixedSize(true);
+        routefilmOverview.setLayoutManager(new GridLayoutManager(view.getContext(),4));
 
         //Views [TOUCH-SCREEN SPECIFIC]
         navigationPad = view.findViewById(R.id.navigation_pad);
@@ -118,31 +132,47 @@ public class AbstractProductScreenFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        //set selected product en load navigation arrows
         productViewModel.getSelectedProduct().observe(getViewLifecycleOwner(), selectedProduct-> {
             if (selectedProduct != null && this.selectedProduct == null) {
                 this.selectedProduct = Product.fromProductEntity(selectedProduct);
                 loadNavigationArrows();
+                routefilmsAdapter = new RoutefilmsAdapter(this.selectedProduct, productViewModel, routeInformationBlock);
+                routefilmOverview.setAdapter(routefilmsAdapter);
             }
         });
-
+        //load product specific movies in memory
         loadProductMovies();
-
+        //load all flags in memory
+        productViewModel.getAllFlags().observe(getViewLifecycleOwner(), flags -> {
+            if (flags != null) {
+                this.flags = flags;
+                if (routefilmsAdapter!= null) {
+                    routefilmsAdapter.updateFlagList(flags);
+                    flagsLoaded = true;
+                    showRoutefilmOverview();
+                }
+            }
+        });
+        //load all movieflag relations in memory
+        productViewModel.getMovieFlags().observe(getViewLifecycleOwner(), movieFlags -> {
+            if (movieFlags!= null) {
+                this.movieFlags = movieFlags;
+                if (routefilmsAdapter!=null) {
+                    routefilmsAdapter.updateMovieFlagList(movieFlags);
+                    movieFlagsLoaded = true;
+                    showRoutefilmOverview();
+                }
+            }
+        });
+        //load selected movie and show selected on screen.
         productViewModel.getSelectedRoutefilm().observe(getViewLifecycleOwner(), routefilm ->{
             if (routefilm != null && this.currentposition != getCurrentPosition(routefilm)) {
                 this.currentposition = getCurrentPosition(routefilm);
             }
         });
 
-        getActivity().getSupportFragmentManager()
-                .beginTransaction()
-                .setReorderingAllowed(true)
-                .replace(R.id.routeinformation_fragment, RouteInfoFragment.class, null)
-                .replace(R.id.routefilm_overview_fragment, RoutefilmOverviewFragment.class, null)
-                .commit();
-
-//        loadNavigationArrows();
-//        loadAvailableMediaScenery();
+        refreshRoutefilmOverView(4,500);
     }
 
     //NAVIGATION ARROWS
@@ -150,78 +180,78 @@ public class AbstractProductScreenFragment extends Fragment {
         if (selectedProduct != null) {
             Picasso.get()
                     .load(NAVIGATION_LEFT_ARROW)
+                    .memoryPolicy(MemoryPolicy.NO_CACHE)
+                    .networkPolicy(NetworkPolicy.NO_CACHE)
                     .fit()
                     .into(navigationLeftArrow);
             Picasso.get()
                     .load(NAVIGATION_RIGHT_ARROW)
+                    .memoryPolicy(MemoryPolicy.NO_CACHE)
+                    .networkPolicy(NetworkPolicy.NO_CACHE)
                     .fit()
                     .into(navigationRightArrow);
             Picasso.get()
                     .load(NAVIGATION_UP_ARROW)
+                    .memoryPolicy(MemoryPolicy.NO_CACHE)
+                    .networkPolicy(NetworkPolicy.NO_CACHE)
                     .fit()
                     .into(navigationUpArrow);
             Picasso.get()
                     .load(NAVIGATION_DOWN_ARROW)
+                    .memoryPolicy(MemoryPolicy.NO_CACHE)
+                    .networkPolicy(NetworkPolicy.NO_CACHE)
                     .fit()
                     .into(navigationDownArrow);
         }
     }
 
     private void setNavigationLeftArrow() {
-        if (currentposition > 0) {
-            PraxtourDatabase.databaseWriterExecutor.execute(()->{
-                PraxtourDatabase.getDatabase(getActivity())
-                        .usageTrackerDao()
-                        .setSelectedMovie(apikey, routefilmsList.get(currentposition-1).getMovieId().intValue());
-            });
+        if (routefilmsAdapter!=null && routefilmsAdapter.getCurrentSelectedRoutefilmPosition() >0) {
+            routefilmsAdapter.setSelectedRoutefilm(routefilmsAdapter.getCurrentSelectedRoutefilmPosition()-1);
+            routefilmOverview.getAdapter().notifyDataSetChanged();
+            routefilmOverview.getLayoutManager().scrollToPosition(routefilmsAdapter.getCurrentSelectedRoutefilmPosition());
         }
     }
 
     private void setNavigationRightArrow() {
-        if (currentposition < routefilmsList.size()-1) {
-            PraxtourDatabase.databaseWriterExecutor.execute(()->{
-                PraxtourDatabase.getDatabase(getActivity())
-                        .usageTrackerDao()
-                        .setSelectedMovie(apikey, routefilmsList.get(currentposition+1).getMovieId().intValue());
-            });
+        if (routefilmsAdapter!=null &&
+                routefilmsAdapter.getCurrentSelectedRoutefilmPosition() <routefilmsAdapter.getItemCount()-1) {
+            routefilmsAdapter.setSelectedRoutefilm(routefilmsAdapter.getCurrentSelectedRoutefilmPosition()+1);
+            routefilmOverview.getAdapter().notifyDataSetChanged();
+            routefilmOverview.getLayoutManager().scrollToPosition(routefilmsAdapter.getCurrentSelectedRoutefilmPosition());
         }
     }
 
     private void setNavigationUpArrow() {
-//        if (routefilmsAdapter != null) {
-//            int currentPosition = routefilmsAdapter.getSelectedRoutefilm();
-//            int nextPosition = 0;
-//
-//            if (currentPosition <= 3) {
-//                nextPosition = currentPosition;
-//            } else {
-//                nextPosition = currentPosition - 4;
-//            }
-//
-//            routefilmsAdapter.setSelectedRoutefilm(nextPosition);
-//            recyclerView.getAdapter().notifyDataSetChanged();
-//
-//            recyclerView.getLayoutManager().scrollToPosition(nextPosition);
-//        }
+        final int nextPosition = routefilmsAdapter.getCurrentSelectedRoutefilmPosition() - 4;
+        if (routefilmsAdapter!=null &&
+                nextPosition >= 0 ) {
+            routefilmsAdapter.setSelectedRoutefilm(nextPosition);
+            routefilmOverview.getAdapter().notifyDataSetChanged();
+            routefilmOverview.getLayoutManager().scrollToPosition(routefilmsAdapter.getCurrentSelectedRoutefilmPosition());
+        }
+        if (routefilmsAdapter!=null &&
+                nextPosition < 0 ) {
+            routefilmsAdapter.setSelectedRoutefilm(0);
+            routefilmOverview.getAdapter().notifyDataSetChanged();
+            routefilmOverview.getLayoutManager().scrollToPosition(routefilmsAdapter.getCurrentSelectedRoutefilmPosition());
+        }
     }
 
     private void setNavigationDownArrow() {
-//        if (routefilmsAdapter != null) {
-//            int currentPosition = routefilmsAdapter.getSelectedRoutefilm();
-//            int nextPosition = 0;
-//
-//            //TODO: SMOOTH CHECK BECAUSE LAGGY UX NOW
-//            if (currentPosition >= ((recyclerView.getAdapter().getItemCount() - 1) - 4)) {
-//                nextPosition = currentPosition;
-//            } else {
-//                nextPosition = currentPosition + 4;
-//            }
-//
-//            routefilmsAdapter.setSelectedRoutefilm(nextPosition);
-//            recyclerView.getAdapter().notifyDataSetChanged();
-//
-//            recyclerView.getLayoutManager().scrollToPosition(nextPosition);
-//        }
+        final int nextPosition = routefilmsAdapter.getCurrentSelectedRoutefilmPosition() + 4;
+        if (routefilmsAdapter!=null &&
+                nextPosition > routefilmsAdapter.getItemCount()-1 ) {
+            routefilmsAdapter.setSelectedRoutefilm(routefilmsAdapter.getItemCount()-1);
+            routefilmOverview.getAdapter().notifyDataSetChanged();
+            routefilmOverview.getLayoutManager().scrollToPosition(routefilmsAdapter.getCurrentSelectedRoutefilmPosition());
+        }
+        if (routefilmsAdapter!=null &&
+                nextPosition <= routefilmsAdapter.getItemCount()-1 ) {
+            routefilmsAdapter.setSelectedRoutefilm(nextPosition);
+            routefilmOverview.getAdapter().notifyDataSetChanged();
+            routefilmOverview.getLayoutManager().scrollToPosition(routefilmsAdapter.getCurrentSelectedRoutefilmPosition());
+        }
     }
 
     private void loadProductMovies() {
@@ -230,6 +260,11 @@ public class AbstractProductScreenFragment extends Fragment {
                     .observe(getViewLifecycleOwner(), routefilms -> {
                 if (routefilms != null) {
                     this.routefilmsList = routefilms;
+                    if (routefilmsAdapter!=null) {
+                        routefilmsAdapter.updateRoutefilmList(routefilms);
+                        routefilmsLoaded = true;
+                        showRoutefilmOverview();
+                    }
                 }
             });
         }
@@ -245,5 +280,39 @@ public class AbstractProductScreenFragment extends Fragment {
             }
         }
         return index;
+    }
+
+    private void showRoutefilmOverview() {
+        if (routefilmsLoaded&&flagsLoaded&&movieFlagsLoaded) {
+            final LinearLayout loadingMessage = getActivity().findViewById(R.id.loading_overview);
+            loadingMessage.setVisibility(View.GONE);
+
+            routeInformationBlock.setVisibility(View.VISIBLE);
+            if (ViewHelper.isTouchScreen(getActivity())) {
+                navigationPad.setVisibility(View.VISIBLE);
+            }
+            routefilmOverview.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void refreshRoutefilmOverView(int howManyTimes, int howLongInMs) {
+        refreshOverviewCounter = 0;
+        Handler refreshTimer = new Handler(Looper.getMainLooper());
+        Runnable refreshRoutefilmOverview = new Runnable() {
+            public void run() {
+                if (routefilmOverview !=null && routefilmOverview.getAdapter()!=null) {
+                    routefilmOverview.getAdapter().notifyDataSetChanged();
+                    if (routefilmsLoaded&&flagsLoaded&&movieFlagsLoaded) {
+                        refreshOverviewCounter++;
+                    }
+                    if (refreshOverviewCounter >= howManyTimes) {
+                        refreshTimer.removeCallbacks(null);
+                    } else {
+                        refreshTimer.postDelayed(this, howLongInMs);
+                    }
+                }
+            }
+        };
+        refreshTimer.postDelayed(refreshRoutefilmOverview, howLongInMs);
     }
 }

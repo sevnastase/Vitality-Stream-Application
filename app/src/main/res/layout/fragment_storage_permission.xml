@@ -12,7 +12,7 @@
         android:textColor="#FFFFFF"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:text="Storage permission"
+        android:text="@string/login_storage_permission_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     <TextView

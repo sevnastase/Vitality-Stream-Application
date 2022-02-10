@@ -186,7 +186,7 @@ public class SplashActivity extends AppCompatActivity {
     private void checkForRecommendedScreenDpi(){
         final int densityDpi = getApplicationContext().getResources().getDisplayMetrics().densityDpi;
         if ( densityDpi < ApplicationSettings.RECOMMENDED_DENSITY_DPI) {
-            Toast.makeText(getApplicationContext(), "The screen density is not optimal for this app. \nPlease upgrade your hardware or change device for an optimal experience.", Toast.LENGTH_LONG).show();
+//            Toast.makeText(getApplicationContext(), "The screen density is not optimal for this app. \nPlease upgrade your hardware or change device for an optimal experience.", Toast.LENGTH_LONG).show();
             LogHelper.WriteLogRule(getApplicationContext(), getSharedPreferences("app" , Context.MODE_PRIVATE).getString("apikey", ""), "The screen density is not optimal for this app. Please upgrade your hardware or change device for an optimal experience. Client Density: "+densityDpi ,"ERROR", "");
         }
     }

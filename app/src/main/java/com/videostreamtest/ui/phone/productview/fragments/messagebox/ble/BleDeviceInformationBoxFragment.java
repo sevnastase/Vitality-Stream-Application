@@ -11,6 +11,8 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,6 +60,8 @@ public class BleDeviceInformationBoxFragment extends Fragment {
     private Button disconnectButton;
     private TextView deviceLabel;
     private RecyclerView showBleDevicesRecyclerView;
+
+    private int refreshOverviewCounter =0;
 
     @Nullable
     @Override
@@ -129,6 +133,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         } else {
             showNoPermissionsMessagefragment();
         }
+        showWarningBle(1, 30000);
     }
 
     @Override
@@ -311,5 +316,25 @@ public class BleDeviceInformationBoxFragment extends Fragment {
             getActivity().startService(bleService);
             startScanForDevices(bluetoothManager.getAdapter());
         });
+    }
+
+    private void showWarningBle(int howManyTimes, int howLongInMs) {
+        refreshOverviewCounter = 0;
+        LinearLayout warningBox = getActivity().findViewById(R.id.overlay_connection_warning_box);
+        Handler refreshTimer = new Handler(Looper.getMainLooper());
+        Runnable refreshRoutefilmOverview = new Runnable() {
+            public void run() {
+                if (warningBox !=null) {
+                    warningBox.setVisibility(View.VISIBLE);
+                    refreshOverviewCounter++;
+                    if (refreshOverviewCounter >= howManyTimes) {
+                        refreshTimer.removeCallbacks(null);
+                    } else {
+                        refreshTimer.postDelayed(this, howLongInMs);
+                    }
+                }
+            }
+        };
+        refreshTimer.postDelayed(refreshRoutefilmOverview, howLongInMs);
     }
 }

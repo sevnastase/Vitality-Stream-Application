@@ -19,18 +19,12 @@ import org.jetbrains.annotations.NotNull;
 public class NoAudioAlertFragment extends Fragment {
     private static final String TAG = NoAudioAlertFragment.class.getSimpleName();
 
-    //ViewModel
-//    private ProductViewModel productViewModel;
-
     //Views
-//    private TextView movieTitleView;
     private TextView alertTitleView;
     private TextView alertContentView;
     private Button alertConfirmationButton;
     private ImageView alertImageView;
 
-    //Project Objects
-//    private Product selectedProduct;
 
     @Nullable
     @Override
@@ -47,9 +41,9 @@ public class NoAudioAlertFragment extends Fragment {
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        alertTitleView.setText("No Audio possible");
-        alertContentView.setText("Audio is not detected, this are the most likely reasons:\n- Device muted\n-No file loaded\n-Volume too low\n-Android system settings not properly set");
-        alertConfirmationButton.setText("Confirm");
+        alertTitleView.setText(R.string.videoplayer_no_audio_alert_title);
+        alertContentView.setText(R.string.videoplayer_no_audio_alert_content);
+        alertConfirmationButton.setText(R.string.videoplayer_no_audio_alert_button_confirm_text);
         alertConfirmationButton.setOnClickListener((clickedView) -> {
             Fragment searchFragment = getActivity().getSupportFragmentManager().findFragmentByTag("NoAudioAlert");
             if (searchFragment != null) {

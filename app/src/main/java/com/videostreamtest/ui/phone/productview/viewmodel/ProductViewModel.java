@@ -6,8 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.videostreamtest.config.dao.ProductMovieDao;
-import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Configuration;
@@ -64,8 +62,8 @@ public class ProductViewModel extends AndroidViewModel {
     public LiveData<Flag> getFlagOfMovie() {
         return flagRepository.getFlagOfMovie();
     }
-    public LiveData<MovieFlag> getMovieFlagOfMovie() {
-        return flagRepository.getMovieFlagOfMovie();
+    public LiveData<List<MovieFlag>> getMovieFlags() {
+        return flagRepository.getMovieFlags();
     }
 
     public LiveData<List<Flag>> getAllFlags() {

@@ -14,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.GsonBuilder;
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
@@ -38,6 +40,7 @@ public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
         Picasso.get()
                 .load(product.getProductLogoButtonPath())
                 .resize(300, 225)
+                .networkPolicy(NetworkPolicy.NO_CACHE)
                 .placeholder(R.drawable.placeholder_button)
                 .error(R.drawable.placeholder_button)
                 .into(productButton);

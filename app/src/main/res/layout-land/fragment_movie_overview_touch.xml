@@ -5,93 +5,128 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <fragment
-        android:id="@+id/routeinformation_fragment"
-        android:name="com.videostreamtest.ui.phone.productview.fragments.routeinfo.RouteInfoFragment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        app:defaultNavHost="false"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-<!--    <LinearLayout-->
-<!--        android:id="@+id/overlay_route_information"-->
+<!--    <fragment-->
+<!--        android:id="@+id/routeinformation_fragment"-->
+<!--        android:name="com.videostreamtest.ui.phone.productview.fragments.routeinfo.RouteInfoFragment"-->
 <!--        android:layout_width="wrap_content"-->
 <!--        android:layout_height="wrap_content"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintBottom_toTopOf="@id/recyclerview_available_routefilms"-->
-<!--        android:layout_gravity="center|center_horizontal"-->
-<!--        android:background="@drawable/imagebutton_blue_border"-->
-<!--        android:backgroundTint="@color/black_overlay"-->
-<!--        android:orientation="horizontal"-->
-<!--        android:gravity="center"-->
-<!--        app:layout_constraintVertical_weight="5"-->
-<!--        android:padding="5dp"-->
-<!--        android:layout_marginTop="20dp">-->
+<!--        android:layout_gravity="center"-->
+<!--        app:defaultNavHost="false"-->
+<!--        app:layout_constraintLeft_toLeftOf="parent"-->
+<!--        app:layout_constraintRight_toRightOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
 
-<!--        <LinearLayout-->
-<!--            android:id="@+id/selected_route_text_information"-->
-<!--            android:layout_width="250dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:orientation="vertical">-->
+    <LinearLayout
+        android:id="@+id/loading_overview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_gravity="center|center_horizontal"
+        android:background="@drawable/imagebutton_blue_border"
+        android:backgroundTint="@color/black_overlay"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        android:gravity="center"
+        app:layout_constraintVertical_weight="5"
+        android:padding="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="10dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/loading_message"
+            android:text="@string/loading_general"
+            android:textColor="#FFFFFF"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:padding="15dp"
+            android:layout_marginBottom="5dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/selected_route_distance"/>
 
-<!--            &lt;!&ndash;     Strakke zwarte lijn om de vlag met rechte lijnen ( geen afrondingen )       &ndash;&gt;-->
-<!--            &lt;!&ndash;     imagebutton_blue_border kopieren en op basis daarvan       &ndash;&gt;-->
-<!--            <ImageView-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:id="@+id/selected_route_country"-->
-<!--                android:src="@drawable/flag_placeholder"-->
-<!--                android:background="@drawable/image_black_border"-->
-<!--                app:layout_constraintStart_toStartOf="parent"-->
-<!--                app:layout_constraintBottom_toBottomOf="parent"-->
-<!--                android:visibility="gone"-->
-<!--                />-->
+    </LinearLayout>
 
-<!--            <TextView-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:id="@+id/selected_route_title"-->
-<!--                android:text="PlaceholderPlace"-->
-<!--                android:textColor="#FFFFFF"-->
-<!--                android:textSize="24sp"-->
-<!--                android:textStyle="bold"-->
-<!--                android:visibility="invisible"-->
-<!--                android:layout_marginBottom="5dp"-->
-<!--                app:layout_constraintStart_toStartOf="parent"-->
-<!--                app:layout_constraintBottom_toTopOf="@id/selected_route_distance"/>-->
+    <LinearLayout
+        android:id="@+id/overlay_route_information"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/recyclerview_available_routefilms"
+        android:layout_gravity="center|center_horizontal"
+        android:background="@drawable/imagebutton_blue_border"
+        android:backgroundTint="@color/black_overlay"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:gravity="center"
+        app:layout_constraintVertical_weight="5"
+        android:padding="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="10dp">
 
-<!--            <TextView-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:id="@+id/selected_route_distance"-->
-<!--                android:text=""-->
-<!--                android:textColor="#FFFFFF"-->
-<!--                android:textSize="20sp"-->
-<!--                android:layout_marginBottom="5dp"-->
-<!--                app:layout_constraintStart_toStartOf="parent"-->
-<!--                app:layout_constraintBottom_toTopOf="@id/selected_route_infomap_two"/>-->
+        <LinearLayout
+            android:id="@+id/selected_route_text_information"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-<!--        </LinearLayout>-->
+            <!--     Strakke zwarte lijn om de vlag met rechte lijnen ( geen afrondingen )       -->
+            <!--     imagebutton_blue_border kopieren en op basis daarvan       -->
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/selected_route_flag"
+                android:src="@drawable/flag_placeholder"
+                android:background="@drawable/image_black_border"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:visibility="invisible"
+                />
 
-<!--        <ImageView-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:id="@+id/selected_route_infomap_two"-->
-<!--            android:src="@drawable/placeholder_map"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            app:layout_constraintBottom_toBottomOf="parent"-->
-<!--            android:layout_marginBottom="5dp"-->
-<!--            android:layout_marginTop="5dp"-->
-<!--            android:layout_marginStart="10dp"-->
-<!--            android:layout_marginEnd="5dp"-->
-<!--            />-->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/selected_route_title"
+                android:text="PlaceholderPlace"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:visibility="invisible"
+                android:layout_marginBottom="5dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/selected_route_distance"/>
 
-<!--    </LinearLayout>-->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/selected_route_distance"
+                android:text=""
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:layout_marginBottom="5dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/selected_route_infomap_two"/>
+
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/selected_route_map"
+            android:src="@drawable/placeholder_map"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="5dp"
+            />
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/navigation_pad"
@@ -99,7 +134,8 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
-        app:layout_constraintEnd_toStartOf="@id/routefilm_overview_fragment"
+        android:visibility="gone"
+        app:layout_constraintEnd_toStartOf="@id/recyclerview_available_routefilms"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -135,27 +171,28 @@
         android:layout_height="50dp"/>
     </LinearLayout>
 
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/routefilm_overview_fragment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        app:defaultNavHost="false"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/routeinformation_fragment"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
-    <!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/recyclerview_available_routefilms"-->
+<!--    <androidx.fragment.app.FragmentContainerView-->
+<!--        android:id="@+id/routefilm_overview_fragment"-->
 <!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="350dp"-->
+<!--        android:layout_height="wrap_content"-->
 <!--        android:layout_gravity="center"-->
-<!--        android:scrollbars="vertical"-->
-<!--        android:scrollbarThumbVertical="@drawable/scrollbar_shape"-->
+<!--        app:defaultNavHost="false"-->
 <!--        app:layout_constraintEnd_toEndOf="parent"-->
 <!--        app:layout_constraintStart_toStartOf="parent"-->
 <!--        app:layout_constraintTop_toBottomOf="@id/routeinformation_fragment"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"/>-->
+<!--        app:layout_constraintBottom_toBottomOf="parent" />-->
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerview_available_routefilms"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="350dp"
+            android:layout_gravity="center"
+            android:scrollbars="vertical"
+            android:scrollbarThumbVertical="@drawable/scrollbar_shape"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/overlay_route_information"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

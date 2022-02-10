@@ -115,4 +115,17 @@
     <string name="menu_nav_results_title">Results</string>
     <string name="menu_nav_downloads_title">Downloads</string>
     <string name="product_menu_button_text">Menu</string>
+    <string name="ble_connectivity_problems_alert">Problems with your BLE connection? Turn Bluetooth or Location off and on and try again.</string>
+    <string name="login_proces_status_title">Login status</string>
+    <string name="logout_action_description">Please enter the password to logout.</string>
+    <string name="logout_button_label">Logout</string>
+    <string name="product_menu_title">Menu</string>
+    <string name="login_storage_permission_title">Storage permission</string>
+    <string name="login_location_permission_title">Location permission</string>
+    <string name="videoplayer_no_audio_alert_title">No Audio possible</string>
+    <string name="videoplayer_no_audio_alert_content">Audio is not detected, this are the most likely reasons:\n- Device muted\n-No file loaded\n-Volume too low\n-Android system settings not properly set</string>
+    <string name="videoplayer_no_audio_alert_button_confirm_text">Confirm</string>
+    <string name="logout_no_password_entered_alert">No password entered.</string>
+    <string name="logout_wrong_password_entered_text">Wrong password entered.</string>
+    <string name="loading_general">Loading...</string>
 </resources>

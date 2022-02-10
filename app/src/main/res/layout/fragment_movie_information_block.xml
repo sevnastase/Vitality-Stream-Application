@@ -38,7 +38,7 @@
                 android:background="@drawable/image_black_border"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:visibility="gone"
+                android:visibility="invisible"
                 />
 
             <TextView

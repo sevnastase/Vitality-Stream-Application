@@ -9,6 +9,10 @@
         android:name="com.videostreamtest.ui.phone.productpicker.fragments.ProductPickerFragment"
         android:label="ProductPickerFragment" />
     <fragment
+        android:id="@+id/downloadsFragment"
+        android:name="com.videostreamtest.ui.phone.productview.fragments.downloads.DownloadOverviewFragment"
+        android:label="DownloadsFragment" />
+    <fragment
         android:id="@+id/bleDeviceInformationBoxFragment"
         android:name="com.videostreamtest.ui.phone.productview.fragments.messagebox.ble.BleDeviceInformationBoxFragment"
         android:label="BleDeviceInformationBoxFragment" />

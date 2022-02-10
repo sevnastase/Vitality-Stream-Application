@@ -26,8 +26,8 @@ public class FlagRepository {
         return flagDao.getFlagFromSelectedMovie();
     }
 
-    public LiveData<MovieFlag> getMovieFlagOfMovie() {
-        return flagDao.getMovieFlagFromSelectedMovie();
+    public LiveData<List<MovieFlag>> getMovieFlags() {
+        return flagDao.getMovieFlags();
     }
 
     public LiveData<Flag> getSelectedFlag() {

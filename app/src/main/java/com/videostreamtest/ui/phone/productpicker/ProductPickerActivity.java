@@ -114,10 +114,11 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
 
                 if (config.isLocalPlay()) {
                     hideMenuItem(R.id.nav_logout);
+                } else {
+                    hideMenuItem(R.id.nav_downloads);
                 }
 
                 settingsButton.setOnClickListener(onClickedView -> {
-                    Log.d(TAG,"Settings clicked!");
                     if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
                         drawerLayout.closeDrawer(GravityCompat.START);
                     } else {
@@ -145,6 +146,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         super.onPostCreate(savedInstanceState);
         findViewById(android.R.id.content).invalidate();
         navView.setNavigationItemSelectedListener(this);
+
     }
 
     @Override
@@ -236,6 +238,9 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         switch (menuItem.getItemId()) {
             case R.id.nav_ble:
                 navController.navigate(R.id.bleDeviceInformationBoxFragment);
+                break;
+            case R.id.nav_downloads:
+                navController.navigate(R.id.downloadsFragment);
                 break;
             case R.id.nav_home:
                 navController.navigate(R.id.productPickerFragment);

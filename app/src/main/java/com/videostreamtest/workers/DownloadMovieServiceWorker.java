@@ -165,7 +165,6 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
                     return Result.retry();
                     //TODO: keep track of attempts for avoiding infinite downloading loop e.g. when a disk is corrupt.
                 }
-
             } catch (IOException ioException) {
                 Log.e(TAG, ioException.getLocalizedMessage());
                 Log.e(TAG, "Error downloading");
@@ -227,7 +226,6 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             return;
         }
 
-//        FileOutputStream fileOutputStream = getApplicationContext().openFileOutput(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder+"/"+fileName, Context.MODE_PRIVATE);
         FileOutputStream fileOutputStream = new FileOutputStream(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder+"/"+fileName);
         fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
     }

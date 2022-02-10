@@ -16,7 +16,7 @@
         android:padding="10dp"
         android:layout_margin="8dp"
         android:layout_gravity="start|bottom"
-        android:text="@string/productpicker_settings_button_text"
+        android:text="@string/product_menu_button_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 

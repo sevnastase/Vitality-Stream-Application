@@ -26,6 +26,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:orientation="horizontal"
+        android:visibility="gone"
         android:gravity="center"
         android:layout_gravity="center"
         android:textAlignment="center">
@@ -39,7 +40,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/exo_white"
-            android:text="If experiencing BLE connection problems try turning Bluetooth or Location on and off."/>
+            android:text="@string/ble_connectivity_problems_alert"/>
     </LinearLayout>
 
 

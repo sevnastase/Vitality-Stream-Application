@@ -1,7 +1,10 @@
 package com.videostreamtest.ui.phone.productview.fragments.routeinfo;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -19,8 +22,11 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.response.Product;
+import com.videostreamtest.ui.phone.helpers.LogHelper;
+import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productview.fragments.routefilmadapter.RoutefilmsAdapter;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
+import com.videostreamtest.ui.phone.splash.SplashActivity;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -37,6 +43,9 @@ public class RoutefilmOverviewFragment extends Fragment {
     private Product fragmentProduct;
     private int selectedRoutefilmPosition = 0;
 
+    private int refreshOverviewCounter = 0;
+    private String apikey;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -49,6 +58,15 @@ public class RoutefilmOverviewFragment extends Fragment {
         routefilmOverview.setHasFixedSize(true);
         routefilmOverview.setLayoutManager(new GridLayoutManager(view.getContext(),4));
 
+        apikey = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
+        if (!apikey.isEmpty() && apikey != "") {
+            PraxtourDatabase.databaseWriterExecutor.execute(() -> {
+                PraxtourDatabase.getDatabase(requireActivity()).usageTrackerDao().setSelectedMovie(apikey, 0);
+            });
+        } else {
+            //LOGOUT
+        }
+
         return view;
     }
 
@@ -56,11 +74,8 @@ public class RoutefilmOverviewFragment extends Fragment {
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        final String apikey = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
-
-        PraxtourDatabase.databaseWriterExecutor.execute(()->{
-            PraxtourDatabase.getDatabase(requireActivity()).usageTrackerDao().setSelectedMovie(apikey, 0);
-        });
+        refreshOverviewCounter = 0;
+        refreshRoutefilmOverView(3,2000);
 
         productViewModel.getSelectedProduct().observe(getViewLifecycleOwner(), selectedProduct-> {
             if (selectedProduct != null) {
@@ -68,7 +83,7 @@ public class RoutefilmOverviewFragment extends Fragment {
 
                 if(routefilmsAdapter == null) {
                     fragmentProduct = Product.fromProductEntity(selectedProduct);
-                    routefilmsAdapter = new RoutefilmsAdapter(fragmentProduct, productViewModel);
+                    routefilmsAdapter = new RoutefilmsAdapter(fragmentProduct, productViewModel, null);
                     routefilmOverview.setAdapter(routefilmsAdapter);
                 }
             }
@@ -135,5 +150,24 @@ public class RoutefilmOverviewFragment extends Fragment {
             int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, layoutHeightRecyclerView, getResources().getDisplayMetrics());
             params.height = height;
         }
+    }
+
+    private void refreshRoutefilmOverView(int howManyTimes, int howLongInMs) {
+        refreshOverviewCounter = 0;
+        Handler refreshTimer = new Handler(Looper.getMainLooper());
+        Runnable refreshRoutefilmOverview = new Runnable() {
+            public void run() {
+                if (routefilmOverview !=null && routefilmOverview.getAdapter()!=null) {
+                    routefilmOverview.getAdapter().notifyDataSetChanged();
+                    refreshOverviewCounter++;
+                    if (refreshOverviewCounter >= howManyTimes) {
+                        refreshTimer.removeCallbacks(null);
+                    } else {
+                        refreshTimer.postDelayed(this, howLongInMs);
+                    }
+                }
+            }
+        };
+        refreshTimer.postDelayed(refreshRoutefilmOverview, howLongInMs);
     }
 }

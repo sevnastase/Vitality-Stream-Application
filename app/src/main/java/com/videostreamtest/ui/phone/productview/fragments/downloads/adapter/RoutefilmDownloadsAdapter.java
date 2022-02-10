@@ -82,11 +82,21 @@ public class RoutefilmDownloadsAdapter extends RecyclerView.Adapter<RoutefilmDow
         if (newDownloadStatusList!=null && newDownloadStatusList.size()>0) {
             for (final StandAloneDownloadStatus downloadStatus: newDownloadStatusList) {
                 StandAloneDownloadStatus existingDownloadStatus = getDownloadStatus(downloadStatus.getMovieId());
-                if (existingDownloadStatus == null ) {
-                    standAloneDownloadStatusList.add(downloadStatus);
+                if (isRoutefilmPresent(downloadStatus.getDownloadMovieId().intValue())) {
+                    if (existingDownloadStatus == null) {
+                        standAloneDownloadStatusList.add(downloadStatus);
+                    } else {
+                        existingDownloadStatus.setDownloadStatus(downloadStatus.getDownloadStatus());
+                    }
                 } else {
-                    existingDownloadStatus.setDownloadStatus(downloadStatus.getDownloadStatus());
+                    if (existingDownloadStatus == null) {
+                        int downloadStatusIndex = getDownloadStatusPosition(existingDownloadStatus.getMovieId().intValue());
+                        if (downloadStatusIndex >=0) {
+                            standAloneDownloadStatusList.remove(downloadStatusIndex);
+                        }
+                    }
                 }
+
                 notifyDataSetChanged();
             }
         }
@@ -102,6 +112,19 @@ public class RoutefilmDownloadsAdapter extends RecyclerView.Adapter<RoutefilmDow
             }
         }
         return isRemoved;
+    }
+
+    private boolean isRoutefilmPresent(final int routefilmId) {
+        if (this.routefilmList.size()>0) {
+            for (final Routefilm film: this.routefilmList) {
+                if (routefilmId == film.getMovieId().intValue()) {
+                    return routefilmId == film.getMovieId().intValue();
+                }
+            }
+            return false;
+        } else {
+            return false;
+        }
     }
 
     private boolean isRoutefilmPresent(final Routefilm routefilm) {
@@ -126,6 +149,17 @@ public class RoutefilmDownloadsAdapter extends RecyclerView.Adapter<RoutefilmDow
             }
         }
         return null;
+    }
+
+    private int getDownloadStatusPosition(final int routefilmId) {
+        if (this.standAloneDownloadStatusList != null && this.standAloneDownloadStatusList.size()>0) {
+            for (int sadsIndex = 0; sadsIndex < this.standAloneDownloadStatusList.size();sadsIndex++) {
+                if (standAloneDownloadStatusList.get(sadsIndex).getMovieId().intValue() == routefilmId) {
+                    return sadsIndex;
+                }
+            }
+        }
+        return -1;
     }
 
     private Routefilm getRoutefilm(final int routefilmId) {

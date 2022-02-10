@@ -62,4 +62,9 @@ public class ViewHelper {
         return dimensions;
     }
 
+    public static void loadImageFile(Context context, final ImageButton imageButton, final String imageUrl, final int height, final int width) {
+        //CHECK IF FILE IS ON DISK
+
+    }
+
 }

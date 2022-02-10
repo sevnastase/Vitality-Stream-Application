@@ -86,7 +86,7 @@ public class DataIntegrityCheckServiceWorker extends Worker {
                         final String  cloudChecksum = getExternalChecksumDigest(movie);
                         final String localChecksum = calculateCurrentChecksum(movie);
                         Log.d(TAG, "local: "+localChecksum);
-                        Log.d(TAG, "CHECKSUM RESULT: ["+movie.getMovieTitle()+"] "+localChecksum.equals(cloudChecksum));
+//                        Log.d(TAG, "CHECKSUM RESULT: ["+movie.getMovieTitle()+"] "+localChecksum.equals(cloudChecksum));
                         databaseRestService.writeLog(apikey, "DataIntegrityCheckServiceWorker: CHECKSUM RESULT["+movie.getMovieTitle()+"] "+localChecksum.equals(cloudChecksum),"DEBUG", "");
                         if (!cloudChecksum.equals("") && !localChecksum.equals(cloudChecksum)) {
                             databaseRestService.writeLog(apikey, "DataIntegrityCheckServiceWorker: ["+movie.getMovieTitle()+"] Deleted bad movie, disk or file may be corrupted!","ERROR", "");

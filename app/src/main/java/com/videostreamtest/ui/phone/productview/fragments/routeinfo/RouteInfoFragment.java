@@ -15,7 +15,6 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.exoplayer2.util.Log;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
-import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
@@ -89,7 +88,7 @@ public class RouteInfoFragment extends Fragment {
         productViewModel.getFlagOfMovie().observe(getViewLifecycleOwner(), flag -> {
             if (flag!=null) {
                 Log.d(TAG, String.format("Flag data: ISO>%s id>%d", flag.getFlagCountryIso(), flag.getId()));
-                if (movieFlagView.getVisibility() == View.GONE) {
+                if (movieFlagView.getVisibility() == View.INVISIBLE) {
                     movieFlagView.setVisibility(View.VISIBLE);
                 }
                 if (DownloadHelper.isFlagsLocalPresent(getContext().getApplicationContext())) {
@@ -108,7 +107,7 @@ public class RouteInfoFragment extends Fragment {
                             .into(movieFlagView);
                 }
             } else {
-                movieFlagView.setVisibility(View.GONE);
+                movieFlagView.setVisibility(View.INVISIBLE);
             }
         });
     }

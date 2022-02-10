@@ -11,7 +11,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.videostreamtest.R;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
@@ -41,10 +44,10 @@ public class SpeedtestErrorFragment extends Fragment {
         }
 
         backButton.setOnClickListener((onClickedView -> {
-            getActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container_view, AbstractProductScreenFragment.class, getArguments())
-                    .commit();
+            NavHostFragment navHostFragment =
+                    (NavHostFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.product_fragment_view);
+            NavController navController = navHostFragment.getNavController();
+            navController.navigate(R.id.routeFragment);
         }));
 
         backButton.setOnFocusChangeListener((onFocusedView, hasFocus)-> {

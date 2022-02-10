@@ -14,4 +14,9 @@
         android:name="com.videostreamtest.ui.phone.productview.fragments.downloads.DownloadOverviewFragment"
         android:label="DownloadsFragment" />
 
+    <fragment
+        android:id="@+id/errorFragment"
+        android:name="com.videostreamtest.ui.phone.productview.fragments.messagebox.errors.SpeedtestErrorFragment"
+        android:label="ErrorFragment" />
+
 </navigation>

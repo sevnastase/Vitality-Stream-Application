@@ -38,6 +38,6 @@ public interface FlagDao {
             "INNER JOIN usage_tracker_table utt ON utt.selected_movie = mft.movie_id LIMIT 1")
     LiveData<Flag> getFlagFromSelectedMovie();
 
-    @Query("SELECT mft.* FROM movieflags_table mft INNER JOIN usage_tracker_table utt ON mft.movie_id = utt.selected_movie LIMIT 1")
-    LiveData<MovieFlag> getMovieFlagFromSelectedMovie();//INNER JOIN flags_table ft ON mft.flag_id = ft.flag_id
+    @Query("SELECT mft.* FROM movieflags_table mft")
+    LiveData<List<MovieFlag>> getMovieFlags();
 }

@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.videostreamtest.data.ResultApiKey;
+import com.videostreamtest.utils.ApplicationSettings;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +22,7 @@ public class DatabaseRestService {
             = MediaType.get("application/json; charset=utf-8");
 
     private OkHttpClient client;
-    private String url ="http://188.166.100.139:8080/api";
+    private String url = ApplicationSettings.PRAXCLOUD_URL+"/api";
 
     private String accountKey;
     private String profileKey;

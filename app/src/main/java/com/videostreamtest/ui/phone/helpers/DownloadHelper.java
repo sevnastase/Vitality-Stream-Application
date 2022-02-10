@@ -119,6 +119,35 @@ public class DownloadHelper {
     }
 
     /**
+     * Check if file is present on harddisk
+     * @param context
+     * @param movie
+     * @return boolean
+     */
+    public static boolean isFileOnHarddisk(final Context context, final Movie movie){
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            String pathname = externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movie.getId().intValue();
+            File possibleMovieLocation = new File(pathname);
+            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
+                int foundMovieImage = 0;
+                for (File file: possibleMovieLocation.listFiles()) {
+                    if (file.getName().equals(new File(movie.getMovieRouteinfoPath()).getName())) {
+                        foundMovieImage++;
+                    }
+                    if (file.getName().equals(new File(movie.getMovieImagepath()).getName())) {
+                        foundMovieImage++;
+                    }
+                }
+                if (foundMovieImage >= 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Check if movie folder contains any routeparts media
      * @param context
      * @param movieId

@@ -26,19 +26,20 @@ public class VideoPlayerViewModel extends AndroidViewModel {
     //ELEMENTS
     private MutableLiveData <Integer>   rpmData                     = new MutableLiveData<>();
     private MutableLiveData <Integer>   kmhData                     = new MutableLiveData<>();
-    private MutableLiveData <Float>     volumeLevel                 = new MutableLiveData<>();
+    private MutableLiveData <Integer>     volumeLevel                 = new MutableLiveData<>();
     private MutableLiveData <Movie>     selectedMovie               = new MutableLiveData<>();
     private MutableLiveData <Long>      movieTotalDurationSeconds   = new MutableLiveData<>();
     private MutableLiveData <Long>      movieSpendDurationSeconds   = new MutableLiveData<>();
     private MutableLiveData <Boolean>   statusbarVisible            = new MutableLiveData<>();
     private MutableLiveData <Boolean>   playerPaused                = new MutableLiveData<>();
+    private MutableLiveData <Boolean>   resetChronometer            = new MutableLiveData<>();
 
     //START VALUES
     private Integer     startRpmValue           = 0;
     private Integer     startKmhValue           = 22;
-    private Float       startVolumeLevel        = 0.8f;
+    private Integer     startVolumeLevel        = 80;
     private Boolean     statusbarVisibility     = false;
-    private Boolean     playerStatus            = false;
+    private Boolean     isPlayerPaused          = false;
     private Long        totalDurationSeconds    = 0L;
     private Long        spendDurationSeconds    = 0L;
 
@@ -56,7 +57,7 @@ public class VideoPlayerViewModel extends AndroidViewModel {
         statusbarVisible.setValue(statusbarVisibility);
         movieTotalDurationSeconds.setValue(totalDurationSeconds);
         movieSpendDurationSeconds.setValue(spendDurationSeconds);
-        playerPaused.setValue(playerStatus);
+        playerPaused.setValue(isPlayerPaused);
     }
 
     public LiveData<Integer> getRpmData() {
@@ -75,12 +76,14 @@ public class VideoPlayerViewModel extends AndroidViewModel {
         this.kmhData.setValue(kmhData);
     }
 
-    public MutableLiveData<Float> getVolumeLevel() {
+    public MutableLiveData<Integer> getVolumeLevel() {
         return volumeLevel;
     }
 
-    public void setVolumeLevel(Float volumeLevel) {
-        this.volumeLevel.setValue(volumeLevel);
+    public void setVolumeLevel(Integer volumeLevel) {
+        if(volumeLevel >= 0 && volumeLevel <= 100) {
+            this.volumeLevel.setValue(volumeLevel);
+        }
     }
 
     public LiveData<Movie> getSelectedMovie() {
@@ -121,6 +124,14 @@ public class VideoPlayerViewModel extends AndroidViewModel {
 
     public void setPlayerPaused(boolean playerPaused) {
         this.playerPaused.setValue(playerPaused);
+    }
+
+    public MutableLiveData<Boolean> getResetChronometer() {
+        return resetChronometer;
+    }
+
+    public void setResetChronometer(boolean resetChronometer) {
+        this.resetChronometer.setValue(resetChronometer);
     }
 
     public LiveData<List<Routepart>> getRoutePartsOfMovieId(final Integer movieId){

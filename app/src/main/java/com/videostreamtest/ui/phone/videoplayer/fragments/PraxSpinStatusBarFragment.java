@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
+import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.DistanceLookupTable;
@@ -190,16 +191,14 @@ public class PraxSpinStatusBarFragment extends Fragment {
         videoPlayerViewModel.getStatusbarVisible().observe(getViewLifecycleOwner(), statusBarVisible -> {
             if (statusBarVisible) {
                 view.setVisibility(View.VISIBLE);
-                stopwatchCurrentRide.start();
 
-                if (!isTouchScreen()) {
+                if (!ViewHelper.isTouchScreen(view.getContext())) {
                     //SET FOCUS ON BUTTON
-                    toggleSwitchRoutepart.requestFocus();
                     toggleSwitchRoutepart.requestFocusFromTouch();
+                    toggleSwitchRoutepart.requestFocus();
                 }
             } else {
                 view.setVisibility(View.GONE);
-                stopwatchCurrentRide.stop();
             }
         });
 
@@ -212,6 +211,14 @@ public class PraxSpinStatusBarFragment extends Fragment {
                 }
             } else {
                 stopwatchCurrentRide.start();
+            }
+        });
+
+        //RESET STOPWATCH TO ZERO
+        videoPlayerViewModel.getResetChronometer().observe(getViewLifecycleOwner(), resetChronometer -> {
+            if (resetChronometer) {
+                stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
+                videoPlayerViewModel.setResetChronometer(false);
             }
         });
 
@@ -253,16 +260,12 @@ public class PraxSpinStatusBarFragment extends Fragment {
 
         videoPlayerViewModel.getVolumeLevel().observe(getViewLifecycleOwner(), volumeLevel -> {
             if (volumeLevel!= null) {
-                statusbarVolumeIndicator.setText(""+(int) (volumeLevel*100));
+                statusbarVolumeIndicator.setText(""+(int) (volumeLevel));
                 volumeUp.setOnClickListener(clickedView -> {
-                    if (volumeLevel < 1.0f) {
-                        videoPlayerViewModel.setVolumeLevel(volumeLevel + 0.1f);
-                    }
+                    videoPlayerViewModel.setVolumeLevel(volumeLevel + 10);
                 });
                 volumeDown.setOnClickListener(clickedView -> {
-                    if (volumeLevel > 0.1f) {
-                        videoPlayerViewModel.setVolumeLevel(volumeLevel - 0.1f);
-                    }
+                    videoPlayerViewModel.setVolumeLevel(volumeLevel - 10);
                 });
             }
         });
@@ -303,9 +306,5 @@ public class PraxSpinStatusBarFragment extends Fragment {
             loadTimer.removeCallbacksAndMessages(null);
             moviePartsLayout.setVisibility(View.GONE);
         }
-    }
-
-    private boolean isTouchScreen() {
-        return getView().getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
     }
 }

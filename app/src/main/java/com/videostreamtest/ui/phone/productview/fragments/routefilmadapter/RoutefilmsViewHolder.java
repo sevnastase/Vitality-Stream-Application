@@ -25,6 +25,7 @@ import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
+import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
@@ -54,6 +55,8 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
     private Product selectedProduct;
     private Movie movie;
     private int position = 0;
+    private LinearLayout routeInformationBlock;
+    private Flag selectedFlag;
 
     //VIEW ELEMENTS
     private ImageButton routefilmScenery;
@@ -70,11 +73,14 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
 
     public void bindProduct(final Routefilm routefilm,
                             final Product selectedProduct,
-                            final int position) {
+                            final int position,
+                            final LinearLayout routeinformationBlock,
+                            final Flag selectedFlag) {
         this.movie = Movie.fromRoutefilm(routefilm);
         this.selectedProduct = selectedProduct;
-
         this.position = position;
+        this.routeInformationBlock = routeinformationBlock;
+        this.selectedFlag = selectedFlag;
 
         //Get APIKEY for write cloud log
         SharedPreferences sharedPreferences = itemView.getContext().getSharedPreferences("app", Context.MODE_PRIVATE);
@@ -108,15 +114,75 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
     }
 
     private void updateRouteInformationBlock() {
-        if (movie == null) {
+        if (movie == null || routeInformationBlock == null) {
             return;
         }
+        //Link views
+        TextView titleView = routeInformationBlock.findViewById(R.id.selected_route_title);
+        TextView distanceView = routeInformationBlock.findViewById(R.id.selected_route_distance);
+        ImageView routeInformationMap = routeInformationBlock.findViewById(R.id.selected_route_map);
+        ImageView routeFlag = routeInformationBlock.findViewById(R.id.selected_route_flag);
+
+        //Set flag
+        if (selectedFlag != null) {
+            routeFlag.setVisibility(View.VISIBLE);
+            if (DownloadHelper.isFlagsLocalPresent(itemView.getContext().getApplicationContext())) {
+                Picasso.get()
+                        .load(DownloadHelper.getLocalFlag(itemView.getContext().getApplicationContext(), selectedFlag))
+                        .placeholder(R.drawable.flag_placeholder)
+                        .error(R.drawable.flag_placeholder)
+                        .resize(150, 100)
+                        .into(routeFlag);
+            } else {
+                Picasso.get()
+                        .load(selectedFlag.getFlagUrl())
+                        .placeholder(R.drawable.flag_placeholder)
+                        .error(R.drawable.flag_placeholder)
+                        .resize(150, 100)
+                        .into(routeFlag);
+            }
+        } else {
+            routeFlag.setVisibility(View.INVISIBLE);
+        }
+
+        //Set Title
+        titleView.setText(toString().format(itemView.getContext().getString(R.string.catalog_selected_route_title), movie.getMovieTitle()));
+        titleView.setVisibility(View.VISIBLE);
+
+        //Set Distance/Duration of movie
+        if (selectedProduct.getProductName().toLowerCase().contains("praxfilm")) {
+            distanceView.setText(String.format("Duration: %d minutes", ((movie.getMovieLength()/movie.getRecordedFps())/60)));
+        } else {
+            float meters = movie.getMovieLength();
+            int km = (int) (meters / 1000f);
+            int hectometers = (int) ((meters - (km * 1000f)) / 100f);
+            distanceView.setText(toString().format(itemView.getContext().getString(R.string.catalog_screen_distance), km, hectometers));
+        }
+
+        //Set route map
+        if (selectedProduct.getSupportStreaming()==0 && performStaticChecks(selectedProduct)) {
+            Picasso.get()
+                    .load(new File(movie.getMovieRouteinfoPath()))
+                    .fit()
+                    .placeholder(R.drawable.placeholder_map)
+                    .error(R.drawable.placeholder_map)
+                    .into(routeInformationMap);
+        } else {
+            Picasso.get()
+                    .load(movie.getMovieRouteinfoPath())
+                    .fit()
+                    .placeholder(R.drawable.placeholder_map)
+                    .error(R.drawable.placeholder_map)
+                    .into(routeInformationMap);
+        }
+
     }
 
     private void initOnFocusChangeListener(final Product selectedProduct) {
         routefilmScenery.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
+                Log.d(TAG, "hasFocus routefilmscenery");
                 itemView.setSelected(true);
                 if (hasFocus) {
                     if (selectedProduct.getSupportStreaming()==0) {
@@ -275,11 +341,10 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
                             arguments.putString("product_object", new GsonBuilder().create().toJson(selectedProduct, Product.class));
 
                             AppCompatActivity activity = (AppCompatActivity) itemView.getContext();
-                            activity.getSupportFragmentManager()
-                                    .beginTransaction()
-                                    .replace(R.id.fragment_container_view, SpeedtestErrorFragment.class, arguments)
-                                    .disallowAddToBackStack()
-                                    .commit();
+                            NavHostFragment navHostFragment =
+                                    (NavHostFragment) activity.getSupportFragmentManager().findFragmentById(R.id.product_fragment_view);
+                            NavController navController = navHostFragment.getNavController();
+                            navController.navigate(R.id.errorFragment);
                         }
                     }
 
@@ -288,11 +353,15 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
                         // called when a download/upload error occur
                         Log.d(getClass().getSimpleName(), "ERROR :: "+errorMessage);
                         AppCompatActivity activity = (AppCompatActivity) itemView.getContext();
-                        activity.getSupportFragmentManager()
-                                .beginTransaction()
-                                .add(R.id.fragment_container_view, SpeedtestErrorFragment.class, null)
-                                .disallowAddToBackStack()
-                                .commit();
+//                        activity.getSupportFragmentManager()
+//                                .beginTransaction()
+//                                .add(R.id.fragment_container_view, SpeedtestErrorFragment.class, null)
+//                                .disallowAddToBackStack()
+//                                .commit();
+                        NavHostFragment navHostFragment =
+                                (NavHostFragment) activity.getSupportFragmentManager().findFragmentById(R.id.product_fragment_view);
+                        NavController navController = navHostFragment.getNavController();
+                        navController.navigate(R.id.errorFragment);
                     }
 
                     @Override
@@ -304,7 +373,7 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
                     }
                 });
 
-                speedTestSocket.startDownload("http://praxmedia.praxtour.com/1M.iso");
+                speedTestSocket.startDownload("https://media.praxcloud.eu/1M.iso");
             }
         };
         speedtestHandler.postDelayed(runnableSpeedTest,0);

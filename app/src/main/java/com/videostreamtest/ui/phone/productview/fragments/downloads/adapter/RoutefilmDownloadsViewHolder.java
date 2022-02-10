@@ -30,6 +30,9 @@ public class RoutefilmDownloadsViewHolder extends RecyclerView.ViewHolder{
                               final RoutefilmDownloadsAdapter routefilmDownloadsAdapter, final int position) {
         this.standAloneDownloadStatus = downloadStatus;
         this.position = position;
+        if (routefilm==null) {
+            return;
+        }
 
         ImageButton routefilmScenery = itemView.findViewById(R.id.routefilm_download_item_scenery);
         SeekBar downloadProgressBar = itemView.findViewById(R.id.routefilm_download_item_progressbar);

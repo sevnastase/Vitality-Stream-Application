@@ -1,17 +1,15 @@
 package com.videostreamtest.ui.phone.productpicker.fragments;
 
+import android.app.Application;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -23,9 +21,7 @@ import androidx.work.WorkManager;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.ui.phone.listeners.PraxFormOnEditorActionListener;
-import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerViewModel;
-import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -71,12 +67,12 @@ public class LogoutFragment extends Fragment {
                 public void onClick(View v) {
                     Log.d(TAG, "Entered password: "+password.getText().toString());
                     if (!password.getText().toString().replace(" ","").contains("")) {
-                        Toast.makeText(view.getContext(), "No password entered.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(view.getContext(), getString(R.string.logout_no_password_entered_alert), Toast.LENGTH_LONG).show();
                     } else {
                         if (checkPassword(password.getText().toString())) {
                             logout(config);
                         } else {
-                            Toast.makeText(view.getContext(), "Wrong password entered.", Toast.LENGTH_LONG).show();
+                            Toast.makeText(view.getContext(), getString(R.string.logout_wrong_password_entered_text), Toast.LENGTH_LONG).show();
                         }
                     }
                 }
