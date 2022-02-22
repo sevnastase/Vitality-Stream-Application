@@ -87,6 +87,10 @@ public class SyncRoutefilmsServiceWorker extends Worker {
 
                 availableMovieIds.add(routefilm.getId());
 
+                if (isRoutefilmInApp(dbRoutefilm)) {
+                    updateRoutefilm(dbRoutefilm);
+                }
+
                 if (!isRoutefilmInApp(dbRoutefilm)) {
                     long result = routefilmDao.insert(dbRoutefilm);
                 }
@@ -110,6 +114,31 @@ public class SyncRoutefilmsServiceWorker extends Worker {
 
         //Return result with data output
         return ListenableWorker.Result.success(output);
+    }
+
+    private boolean updateRoutefilm(final Routefilm routefilm) {
+        if (appRoutefilms != null && appRoutefilms.size()>0) {
+            for (final Routefilm appFilm : appRoutefilms) {
+                if (routefilm.getMovieId().intValue() == appFilm.getMovieId().intValue()) {
+                    if (routefilm.getMinimalSpeed() != appFilm.getMinimalSpeed() ||
+                    routefilm.getMapFileSize() != appFilm.getMapFileSize() ||
+                    routefilm.getMovieRouteinfoPath() != appFilm.getMovieRouteinfoPath() ||
+                    routefilm.getMovieImagepath() != appFilm.getMovieImagepath() ||
+                    routefilm.getMovieUrl() != appFilm.getMovieUrl() ||
+                    routefilm.getMovieFileSize() != appFilm.getMovieFileSize() ||
+                    routefilm.getMovieTitle() != appFilm.getMovieTitle() ||
+                    routefilm.getMovieLength() != appFilm.getMovieLength() ||
+                    routefilm.getRecordedFps() != appFilm.getRecordedFps() ||
+                    routefilm.getRecordedSpeed() != appFilm.getRecordedSpeed() ||
+                    routefilm.getSceneryFileSize() != appFilm.getSceneryFileSize()) {
+                        final RoutefilmDao routefilmDao = PraxtourDatabase.getDatabase(getApplicationContext()).routefilmDao();
+                        routefilmDao.insert(routefilm);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private boolean isRoutefilmInApp(final Routefilm routefilm) {

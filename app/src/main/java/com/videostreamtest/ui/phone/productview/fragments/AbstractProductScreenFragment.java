@@ -1,7 +1,7 @@
 package com.videostreamtest.ui.phone.productview.fragments;
 
-import android.content.Context;
-import android.content.SharedPreferences;
+import static android.content.Context.MODE_PRIVATE;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -11,34 +11,25 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.gson.GsonBuilder;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
-import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.MovieFlag;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.enums.CommunicationDevice;
-import com.videostreamtest.ui.phone.catalog.CatalogRecyclerViewClickListener;
-import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
+import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.fragments.routefilmadapter.RoutefilmsAdapter;
-import com.videostreamtest.ui.phone.productview.fragments.routeinfo.RouteInfoFragment;
-import com.videostreamtest.ui.phone.productview.fragments.routeinfo.RoutefilmOverviewFragment;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
 import java.util.ArrayList;
@@ -92,7 +83,10 @@ public class AbstractProductScreenFragment extends Fragment {
         //Data model
         productViewModel = new ViewModelProvider(requireActivity()).get(ProductViewModel.class);
 
-        apikey = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
+        apikey = getActivity().getSharedPreferences("app", MODE_PRIVATE).getString("apikey","");
+
+        Log.d(TAG, "View Tag :: "+view.getTag());
+        LogHelper.WriteLogRule(view.getContext().getApplicationContext(),apikey,"Loaded density: "+view.getTag(), "DEBUG", "");
 
         //Routeinformation block
         routeInformationBlock = view.findViewById(R.id.overlay_route_information);
@@ -139,30 +133,9 @@ public class AbstractProductScreenFragment extends Fragment {
                 loadNavigationArrows();
                 routefilmsAdapter = new RoutefilmsAdapter(this.selectedProduct, productViewModel, routeInformationBlock);
                 routefilmOverview.setAdapter(routefilmsAdapter);
-            }
-        });
-        //load product specific movies in memory
-        loadProductMovies();
-        //load all flags in memory
-        productViewModel.getAllFlags().observe(getViewLifecycleOwner(), flags -> {
-            if (flags != null) {
-                this.flags = flags;
-                if (routefilmsAdapter!= null) {
-                    routefilmsAdapter.updateFlagList(flags);
-                    flagsLoaded = true;
-                    showRoutefilmOverview();
-                }
-            }
-        });
-        //load all movieflag relations in memory
-        productViewModel.getMovieFlags().observe(getViewLifecycleOwner(), movieFlags -> {
-            if (movieFlags!= null) {
-                this.movieFlags = movieFlags;
-                if (routefilmsAdapter!=null) {
-                    routefilmsAdapter.updateMovieFlagList(movieFlags);
-                    movieFlagsLoaded = true;
-                    showRoutefilmOverview();
-                }
+                loadProductMovies();
+                loadFlags();
+                loadMovieFlags();
             }
         });
         //load selected movie and show selected on screen.
@@ -268,6 +241,32 @@ public class AbstractProductScreenFragment extends Fragment {
                 }
             });
         }
+    }
+
+    private void loadFlags() {
+        productViewModel.getAllFlags().observe(getViewLifecycleOwner(), flags -> {
+            if (flags != null) {
+                this.flags = flags;
+                if (routefilmsAdapter!= null) {
+                    routefilmsAdapter.updateFlagList(flags);
+                    flagsLoaded = true;
+                    showRoutefilmOverview();
+                }
+            }
+        });
+    }
+
+    private void loadMovieFlags() {
+        productViewModel.getMovieFlags().observe(getViewLifecycleOwner(), movieFlags -> {
+            if (movieFlags!= null) {
+                this.movieFlags = movieFlags;
+                if (routefilmsAdapter!=null) {
+                    routefilmsAdapter.updateMovieFlagList(movieFlags);
+                    movieFlagsLoaded = true;
+                    showRoutefilmOverview();
+                }
+            }
+        });
     }
 
     private int getCurrentPosition(final Routefilm routefilm) {

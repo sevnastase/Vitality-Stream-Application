@@ -133,7 +133,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         } else {
             showNoPermissionsMessagefragment();
         }
-        showWarningBle(1, 30000);
+        //showWarningBle(1, 30000);
     }
 
     @Override

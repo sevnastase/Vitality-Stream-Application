@@ -55,6 +55,7 @@ import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.utils.VideoLanLib;
 import com.videostreamtest.workers.ActiveProductMovieLinksServiceWorker;
 import com.videostreamtest.workers.DataIntegrityCheckServiceWorker;
 import com.videostreamtest.workers.DownloadFlagsServiceWorker;
@@ -181,6 +182,7 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
 
                 appBuildNumber.setText(ConfigurationHelper.getVersionNumber(getApplicationContext())+":"+currentConfig.getAccountToken());
 
+                Log.d(TAG, "LIBVLC hash: "+VideoLanLib.getLibVLC(getApplicationContext()).hashCode());
             }
         });
     }
@@ -402,14 +404,16 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
                     if (routefilms.size()>0 && currentConfig.isLocalPlay()) {
                         //CHECK IF ALL MOVIES FIT TO DISK
                         // Accumulate size of movies
-                        long totalMovieFileSizeOnDisk = 0L;
+                        long totalDownloadableMovieFileSizeOnDisk = 0L;
                         for (Routefilm routefilm: routefilms) {
-                            totalMovieFileSizeOnDisk += routefilm.getMovieFileSize();
+                            if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
+                                totalDownloadableMovieFileSizeOnDisk += routefilm.getMovieFileSize();
+                            }
                         }
 
                         LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(), "AllMovieDownloader ready to download","DEBUG", "");
 
-                        if (DownloadHelper.canFileBeCopiedToLargestVolume(getApplicationContext(), totalMovieFileSizeOnDisk)) {
+                        if (DownloadHelper.canFileBeCopiedToLargestVolume(getApplicationContext(), totalDownloadableMovieFileSizeOnDisk)) {
                             for (final Routefilm routefilm : routefilms) {
                                 if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
                                     Constraints constraint = new Constraints.Builder()
@@ -435,7 +439,7 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
                                             .beginUniqueWork("download-movie-" + routefilm.getMovieId(), ExistingWorkPolicy.KEEP, oneTimeWorkRequest)
                                             .enqueue();
                                 } else {
-                                    LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(), routefilm.getMovieTitle()+":Movie already present","DEBUG", "");
+//                                    LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(), routefilm.getMovieTitle()+":Movie already present","DEBUG", "");
                                 }
                             }
                         } else {

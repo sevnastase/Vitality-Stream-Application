@@ -33,7 +33,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerview_routefilm_downloads"
             android:layout_width="wrap_content"
-            android:layout_height="600dp"
+            android:layout_height="400dp"
             android:layout_gravity="center"
             android:scrollIndicators="none"
             android:scrollbars="vertical"

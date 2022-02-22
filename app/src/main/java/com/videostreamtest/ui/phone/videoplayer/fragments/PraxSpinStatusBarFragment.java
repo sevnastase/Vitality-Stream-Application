@@ -1,13 +1,11 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
 import android.app.Activity;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +27,6 @@ import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.DistanceLookupTable;
-import com.videostreamtest.utils.RpmVectorLookupTable;
 
 public class PraxSpinStatusBarFragment extends Fragment {
     private static final String TAG = PraxSpinStatusBarFragment.class.getSimpleName();

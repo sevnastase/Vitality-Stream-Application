@@ -89,7 +89,7 @@ public class RoutefilmDownloadsAdapter extends RecyclerView.Adapter<RoutefilmDow
                         existingDownloadStatus.setDownloadStatus(downloadStatus.getDownloadStatus());
                     }
                 } else {
-                    if (existingDownloadStatus == null) {
+                    if (existingDownloadStatus != null) {
                         int downloadStatusIndex = getDownloadStatusPosition(existingDownloadStatus.getMovieId().intValue());
                         if (downloadStatusIndex >=0) {
                             standAloneDownloadStatusList.remove(downloadStatusIndex);

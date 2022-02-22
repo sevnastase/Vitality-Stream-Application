@@ -253,20 +253,12 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
                     (NavHostFragment) activity.getSupportFragmentManager().findFragmentById(R.id.product_fragment_view);
             NavController navController = navHostFragment.getNavController();
             navController.navigate(R.id.downloadsFragment);
-//            activity.getSupportFragmentManager()
-//                    .beginTransaction()
-//                    .replace(R.id.fragment_container_view, RouteDownloadInformationFragment.class, generateBundleParameters())
-//                    .addToBackStack("routeinfo")
-//                    .commit();
         });
     }
 
     private void initStartListeners(final Product selectedProduct) {
         routefilmScenery.setOnClickListener((onClickedView) -> {
             updateRouteInformationBlock();
-            PraxtourDatabase.databaseWriterExecutor.execute(()->{
-                PraxtourDatabase.getDatabase(itemView.getContext()).usageTrackerDao().setSelectedMovie(apikey, movie.getId());
-            });
             if (selectedProduct.getSupportStreaming()==0) {
                 itemView.getContext().startActivity(videoPlayer);
             } else {

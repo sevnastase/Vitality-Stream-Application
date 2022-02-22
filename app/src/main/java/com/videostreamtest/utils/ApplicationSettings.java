@@ -31,7 +31,7 @@ public class ApplicationSettings {
     public static final long MINIMUM_DISK_SPACE_BYTES = 1024L*1024L*1024L*64L;
 
 //    public static final BigDecimal SPEEDTEST_MINIMUM_SPEED = new BigDecimal(3072000);
-    public static final BigDecimal SPEEDTEST_MINIMUM_SPEED = new BigDecimal(30000000);//30 Mbps
+    public static final BigDecimal SPEEDTEST_MINIMUM_SPEED = new BigDecimal(15000000);//30 Mbps
 
     public static final int SCREENSAVER_TRIGGER_SECONDS = 30*60;
     public static boolean SCREENSAVER_ACTIVE = false;

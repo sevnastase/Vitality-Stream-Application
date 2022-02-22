@@ -59,7 +59,6 @@ import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.ProductHelper;
 import com.videostreamtest.ui.phone.helpers.SoundHelper;
-import com.videostreamtest.ui.phone.productview.fragments.AbstractProductScreenFragment;
 import com.videostreamtest.ui.phone.result.ResultActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFilmStatusBarFragment;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFitStatusBarFragment;
@@ -68,10 +67,14 @@ import com.videostreamtest.ui.phone.videoplayer.fragments.alerts.NoAudioAlertFra
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.RpmVectorLookupTable;
+import com.videostreamtest.utils.VideoLanLib;
 
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
+import org.videolan.libvlc.MediaList;
 import org.videolan.libvlc.MediaPlayer;
+import org.videolan.libvlc.RendererDiscoverer;
+import org.videolan.libvlc.RendererItem;
 import org.videolan.libvlc.util.VLCVideoLayout;
 
 import java.util.ArrayList;
@@ -141,6 +144,10 @@ public class VideoplayerActivity extends AppCompatActivity {
     private BleWrapper bleWrapper;
     private boolean backToOverviewWaitForSensor = false;
 
+    //CHROMECAST
+    List<RendererDiscoverer> rendererDiscovererList = new ArrayList<>();
+    List<RendererItem> rendererItemList = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -166,7 +173,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         isSoundOnDevice = DownloadHelper.isSoundPresent(getApplicationContext());
 
-        libVLC = createLibVLC();
+//        libVLC = createLibVLC();
 
         //Calculate rpm lookup table
         RpmVectorLookupTable.getPlaybackspeed(60);
@@ -352,6 +359,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         waitUntilVideoIsReady();
         setTimeLineEventVideoPlayer();
+//        discoverChromecasts();
 
         if (ApplicationSettings.DEVELOPER_MODE) {
             Handler handler = new Handler();
@@ -389,9 +397,13 @@ public class VideoplayerActivity extends AppCompatActivity {
     //VLC stuff
     private LibVLC createLibVLC() {
         final List<String> args = new ArrayList<>();
-//        args.add("-vvv");
+        args.add("-vvv");
         args.add("--sout-all");
         args.add("--aout=opensles");
+//        args.add("--no-gnutls-system-trust"); //DISABLE WITH TLS TRUST ISSUES
+        /*
+        However this doesnt solve the casting problem, a certificate of google needs to be in order I guess
+         */
 //      args.add("--drop-late-frames");
         //LOCAL PLAY
         args.add("--file-caching=45000");
@@ -399,7 +411,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         //STREAMING
         args.add("--network-caching=20000");
 
-        LibVLC libVLC = new LibVLC(this, args);
+        final LibVLC libVLC = new LibVLC(this, args);
         return libVLC;
     }
 
@@ -470,28 +482,18 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void setMediaPlayer() {
-        if (libVLC != null) {
-            mediaPlayer = new MediaPlayer(libVLC);
-        } else {
-            libVLC = createLibVLC();
-            mediaPlayer = new MediaPlayer(libVLC);
-        }
+        mediaPlayer = new MediaPlayer(VideoLanLib.getLibVLC(getApplicationContext()));
         mediaPlayer.attachViews(videoLayout, null, false, false);
 
         //This loads the given videoUri to the media
         if (isLocalPlay) {
             //VIDEO
-            final Media media = new Media(libVLC, videoUri);
-            //Streaming
-//            media.setHWDecoderEnabled(true, false);
-//          media.addOption(":clock-jitter=0");
-//          media.addOption(":clock-synchro=0");
-            //end
+            final Media media = new Media(VideoLanLib.getLibVLC(getApplicationContext()), videoUri);
             mediaPlayer.setMedia(media);
             media.release();
         } else {
             //VIDEO
-            final Media media = new Media(libVLC, Uri.parse(videoUri));
+            final Media media = new Media(VideoLanLib.getLibVLC(getApplicationContext()), Uri.parse(videoUri));
             mediaPlayer.setMedia(media);
             media.release();
         }
@@ -512,11 +514,6 @@ public class VideoplayerActivity extends AppCompatActivity {
             public void run() {
                 //First update the measurements with the latest sensor data
                 updateLastCadenceMeasurement(rpm);
-
-//                if (videoPlayer != null && videoPlayer.isPlaying()) {
-//                    videoPlayerViewModel.setMovieSpendDurationSeconds(videoPlayer.getCurrentPosition());
-//                    videoPlayerViewModel.setMovieTotalDurationSeconds(videoPlayer.getDuration());
-//                }
 
                 if (mediaPlayer!=null) {
                     Log.d(TAG, "TIME "+mediaPlayer.getTime());
@@ -616,9 +613,6 @@ public class VideoplayerActivity extends AppCompatActivity {
             numberOfFalsePositives = 0;
             this.pauseTimer = 0;
         }
-        //Videoplayer but doesnt used (OLD)
-//        videoPlayer.setPlayWhenReady(!videoPlayer.getPlayWhenReady());
-//        videoPlayer.getPlaybackState();
 
         // IF VLC EXISTS
         if (mediaPlayer!=null) {
@@ -774,6 +768,56 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
     }
 
+//    private boolean discoverChromecasts() {
+//        SharedPreferences sharedPreferences = getSharedPreferences("app", MODE_PRIVATE);
+//        String apikey = sharedPreferences.getString("apikey", "");
+//
+//        Log.d(TAG, "CREATE DISCOVERER");
+//        for (RendererDiscoverer.Description discoverer : RendererDiscoverer.list(libVLC)) {
+//            Log.d(TAG, "DISCOVERER FOUND: " + discoverer.name);
+//            RendererDiscoverer scanner = new RendererDiscoverer(libVLC, discoverer.name);
+//            scanner.setEventListener(new RendererDiscoverer.EventListener() {
+//                @Override
+//                public void onEvent(RendererDiscoverer.Event event) {
+//                    if (event.type == RendererDiscoverer.Event.ItemAdded) {
+//                        Log.d(TAG, "Item found! { " + event.getItem().displayName + "}");
+////                        LogHelper.WriteLogRule(getApplicationContext(), apikey, "Renderer found: " + event.getItem().displayName, "DEBUG", "");
+//                        rendererItemList.add(event.getItem());
+//                    }
+//                    if (event.type == RendererDiscoverer.Event.ItemDeleted) {
+//                        Log.d(TAG, "Item removed! { " + event.getItem().displayName + "}");
+////                        LogHelper.WriteLogRule(getApplicationContext(), apikey, "Renderer removed: " + event.getItem().displayName, "DEBUG", "");
+//                        rendererItemList.remove(event.getItem());
+//                    }
+//                }
+//            });
+//            rendererDiscovererList.add(scanner);
+//        }
+//
+//        Handler handler = new Handler();
+//        Runnable runnable = new Runnable() {
+//            @Override
+//            public void run() {
+//                for (RendererDiscoverer scanner: rendererDiscovererList) {
+//                    scanner.start();
+//                }
+//            }
+//        };
+//        handler.postDelayed(runnable, 0);
+//        return false;
+//    }
+//
+//    private RendererItem getSpecificRendererItem() {
+//        if (rendererItemList.size()>0) {
+//            for (final RendererItem item: rendererItemList) {
+//                if (item.displayName.equalsIgnoreCase("display")) {
+//                    return item;
+//                }
+//            }
+//        }
+//        return null;
+//    }
+
     private void playVideo() {
         videoLayout.setVisibility(View.VISIBLE);
         videoPlayerViewModel.setStatusbarVisible(true);
@@ -797,17 +841,17 @@ public class VideoplayerActivity extends AppCompatActivity {
         String apikey = sharedPreferences.getString("apikey", "");
 
         //Add some log rules to test content of mediaplayer
-        if (selectedProduct.getProductName().toLowerCase().contains("praxfilm") ||
-            selectedProduct.getProductName().toLowerCase().contains("praxspin")) {
-            LogHelper.WriteLogRule(this, apikey, "MediaPlayer initialised: " + (mediaPlayer != null), "DEBUG", "");
-            if (mediaPlayer != null) {
-                LogHelper.WriteLogRule(this, apikey, "MediaPlayer.getMedia() initialised: " + (mediaPlayer.getMedia() != null), "DEBUG", "");
-                if (mediaPlayer.getMedia() != null) {
-                    LogHelper.WriteLogRule(this, apikey, "MediaPlayer.getMedia().getUri().toString(): " + mediaPlayer.getMedia().getUri().toString(), "DEBUG", "");
-                }
-            }
-            LogHelper.WriteLogRule(this, apikey, "Video Path: " + videoUri, "DEBUG", "");
-        }
+//        if (selectedProduct.getProductName().toLowerCase().contains("praxfilm") ||
+//            selectedProduct.getProductName().toLowerCase().contains("praxspin")) {
+//            LogHelper.WriteLogRule(this, apikey, "MediaPlayer initialised: " + (mediaPlayer != null), "DEBUG", "");
+//            if (mediaPlayer != null) {
+//                LogHelper.WriteLogRule(this, apikey, "MediaPlayer.getMedia() initialised: " + (mediaPlayer.getMedia() != null), "DEBUG", "");
+//                if (mediaPlayer.getMedia() != null) {
+//                    LogHelper.WriteLogRule(this, apikey, "MediaPlayer.getMedia().getUri().toString(): " + mediaPlayer.getMedia().getUri().toString(), "DEBUG", "");
+//                }
+//            }
+//            LogHelper.WriteLogRule(this, apikey, "Video Path: " + videoUri, "DEBUG", "");
+//        }
 
         if (getCurrentBackgroundSoundByCurrentPostion() != null) {
             switchToNewBackgroundMedia(getCurrentBackgroundSoundByCurrentPostion().getSoundUrl());
@@ -1302,8 +1346,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         if (mediaPlayer!=null) {
             mediaPlayer.release();
             mediaPlayer = null;
-            libVLC.release();
-            libVLC = null;
+//            libVLC.release();
+//            libVLC = null;
         }
         if (backgroundSoundPlayer != null) {
             backgroundSoundPlayer.release();

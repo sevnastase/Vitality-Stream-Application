@@ -13,9 +13,7 @@ import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.utils.ApplicationSettings;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -226,31 +224,24 @@ public class DownloadHelper {
      * @param movie
      */
     public static void setLocalMedia(final Context context, final Movie movie) {
-        String movieFileName = "";
-        String sceneryFileName = "";
-        String mapFilename = "";
-        try {
-            URL movieUrl = new URL(movie.getMovieUrl());
-            movieFileName = new File(movieUrl.getFile()).getName();
-            URL sceneryUrl = new URL(movie.getMovieImagepath());
-            sceneryFileName = new File(sceneryUrl.getFile()).getName();
-            URL mapUrl = new URL(movie.getMovieRouteinfoPath());
-            mapFilename = new File(mapUrl.getFile()).getName();
-        } catch (MalformedURLException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-            SharedPreferences sharedPreferences = context.getSharedPreferences("app", MODE_PRIVATE);
-            String apikey = sharedPreferences.getString("apikey", "");
-            LogHelper.WriteLogRule(context, apikey, "ERROR: [SET LOCAL MEDIA] [TITLE:"+movie.getMovieTitle()+"] "+e.getLocalizedMessage(), "ERROR", "");
-            return;
-        }
+        String movieFileName = setLocalFilePath(context, movie.getMovieUrl());
+        String sceneryFileName = setLocalFilePath(context, movie.getMovieImagepath());
+        String mapFilename = setLocalFilePath(context, movie.getMovieRouteinfoPath());
+
         File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
         for (File externalStorageVolume: externalStorageVolumes) {
             String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + movie.getId();
             File possibleMovieLocation = new File(pathname);
             if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
-                movie.setMovieUrl(pathname+"/"+movieFileName);
-                movie.setMovieImagepath(pathname+"/"+sceneryFileName);
-                movie.setMovieRouteinfoPath(pathname+"/"+mapFilename);
+                if (!movieFileName.contains("/")) {
+                    movie.setMovieUrl(pathname + "/" + movieFileName);
+                }
+                if (!sceneryFileName.contains("/")) {
+                    movie.setMovieImagepath(pathname + "/" + sceneryFileName);
+                }
+                if (!mapFilename.contains("/")) {
+                    movie.setMovieRouteinfoPath(pathname + "/" + mapFilename);
+                }
             }
         }
     }
@@ -261,33 +252,46 @@ public class DownloadHelper {
      * @param routefilm
      */
     public static void setLocalMedia(final Context context, final Routefilm routefilm) {
-        String movieFileName = "";
-        String sceneryFileName = "";
-        String mapFilename = "";
-        try {
-            URL movieUrl = new URL(routefilm.getMovieUrl());
-            movieFileName = new File(movieUrl.getFile()).getName();
-            URL sceneryUrl = new URL(routefilm.getMovieImagepath());
-            sceneryFileName = new File(sceneryUrl.getFile()).getName();
-            URL mapUrl = new URL(routefilm.getMovieRouteinfoPath());
-            mapFilename = new File(mapUrl.getFile()).getName();
-        } catch (MalformedURLException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-            SharedPreferences sharedPreferences = context.getSharedPreferences("app", MODE_PRIVATE);
-            String apikey = sharedPreferences.getString("apikey", "");
-            LogHelper.WriteLogRule(context, apikey, "ERROR: [SET LOCAL MEDIA] [TITLE:"+routefilm.getMovieTitle()+"] "+e.getLocalizedMessage(), "ERROR", "");
-            return;
-        }
+        String movieFileName = setLocalFilePath(context, routefilm.getMovieUrl());
+        String sceneryFileName = setLocalFilePath(context, routefilm.getMovieImagepath());
+        String mapFilename = setLocalFilePath(context, routefilm.getMovieRouteinfoPath());
+
         File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
         for (File externalStorageVolume: externalStorageVolumes) {
             String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + routefilm.getMovieId().intValue();
             File possibleMovieLocation = new File(pathname);
             if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
-                routefilm.setMovieUrl(pathname+"/"+movieFileName);
-                routefilm.setMovieImagepath(pathname+"/"+sceneryFileName);
-                routefilm.setMovieRouteinfoPath(pathname+"/"+mapFilename);
+                if (!movieFileName.contains("/")) {
+                    routefilm.setMovieUrl(pathname + "/" + movieFileName);
+                }
+                if (!sceneryFileName.contains("/")) {
+                    routefilm.setMovieImagepath(pathname + "/" + sceneryFileName);
+                }
+                if (!mapFilename.contains("/")) {
+                    routefilm.setMovieRouteinfoPath(pathname + "/" + mapFilename);
+                }
             }
         }
+    }
+
+    private static String setLocalFilePath(final Context context, final String url) {
+        try {
+            if(!isLocalFilePath(url)) {
+                URL movieUrl = new URL(url);
+                return new File(movieUrl.getFile()).getName();
+            }
+        }
+        catch (MalformedURLException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+            SharedPreferences sharedPreferences = context.getSharedPreferences("app", MODE_PRIVATE);
+            String apikey = sharedPreferences.getString("apikey", "");
+            LogHelper.WriteLogRule(context, apikey, "ERROR ROUTEFILM: [SET LOCAL MEDIA] [URL:" + url + "] " + e.getLocalizedMessage(), "ERROR", "");
+        }
+        return url;
+    }
+
+    private static boolean isLocalFilePath(final String filePath) {
+        return (filePath.startsWith("/") && !filePath.contains("http://") && !filePath.contains("https://"));
     }
 
     /**

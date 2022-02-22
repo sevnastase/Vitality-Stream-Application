@@ -44,6 +44,7 @@ import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.utils.VideoLanLib;
 import com.videostreamtest.workers.PeriodicInstallPackageServiceWorker;
 
 import org.jetbrains.annotations.NotNull;
@@ -132,6 +133,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                     }
                 });
             }
+            Log.d(TAG, "LIBVLC hash: "+VideoLanLib.getLibVLC(getApplicationContext()).hashCode());
         });
     }
 
@@ -152,6 +154,13 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
     @Override
     protected void onResume() {
         super.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        VideoLanLib.getLibVLC(getApplicationContext()).release();
+        VideoLanLib.setLibVlc(null);
     }
 
     private boolean isTouchScreen() {

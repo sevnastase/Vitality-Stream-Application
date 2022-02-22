@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:tag="land"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -65,7 +66,7 @@
         android:gravity="center"
         app:layout_constraintVertical_weight="5"
         android:padding="5dp"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="25dp"
         android:layout_marginBottom="10dp">
 
         <LinearLayout
@@ -110,6 +111,16 @@
                 android:layout_marginBottom="5dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toTopOf="@id/selected_route_infomap_two"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/extra_test"
+                android:text="Test-land"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:layout_marginBottom="5dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/selected_route_distance"/>
 
         </LinearLayout>
 
@@ -186,7 +197,7 @@
             android:id="@+id/recyclerview_available_routefilms"
             android:visibility="gone"
             android:layout_width="wrap_content"
-            android:layout_height="350dp"
+            android:layout_height="250dp"
             android:layout_gravity="center"
             android:scrollbars="vertical"
             android:scrollbarThumbVertical="@drawable/scrollbar_shape"

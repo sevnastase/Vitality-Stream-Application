@@ -34,8 +34,11 @@ import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.utils.VideoLanLib;
 import com.videostreamtest.workers.InstallPackageServiceWorker;
 import com.videostreamtest.workers.UpdatePackageServiceWorker;
+
+import org.videolan.libvlc.LibVLC;
 
 
 public class SplashActivity extends AppCompatActivity {
@@ -117,9 +120,9 @@ public class SplashActivity extends AppCompatActivity {
                                         LogHelper.WriteLogRule(getApplicationContext(), config.getAccountToken(), "Sensor device not registered in app memory." ,"DEBUG", "");
                                     }
                                     //TODO
-                                    //Check if Sound present or Download sound
+                                    //Check if Sound files present or Download sound
 
-                                    //Check data integrity
+                                    VideoLanLib.getLibVLC(getApplicationContext());
 
                                     //If Done correctly go to Productpicker and start have fun!
                                     startActivity(new Intent(SplashActivity.this, ProductPickerActivity.class));
