@@ -5,7 +5,9 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
+import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Configuration;
@@ -27,6 +29,7 @@ import com.videostreamtest.config.repository.ProductRepository;
 import com.videostreamtest.config.repository.RoutefilmRepository;
 import com.videostreamtest.config.repository.UsageTrackerRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class ProductViewModel extends AndroidViewModel {
@@ -40,6 +43,8 @@ public class ProductViewModel extends AndroidViewModel {
     private FlagRepository flagRepository;
     private UsageTrackerRepository usageTrackerRepository;
     private ProductRepository productRepository;
+
+    private MutableLiveData<BigDecimal> measuredConnectionSpeed = new MutableLiveData<>();
 
     public ProductViewModel(@NonNull Application application) {
         super(application);
@@ -121,5 +126,13 @@ public class ProductViewModel extends AndroidViewModel {
 
     public LiveData<Routefilm> getSelectedRoutefilm() {
         return routefilmRepository.getSelectedRoutefilm();
+    }
+
+    public LiveData<BigDecimal> getMeasuredConnectionSpeed() {
+        return measuredConnectionSpeed;
+    }
+
+    public void setMeasuredConnectionSpeed(BigDecimal measuredConnectionSpeed) {
+        this.measuredConnectionSpeed.postValue(measuredConnectionSpeed);
     }
 }

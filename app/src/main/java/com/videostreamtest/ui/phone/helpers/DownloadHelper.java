@@ -119,30 +119,70 @@ public class DownloadHelper {
     /**
      * Check if file is present on harddisk
      * @param context
-     * @param movie
+     * @param filepath
      * @return boolean
      */
-    public static boolean isFileOnHarddisk(final Context context, final Movie movie){
+    public static boolean isFileOnHarddisk(final Context context, final String filepath){
         File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
         for (File externalStorageVolume: externalStorageVolumes) {
-            String pathname = externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movie.getId().intValue();
-            File possibleMovieLocation = new File(pathname);
-            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
-                int foundMovieImage = 0;
-                for (File file: possibleMovieLocation.listFiles()) {
-                    if (file.getName().equals(new File(movie.getMovieRouteinfoPath()).getName())) {
-                        foundMovieImage++;
-                    }
-                    if (file.getName().equals(new File(movie.getMovieImagepath()).getName())) {
-                        foundMovieImage++;
-                    }
-                }
-                if (foundMovieImage >= 1) {
+            List<String> praxtourFilePaths = new ArrayList<>();
+            praxtourFilePaths.add(externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/");
+            praxtourFilePaths.add(externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_SOUND_STORAGE_FOLDER+"/");
+            praxtourFilePaths.add(externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER+"/");
+
+            for (final String storagePath:praxtourFilePaths) {
+                if (searchDirectory(new File(storagePath), filepath)) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    private static boolean searchDirectory(final File file, final String filepath) {
+        if (file.isDirectory() && file.listFiles().length>0) {
+            for (final File f: file.listFiles()) {
+                if (f.isDirectory()) {
+                    searchDirectory(f, filepath);
+                }
+                if (f.getName().equalsIgnoreCase(new File(filepath).getName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static String getFileFromHarddisk(final Context context, final String filepath) {
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            List<String> praxtourFilePaths = new ArrayList<>();
+            praxtourFilePaths.add(externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/");
+            praxtourFilePaths.add(externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_SOUND_STORAGE_FOLDER+"/");
+            praxtourFilePaths.add(externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER+"/");
+
+            for (final String storagePath:praxtourFilePaths) {
+                String found = searchFileInDirectory(new File(storagePath), filepath);
+                if (found  != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String searchFileInDirectory(final File file, final String filepath) {
+        if (file.isDirectory() && file.listFiles().length>0) {
+            for (final File f: file.listFiles()) {
+                if (f.isDirectory()) {
+                    searchDirectory(f, filepath);
+                }
+                if (f.getName().equalsIgnoreCase(new File(filepath).getName())) {
+                    return f.getAbsolutePath();
+                }
+            }
+        }
+        return null;
     }
 
     /**

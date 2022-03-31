@@ -30,4 +30,8 @@ public class RoutefilmRepository {
     public LiveData<Routefilm> getSelectedRoutefilm() {
         return routefilmDao.getSelectedRoutefilm();
     }
+
+    public LiveData<List<Routefilm>> getSelectedRoutefilmPerPage(final String accountToken, final Integer pagesize, final Integer offset) {
+        return routefilmDao.getRoutefilmsPage(accountToken, pagesize, offset);
+    }
 }

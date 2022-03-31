@@ -26,6 +26,9 @@ public interface RoutefilmDao {
     @Query("DELETE FROM routefilm_table")
     public void nukeTable();
 
+    @Query("SELECT * FROM routefilm_table WHERE movie_id = :movieId ORDER BY movie_title ASC")
+    Routefilm getRoutefilm(final Integer movieId);
+
     @Query("SELECT * FROM routefilm_table WHERE account_token = :accountToken ORDER BY movie_title ASC")
     LiveData<List<Routefilm>> getRoutefilms(final String accountToken);
 
@@ -40,4 +43,7 @@ public interface RoutefilmDao {
 
     @Query("SELECT rt.* FROM routefilm_table rt INNER JOIN usage_tracker_table utt ON rt.movie_id = utt.selected_movie")
     LiveData<Routefilm> getSelectedRoutefilm();
+
+    @Query("SELECT * FROM routefilm_table WHERE account_token = :accountToken ORDER BY movie_title ASC LIMIT :pagesize OFFSET :offset")
+    LiveData<List<Routefilm>> getRoutefilmsPage(final String accountToken, final Integer pagesize, final Integer offset);
 }

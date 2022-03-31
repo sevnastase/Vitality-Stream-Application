@@ -46,8 +46,8 @@
     </style>
 
     <style name="MyAnimation.Window" parent="@android:style/Animation.Dialog">
-        <item name="android:windowEnterAnimation">@anim/fragment_fade_enter</item>
-        <item name="android:windowExitAnimation">@anim/fragment_fade_exit</item>
+        <item name="android:windowEnterAnimation">@animator/nav_default_enter_anim</item>
+        <item name="android:windowExitAnimation">@animator/nav_default_exit_anim</item>
     </style>
 
     <style name="ScreensaverTheme" parent="Theme.AppCompat.NoActionBar">

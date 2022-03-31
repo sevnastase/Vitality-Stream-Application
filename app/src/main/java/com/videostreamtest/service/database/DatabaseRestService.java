@@ -22,7 +22,7 @@ public class DatabaseRestService {
             = MediaType.get("application/json; charset=utf-8");
 
     private OkHttpClient client;
-    private String url = ApplicationSettings.PRAXCLOUD_URL+"/api";
+    private String url = ApplicationSettings.PRAXCLOUD_API_URL +"/api";
 
     private String accountKey;
     private String profileKey;
@@ -47,6 +47,7 @@ public class DatabaseRestService {
             final ResultApiKey resultApiKey = objectMapper.readValue(response.body().string(), ResultApiKey.class);
             return resultApiKey.getApiKey();
         } catch (IOException ioException) {
+            Log.e(TAG, ioException.getLocalizedMessage());
             return "Failed";
         }
     }

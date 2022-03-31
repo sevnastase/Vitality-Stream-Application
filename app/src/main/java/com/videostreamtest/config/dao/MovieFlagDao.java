@@ -30,6 +30,9 @@ public interface MovieFlagDao {
     @Query("SELECT * FROM movieflags_table mft")
     LiveData<List<MovieFlag>> getAllMovieFlags();
 
+    @Query("SELECT * FROM movieflags_table mft")
+    List<MovieFlag> getAllRawMovieFlags();
+
     @Query("SELECT * FROM movieflags_table mft WHERE mft.movie_id = :movieId LIMIT 1")
     LiveData<MovieFlag> getMovieFlagFromMovie(final Integer movieId);
 

@@ -55,7 +55,7 @@ public class RoutefilmOverviewFragment extends Fragment {
         productViewModel = new ViewModelProvider(requireActivity()).get(ProductViewModel.class);
         //Views
         routefilmOverview = view.findViewById(R.id.recyclerview_available_routefilms);
-        routefilmOverview.setHasFixedSize(true);
+//        routefilmOverview.setHasFixedSize(true);
         routefilmOverview.setLayoutManager(new GridLayoutManager(view.getContext(),4));
 
         apikey = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");

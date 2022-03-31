@@ -1,5 +1,7 @@
 package com.videostreamtest.ui.phone.productview.fragments.routefilmadapter;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -22,6 +24,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.GsonBuilder;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
@@ -29,13 +32,8 @@ import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.enums.CommunicationDevice;
-import com.videostreamtest.ui.phone.catalog.CatalogRecyclerViewClickListener;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
-import com.videostreamtest.ui.phone.helpers.ViewHelper;
-import com.videostreamtest.ui.phone.productview.fragments.RouteDownloadInformationFragment;
-import com.videostreamtest.ui.phone.productview.fragments.messagebox.errors.SpeedtestErrorFragment;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 
@@ -99,7 +97,7 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
             initDownloadListeners();
         }
 
-        initMovieImages(selectedProduct);
+        initMovieImages();
         initOnFocusChangeListener(selectedProduct);
         initView();
         itemView.invalidate();
@@ -221,22 +219,38 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
         routefilmScenery.setAlpha(0.7f);
     }
 
-    private void initMovieImages(final Product selectedProduct) {
+    private void initMovieImages() {
         //Set product image in button
-        if (selectedProduct.getSupportStreaming()==0) {
+        if(movie.getMovieImagepath().startsWith("/")) {
             Picasso.get()
                     .load(new File(movie.getMovieImagepath()))
                     .resize(180, 242)
-                    .placeholder(R.drawable.download_from_cloud_scenery)
-                    .error(R.drawable.download_from_cloud_scenery)
-                    .into(routefilmScenery);
+                    .into(routefilmScenery, new Callback() {
+                        @Override
+                        public void onSuccess() {
+
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            LogHelper.WriteLogRule(itemView.getContext(), apikey,"[LOCAL] Filepath: "+movie.getMovieImagepath()+" : Error> "+e.getLocalizedMessage(), "ERROR", "");
+                        }
+                    });
         } else {
             Picasso.get()
                     .load(movie.getMovieImagepath())
                     .resize(180, 242)
-                    .placeholder(R.drawable.download_from_cloud_scenery)
-                    .error(R.drawable.download_from_cloud_scenery)
-                    .into(routefilmScenery);
+                    .into(routefilmScenery, new Callback() {
+                        @Override
+                        public void onSuccess() {
+
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            LogHelper.WriteLogRule(itemView.getContext(), apikey,"[STREAM] Filepath: "+movie.getMovieImagepath()+" : Error> "+e.getLocalizedMessage(), "ERROR", "");
+                        }
+                    });
         }
     }
 
@@ -260,7 +274,7 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
         routefilmScenery.setOnClickListener((onClickedView) -> {
             updateRouteInformationBlock();
             if (selectedProduct.getSupportStreaming()==0) {
-                itemView.getContext().startActivity(videoPlayer);
+                startVideoplayer();
             } else {
                 performSpeedtestAndStartVideoPlayer();
             }
@@ -321,7 +335,7 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
                         Log.v("speedtest", "[COMPLETED] rate in octet/s : " + report.getTransferRateOctet());
                         Log.v("speedtest", "[COMPLETED] rate in bit/s   : " + report.getTransferRateBit());
                         if (report.getTransferRateBit().intValue() > ApplicationSettings.SPEEDTEST_MINIMUM_SPEED.intValue()) {
-                            itemView.getContext().startActivity(videoPlayer);
+                            startVideoplayer();
                         } else {
                             thread.getLooper().prepare();
                             LogHelper.WriteLogRule(itemView.getContext(), apikey, "[SPEED ERROR] Internet Speed to low at starting movie: "+movie.getMovieTitle(), "ERROR", "");
@@ -365,10 +379,14 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
                     }
                 });
 
-                speedTestSocket.startDownload("https://media.praxcloud.eu/1M.iso");
+                speedTestSocket.startDownload(PRAXCLOUD_MEDIA_URL+"/1M.iso");
             }
         };
         speedtestHandler.postDelayed(runnableSpeedTest,0);
+    }
+
+    private void startVideoplayer() {
+        itemView.getContext().startActivity(videoPlayer);
     }
 
 }

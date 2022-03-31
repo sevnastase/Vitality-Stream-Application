@@ -30,6 +30,9 @@ public interface FlagDao {
     @Query("SELECT * FROM flags_table ft")
     LiveData<List<Flag>> getAllFlags();
 
+    @Query("SELECT * FROM flags_table ft")
+    List<Flag> getAllRawFlags();
+
     @Query("SELECT * FROM flags_table ft WHERE ft.flag_id = :flagId LIMIT 1")
     LiveData<Flag> getFlag(final Integer flagId);
 

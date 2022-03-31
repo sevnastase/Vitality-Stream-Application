@@ -12,6 +12,7 @@ import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.config.entity.tracker.UsageTracker;
 import com.videostreamtest.config.repository.BluetoothDefaultDeviceRepository;
 import com.videostreamtest.config.repository.ConfigurationRepository;
+import com.videostreamtest.config.repository.DownloadStatusRepository;
 import com.videostreamtest.config.repository.ProductRepository;
 import com.videostreamtest.config.repository.ProfileRepository;
 import com.videostreamtest.config.repository.UsageTrackerRepository;
@@ -26,8 +27,8 @@ public class SplashViewModel extends AndroidViewModel {
     private ProfileRepository profileRepository;
     private BluetoothDefaultDeviceRepository bluetoothDefaultDeviceRepository;
     private UsageTrackerRepository usageTrackerRepository;
+    private DownloadStatusRepository downloadStatusRepository;
 
-    private final LiveData<Configuration> currentConfig;
     private final LiveData<List<Configuration>> allConfigurations;
 
     private final LiveData<List<com.videostreamtest.config.entity.Profile>> accountProfiles;
@@ -41,9 +42,9 @@ public class SplashViewModel extends AndroidViewModel {
         profileRepository = new ProfileRepository(application);
         bluetoothDefaultDeviceRepository = new BluetoothDefaultDeviceRepository(application);
         usageTrackerRepository = new UsageTrackerRepository(application);
+        downloadStatusRepository = new DownloadStatusRepository(application);
 
         allConfigurations = configurationRepository.getConfigurations();
-        currentConfig = configurationRepository.getCurrentConfiguration();
 
         accountProfiles = profileRepository.getAccountProfiles();
 
@@ -83,7 +84,7 @@ public class SplashViewModel extends AndroidViewModel {
     }
 
     public LiveData<Configuration> getCurrentConfig() {
-        return currentConfig;
+        return configurationRepository.getCurrentConfiguration();
     }
 
     LiveData<List<Configuration>> getConfigurations() {
@@ -114,5 +115,9 @@ public class SplashViewModel extends AndroidViewModel {
         usageTracker.setSelectedBackgroundSound(0);
         usageTracker.setSelectedProfile(0);
         usageTrackerRepository.insertNewUsageTrackerInformationObject(usageTracker);
+    }
+
+    public void resetInterruptedDownloads() {
+        downloadStatusRepository.resetInterruptedDownloads();
     }
 }

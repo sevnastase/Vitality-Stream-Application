@@ -48,5 +48,45 @@
     <fragment
         android:id="@+id/locationPermissionFragment"
         android:name="com.videostreamtest.ui.phone.login.fragments.LocationPermissionFragment"
-        android:label="LocationPermissionFragment" />
+        android:label="LocationPermissionFragment" >
+        <action
+            android:id="@+id/action_locationPermissionFragment_to_downloadSoundFragment"
+            app:destination="@id/downloadSoundFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/downloadSoundFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.DownloadSoundFragment"
+        android:label="DownloadSoundFragment" >
+        <action
+            android:id="@+id/action_downloadSoundFragment_to_syncDatabaseFragment"
+            app:destination="@id/syncDatabaseFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/syncDatabaseFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.SyncDatabaseFragment"
+        android:label="SyncDatabaseFragment" >
+        <action
+            android:id="@+id/action_syncDatabaseFragment_to_downloadFlagsFragment"
+            app:destination="@id/downloadFlagsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/downloadFlagsFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.DownloadFlagsFragment"
+        android:label="DownloadFlagsFragment" >
+        <action
+            android:id="@+id/action_downloadFlagsFragment_to_downloadMovieSupportImagesFragment"
+            app:destination="@id/downloadMovieSupportImagesFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/downloadMovieSupportImagesFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.DownloadMovieImagesFragment"
+        android:label="DownloadMovieSupportImagesFragment" >
+        <action
+            android:id="@+id/action_downloadMovieSupportImagesFragment_to_downloadMovieRoutepartImagesFragment"
+            app:destination="@id/downloadMovieRoutepartImagesFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/downloadMovieRoutepartImagesFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.DownloadRoutepartsFragment"
+        android:label="DownloadMovieRoutepartImagesFragment" />
 </navigation>

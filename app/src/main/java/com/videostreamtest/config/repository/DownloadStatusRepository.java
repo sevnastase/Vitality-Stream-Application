@@ -29,4 +29,10 @@ public class DownloadStatusRepository {
         return downloadStatusDao.getAllActiveDownloadStatus();
     }
 
+    public void resetInterruptedDownloads() {
+        PraxtourDatabase.databaseWriterExecutor.execute( () -> {
+            downloadStatusDao.resetInterruptedDownloads();
+        });
+    }
+
 }

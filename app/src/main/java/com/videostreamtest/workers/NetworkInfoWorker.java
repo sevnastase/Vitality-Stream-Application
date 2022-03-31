@@ -1,5 +1,7 @@
 package com.videostreamtest.workers;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
+
 import android.content.Context;
 import android.util.Log;
 
@@ -40,7 +42,7 @@ public class NetworkInfoWorker extends Worker {
 
     public boolean isInternetAvailable() {
         try {
-            InetAddress ipAddr = InetAddress.getByName("http://praxmedia.praxtour.com/");
+            InetAddress ipAddr = InetAddress.getByName(PRAXCLOUD_MEDIA_URL);
             boolean isActive = ipAddr.isReachable(200);
             //You can replace it with your name
             return isActive;

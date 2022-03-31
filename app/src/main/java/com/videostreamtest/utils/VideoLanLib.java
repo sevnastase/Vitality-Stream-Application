@@ -43,7 +43,7 @@ public class VideoLanLib {
 
     private synchronized static LibVLC createLibVlc(final Context context) {
         final List<String> args = new ArrayList<>();
-        args.add("-vvv");
+//        args.add("-vvv");
         args.add("--sout-all");
         args.add("--aout=opensles");
 //        args.add("--no-gnutls-system-trust"); //DISABLE WITH TLS TRUST ISSUES

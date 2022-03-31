@@ -80,6 +80,7 @@ public class SplashActivity extends AppCompatActivity {
                 ConfigurationHelper.loadExternalData(this, config.getAccountToken());
 
                 splashViewModel.resetUsageTracker(config.getAccountToken());
+                splashViewModel.resetInterruptedDownloads();
 
                 /**
                  * TODO  if accounttoken is valid (create worker)
@@ -119,8 +120,6 @@ public class SplashActivity extends AppCompatActivity {
                                         Log.d(TAG, "Sensor Device internal db synced with internal in-memory value");
                                         LogHelper.WriteLogRule(getApplicationContext(), config.getAccountToken(), "Sensor device not registered in app memory." ,"DEBUG", "");
                                     }
-                                    //TODO
-                                    //Check if Sound files present or Download sound
 
                                     VideoLanLib.getLibVLC(getApplicationContext());
 
@@ -169,6 +168,8 @@ public class SplashActivity extends AppCompatActivity {
                 });
             } else {
                 Log.d(TAG, "Configuration == null ");
+                Log.d(TAG, "SharedPreferences != null > "+getSharedPreferences("app", MODE_PRIVATE).getString("apikey","").equals(""));
+                Log.d(TAG, "SharedPreferences value:  "+getSharedPreferences("app", MODE_PRIVATE).getString("apikey",""));
 
                 Runnable showLoginScreen = new Runnable() {
                     public void run() {

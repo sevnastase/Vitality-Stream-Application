@@ -56,61 +56,67 @@ public class LoginStatusFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         Bundle arguments = getArguments();
         if (arguments.getBoolean("authorized", false)) {
-            loginStatusTitle.setText(String.format("Succesfully logged in as %s", arguments.getString("username")));
+            loginViewModel.setCurrentInstallationStep(0);
+            loginStatusTitle.setText(String.format(getString(R.string.login_success_summary_title), arguments.getString("username")));
             int activeProductsCount = arguments.getInt("active-products-count", -1);
             if (activeProductsCount == 0 || activeProductsCount == -1) {
-                loginStatusText.setText("There are no active product subscriptions present.\nPlease register for any of our products.");
+                loginStatusText.setText(R.string.login_no_products);
                 logout();
-                nextButton.setText("Retry");
+                nextButton.setText(R.string.retry_permission_check_button);
                 nextButton.setOnClickListener((onClickedView) -> {
                     NavHostFragment.findNavController(LoginStatusFragment.this)
                             .navigate(R.id.action_loginStatusFragment_to_usernameFragment);
                 });
             } else {
-                loginStatusText.setText("Before first time use you need to accept the following permissions:\n\n");
+//                loginStatusText.setText("Before first time use you need to accept the following permissions:\n\n");
                 if (arguments.getString("account-type", "").equals("standalone")) {
-                    loginStatusText.setText(loginStatusText.getText() + "> Storage permission: for saving movies on the harddisk.\n");
-                    loginStatusText.setText(loginStatusText.getText() + "> Location permission: for Bluetooth sensors.\n\n");
-                    loginStatusText.setText(loginStatusText.getText() + "Please proceed to accept the permissions.");
+                    loginStatusText.setText(loginStatusText.getText() + getString(R.string.login_status_summary_standalone));
+//                    loginStatusText.setText(loginStatusText.getText() + "> Location permission: for Bluetooth sensors.\n\n");
+//                    loginStatusText.setText(loginStatusText.getText() + "Please proceed to accept the permissions.");
                     nextButton.setOnClickListener((onClickedView) -> {
                         if (getStoragePermissionsForRequest().size() > 0) {
                             NavHostFragment.findNavController(LoginStatusFragment.this)
-                                    .navigate(R.id.action_loginStatusFragment_to_storagePermissionFragment);
+                                    .navigate(R.id.action_loginStatusFragment_to_storagePermissionFragment, arguments);
                         } else if (getLocationPermissionsForRequest().size() > 0) {
                             NavHostFragment.findNavController(LoginStatusFragment.this)
-                                    .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment);
+                                    .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
                         } else {
                             Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
                             startActivity(splashScreenActivity);
                             getActivity().finish();
                         }
-
+                        loginViewModel.addInstallationStep();
                     });
+                    loginViewModel.setInstallationSteps(7);
+
                 }
                 if (arguments.getString("account-type", "").equals("streaming")) {
-                    loginStatusText.setText(loginStatusText.getText() + "> Location permission - for Bluetooth sensors.\n\n");
-                    loginStatusText.setText(loginStatusText.getText() + "Please proceed to accept the permissions.");
+                    loginStatusText.setText(loginStatusText.getText() + getString(R.string.login_status_summary_streaming));
+//                    loginStatusText.setText(loginStatusText.getText() + "Please proceed to accept the permissions.");
 
                     nextButton.setOnClickListener((onClickedView) -> {
                         if (getLocationPermissionsForRequest().size() > 0) {
                             NavHostFragment.findNavController(LoginStatusFragment.this)
-                                    .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment);
+                                    .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
                         } else {
                             Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
                             startActivity(splashScreenActivity);
                             getActivity().finish();
                         }
+                        loginViewModel.addInstallationStep();
                     });
+
+                    loginViewModel.setInstallationSteps(3);
                 }
             }
         } else {
             loginViewModel.setPassword("");
             loginStatusTitle.setTextColor(Color.RED);
-            loginStatusTitle.setText("Failed to login.");
+            loginStatusTitle.setText(R.string.login_failed);
 
-            loginStatusText.setText("Username and/or password are wrong.\nPlease try again.");
+            loginStatusText.setText(R.string.login_message_failed_description);
             logout();
-            nextButton.setText("Retry");
+            nextButton.setText(R.string.retry_permission_check_button);
             nextButton.setOnClickListener((onClickedView) -> {
                 NavHostFragment.findNavController(LoginStatusFragment.this)
                         .navigate(R.id.action_loginStatusFragment_to_usernameFragment);

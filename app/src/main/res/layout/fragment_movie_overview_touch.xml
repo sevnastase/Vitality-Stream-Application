@@ -192,6 +192,7 @@
         android:scrollbarThumbVertical="@drawable/scrollbar_shape"
         android:scrollbars="vertical"
         android:visibility="invisible"
+        android:nextFocusDown="@id/recyclerview_available_routefilms"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.videostreamtest.R;
 import com.videostreamtest.ui.phone.login.LoginViewModel;
@@ -28,11 +29,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LocationPermissionFragment extends Fragment {
-    private final int STORAGE_PERMISSION_REQUEST_CODE = 1234;
+    private final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
 
     private LoginViewModel loginViewModel;
 
     private Button nextButton;
+    private TextView locationpermissionTitle;
     private TextView locationpermissionText;
 
     @Nullable
@@ -41,30 +43,27 @@ public class LocationPermissionFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_location_permission, container, false);
         loginViewModel = new ViewModelProvider(requireActivity()).get(LoginViewModel.class);
 
+        locationpermissionTitle = view.findViewById(R.id.login_location_permission_title);
         locationpermissionText = view.findViewById(R.id.login_location_permission_summary);
         nextButton = view.findViewById(R.id.login_goto_splashscreen_button);
 
         List<String> requestPermissions = getLocationPermissionsForRequest();
 
         if (requestPermissions!= null && requestPermissions.size()==0) {
-            Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
-            startActivity(splashScreenActivity);
-            getActivity().finish();
+            gotoNextFragment();
         }
 
         nextButton.setOnClickListener((onClickedView) -> {
             if (requestPermissions.size()>0) {
                 String[] perms = requestPermissions.toArray(new String[0]);
                 requestPermissions(perms,
-                        STORAGE_PERMISSION_REQUEST_CODE);
+                        LOCATION_PERMISSION_REQUEST_CODE);
             } else {
-                Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
-                startActivity(splashScreenActivity);
-                getActivity().finish();
+                gotoNextFragment();
             }
         });
 
-        locationpermissionText.setText("Click next to allow Praxtour to access this device's location.\n\nIf the location permission is denied Praxtour is not allowed to use BLE functionality ,e.g. the cadence sensor, and therefore the user can't use all functionalities.");
+        locationpermissionText.setText(R.string.login_location_permission_summary);
 
         return view;
     }
@@ -73,11 +72,13 @@ public class LocationPermissionFragment extends Fragment {
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         nextButton.requestFocus();
+
+        showCurrentStepInTitleView(locationpermissionTitle);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
-        if (requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             int allGranted = 0;
             for (String permission : permissions) {
                 Log.d(getClass().getSimpleName(), "Requested Permission: "+permission);
@@ -87,11 +88,9 @@ public class LocationPermissionFragment extends Fragment {
                 Log.d(getClass().getSimpleName(), "Requested GrantResult: "+grantResult);
             }
             if (allGranted == 0) {
-                Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
-                startActivity(splashScreenActivity);
-                getActivity().finish();
+                gotoNextFragment();
             } else {
-                //TODO: Logout and close app
+                //DO NOTHING
             }
         }
     }
@@ -117,5 +116,29 @@ public class LocationPermissionFragment extends Fragment {
         }
 
         return permissionRequests;
+    }
+
+    private void startMainActivity() {
+        Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
+        startActivity(splashScreenActivity);
+        getActivity().finish();
+    }
+
+    private void gotoNextFragment() {
+        loginViewModel.addInstallationStep();
+        NavHostFragment.findNavController(LocationPermissionFragment.this)
+                .navigate(R.id.action_locationPermissionFragment_to_downloadSoundFragment, getArguments());
+    }
+
+    private void showCurrentStepInTitleView(final TextView titleView) {
+        loginViewModel.getInstallationSteps().observe(getViewLifecycleOwner(), totalInstallationSteps -> {
+            if (totalInstallationSteps != null) {
+                loginViewModel.getCurrentInstallationStep().observe(getViewLifecycleOwner(), currentInstallationStep -> {
+                    if (currentInstallationStep != null) {
+                        titleView.setText(String.format(getString(R.string.login_proces_step_formatting), currentInstallationStep, totalInstallationSteps, titleView.getText()));
+                    }
+                });
+            }
+        });
     }
 }

@@ -15,12 +15,13 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.videostreamtest.enums.CommunicationDevice;
+import com.videostreamtest.enums.CommunicationType;
 import com.videostreamtest.utils.ApplicationSettings;
-import com.videostreamtest.workers.ActiveConfigurationServiceWorker;
-import com.videostreamtest.workers.ActiveProductMovieLinksServiceWorker;
-import com.videostreamtest.workers.ActiveProductsServiceWorker;
-import com.videostreamtest.workers.SyncRoutefilmsServiceWorker;
-import com.videostreamtest.workers.AvailableRoutePartsServiceWorker;
+import com.videostreamtest.workers.synchronisation.ActiveConfigurationServiceWorker;
+import com.videostreamtest.workers.synchronisation.ActiveProductMovieLinksServiceWorker;
+import com.videostreamtest.workers.synchronisation.ActiveProductsServiceWorker;
+import com.videostreamtest.workers.synchronisation.SyncRoutefilmsServiceWorker;
+import com.videostreamtest.workers.synchronisation.AvailableRoutePartsServiceWorker;
 import com.videostreamtest.workers.ProfileServiceWorker;
 import com.videostreamtest.workers.SoundInformationServiceWorker;
 
@@ -37,6 +38,18 @@ public class ConfigurationHelper {
             }
         }
         return CommunicationDevice.NONE;
+    }
+
+    public static CommunicationDevice getCommunicationDevice(final CommunicationType communicationType) {
+        switch (communicationType) {
+            case RPM:
+                return CommunicationDevice.BLE;
+            case ACTIVE:
+                return CommunicationDevice.BLE;
+            case NONE:
+            default:
+                return CommunicationDevice.NONE;
+        }
     }
 
     public static void loadExternalData(Context context, final String accountToken) {
@@ -201,7 +214,7 @@ public class ConfigurationHelper {
      * Returns the available ammount of RAM of your Android device in Bytes e.g 1567342592 (1.5GB)
      * @return {Long}
      */
-    public static long getMemorySizeInBytes(final Context context) {
+    public static Long getMemorySizeInBytes(final Context context) {
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
         activityManager.getMemoryInfo(memoryInfo);

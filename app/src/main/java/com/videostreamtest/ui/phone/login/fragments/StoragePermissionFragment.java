@@ -35,6 +35,7 @@ public class StoragePermissionFragment extends Fragment {
 
     private Button nextButton;
     private TextView storagepermissionText;
+    private TextView storagepermissionTitle;
 
     @Nullable
     @Override
@@ -42,14 +43,16 @@ public class StoragePermissionFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_storage_permission, container, false);
         loginViewModel = new ViewModelProvider(requireActivity()).get(LoginViewModel.class);
 
+        storagepermissionTitle = view.findViewById(R.id.login_storage_permission_title);
         storagepermissionText = view.findViewById(R.id.login_storage_permission_summary);
         nextButton = view.findViewById(R.id.login_goto_location_permission_button);
 
         List<String> requestPermissions = getStoragePermissionsForRequest();
 
         if(requestPermissions != null && requestPermissions.size()==0) {
-            NavHostFragment.findNavController(StoragePermissionFragment.this)
-                    .navigate(R.id.action_storagePermissionFragment_to_locationPermissionFragment);
+//            NavHostFragment.findNavController(StoragePermissionFragment.this)
+//                    .navigate(R.id.action_storagePermissionFragment_to_locationPermissionFragment, getArguments());
+            gotoNextFragment();
         }
 
         nextButton.setOnClickListener((onClickedView) -> {
@@ -58,19 +61,19 @@ public class StoragePermissionFragment extends Fragment {
                 requestPermissions(perms,
                         STORAGE_PERMISSION_REQUEST_CODE);
             } else {
-                if (getLocationPermissionsForRequest().size()>0) {
-                    NavHostFragment.findNavController(StoragePermissionFragment.this)
-                            .navigate(R.id.action_storagePermissionFragment_to_locationPermissionFragment);
-                } else {
-                    Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
-                    startActivity(splashScreenActivity);
-                    getActivity().finish();
-                }
+                gotoNextFragment();
+//                if (getLocationPermissionsForRequest().size()>0) {
+//                    NavHostFragment.findNavController(StoragePermissionFragment.this)
+//                            .navigate(R.id.action_storagePermissionFragment_to_locationPermissionFragment, getArguments());
+//                } else {
+//                    Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
+//                    startActivity(splashScreenActivity);
+//                    getActivity().finish();
+//                }
             }
         });
 
-        storagepermissionText.setText("Click next to allow Praxtour to access photos and media on your device.\n\nIf the storage permission is denied Praxtour is not allowed to store media on your device, therefore the app cannot be used.");
-
+        storagepermissionText.setText(R.string.login_storage_permission_summary);
         return view;
     }
 
@@ -78,6 +81,8 @@ public class StoragePermissionFragment extends Fragment {
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         nextButton.requestFocus();
+
+        showCurrentStepInTitleView(storagepermissionTitle);
     }
 
     @Override
@@ -92,16 +97,15 @@ public class StoragePermissionFragment extends Fragment {
                 Log.d(getClass().getSimpleName(), "Requested GrantResult: "+grantResult);
             }
             if (allGranted == 0) {
-                if (getLocationPermissionsForRequest().size()>0) {
-                    NavHostFragment.findNavController(StoragePermissionFragment.this)
-                            .navigate(R.id.action_storagePermissionFragment_to_locationPermissionFragment);
-                } else {
-                    Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
-                    startActivity(splashScreenActivity);
-                    getActivity().finish();
-                }
+//                if (getLocationPermissionsForRequest().size()>0) {
+                    gotoNextFragment();
+//                } else {
+//                    Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
+//                    startActivity(splashScreenActivity);
+//                    getActivity().finish();
+//                }
             } else {
-                //TODO: Logout and close app
+
             }
         }
     }
@@ -144,5 +148,23 @@ public class StoragePermissionFragment extends Fragment {
         }
 
         return permissionRequests;
+    }
+
+    private void gotoNextFragment() {
+        loginViewModel.addInstallationStep();
+        NavHostFragment.findNavController(StoragePermissionFragment.this)
+                .navigate(R.id.action_storagePermissionFragment_to_locationPermissionFragment, getArguments());
+    }
+
+    private void showCurrentStepInTitleView(final TextView titleView) {
+        loginViewModel.getInstallationSteps().observe(getViewLifecycleOwner(), totalInstallationSteps -> {
+            if (totalInstallationSteps != null) {
+                loginViewModel.getCurrentInstallationStep().observe(getViewLifecycleOwner(), currentInstallationStep -> {
+                    if (currentInstallationStep != null) {
+                        titleView.setText(String.format(getString(R.string.login_proces_step_formatting), currentInstallationStep, totalInstallationSteps, titleView.getText()));
+                    }
+                });
+            }
+        });
     }
 }

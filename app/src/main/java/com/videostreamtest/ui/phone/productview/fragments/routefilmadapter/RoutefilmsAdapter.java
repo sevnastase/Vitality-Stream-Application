@@ -18,6 +18,7 @@ import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
 import org.jetbrains.annotations.NotNull;
@@ -36,6 +37,7 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
     private LinearLayout routeInformationBlock;
 
     //ELEMENTS FOR LIST WHICH IS ATTACHED TO THE ADAPTER
+    //TODO: Put Lists in MutableLiveData objects for concurrency issues
     private List<Routefilm> routefilmList = new ArrayList<>();
     private List<Flag> flags = new ArrayList<>();
     private List<MovieFlag> movieFlags = new ArrayList<>();
@@ -116,21 +118,27 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
                 if (!isRoutefilmPresent(routefilm)) {
                     if (selectedProduct.getSupportStreaming()==0 && DownloadHelper.isMoviePresent(productViewModel.getApplication(), Movie.fromRoutefilm(routefilm))) {
                         this.routefilmList.add(routefilm);
-                        notifyDataSetChanged();
                     }
                     if (selectedProduct.getSupportStreaming()==1) {
                         this.routefilmList.add(routefilm);
-                        notifyDataSetChanged();
                     }
                 }
             }
-            for (final Routefilm routefilm: this.routefilmList) {
-                if (isRoutefilmRemoved(routefilm, requestedRoutefilmList)) {
-                    final int removedFilmPosition = this.routefilmList.indexOf(routefilm);
-                    this.routefilmList.remove(routefilm);
-                    notifyItemRemoved(removedFilmPosition);
-                }
-            }
+//            try {
+//                for (final Routefilm routefilm : this.routefilmList) {
+//                    if (isRoutefilmRemoved(routefilm, requestedRoutefilmList)) {
+//                        final int removedFilmPosition = this.routefilmList.indexOf(routefilm);
+//                        this.routefilmList.remove(routefilm);
+//                        notifyItemRemoved(removedFilmPosition);
+//                    }
+//                }
+//            } catch (Exception concurrencyException) {
+//                if (concurrencyException != null) {
+//                    Log.e(TAG, ""+concurrencyException.getLocalizedMessage());
+//                } else {
+//                    Log.e(TAG, "ConcurrencyException");
+//                }
+//            }
         }
     }
 

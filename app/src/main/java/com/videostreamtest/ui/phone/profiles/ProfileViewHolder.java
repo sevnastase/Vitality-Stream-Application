@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -15,10 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
-import com.videostreamtest.config.db.PraxtourDatabase;
-import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.data.model.Profile;
-import com.videostreamtest.ui.phone.catalog.CatalogActivity;
 
 public class ProfileViewHolder extends RecyclerView.ViewHolder {
     final static String TAG = ProfileViewHolder.class.getSimpleName();
@@ -91,11 +87,11 @@ public class ProfileViewHolder extends RecyclerView.ViewHolder {
 
                     profileImageButton.requestFocus();
 
-                    Intent catalog = new Intent(itemView.getContext(), CatalogActivity.class);
-                    catalog.putExtra("profileName", profile.getProfileName());
-                    catalog.putExtra("profileKey", profile.getProfileKey());
-                    catalog.putExtra("profileId", profile.getProfileId());
-                    itemView.getContext().startActivity(catalog);
+//                    Intent catalog = new Intent(itemView.getContext(), CatalogActivity.class);
+//                    catalog.putExtra("profileName", profile.getProfileName());
+//                    catalog.putExtra("profileKey", profile.getProfileKey());
+//                    catalog.putExtra("profileId", profile.getProfileId());
+//                    itemView.getContext().startActivity(catalog);
                     Toast.makeText(itemView.getContext(), toString().format(itemView.getContext().getString(R.string.loading_profile_message), profile.getProfileName()), Toast.LENGTH_LONG).show();
                 }
             });

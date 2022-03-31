@@ -22,11 +22,8 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.GET;
-import retrofit2.http.Header;
-import retrofit2.http.Path;
 
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_URL;
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
 
 public class SoundInformationServiceWorker extends Worker {
     private static final String TAG = SoundInformationServiceWorker.class.getSimpleName();
@@ -47,7 +44,7 @@ public class SoundInformationServiceWorker extends Worker {
         Data output = new Data.Builder().build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(PRAXCLOUD_URL)
+                .baseUrl(PRAXCLOUD_API_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 

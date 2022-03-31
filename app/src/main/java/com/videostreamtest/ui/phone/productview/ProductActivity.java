@@ -1,7 +1,6 @@
 package com.videostreamtest.ui.phone.productview;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -43,10 +42,11 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
-import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
+import com.videostreamtest.data.model.log.DeviceInformation;
 import com.videostreamtest.data.model.response.Product;
+import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
@@ -56,16 +56,16 @@ import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.VideoLanLib;
-import com.videostreamtest.workers.ActiveProductMovieLinksServiceWorker;
+import com.videostreamtest.workers.synchronisation.ActiveProductMovieLinksServiceWorker;
 import com.videostreamtest.workers.DataIntegrityCheckServiceWorker;
-import com.videostreamtest.workers.DownloadFlagsServiceWorker;
-import com.videostreamtest.workers.DownloadMovieImagesServiceWorker;
-import com.videostreamtest.workers.DownloadMovieServiceWorker;
-import com.videostreamtest.workers.DownloadRoutepartsServiceWorker;
-import com.videostreamtest.workers.DownloadSoundServiceWorker;
+import com.videostreamtest.workers.download.DownloadFlagsServiceWorker;
+import com.videostreamtest.workers.download.DownloadMovieImagesServiceWorker;
+import com.videostreamtest.workers.download.DownloadMovieServiceWorker;
+import com.videostreamtest.workers.download.DownloadRoutepartsServiceWorker;
+import com.videostreamtest.workers.download.DownloadSoundServiceWorker;
 import com.videostreamtest.workers.SoundInformationServiceWorker;
-import com.videostreamtest.workers.SyncFlagsServiceWorker;
-import com.videostreamtest.workers.SyncMovieFlagsServiceWorker;
+import com.videostreamtest.workers.synchronisation.SyncFlagsServiceWorker;
+import com.videostreamtest.workers.synchronisation.SyncMovieFlagsServiceWorker;
 import com.videostreamtest.workers.UpdateRegisteredMovieServiceWorker;
 import com.videostreamtest.workers.UpdateRoutePartsServiceWorker;
 
@@ -74,6 +74,8 @@ import java.util.concurrent.TimeUnit;
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+
+import static com.videostreamtest.utils.ApplicationSettings.NUMBER_OF_DOWNLOAD_RUNNERS;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -169,8 +171,6 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Localip: "+DownloadHelper.getLocalIpAddress(), "DEBUG", "");
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Density: sw-"+this.getResources().getDisplayMetrics().densityDpi, "DEBUG", "");
 
-                //PERIODIC ACTIONS FOR DATABASE
-                syncMovieDatabasePeriodically(currentConfig.getAccountToken());
 
                 //PERIODIC ACTIONS FOR STANDALONE SPECIFIC
                 if (currentConfig.isLocalPlay()) {
@@ -178,7 +178,6 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
 //                    periodicCheckMovieFileDataIntegrity(currentConfig.getAccountToken()); TODO: Make available through Account Config
 //                    startSingleDataIntegrityWorker(currentConfig.getAccountToken());
                 }
-                logRamMemory();
 
                 appBuildNumber.setText(ConfigurationHelper.getVersionNumber(getApplicationContext())+":"+currentConfig.getAccountToken());
 
@@ -193,7 +192,7 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
         downloadFlags();
         downloadMovieSupportImages();
         downloadSound();
-        downloadLocalMovies();
+//        downloadLocalMovies();
     }
 
     @Override
@@ -240,25 +239,6 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
             }
         }
         return false;
-    }
-
-    private void logRamMemory() {
-//        Log.d(TAG, "Hardware: "+Build.HARDWARE);
-//        Log.d(TAG, "Manufacturer: "+Build.MANUFACTURER);
-//        Log.d(TAG, "Device: "+Build.DEVICE);
-//        Log.d(TAG, "Board: "+Build.BOARD);
-//        Log.d(TAG, "Brand: "+Build.BRAND);
-//        Log.d(TAG, "Model: "+Build.MODEL);
-//        Log.d(TAG, "Product: "+Build.PRODUCT);
-//        Log.d(TAG, "Bootloader: "+Build.BOOTLOADER);
-//        if (Build.SUPPORTED_ABIS.length>0) {
-//            Log.d(TAG, "ABIS length: "+Build.SUPPORTED_ABIS.length);
-//            for (String abi : Build.SUPPORTED_ABIS) {
-//                Log.d(TAG, "ABIS item: "+abi);
-//            }
-//        }
-        Log.d(TAG, "Memory Mb: "+(ConfigurationHelper.getMemorySizeInBytes(getApplicationContext())/1024/1024));
-        Log.d(TAG, "Memory Gb: "+(ConfigurationHelper.getMemorySizeInBytes(getApplicationContext())/1024/1024/1024));
     }
 
     private void hideMenuItem(final int id)
@@ -395,120 +375,6 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
                 .build();
         WorkManager.getInstance(this)
                 .enqueueUniquePeriodicWork("check-data-integrity-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, checkMovieFileDataIntegrityRequest);
-    }
-
-    private void downloadLocalMovies() {
-        productViewModel.getCurrentConfig().observe(this, currentConfig -> {
-            if (currentConfig != null && isStoragePermissionGranted(currentConfig.isLocalPlay())) {
-                productViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(this, routefilms -> {
-                    if (routefilms.size()>0 && currentConfig.isLocalPlay()) {
-                        //CHECK IF ALL MOVIES FIT TO DISK
-                        // Accumulate size of movies
-                        long totalDownloadableMovieFileSizeOnDisk = 0L;
-                        for (Routefilm routefilm: routefilms) {
-                            if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
-                                totalDownloadableMovieFileSizeOnDisk += routefilm.getMovieFileSize();
-                            }
-                        }
-
-                        LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(), "AllMovieDownloader ready to download","DEBUG", "");
-
-                        if (DownloadHelper.canFileBeCopiedToLargestVolume(getApplicationContext(), totalDownloadableMovieFileSizeOnDisk)) {
-                            for (final Routefilm routefilm : routefilms) {
-                                if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
-                                    Constraints constraint = new Constraints.Builder()
-                                            .setRequiredNetworkType(NetworkType.CONNECTED)
-                                            .build();
-
-                                    Data.Builder mediaDownloader = new Data.Builder();
-                                    mediaDownloader.putString("INPUT_ROUTEFILM_JSON_STRING", new GsonBuilder().create().toJson(Movie.fromRoutefilm(routefilm), Movie.class));
-                                    mediaDownloader.putString("localMediaServer", currentConfig.getPraxCloudMediaServerLocalUrl());
-                                    mediaDownloader.putString("apikey", currentConfig.getAccountToken());
-
-                                    OneTimeWorkRequest oneTimeWorkRequest = new OneTimeWorkRequest.Builder(DownloadMovieServiceWorker.class)
-                                            .setConstraints(constraint)
-                                            .setInputData(mediaDownloader.build())
-                                            .setBackoffCriteria(
-                                                    BackoffPolicy.LINEAR,
-                                                    OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
-                                                    TimeUnit.MILLISECONDS)
-                                            .addTag("routefilm-" + routefilm.getMovieId())
-                                            .build();
-
-                                    WorkManager.getInstance(this)
-                                            .beginUniqueWork("download-movie-" + routefilm.getMovieId(), ExistingWorkPolicy.KEEP, oneTimeWorkRequest)
-                                            .enqueue();
-                                } else {
-//                                    LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(), routefilm.getMovieTitle()+":Movie already present","DEBUG", "");
-                                }
-                            }
-                        } else {
-                            Toast.makeText(getApplicationContext(), getString(R.string.warning_need_more_disk_capacity), Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
-            }
-        });
-    }
-
-    private void syncMovieDatabasePeriodically(final String apikey) {
-        Data.Builder syncData = new Data.Builder();
-        syncData.putString("apikey",  apikey);
-        Constraints constraint = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build();
-
-        PeriodicWorkRequest productMovieRequest = new PeriodicWorkRequest.Builder(ActiveProductMovieLinksServiceWorker.class, 15, TimeUnit.MINUTES)
-                .setConstraints(constraint)
-                .setInputData(syncData.build())
-                .addTag("productmovie-link")
-                .build();
-        WorkManager.getInstance(this)
-                .enqueueUniquePeriodicWork("sync-database-pms-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productMovieRequest);
-
-        PeriodicWorkRequest syncDatabaseWorkRequest = new PeriodicWorkRequest.Builder(UpdateRegisteredMovieServiceWorker.class, 15, TimeUnit.MINUTES)
-                .setConstraints(constraint)
-                .setInputData(syncData.build())
-                .addTag("sync-database")
-                .build();
-        WorkManager.getInstance(this)
-                .enqueueUniquePeriodicWork("sync-database-movies-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, syncDatabaseWorkRequest);
-
-        PeriodicWorkRequest productMoviePartsRequest = new PeriodicWorkRequest.Builder(UpdateRoutePartsServiceWorker.class, 15, TimeUnit.MINUTES)
-                .setConstraints(constraint)
-                .setInputData(syncData.build())
-                .addTag("movieparts-link")
-                .build();
-        WorkManager.getInstance(this)
-                .enqueueUniquePeriodicWork("sync-database-routeparts-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productMoviePartsRequest);
-
-        PeriodicWorkRequest productMovieSoundsRequest = new PeriodicWorkRequest.Builder(SoundInformationServiceWorker.class, 15, TimeUnit.MINUTES)
-                .setConstraints(constraint)
-                .setInputData(syncData.build())
-                .addTag("moviesounds-sync")
-                .build();
-        WorkManager.getInstance(this)
-                .enqueueUniquePeriodicWork("sync-database-sounds-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productMovieSoundsRequest);
-
-        PeriodicWorkRequest flagRequest = new PeriodicWorkRequest.Builder(SyncFlagsServiceWorker.class, 15, TimeUnit.MINUTES)
-                .setConstraints(constraint)
-                .setInputData(syncData.build())
-                .addTag("flags-sync")
-                .build();
-        WorkManager.getInstance(this)
-                .enqueueUniquePeriodicWork("sync-database-flags", ExistingPeriodicWorkPolicy.REPLACE, flagRequest);
-
-        PeriodicWorkRequest movieflagRequest = new PeriodicWorkRequest.Builder(SyncMovieFlagsServiceWorker.class, 15, TimeUnit.MINUTES)
-                .setConstraints(constraint)
-                .setInputData(syncData.build())
-                .addTag("movieflags-sync")
-                .build();
-        WorkManager.getInstance(this)
-                .enqueueUniquePeriodicWork("sync-database-movieflags", ExistingPeriodicWorkPolicy.REPLACE, movieflagRequest);
-    }
-
-    private boolean isTouchScreen() {
-        return getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
     }
 
     private void initScreensaverHandler() {

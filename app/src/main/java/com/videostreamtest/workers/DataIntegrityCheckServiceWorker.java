@@ -9,13 +9,11 @@ import android.os.Process;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.work.Data;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.service.database.DatabaseRestService;
-import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.webinterface.PraxCloud;
@@ -34,10 +32,8 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.GET;
-import retrofit2.http.Header;
 
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_URL;
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
 
 public class DataIntegrityCheckServiceWorker extends Worker {
     private static final String TAG = DataIntegrityCheckServiceWorker.class.getSimpleName();
@@ -68,7 +64,7 @@ public class DataIntegrityCheckServiceWorker extends Worker {
             @Override
             public void run() {
                 Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl(PRAXCLOUD_URL)
+                        .baseUrl(PRAXCLOUD_API_URL)
                         .addConverterFactory(GsonConverterFactory.create())
                         .build();
                 PraxCloud praxCloud = retrofit.create(PraxCloud.class);

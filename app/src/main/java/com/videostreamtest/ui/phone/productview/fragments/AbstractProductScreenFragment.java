@@ -2,6 +2,8 @@ package com.videostreamtest.ui.phone.productview.fragments;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,7 +18,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.MemoryPolicy;
@@ -27,11 +28,16 @@ import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.MovieFlag;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.response.Product;
+import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.fragments.routefilmadapter.RoutefilmsAdapter;
+import com.videostreamtest.ui.phone.productview.layoutmanager.CustomGridLayoutManager;
+import com.videostreamtest.ui.phone.productview.layoutmanager.EndlessRecyclerViewScrollListener;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
+import com.videostreamtest.utils.ApplicationSettings;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,10 +45,10 @@ public class AbstractProductScreenFragment extends Fragment {
     private static final String TAG = AbstractProductScreenFragment.class.getSimpleName();
 
     //Static final Strings for navigation arrow urls
-    private static final String NAVIGATION_LEFT_ARROW = "http://188.166.100.139:8080/api/dist/img/buttons/arrow_left_blue.png";
-    private static final String NAVIGATION_RIGHT_ARROW = "http://188.166.100.139:8080/api/dist/img/buttons/arrow_right_blue.png";
-    private static final String NAVIGATION_UP_ARROW = "http://188.166.100.139:8080/api/dist/img/buttons/arrow_up_blue.png";
-    private static final String NAVIGATION_DOWN_ARROW = "http://188.166.100.139:8080/api/dist/img/buttons/arrow_down_blue.png";
+    private static final String NAVIGATION_LEFT_ARROW = PRAXCLOUD_MEDIA_URL+"/media/arrow_left_blue.png";
+    private static final String NAVIGATION_RIGHT_ARROW = PRAXCLOUD_MEDIA_URL+"/media/arrow_right_blue.png";
+    private static final String NAVIGATION_UP_ARROW = PRAXCLOUD_MEDIA_URL+"/media/arrow_up_blue.png";
+    private static final String NAVIGATION_DOWN_ARROW = PRAXCLOUD_MEDIA_URL+"/media/arrow_down_blue.png";
 
     private int refreshOverviewCounter = 0;
 
@@ -64,6 +70,7 @@ public class AbstractProductScreenFragment extends Fragment {
     //Routefilms overview
     private RoutefilmsAdapter routefilmsAdapter;
     private RecyclerView routefilmOverview;
+    private EndlessRecyclerViewScrollListener scrollListener;
 
     //TouchScreen Elements
     private LinearLayout navigationPad;
@@ -93,7 +100,20 @@ public class AbstractProductScreenFragment extends Fragment {
         //Routefilm overview
         routefilmOverview = view.findViewById(R.id.recyclerview_available_routefilms);
         routefilmOverview.setHasFixedSize(true);
-        routefilmOverview.setLayoutManager(new GridLayoutManager(view.getContext(),4));
+
+        CustomGridLayoutManager gridLayoutManager = new CustomGridLayoutManager(view.getContext(), 4);
+        gridLayoutManager.setItemPrefetchEnabled(true);
+        gridLayoutManager.setInitialPrefetchItemCount(50);
+
+        routefilmOverview.setLayoutManager(gridLayoutManager);
+        scrollListener = new EndlessRecyclerViewScrollListener(gridLayoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                // Triggered only when new data needs to be appended to the list
+                // Add whatever code is needed to append new items to the bottom of the list
+                loadNextDataFromApi(page);
+            }
+        };
 
         //Views [TOUCH-SCREEN SPECIFIC]
         navigationPad = view.findViewById(R.id.navigation_pad);
@@ -131,8 +151,10 @@ public class AbstractProductScreenFragment extends Fragment {
             if (selectedProduct != null && this.selectedProduct == null) {
                 this.selectedProduct = Product.fromProductEntity(selectedProduct);
                 loadNavigationArrows();
+
                 routefilmsAdapter = new RoutefilmsAdapter(this.selectedProduct, productViewModel, routeInformationBlock);
                 routefilmOverview.setAdapter(routefilmsAdapter);
+
                 loadProductMovies();
                 loadFlags();
                 loadMovieFlags();
@@ -233,7 +255,9 @@ public class AbstractProductScreenFragment extends Fragment {
                     .observe(getViewLifecycleOwner(), routefilms -> {
                 if (routefilms != null) {
                     this.routefilmsList = routefilms;
+                    preLoadImages(routefilms);
                     if (routefilmsAdapter!=null) {
+                        loadNextDataFromApi(0);
                         routefilmsAdapter.updateRoutefilmList(routefilms);
                         routefilmsLoaded = true;
                         showRoutefilmOverview();
@@ -282,7 +306,7 @@ public class AbstractProductScreenFragment extends Fragment {
     }
 
     private void showRoutefilmOverview() {
-        if (routefilmsLoaded&&flagsLoaded&&movieFlagsLoaded) {
+        if (isDataLoaded()) {
             final LinearLayout loadingMessage = getActivity().findViewById(R.id.loading_overview);
             loadingMessage.setVisibility(View.GONE);
 
@@ -313,5 +337,60 @@ public class AbstractProductScreenFragment extends Fragment {
             }
         };
         refreshTimer.postDelayed(refreshRoutefilmOverview, howLongInMs);
+    }
+
+    private boolean isDataLoaded() {
+        return routefilmsLoaded&&flagsLoaded&&movieFlagsLoaded;
+    }
+
+    private void loadNextDataFromApi(final int page) {
+        if (this.routefilmsList!=null && this.routefilmsList.size()>0
+        && this.routefilmsList.size() <= ApplicationSettings.ROUTEFILM_OVERVIEW_PAGESIZE) {
+            return;
+        }
+        List<Routefilm> pageItems = getRoutefilmsListPage(page);
+        routefilmsAdapter.updateRoutefilmList(pageItems);
+        routefilmOverview.getAdapter().notifyDataSetChanged();
+        int totalItems = page + ApplicationSettings.ROUTEFILM_OVERVIEW_PAGESIZE;
+        if(page >0) {
+            totalItems = page*ApplicationSettings.ROUTEFILM_OVERVIEW_PAGESIZE;
+        }
+        routefilmOverview.getAdapter().notifyItemRangeInserted(0, totalItems);
+    }
+
+    private List<Routefilm> getRoutefilmsListPage (int page) {
+        List<Routefilm> routefilmListPage = new ArrayList<>();
+
+        int pageIndexStart = 0;
+        int pageIndexEnd = ApplicationSettings.ROUTEFILM_OVERVIEW_PAGESIZE;
+        if(page > 0) {
+            pageIndexStart = page * ApplicationSettings.ROUTEFILM_OVERVIEW_PAGESIZE;
+            pageIndexEnd = pageIndexStart+ApplicationSettings.ROUTEFILM_OVERVIEW_PAGESIZE;
+        }
+
+        if (this.routefilmsList!=null && this.routefilmsList.size()>0) {
+            if (pageIndexEnd>this.routefilmsList.size()) {
+                pageIndexEnd = this.routefilmsList.size();
+            }
+            for (int listIndex = pageIndexStart; listIndex < pageIndexEnd; listIndex++) {
+                final Routefilm selectedRoutefilm = this.routefilmsList.get(listIndex);
+                if (selectedRoutefilm!= null) {
+                    routefilmListPage.add(selectedRoutefilm);
+                }
+            }
+        }
+        return routefilmListPage;
+    }
+
+    private void preLoadImages(List<Routefilm> routefilmList) {
+        for (final Routefilm routefilm: routefilmList) {
+            DownloadHelper.setLocalMedia(getActivity().getApplicationContext(), routefilm);
+            if (routefilm.getMovieRouteinfoPath().startsWith("/")) {
+                Picasso.get().load(new File(routefilm.getMovieRouteinfoPath())).fetch();
+            } else {
+                Picasso.get().load(routefilm.getMovieRouteinfoPath()).fetch();
+            }
+
+        }
     }
 }

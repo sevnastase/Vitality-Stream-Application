@@ -24,6 +24,7 @@ import com.videostreamtest.config.dao.ProfileDao;
 import com.videostreamtest.config.dao.RoutefilmDao;
 import com.videostreamtest.config.dao.RoutepartDao;
 import com.videostreamtest.config.dao.ServerStatusDao;
+import com.videostreamtest.config.dao.tracker.GeneralDownloadTrackerDao;
 import com.videostreamtest.config.dao.tracker.UsageTrackerDao;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
@@ -38,6 +39,7 @@ import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.entity.Routepart;
 import com.videostreamtest.config.entity.ServerStatus;
 import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.tracker.GeneralDownloadTracker;
 import com.videostreamtest.config.entity.tracker.UsageTracker;
 import com.videostreamtest.config.entity.typeconverter.Converters;
 
@@ -58,8 +60,9 @@ import java.util.concurrent.Executors;
         ServerStatus.class,
         Flag.class,
         MovieFlag.class,
-        UsageTracker.class
-}, version = 6, exportSchema = true)
+        UsageTracker.class,
+        GeneralDownloadTracker.class
+}, version = 8, exportSchema = true)
 @TypeConverters({Converters.class})
 public abstract class PraxtourDatabase extends RoomDatabase {
     private final static String TAG = PraxtourDatabase.class.getSimpleName();
@@ -82,6 +85,7 @@ public abstract class PraxtourDatabase extends RoomDatabase {
     public abstract ProductMovieDao productMovieDao();
     public abstract UsageTrackerDao usageTrackerDao();
     public abstract BluetoothDefaultDeviceDao bluetoothDefaultDeviceDao();
+    public abstract GeneralDownloadTrackerDao generalDownloadTrackerDao();
 
     static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
@@ -145,6 +149,26 @@ public abstract class PraxtourDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_6_7 = new Migration(6, 7) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE `general_download_table` ("
+                    + "`id` INTEGER NOT NULL DEFAULT 0, "
+                    + "`download_type` TEXT NOT NULL DEFAULT '', "
+                    + "`download_current_file` TEXT NOT NULL DEFAULT '', "
+                    + "`download_type_total` INTEGER NOT NULL DEFAULT 0,"
+                    +" PRIMARY KEY(`id`))");
+        }
+    };
+
+    static final Migration MIGRATION_7_8 = new Migration(7, 8) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE `general_download_table` "
+                    + " ADD COLUMN `download_type_current` INTEGER NOT NULL DEFAULT 0; ");
+        }
+    };
+
 
     public static PraxtourDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
@@ -159,7 +183,9 @@ public abstract class PraxtourDatabase extends RoomDatabase {
                                     MIGRATION_2_3,
                                     MIGRATION_3_4,
                                     MIGRATION_4_5,
-                                    MIGRATION_5_6)
+                                    MIGRATION_5_6,
+                                    MIGRATION_6_7,
+                                    MIGRATION_7_8)
                             .build();
                 }
             }

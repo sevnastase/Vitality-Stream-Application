@@ -51,7 +51,6 @@ import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.enums.CommunicationType;
 import com.videostreamtest.receiver.CadenceSensorBroadcastReceiver;
-import com.videostreamtest.service.ant.AntPlusService;
 import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.service.ble.BleWrapper;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
@@ -95,28 +94,23 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private PlayerView playerView;
     private SimpleExoPlayer videoPlayer;
-    private SimpleExoPlayer backgroundSoundPlayer;
+    private SimpleExoPlayer backgroundSoundPlayer;//TODO: Test if can be replaced by VLC MediaPlayer
     private CadenceSensorBroadcastReceiver cadenceSensorBroadcastReceiver;
 
     //VLC
     private VLCVideoLayout videoLayout;
-    private LibVLC libVLC;
-    private boolean vlcLoaded = false;
+    private MediaPlayer mediaPlayer;
 
     private String videoUri;
     private int movieId = 0;
     private CommunicationType communicationType;
     private CommunicationDevice communicationDevice;
 
-    //TODO: Removal and set above items
     private Movie selectedMovie;
     private Product selectedProduct;
 
-    private List<BackgroundSound> backgroundSoundList = new ArrayList<>();
     private List<BackgroundSound> backgroundSoundTriggers = new ArrayList<>();
     private List<MediaItem> backgroundMediaItems = new ArrayList<>();
-
-    private List<EffectSound> effectSoundList = new ArrayList<>();
 
     private boolean isSoundOnDevice = false;
     private boolean isLocalPlay = false;
@@ -134,19 +128,16 @@ public class VideoplayerActivity extends AppCompatActivity {
     private int currentMeasurementIteration = 0;
     private int numberOfFalsePositives = 0;
 
-    private MediaPlayer mediaPlayer;
-
     private boolean routePaused = false;
     private int pauseTimer = 0;
     private boolean routeFinished = false;
 
     //BLE
-    private BleWrapper bleWrapper;
     private boolean backToOverviewWaitForSensor = false;
 
     //CHROMECAST
-    List<RendererDiscoverer> rendererDiscovererList = new ArrayList<>();
-    List<RendererItem> rendererItemList = new ArrayList<>();
+//    List<RendererDiscoverer> rendererDiscovererList = new ArrayList<>();
+//    List<RendererItem> rendererItemList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,7 +175,7 @@ public class VideoplayerActivity extends AppCompatActivity {
             selectedMovie = new GsonBuilder().create().fromJson(arguments.getString("movieObject", "{}"), Movie.class);
             videoUri = selectedMovie.getMovieUrl();//NOT IMPORTANT ANYMORE AS WE"VE GOT THE MOVIE OBJECT
             movieId = selectedMovie.getId();
-            communicationDevice = ConfigurationHelper.getCommunicationDevice(arguments.getString("communication_device"));
+            communicationDevice = ConfigurationHelper.getCommunicationDevice(ProductHelper.getCommunicationType(arguments.getString("communication_device")));
             isLocalPlay = arguments.getBoolean("localPlay");
 
             selectedProduct = new GsonBuilder().create().fromJson(arguments.getString("productObject", "{}"), Product.class);
@@ -301,7 +292,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                 });
             }
         } else {
-            //INCOMING FROM CatalogActivity.java
+            //INCOMING FROM CatalogActivity
             SharedPreferences myPreferences = getSharedPreferences("app", 0);
             selectedMovie = new GsonBuilder().create().fromJson(myPreferences.getString("selectedMovieObject", "{}"), Movie.class);
             videoUri = selectedMovie.getMovieUrl();
@@ -395,44 +386,9 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     //VLC stuff
-    private LibVLC createLibVLC() {
-        final List<String> args = new ArrayList<>();
-        args.add("-vvv");
-        args.add("--sout-all");
-        args.add("--aout=opensles");
-//        args.add("--no-gnutls-system-trust"); //DISABLE WITH TLS TRUST ISSUES
-        /*
-        However this doesnt solve the casting problem, a certificate of google needs to be in order I guess
-         */
-//      args.add("--drop-late-frames");
-        //LOCAL PLAY
-        args.add("--file-caching=45000");
-        args.add("--no-avcodec-hurry-up");//ATTEMPT TO SOLVE GREY SCREEN PROBLEM D67
-        //STREAMING
-        args.add("--network-caching=20000");
-
-        final LibVLC libVLC = new LibVLC(this, args);
-        return libVLC;
-    }
 
     private void setVideoFeatures() {
         mediaPlayer.setVideoTrackEnabled(true);
-
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int sw = displayMetrics.widthPixels;
-        int sh = displayMetrics.heightPixels;
-
-//        int sw = getWindow().getDecorView().getWidth();
-//        int sh = getWindow().getDecorView().getHeight();
-
-        // sanity check
-        if (sw * sh == 0) {
-            Log.e(TAG, "Invalid surface size");
-            return;
-        }
-
-        mediaPlayer.getVLCVout().setWindowSize(sw, sh);
         mediaPlayer.setEventListener(new MediaPlayer.EventListener() {
             @Override
             public void onEvent(MediaPlayer.Event event) {
@@ -442,7 +398,6 @@ public class VideoplayerActivity extends AppCompatActivity {
 //                if (event.type != MediaPlayer.Event.Buffering && isBestStreamLoaded) {
                 if (event.type != MediaPlayer.Event.Buffering) {
                     Log.d(TAG, "VLC Ready buffering");
-                    vlcLoaded = true;
                 }
 
                 //IF END OF VIDEO IS REACHED
@@ -501,7 +456,6 @@ public class VideoplayerActivity extends AppCompatActivity {
         setVideoFeatures();
 
         mediaPlayer.setRate(1.0f);
-        mediaPlayer.setAspectRatio("16:9");
         mediaPlayer.play();
     }
 
@@ -695,11 +649,6 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     public void startResultScreen() {
-
-        //Stop Ant+ service
-        final Intent antplusService = new Intent(getApplicationContext(), AntPlusService.class);
-        stopService(antplusService);
-
         // Build result screen
         final Intent resultScreen = new Intent(getApplicationContext(), ResultActivity.class);
         startActivity(resultScreen);
@@ -824,34 +773,29 @@ public class VideoplayerActivity extends AppCompatActivity {
         videoPlayerViewModel.setPlayerPaused(false);
         videoPlayerViewModel.setResetChronometer(true);
 
-//        setVideoFeatures();
-        int sw = getWindow().getDecorView().getWidth();
-        int sh = getWindow().getDecorView().getHeight();
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int sw = displayMetrics.widthPixels;
+        int sh = displayMetrics.heightPixels;
+
+        //FIX FOR IIYAMA ProLite T2452MTS MONITOR
+        if (sh == 1008) {
+            sh = 1080;
+        }
 
         // sanity check
         if (sw * sh == 0) {
             Log.e(TAG, "Invalid surface size");
+            LogHelper.WriteLogRule(getApplicationContext(), getSharedPreferences("app", MODE_PRIVATE).getString("apikey",""), String.format("[VIDEO] Invalid surface size:(wxh) %d x %d . Movie title: %s .",sw, sh, selectedMovie.getMovieTitle()), "ERROR", "");
             return;
         }
 
         mediaPlayer.getVLCVout().setWindowSize(sw, sh);
+        mediaPlayer.setAspectRatio("16:9");
         mediaPlayer.play();
 
         SharedPreferences sharedPreferences = getSharedPreferences("app", MODE_PRIVATE);
         String apikey = sharedPreferences.getString("apikey", "");
-
-        //Add some log rules to test content of mediaplayer
-//        if (selectedProduct.getProductName().toLowerCase().contains("praxfilm") ||
-//            selectedProduct.getProductName().toLowerCase().contains("praxspin")) {
-//            LogHelper.WriteLogRule(this, apikey, "MediaPlayer initialised: " + (mediaPlayer != null), "DEBUG", "");
-//            if (mediaPlayer != null) {
-//                LogHelper.WriteLogRule(this, apikey, "MediaPlayer.getMedia() initialised: " + (mediaPlayer.getMedia() != null), "DEBUG", "");
-//                if (mediaPlayer.getMedia() != null) {
-//                    LogHelper.WriteLogRule(this, apikey, "MediaPlayer.getMedia().getUri().toString(): " + mediaPlayer.getMedia().getUri().toString(), "DEBUG", "");
-//                }
-//            }
-//            LogHelper.WriteLogRule(this, apikey, "Video Path: " + videoUri, "DEBUG", "");
-//        }
 
         if (getCurrentBackgroundSoundByCurrentPostion() != null) {
             switchToNewBackgroundMedia(getCurrentBackgroundSoundByCurrentPostion().getSoundUrl());
@@ -1161,17 +1105,12 @@ public class VideoplayerActivity extends AppCompatActivity {
         if (!ApplicationSettings.DEVELOPER_MODE) {
             switch (communicationDevice) {
                 case ANT_PLUS:
-                    //Start AntPlus service to connect with cadence sensor
-                    Intent antplusService = new Intent(getApplicationContext(), AntPlusService.class);
-                    startService(antplusService);
-                    break;
+                    //DEPRECATED:: Start AntPlus service to connect with cadence sensor
+
                 case BLE:
                     //Start BLE to connect with sensor device
-                    Intent bleService = new Intent(getApplicationContext(), BleService.class);
+                    final Intent bleService = new Intent(getApplicationContext(), BleService.class);
                     startService(bleService);
-//                    bleWrapper = new BleWrapper();
-//                    bleWrapper.initBle(this);
-//                    bleWrapper.connectDefaultBleDevice();
                 default:
                     //NONE
             }
@@ -1188,6 +1127,8 @@ public class VideoplayerActivity extends AppCompatActivity {
     private void initializeVlcVideoPlayer() {
         if (mediaPlayer == null) {
             setMediaPlayer();
+        } else {
+            Log.d(TAG, "Mediaplayer already exists with aspect ratio: "+mediaPlayer.getAspectRatio());
         }
     }
 
@@ -1383,8 +1324,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     private void stopSensorService() {
         switch(communicationDevice) {
             case ANT_PLUS:
-                final Intent antplusService = new Intent(getApplicationContext(), AntPlusService.class);
-                stopService(antplusService);
+                Log.d(TAG, "DEPRECATED");
                 break;
             case BLE:
 //                final Intent bleService = new Intent(getApplicationContext(), BleService.class);

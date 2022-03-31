@@ -1,6 +1,7 @@
 package com.videostreamtest.ui.phone.productpicker;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -17,10 +18,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
@@ -28,17 +31,26 @@ import androidx.navigation.NavController;
 import androidx.navigation.NavGraph;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Product;
+import com.videostreamtest.config.entity.Routefilm;
+import com.videostreamtest.data.model.Movie;
+import com.videostreamtest.data.model.log.DeviceInformation;
 import com.videostreamtest.service.ble.BleService;
+import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
+import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
@@ -46,19 +58,32 @@ import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.VideoLanLib;
 import com.videostreamtest.workers.PeriodicInstallPackageServiceWorker;
+import com.videostreamtest.workers.SoundInformationServiceWorker;
+import com.videostreamtest.workers.UpdateRegisteredMovieServiceWorker;
+import com.videostreamtest.workers.UpdateRoutePartsServiceWorker;
+import com.videostreamtest.workers.download.ActivateDownloadRunnersServiceWorker;
+import com.videostreamtest.workers.download.DownloadMovieServiceWorker;
+import com.videostreamtest.workers.download.DownloadStatusVerificationServiceWorker;
+import com.videostreamtest.workers.synchronisation.ActiveProductMovieLinksServiceWorker;
+import com.videostreamtest.workers.synchronisation.SyncFlagsServiceWorker;
+import com.videostreamtest.workers.synchronisation.SyncMovieFlagsServiceWorker;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+import static com.videostreamtest.utils.ApplicationSettings.NUMBER_OF_DOWNLOAD_RUNNERS;
 
 public class ProductPickerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private final static String TAG = ProductPickerActivity.class.getSimpleName();
 
     private ProductPickerViewModel productPickerViewModel;
+    private String apikey = "";
 
     private DrawerLayout drawerLayout;
     private NavigationView navView;
@@ -91,11 +116,30 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         drawerLayout = findViewById(R.id.drawer_layout);
         navView = drawerLayout.findViewById(R.id.nav_view);
 
+        apikey = getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
+    }
+
+    @Override
+    public void onUserInteraction() {
+        super.onUserInteraction();
+        resetScreensaverTimer();
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        findViewById(android.R.id.content).invalidate();
+        navView.setNavigationItemSelectedListener(this);
+        //LOG INFORMATION
+        logDeviceInformation();
+
+        //PERIODIC ACTIONS
+        syncMovieDatabasePeriodically();
+        checkForUpdatePeriodically();
+
         productPickerViewModel.getCurrentConfig().observe(this, config -> {
             if (config != null) {
                 PermissionHelper.requestPermission(getApplicationContext(), this, config);
-
-                checkForUpdatePeriodically(config.getAccountToken());
 
                 LogHelper.WriteLogRule(getApplicationContext(), config.getAccountToken(),"isTouchscreen: "+isTouchScreen(), "DEBUG", "");
 
@@ -115,6 +159,8 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
 
                 if (config.isLocalPlay()) {
                     hideMenuItem(R.id.nav_logout);
+                    downloadLocalMovies();
+                    downloadStatusVerificationCheck();
                 } else {
                     hideMenuItem(R.id.nav_downloads);
                 }
@@ -135,20 +181,6 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
             }
             Log.d(TAG, "LIBVLC hash: "+VideoLanLib.getLibVLC(getApplicationContext()).hashCode());
         });
-    }
-
-    @Override
-    public void onUserInteraction() {
-        super.onUserInteraction();
-        resetScreensaverTimer();
-    }
-
-    @Override
-    protected void onPostCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        findViewById(android.R.id.content).invalidate();
-        navView.setNavigationItemSelectedListener(this);
-
     }
 
     @Override
@@ -213,13 +245,8 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Manifest.permission.INTERNET,
                     Manifest.permission.ACCESS_NETWORK_STATE,
-//                    Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.BLUETOOTH,
                     Manifest.permission.BLUETOOTH_ADMIN,
-//                    Manifest.permission.ACCESS_BACKGROUND_LOCATION, //ANDROID 10 FOR BLE
-//                    Manifest.permission.ACCESS_COARSE_LOCATION, //ANDROID 10 OR OLDER THEN 7.0 FOR BLE
-//                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-//                    Manifest.permission.READ_EXTERNAL_STORAGE
             }, 2323);
             if (checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED){
                 Log.d(TAG, "BLUETOOTH PERMISSION GRANTED");
@@ -262,7 +289,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         return false;
     }
 
-    private void checkForUpdatePeriodically(final String apikey) {
+    private void checkForUpdatePeriodically() {
         Data.Builder syncData = new Data.Builder();
         syncData.putString("apikey",  apikey);
         Constraints constraint = new Constraints.Builder()
@@ -299,6 +326,207 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
             Menu nav_Menu = navView.getMenu();
             nav_Menu.findItem(id).setVisible(false);
         }
+    }
+
+    private void downloadLocalMovies() {
+        productPickerViewModel.getCurrentConfig().observe(this, currentConfig -> {
+            if (currentConfig != null && isStoragePermissionGranted(currentConfig.isLocalPlay())) {
+                productPickerViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(this, routefilms -> {
+                    if (routefilms.size()>0 && currentConfig.isLocalPlay()) {
+                        //CHECK IF ALL MOVIES FIT TO DISK
+                        // Accumulate size of movies
+                        long totalDownloadableMovieFileSizeOnDisk = 0L;
+                        for (Routefilm routefilm: routefilms) {
+                            if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
+                                totalDownloadableMovieFileSizeOnDisk += routefilm.getMovieFileSize();
+                            }
+                        }
+
+                        if (DownloadHelper.canFileBeCopiedToLargestVolume(getApplicationContext(), totalDownloadableMovieFileSizeOnDisk)) {
+
+                            for (final Routefilm routefilm: routefilms) {
+                                startDownloadWorker(routefilm.getMovieId(), currentConfig.getPraxCloudMediaServerUrl());
+                            }
+
+//                            Constraints constraints = new Constraints.Builder()
+//                                    .setRequiredNetworkType(NetworkType.CONNECTED)
+//                                    .build();
+//                            Data.Builder mediaDownloadInputData = new Data.Builder();
+//                            mediaDownloadInputData.putString("localMediaServer", currentConfig.getPraxCloudMediaServerLocalUrl());
+////
+//
+//                            PeriodicWorkRequest activateDownloadRunners = new PeriodicWorkRequest.Builder(ActivateDownloadRunnersServiceWorker.class, 2, TimeUnit.HOURS)
+//                                    .setConstraints(constraints)
+//                                    .setInputData(mediaDownloadInputData.build())
+//                                    .addTag("activator-download-runners")
+//                                    .build();
+//                            WorkManager.getInstance(this)
+//                                    .enqueueUniquePeriodicWork("activator-download-runners-cluster-worker", ExistingPeriodicWorkPolicy.KEEP, activateDownloadRunners);
+
+//                            List<OneTimeWorkRequest> downloadRunners = new ArrayList<>();
+//
+//                            for (int downloadRunnerIndex = 0; downloadRunnerIndex < NUMBER_OF_DOWNLOAD_RUNNERS; downloadRunnerIndex++) {
+//                                OneTimeWorkRequest downloadRunner = new OneTimeWorkRequest.Builder(DownloadMovieServiceWorker.class)
+//                                        .setConstraints(constraints)
+//                                        .setInputData(mediaDownloadInputData.build())
+//                                        .addTag("download-runner-request-id-"+downloadRunnerIndex)
+//                                        .build();
+//                                downloadRunners.add(downloadRunner);
+//
+//                            }
+//                            WorkManager.getInstance(this)
+//                                    .beginUniqueWork("download-runner-cluster-"+0, ExistingWorkPolicy.KEEP, downloadRunners)
+//                                    .enqueue();
+                        } else {
+                            Log.d(TAG, "Movies do not fit on disk, DownloadRunners not started.");
+                            LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(), "Movies do not fit on disk, DownloadRunners aborted.","DEBUG", "");
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void startDownloadWorker(final int movieId, final String localMediaServerUrl) {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+        Data.Builder mediaDownloadInputData = new Data.Builder();
+        mediaDownloadInputData.putString("localMediaServer", localMediaServerUrl);
+        mediaDownloadInputData.putInt("movie-id", movieId);
+
+        OneTimeWorkRequest downloadRunner = new OneTimeWorkRequest.Builder(DownloadMovieServiceWorker.class)
+                .setConstraints(constraints)
+                .setInputData(mediaDownloadInputData.build())
+                .addTag("download-runner-request-movie-id-"+movieId)
+                .build();
+        WorkManager.getInstance(getApplicationContext())
+                .beginUniqueWork("download-runner-cluster-"+movieId, ExistingWorkPolicy.KEEP, downloadRunner)
+                .enqueue();
+    }
+
+    private void downloadStatusVerificationCheck() {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        PeriodicWorkRequest downloadStatusVerificationWorker = new PeriodicWorkRequest.Builder(DownloadStatusVerificationServiceWorker.class, 30, TimeUnit.MINUTES)
+                .setConstraints(constraints)
+                .addTag("download-status-verification")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("download-status-verification-worker", ExistingPeriodicWorkPolicy.KEEP, downloadStatusVerificationWorker);
+
+    }
+
+    public boolean isStoragePermissionGranted(final boolean isLocalPlay) {
+        if (isLocalPlay) {
+            if (Build.VERSION.SDK_INT >= 23) {
+                if (getApplicationContext().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    Log.v(TAG, "Permission is granted");
+                    return true;
+                } else {
+                    Log.v(TAG, "Permission is revoked");
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                    return false;
+                }
+            } else { //permission is automatically granted on sdk<23 upon installation
+                Log.v(TAG, "Permission is granted");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void syncMovieDatabasePeriodically() {
+        Data.Builder syncData = new Data.Builder();
+        syncData.putString("apikey",  apikey);
+        Constraints constraint = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        PeriodicWorkRequest productMovieRequest = new PeriodicWorkRequest.Builder(ActiveProductMovieLinksServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .setInputData(syncData.build())
+                .addTag("productmovie-link")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-database-pms-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productMovieRequest);
+
+        PeriodicWorkRequest syncDatabaseWorkRequest = new PeriodicWorkRequest.Builder(UpdateRegisteredMovieServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .setInputData(syncData.build())
+                .addTag("sync-database")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-database-movies-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, syncDatabaseWorkRequest);
+
+        PeriodicWorkRequest productMoviePartsRequest = new PeriodicWorkRequest.Builder(UpdateRoutePartsServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .setInputData(syncData.build())
+                .addTag("movieparts-link")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-database-routeparts-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productMoviePartsRequest);
+
+        PeriodicWorkRequest productMovieSoundsRequest = new PeriodicWorkRequest.Builder(SoundInformationServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .setInputData(syncData.build())
+                .addTag("moviesounds-sync")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-database-sounds-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productMovieSoundsRequest);
+
+        PeriodicWorkRequest flagRequest = new PeriodicWorkRequest.Builder(SyncFlagsServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .setInputData(syncData.build())
+                .addTag("flags-sync")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-database-flags", ExistingPeriodicWorkPolicy.REPLACE, flagRequest);
+
+        PeriodicWorkRequest movieflagRequest = new PeriodicWorkRequest.Builder(SyncMovieFlagsServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .setInputData(syncData.build())
+                .addTag("movieflags-sync")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-database-movieflags", ExistingPeriodicWorkPolicy.REPLACE, movieflagRequest);
+    }
+
+    private void logDeviceInformation() {
+        DeviceInformation deviceInformation = new DeviceInformation();
+        Log.d(TAG, String.format("Android RELEASE version: %s", Build.VERSION.RELEASE));
+        deviceInformation.setRelease(Build.VERSION.RELEASE);
+        Log.d(TAG, String.format("Android SDK version: %s", Build.VERSION.SDK_INT));
+        deviceInformation.setSdk_int(Build.VERSION.SDK_INT);
+        Log.d(TAG, "Hardware: "+Build.HARDWARE);
+        deviceInformation.setHardware(Build.HARDWARE);
+        Log.d(TAG, "Manufacturer: "+Build.MANUFACTURER);
+        deviceInformation.setManufacturer(Build.MANUFACTURER);
+        Log.d(TAG, "Device: "+Build.DEVICE);
+        deviceInformation.setDevice(Build.DEVICE);
+        Log.d(TAG, "Board: "+Build.BOARD);
+        deviceInformation.setBoard(Build.BOARD);
+        Log.d(TAG, "Brand: "+Build.BRAND);
+        deviceInformation.setBrand(Build.BRAND);
+        Log.d(TAG, "Model: "+Build.MODEL);
+        deviceInformation.setModel(Build.MODEL);
+        Log.d(TAG, "Product: "+Build.PRODUCT);
+        deviceInformation.setProduct(Build.PRODUCT);
+        Log.d(TAG, "Bootloader: "+Build.BOOTLOADER);
+
+        if (Build.SUPPORTED_ABIS.length>0) {
+            Log.d(TAG, "ABIS length: "+Build.SUPPORTED_ABIS.length);
+            for (String abi : Build.SUPPORTED_ABIS) {
+                Log.d(TAG, "ABIS item: "+abi);
+            }
+        }
+        deviceInformation.setRamMemoryBytes(ConfigurationHelper.getMemorySizeInBytes(getApplicationContext()).intValue());
+        Log.d(TAG, "Memory Mb: "+(ConfigurationHelper.getMemorySizeInBytes(getApplicationContext())/1024/1024));
+        Log.d(TAG, "Memory Gb: "+(ConfigurationHelper.getMemorySizeInBytes(getApplicationContext())/1024/1024/1024));
+        LogHelper.WriteLogRule(getApplicationContext(), apikey, new GsonBuilder().create().toJson(deviceInformation, DeviceInformation.class).replaceAll("\"","\'"), "DEBUG", "");
     }
 
 }
