@@ -2,11 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.videostreamtest">
-    <!-- Android 11 and higher: Packages which are used from other installed apps -->
-    <queries>
-        <package android:name="com.dsi.ant.plugins.antplus" />
-        <package android:name="com.dsi.ant" />
-    </queries>
 
     <!-- REQUIRED FOR CONSTRAINT OF INTERNET   -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -94,7 +89,6 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
 
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-                <action android:name="com.dsi.ant.server.USB_PERMISSION" />
             </intent-filter>
         </activity>
         <activity
@@ -132,7 +126,6 @@
 <!--                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />-->
 
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-                <action android:name="com.dsi.ant.server.USB_PERMISSION" />
             </intent-filter>
             <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_device_filter" />
         </activity>
@@ -144,7 +137,6 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-                <action android:name="com.dsi.ant.server.USB_PERMISSION" />
             </intent-filter>
             <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_device_filter" />
         </activity>
@@ -166,10 +158,6 @@
             <!-- </intent-filter> -->
         </activity> <!-- END ACTIVITIES -->
         <!-- SERVICES -->
-        <service
-            android:name=".service.ant.AntPlusService"
-            android:icon="@drawable/ic_launcher_background"
-            android:label="AntplusService" />
         <service
             android:name=".service.ble.BleService"
             android:icon="@drawable/ic_launcher_background"
