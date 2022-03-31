@@ -135,4 +135,9 @@
     <string name="downloads_fragment_subtitle">Download overzicht van de nieuwe routefilms.</string>
     <string name="download_information_overlay_main_title">Download informatie</string>
     <string name="download_information_overlay_error_title">Download waarschuwingen</string>
+    <string name="ble_choose_connected_device_toast_message">Selecteer sensor om te verbinden.</string>
+    <string name="ble_device_lack_permission_message">Geen achtergrond permissie gegeven welke verplicht is.</string>
+    <string name="menu_nav_routes_title">Routes</string>
+    <string name="ble_connectivity_problems_alert">Bij problemen met BLE de bluetooth en/of de loactie uit en aan zetten.</string>
+    <string name="videoplayer_no_audio_alert_content">Audio wordt niet gedetecteerd, dit zijn de meest waarschijnlijke redenen:\n- Apparaat gedempt\n- Geen bestand geladen\n- Volume te laag\n- Android-systeeminstellingen niet correct ingesteld</string>
 </resources>
