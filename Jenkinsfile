@@ -22,6 +22,11 @@ pipeline {
             }
         }
         stage('Deploy') {
+            when {
+                expression {
+                  env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'master'
+              }
+            }
             steps {
                 echo 'Deploying on server...'
                 script {
