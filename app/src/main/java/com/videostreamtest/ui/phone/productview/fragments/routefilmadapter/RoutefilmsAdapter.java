@@ -37,10 +37,7 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
     private LinearLayout routeInformationBlock;
 
     //ELEMENTS FOR LIST WHICH IS ATTACHED TO THE ADAPTER
-    //TODO: Put Lists in MutableLiveData objects for concurrency issues
     private List<Routefilm> routefilmList = new ArrayList<>();
-    private List<Flag> flags = new ArrayList<>();
-    private List<MovieFlag> movieFlags = new ArrayList<>();
 
     private int selectedRoutefilm = 0;
 
@@ -67,17 +64,14 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
     @Override
     public void onBindViewHolder(@NonNull @NotNull RoutefilmsViewHolder holder, int position) {
         holder.itemView.setSelected(selectedRoutefilm == position);
+        if (routefilmList != null && routefilmList.size() > 0) {
+            holder.bindProduct(routefilmList.get(position), selectedProduct, position, routeInformationBlock, this);
+        }
         if (selectedRoutefilm == position) {
             final ImageButton routeSceneryImage = holder.itemView.findViewById(R.id.routeImageCoverButton);
             routeSceneryImage.setFocusableInTouchMode(true);
             routeSceneryImage.setFocusable(true);
             routeSceneryImage.requestFocus();
-        }
-        if (routefilmList != null && routefilmList.size() > 0 &&
-            flags != null && flags.size()>0 &&
-            movieFlags != null && movieFlags.size()>0) {
-            final Flag selectedFlag = getFlagOfRoutefilm(routefilmList.get(position));
-            holder.bindProduct(routefilmList.get(position), selectedProduct, position, routeInformationBlock, selectedFlag);
         }
     }
 
@@ -164,71 +158,6 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
         } else {
             return false;
         }
-    }
-
-    public void updateFlagList(final List<Flag> flagList) {
-        if (flagList != null && flagList.size()>0) {
-            for (final Flag flag: flagList) {
-                if (!isFlagPresent(flag)) {
-                    this.flags.add(flag);
-                    notifyDataSetChanged();
-                }
-            }
-        }
-    }
-
-    private boolean isFlagPresent(final Flag requestedFlag) {
-        if (this.flags.size()>0) {
-            for (final Flag flag: this.flags) {
-                if (requestedFlag.getId().intValue() == flag.getId().intValue()) {
-                    return requestedFlag.getId().intValue() == flag.getId().intValue();
-                }
-            }
-            return false;
-        } else {
-            return false;
-        }
-    }
-
-    public void updateMovieFlagList(final List<MovieFlag> movieFlagList) {
-        if (movieFlagList != null && movieFlagList.size()>0) {
-            for (final MovieFlag movieFlag: movieFlagList) {
-                if (!isMovieFlagPresent(movieFlag)) {
-                    this.movieFlags.add(movieFlag);
-                    notifyDataSetChanged();
-                }
-            }
-        }
-    }
-
-    private boolean isMovieFlagPresent(final MovieFlag requestedMovieFlag) {
-        if (this.movieFlags.size()>0) {
-            for (final MovieFlag movieFlag: this.movieFlags) {
-                if (requestedMovieFlag.getId().intValue() == movieFlag.getId().intValue()) {
-                    return requestedMovieFlag.getId().intValue() == movieFlag.getId().intValue();
-                }
-            }
-            return false;
-        } else {
-            return false;
-        }
-    }
-
-    private Flag getFlagOfRoutefilm(final Routefilm routefilm) {
-        if (routefilm != null && movieFlags!=null && flags != null) {
-            //select movieflag based on routefilm id
-            for (final MovieFlag movieFlag: movieFlags) {
-                if (routefilm.getMovieId().intValue() == movieFlag.getMovieId().intValue()) {
-                    //select flag based on movieFlag flagId
-                    for (final Flag flag: flags) {
-                        if (movieFlag.getFlagId().intValue() == flag.getId().intValue()) {
-                            return flag;
-                        }
-                    }
-                }
-            }
-        }
-        return null;
     }
 
 }

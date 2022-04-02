@@ -1,6 +1,7 @@
 package com.videostreamtest.data.model.log;
 
 public class DeviceInformation {
+    private String objectType;
     private String release;
     private Integer sdk_int;
     private String manufacturer;
@@ -11,6 +12,14 @@ public class DeviceInformation {
     private String model;
     private String product;
     private Integer ramMemoryBytes;
+
+    public String getObjectType() {
+        return objectType;
+    }
+
+    public void setObjectType(String objectType) {
+        this.objectType = objectType;
+    }
 
     public String getRelease() {
         return release;

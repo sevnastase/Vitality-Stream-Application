@@ -70,7 +70,7 @@ public class DownloadHelper {
         for (File externalStorageVolume: externalStorageVolumes) {
             String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/" + movie.getId().intValue();
             File possibleMovieLocation = new File(pathname);
-            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
+            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles() != null && possibleMovieLocation.listFiles().length>0) {
                 long totalSizeOnDisk = 0;
 
                 for (File file: possibleMovieLocation.listFiles()) {
@@ -267,9 +267,11 @@ public class DownloadHelper {
         String movieFileName = setLocalFilePath(context, movie.getMovieUrl());
         String sceneryFileName = setLocalFilePath(context, movie.getMovieImagepath());
         String mapFilename = setLocalFilePath(context, movie.getMovieRouteinfoPath());
+        String flagFilename = setLocalFilePath(context, movie.getMovieFlagUrl());
 
         File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
         for (File externalStorageVolume: externalStorageVolumes) {
+            //Routefilm files
             String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + movie.getId();
             File possibleMovieLocation = new File(pathname);
             if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
@@ -281,6 +283,15 @@ public class DownloadHelper {
                 }
                 if (!mapFilename.contains("/")) {
                     movie.setMovieRouteinfoPath(pathname + "/" + mapFilename);
+                }
+            }
+
+            //Flag files
+            String pathnameFlags = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER;
+            File possibleFlagLocation = new File(pathnameFlags);
+            if (possibleFlagLocation.exists() && possibleFlagLocation.listFiles().length>0) {
+                if (!flagFilename.contains("/") && !flagFilename.isEmpty()) {
+                    movie.setMovieFlagUrl(pathnameFlags+"/"+flagFilename);
                 }
             }
         }
@@ -316,15 +327,14 @@ public class DownloadHelper {
 
     private static String setLocalFilePath(final Context context, final String url) {
         try {
-            if(!isLocalFilePath(url)) {
+            if(!isLocalFilePath(url) && !url.isEmpty()) {
                 URL movieUrl = new URL(url);
                 return new File(movieUrl.getFile()).getName();
             }
         }
         catch (MalformedURLException e) {
             Log.e(TAG, e.getLocalizedMessage());
-            SharedPreferences sharedPreferences = context.getSharedPreferences("app", MODE_PRIVATE);
-            String apikey = sharedPreferences.getString("apikey", "");
+            String apikey = AccountHelper.getAccountToken(context);
             LogHelper.WriteLogRule(context, apikey, "ERROR ROUTEFILM: [SET LOCAL MEDIA] [URL:" + url + "] " + e.getLocalizedMessage(), "ERROR", "");
         }
         return url;

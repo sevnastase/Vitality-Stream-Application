@@ -7,8 +7,15 @@ import androidx.room.PrimaryKey;
 
 import com.videostreamtest.data.model.Movie;
 
+import java.util.List;
+
 @Entity(tableName = "routefilm_table")
 public class Routefilm {
+//    @PrimaryKey(autoGenerate = true)
+//    @ColumnInfo(name = "movie_uuid")
+//    @NonNull
+//    private Integer movieUuid;
+
     @PrimaryKey
     @ColumnInfo(name = "movie_id")
     @NonNull
@@ -62,6 +69,20 @@ public class Routefilm {
     @ColumnInfo(name = "movie_recorded_fps")
     @NonNull
     private Integer recordedFps;
+
+    @ColumnInfo(name = "movie_flag_url")
+    @NonNull
+    private String movieFlagUrl;
+//    private List<String> movieFlagUrl;
+
+//    @NonNull
+//    public Integer getMovieUuid() {
+//        return movieUuid;
+//    }
+//
+//    public void setMovieUuid(@NonNull Integer movieUuid) {
+//        this.movieUuid = movieUuid;
+//    }
 
     @NonNull
     public Integer getMovieId() {
@@ -175,6 +196,15 @@ public class Routefilm {
 
     public void setRecordedFps(@NonNull Integer recordedFps) {
         this.recordedFps = recordedFps;
+    }
+
+    @NonNull
+    public String getMovieFlagUrl() {
+        return movieFlagUrl;
+    }
+
+    public void setMovieFlagUrl(@NonNull String movieFlagUrl) {
+        this.movieFlagUrl = movieFlagUrl;
     }
 
     public static Routefilm fromMovie(final Movie movie, final String apikey) {

@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.response.Product;
+import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerAdapter;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerViewModel;
 
@@ -43,45 +44,42 @@ public class ProductPickerFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        productPickerViewModel.getCurrentConfig().observe(getViewLifecycleOwner(), config -> {
-            if (config != null) {
-                productPickerViewModel.getAccountProducts(config.getAccountToken(), !config.isLocalPlay()).observe(getViewLifecycleOwner(), products ->{
+        productPickerViewModel.getAccountProducts(AccountHelper.getAccountToken(getActivity()), !AccountHelper.getAccountType(getActivity()).equalsIgnoreCase("standalone"))
+                .observe(getViewLifecycleOwner(), products ->{
 
-                    List<Product> productList = new ArrayList<>();
-                    if (products.size()>0) {
-                        for (com.videostreamtest.config.entity.Product extProd : products) {
-                            Product addProd = new Product();
-                            addProd.setId(extProd.getUid());
-                            addProd.setDefaultSettingsId(0);
-                            addProd.setProductLogoButtonPath(extProd.getProductLogoButtonPath());
-                            addProd.setSupportStreaming(extProd.getSupportStreaming());
-                            addProd.setProductName(extProd.getProductName());
-                            addProd.setBlocked(extProd.getBlocked());
-                            addProd.setCommunicationType(extProd.getCommunicationType());
-                            productList.add(addProd);
-                        }
-                    }
-
-                    ProductPickerAdapter productPickerAdapter = new ProductPickerAdapter(productList.toArray(new Product[0]));
-                    //set adapter to recyclerview
-                    productOverview.setAdapter(productPickerAdapter);
-                    //set recyclerview visible
-                    productOverview.setVisibility(View.VISIBLE);
-
-                    //For UI alignment in center with less then 5 products
-                    int spanCount = 5;
-                    if (products.size() < 5) {
-                        spanCount = products.size();
-                    }
-                    if (spanCount ==0) {
-                        spanCount =1;
-                    }
-                    //Grid Layout met een max 5 kolommen breedte
-                    final GridLayoutManager gridLayoutManager = new GridLayoutManager(requireActivity(),spanCount);
-                    //Zet de layoutmanager erin
-                    productOverview.setLayoutManager(gridLayoutManager);
-                });
+            List<Product> productList = new ArrayList<>();
+            if (products.size()>0) {
+                for (com.videostreamtest.config.entity.Product extProd : products) {
+                    Product addProd = new Product();
+                    addProd.setId(extProd.getUid());
+                    addProd.setDefaultSettingsId(0);
+                    addProd.setProductLogoButtonPath(extProd.getProductLogoButtonPath());
+                    addProd.setSupportStreaming(extProd.getSupportStreaming());
+                    addProd.setProductName(extProd.getProductName());
+                    addProd.setBlocked(extProd.getBlocked());
+                    addProd.setCommunicationType(extProd.getCommunicationType());
+                    productList.add(addProd);
+                }
             }
+
+            ProductPickerAdapter productPickerAdapter = new ProductPickerAdapter(productList.toArray(new Product[0]));
+            //set adapter to recyclerview
+            productOverview.setAdapter(productPickerAdapter);
+            //set recyclerview visible
+            productOverview.setVisibility(View.VISIBLE);
+
+            //For UI alignment in center with less then 5 products
+            int spanCount = 5;
+            if (products.size() < 5) {
+                spanCount = products.size();
+            }
+            if (spanCount ==0) {
+                spanCount =1;
+            }
+            //Grid Layout met een max 5 kolommen breedte
+            final GridLayoutManager gridLayoutManager = new GridLayoutManager(requireActivity(),spanCount);
+            //Zet de layoutmanager erin
+            productOverview.setLayoutManager(gridLayoutManager);
         });
 
     }

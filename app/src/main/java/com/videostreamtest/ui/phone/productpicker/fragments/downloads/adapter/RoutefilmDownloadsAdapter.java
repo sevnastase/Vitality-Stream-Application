@@ -72,6 +72,8 @@ public class RoutefilmDownloadsAdapter extends RecyclerView.Adapter<RoutefilmDow
                 if (!isRoutefilmPresent(routefilm)) {
                     this.routefilmList.add(routefilm);
                     notifyDataSetChanged();
+                    //Make more efficient
+                    //notifyAll keeps rebinding the viewholders setting the requestfocus triggers
                 }
             }
             for (final Routefilm routefilm: this.routefilmList) {

@@ -62,7 +62,7 @@ import java.util.concurrent.Executors;
         MovieFlag.class,
         UsageTracker.class,
         GeneralDownloadTracker.class
-}, version = 8, exportSchema = true)
+}, version = 9, exportSchema = true)
 @TypeConverters({Converters.class})
 public abstract class PraxtourDatabase extends RoomDatabase {
     private final static String TAG = PraxtourDatabase.class.getSimpleName();
@@ -169,6 +169,14 @@ public abstract class PraxtourDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_8_9 = new Migration(8, 9) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE `routefilm_table` "
+                    + " ADD COLUMN `movie_flag_url` TEXT NOT NULL DEFAULT ''; ");
+        }
+    };
+
 
     public static PraxtourDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
@@ -185,7 +193,8 @@ public abstract class PraxtourDatabase extends RoomDatabase {
                                     MIGRATION_4_5,
                                     MIGRATION_5_6,
                                     MIGRATION_6_7,
-                                    MIGRATION_7_8)
+                                    MIGRATION_7_8,
+                                    MIGRATION_8_9)
                             .build();
                 }
             }

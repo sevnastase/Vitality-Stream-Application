@@ -49,6 +49,7 @@ import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.log.DeviceInformation;
 import com.videostreamtest.service.ble.BleService;
+import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
@@ -296,7 +297,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build();
 
-        PeriodicWorkRequest productUpdaterRequest = new PeriodicWorkRequest.Builder(PeriodicInstallPackageServiceWorker.class, 20, TimeUnit.MINUTES)
+        PeriodicWorkRequest productUpdaterRequest = new PeriodicWorkRequest.Builder(PeriodicInstallPackageServiceWorker.class, 2, TimeUnit.HOURS)
                 .setInputData(syncData.build())
                 .setConstraints(constraint)
                 .addTag("product-updater")
@@ -329,10 +330,9 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
     }
 
     private void downloadLocalMovies() {
-        productPickerViewModel.getCurrentConfig().observe(this, currentConfig -> {
-            if (currentConfig != null && isStoragePermissionGranted(currentConfig.isLocalPlay())) {
-                productPickerViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(this, routefilms -> {
-                    if (routefilms.size()>0 && currentConfig.isLocalPlay()) {
+            if (isStoragePermissionGranted(AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone"))) {
+                productPickerViewModel.getRoutefilms(AccountHelper.getAccountToken(getApplicationContext())).observe(this, routefilms -> {
+                    if (routefilms.size()>0 && AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone")) {
                         //CHECK IF ALL MOVIES FIT TO DISK
                         // Accumulate size of movies
                         long totalDownloadableMovieFileSizeOnDisk = 0L;
@@ -345,46 +345,16 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                         if (DownloadHelper.canFileBeCopiedToLargestVolume(getApplicationContext(), totalDownloadableMovieFileSizeOnDisk)) {
 
                             for (final Routefilm routefilm: routefilms) {
-                                startDownloadWorker(routefilm.getMovieId(), currentConfig.getPraxCloudMediaServerUrl());
+                                startDownloadWorker(routefilm.getMovieId(), AccountHelper.getAccountMediaServerUrl(getApplicationContext()));
                             }
 
-//                            Constraints constraints = new Constraints.Builder()
-//                                    .setRequiredNetworkType(NetworkType.CONNECTED)
-//                                    .build();
-//                            Data.Builder mediaDownloadInputData = new Data.Builder();
-//                            mediaDownloadInputData.putString("localMediaServer", currentConfig.getPraxCloudMediaServerLocalUrl());
-////
-//
-//                            PeriodicWorkRequest activateDownloadRunners = new PeriodicWorkRequest.Builder(ActivateDownloadRunnersServiceWorker.class, 2, TimeUnit.HOURS)
-//                                    .setConstraints(constraints)
-//                                    .setInputData(mediaDownloadInputData.build())
-//                                    .addTag("activator-download-runners")
-//                                    .build();
-//                            WorkManager.getInstance(this)
-//                                    .enqueueUniquePeriodicWork("activator-download-runners-cluster-worker", ExistingPeriodicWorkPolicy.KEEP, activateDownloadRunners);
-
-//                            List<OneTimeWorkRequest> downloadRunners = new ArrayList<>();
-//
-//                            for (int downloadRunnerIndex = 0; downloadRunnerIndex < NUMBER_OF_DOWNLOAD_RUNNERS; downloadRunnerIndex++) {
-//                                OneTimeWorkRequest downloadRunner = new OneTimeWorkRequest.Builder(DownloadMovieServiceWorker.class)
-//                                        .setConstraints(constraints)
-//                                        .setInputData(mediaDownloadInputData.build())
-//                                        .addTag("download-runner-request-id-"+downloadRunnerIndex)
-//                                        .build();
-//                                downloadRunners.add(downloadRunner);
-//
-//                            }
-//                            WorkManager.getInstance(this)
-//                                    .beginUniqueWork("download-runner-cluster-"+0, ExistingWorkPolicy.KEEP, downloadRunners)
-//                                    .enqueue();
                         } else {
                             Log.d(TAG, "Movies do not fit on disk, DownloadRunners not started.");
-                            LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(), "Movies do not fit on disk, DownloadRunners aborted.","DEBUG", "");
+                            LogHelper.WriteLogRule(getApplicationContext(), AccountHelper.getAccountToken(getApplicationContext()), "Movies do not fit on disk, DownloadRunners aborted.","DEBUG", "");
                         }
                     }
                 });
             }
-        });
     }
 
     private void startDownloadWorker(final int movieId, final String localMediaServerUrl) {
@@ -446,7 +416,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build();
 
-        PeriodicWorkRequest productMovieRequest = new PeriodicWorkRequest.Builder(ActiveProductMovieLinksServiceWorker.class, 15, TimeUnit.MINUTES)
+        PeriodicWorkRequest productMovieRequest = new PeriodicWorkRequest.Builder(ActiveProductMovieLinksServiceWorker.class, 30, TimeUnit.MINUTES)
                 .setConstraints(constraint)
                 .setInputData(syncData.build())
                 .addTag("productmovie-link")
@@ -462,7 +432,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         WorkManager.getInstance(this)
                 .enqueueUniquePeriodicWork("sync-database-movies-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, syncDatabaseWorkRequest);
 
-        PeriodicWorkRequest productMoviePartsRequest = new PeriodicWorkRequest.Builder(UpdateRoutePartsServiceWorker.class, 15, TimeUnit.MINUTES)
+        PeriodicWorkRequest productMoviePartsRequest = new PeriodicWorkRequest.Builder(UpdateRoutePartsServiceWorker.class, 45, TimeUnit.MINUTES)
                 .setConstraints(constraint)
                 .setInputData(syncData.build())
                 .addTag("movieparts-link")
@@ -470,7 +440,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         WorkManager.getInstance(this)
                 .enqueueUniquePeriodicWork("sync-database-routeparts-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productMoviePartsRequest);
 
-        PeriodicWorkRequest productMovieSoundsRequest = new PeriodicWorkRequest.Builder(SoundInformationServiceWorker.class, 15, TimeUnit.MINUTES)
+        PeriodicWorkRequest productMovieSoundsRequest = new PeriodicWorkRequest.Builder(SoundInformationServiceWorker.class, 12, TimeUnit.HOURS)
                 .setConstraints(constraint)
                 .setInputData(syncData.build())
                 .addTag("moviesounds-sync")
@@ -478,7 +448,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         WorkManager.getInstance(this)
                 .enqueueUniquePeriodicWork("sync-database-sounds-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productMovieSoundsRequest);
 
-        PeriodicWorkRequest flagRequest = new PeriodicWorkRequest.Builder(SyncFlagsServiceWorker.class, 15, TimeUnit.MINUTES)
+        PeriodicWorkRequest flagRequest = new PeriodicWorkRequest.Builder(SyncFlagsServiceWorker.class, 20, TimeUnit.MINUTES)
                 .setConstraints(constraint)
                 .setInputData(syncData.build())
                 .addTag("flags-sync")
@@ -486,7 +456,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         WorkManager.getInstance(this)
                 .enqueueUniquePeriodicWork("sync-database-flags", ExistingPeriodicWorkPolicy.REPLACE, flagRequest);
 
-        PeriodicWorkRequest movieflagRequest = new PeriodicWorkRequest.Builder(SyncMovieFlagsServiceWorker.class, 15, TimeUnit.MINUTES)
+        PeriodicWorkRequest movieflagRequest = new PeriodicWorkRequest.Builder(SyncMovieFlagsServiceWorker.class, 45, TimeUnit.MINUTES)
                 .setConstraints(constraint)
                 .setInputData(syncData.build())
                 .addTag("movieflags-sync")
@@ -497,6 +467,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
 
     private void logDeviceInformation() {
         DeviceInformation deviceInformation = new DeviceInformation();
+        deviceInformation.setObjectType("DeviceInformation");
         Log.d(TAG, String.format("Android RELEASE version: %s", Build.VERSION.RELEASE));
         deviceInformation.setRelease(Build.VERSION.RELEASE);
         Log.d(TAG, String.format("Android SDK version: %s", Build.VERSION.SDK_INT));

@@ -148,7 +148,6 @@ public class PasswordFragment extends Fragment {
                             SharedPreferences.Editor editor = myPreferences.edit();
                             editor.putString("apikey", accounttoken);
                             editor.putString("password", receivedPassword);
-                            editor.commit();
 
                             Log.d(getClass().getSimpleName(), "Login accounttoken: "+accounttoken);
                             Log.d(getClass().getSimpleName(), "Config not found, inserting new one.");
@@ -170,9 +169,12 @@ public class PasswordFragment extends Fragment {
                             arguments.putInt("active-products-count", activeProductsCount);
                             if (config.isLocalPlay()) {
                                 arguments.putString("account-type", "standalone");
+                                editor.putString("account-type", "standalone");
                             } else {
                                 arguments.putString("account-type", "streaming");
+                                editor.putString("account-type", "streaming");
                             }
+                            editor.commit();
                         }
                         NavHostFragment.findNavController(PasswordFragment.this)
                                 .navigate(R.id.action_passwordFragment_to_loginStatusFragment, arguments);

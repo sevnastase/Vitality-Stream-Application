@@ -39,6 +39,7 @@ public class ApplicationSettings {
     public static final int ROUTEFILM_OVERVIEW_PAGESIZE = 12;
     public static final int NUMBER_OF_DOWNLOAD_RUNNERS = 4;
     public static final ThreadPoolExecutor THREAD_POOL_EXECUTOR = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
+    public static final ThreadPoolExecutor THREAD_POOL_LOG_EXECUTOR = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
 
     public static final int SCREENSAVER_TRIGGER_SECONDS = 30*60;
     public static boolean SCREENSAVER_ACTIVE = false;

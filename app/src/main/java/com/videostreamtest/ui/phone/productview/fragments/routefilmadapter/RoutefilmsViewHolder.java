@@ -32,6 +32,7 @@ import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
+import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
@@ -54,7 +55,7 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
     private Movie movie;
     private int position = 0;
     private LinearLayout routeInformationBlock;
-    private Flag selectedFlag;
+    private RoutefilmsAdapter routefilmsAdapter;
 
     //VIEW ELEMENTS
     private ImageButton routefilmScenery;
@@ -73,16 +74,15 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
                             final Product selectedProduct,
                             final int position,
                             final LinearLayout routeinformationBlock,
-                            final Flag selectedFlag) {
+                            final RoutefilmsAdapter routefilmsAdapter) {
         this.movie = Movie.fromRoutefilm(routefilm);
         this.selectedProduct = selectedProduct;
         this.position = position;
         this.routeInformationBlock = routeinformationBlock;
-        this.selectedFlag = selectedFlag;
+        this.routefilmsAdapter = routefilmsAdapter;
 
         //Get APIKEY for write cloud log
-        SharedPreferences sharedPreferences = itemView.getContext().getSharedPreferences("app", Context.MODE_PRIVATE);
-        apikey = sharedPreferences.getString("apikey", "");
+        apikey = AccountHelper.getAccountToken(itemView.getContext());
 
         //LOAD VIEW ELEMENT
         routefilmScenery = itemView.findViewById(R.id.routeImageCoverButton);
@@ -100,7 +100,6 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
         initMovieImages();
         initOnFocusChangeListener(selectedProduct);
         initView();
-        itemView.invalidate();
     }
 
     private void initView() {
@@ -122,18 +121,18 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
         ImageView routeFlag = routeInformationBlock.findViewById(R.id.selected_route_flag);
 
         //Set flag
-        if (selectedFlag != null) {
+        if (movie.getMovieFlagUrl() != null && !movie.getMovieFlagUrl().isEmpty()) {
             routeFlag.setVisibility(View.VISIBLE);
             if (DownloadHelper.isFlagsLocalPresent(itemView.getContext().getApplicationContext())) {
                 Picasso.get()
-                        .load(DownloadHelper.getLocalFlag(itemView.getContext().getApplicationContext(), selectedFlag))
+                        .load(new File(movie.getMovieFlagUrl()))
                         .placeholder(R.drawable.flag_placeholder)
                         .error(R.drawable.flag_placeholder)
                         .resize(150, 100)
                         .into(routeFlag);
             } else {
                 Picasso.get()
-                        .load(selectedFlag.getFlagUrl())
+                        .load(movie.getMovieFlagUrl())
                         .placeholder(R.drawable.flag_placeholder)
                         .error(R.drawable.flag_placeholder)
                         .resize(150, 100)
@@ -180,14 +179,16 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
         routefilmScenery.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                Log.d(TAG, "hasFocus routefilmscenery");
-                itemView.setSelected(true);
                 if (hasFocus) {
-                    if (selectedProduct.getSupportStreaming()==0) {
-                        PraxtourDatabase.databaseWriterExecutor.execute(()->{
-                            PraxtourDatabase.getDatabase(itemView.getContext()).usageTrackerDao().setSelectedMovie(apikey, movie.getId());
-                        });
+                    itemView.setSelected(true);
+                    if (routefilmsAdapter != null) {
+                        routefilmsAdapter.setSelectedRoutefilm(position);
                     }
+//                    if (selectedProduct.getSupportStreaming()==0) {
+//                        PraxtourDatabase.databaseWriterExecutor.execute(()->{
+//                            PraxtourDatabase.getDatabase(itemView.getContext()).usageTrackerDao().setSelectedMovie(apikey, movie.getId());
+//                        });
+//                    }
                     drawSelectionBorder();
                     updateRouteInformationBlock();
                 } else {
@@ -201,7 +202,7 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
         drawSelectionBorder();
         undrawSelectionBorder();
 
-        if (routefilmScenery.isSelected() ) {
+        if (itemView.isSelected() ) {
             drawSelectionBorder();
         } else {
             undrawSelectionBorder();

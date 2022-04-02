@@ -17,10 +17,10 @@ import androidx.work.WorkManager;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.enums.CommunicationType;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.workers.UpdateRegisteredMovieServiceWorker;
 import com.videostreamtest.workers.synchronisation.ActiveConfigurationServiceWorker;
 import com.videostreamtest.workers.synchronisation.ActiveProductMovieLinksServiceWorker;
 import com.videostreamtest.workers.synchronisation.ActiveProductsServiceWorker;
-import com.videostreamtest.workers.synchronisation.SyncRoutefilmsServiceWorker;
 import com.videostreamtest.workers.synchronisation.AvailableRoutePartsServiceWorker;
 import com.videostreamtest.workers.ProfileServiceWorker;
 import com.videostreamtest.workers.SoundInformationServiceWorker;
@@ -87,7 +87,7 @@ public class ConfigurationHelper {
         //Routefilms
         Data.Builder routeFilmdata = new Data.Builder();
         routeFilmdata.putString("apikey", accountToken);
-        OneTimeWorkRequest routefilmsRequest = new OneTimeWorkRequest.Builder(SyncRoutefilmsServiceWorker.class)
+        OneTimeWorkRequest routefilmsRequest = new OneTimeWorkRequest.Builder(UpdateRegisteredMovieServiceWorker.class)
                 .setConstraints(constraint)
                 .setInputData(routeFilmdata.build())
                 .addTag("routefilms")

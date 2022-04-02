@@ -29,6 +29,7 @@ import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.android.play.core.tasks.Task;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
+import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
@@ -81,6 +82,25 @@ public class SplashActivity extends AppCompatActivity {
 
                 splashViewModel.resetUsageTracker(config.getAccountToken());
                 splashViewModel.resetInterruptedDownloads();
+
+                if (AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("undefined")) {
+                    SharedPreferences.Editor editor = getSharedPreferences("app", MODE_PRIVATE).edit();
+                    if (config.isLocalPlay()) {
+                        editor.putString("account-type", "standalone");
+                    } else {
+                        editor.putString("account-type",  "streaming");
+                    }
+                    editor.commit();
+                }
+                if (!AccountHelper.getAccountMediaServerUrl(getApplicationContext()).equalsIgnoreCase(ApplicationSettings.PRAXCLOUD_MEDIA_URL)) {
+                    SharedPreferences.Editor editor = getSharedPreferences("app", MODE_PRIVATE).edit();
+                    if (!config.getPraxCloudMediaServerLocalUrl().isEmpty()) {
+                        editor.putString("media-server-url", config.getPraxCloudMediaServerLocalUrl());
+                    } else {
+                        editor.putString("media-server-url",  ApplicationSettings.PRAXCLOUD_MEDIA_URL);
+                    }
+                    editor.commit();
+                }
 
                 /**
                  * TODO  if accounttoken is valid (create worker)

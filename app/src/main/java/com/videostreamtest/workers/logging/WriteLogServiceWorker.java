@@ -9,8 +9,11 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.service.database.DatabaseRestService;
+import com.videostreamtest.utils.ApplicationSettings;
 
 public class WriteLogServiceWorker extends Worker {
+
+    private String result;
 
     public WriteLogServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -26,10 +29,13 @@ public class WriteLogServiceWorker extends Worker {
         final String profilename = getInputData().getString("profilename");
         //Pre-define output
         Data output = new Data.Builder().build();
-        //Define which services you need
-        final DatabaseRestService databaseRestService = new DatabaseRestService();
-        //Execute some actions
-        final String result = databaseRestService.writeLog(apikey, logrule, logtype, profilename);
+        ApplicationSettings.THREAD_POOL_LOG_EXECUTOR.execute(()->{
+            //Define which services you need
+            final DatabaseRestService databaseRestService = new DatabaseRestService();
+            //Execute some actions
+            result = databaseRestService.writeLog(apikey, logrule, logtype, profilename);
+        });
+
         //Store outcome in the output data model
         output = new Data.Builder()
                 .putString("log-result", result)

@@ -47,6 +47,7 @@ import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.log.DeviceInformation;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
+import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
@@ -189,6 +190,8 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
     @Override
     protected void onResume() {
         super.onResume();
+
+        //TODO: switch to onetime only executions on startup phase or productpicker periodic updater.
         downloadFlags();
         downloadMovieSupportImages();
         downloadSound();
@@ -221,26 +224,6 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
         return false;
     }
 
-    public boolean isStoragePermissionGranted(final boolean isLocalPlay) {
-        if (isLocalPlay) {
-            if (Build.VERSION.SDK_INT >= 23) {
-                if (getApplicationContext().checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        == PackageManager.PERMISSION_GRANTED) {
-                    Log.v(TAG, "Permission is granted");
-                    return true;
-                } else {
-                    Log.v(TAG, "Permission is revoked");
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                    return false;
-                }
-            } else { //permission is automatically granted on sdk<23 upon installation
-                Log.v(TAG, "Permission is granted");
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void hideMenuItem(final int id)
     {
         if (navView != null) {
@@ -250,75 +233,63 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
     }
 
     private void downloadSound() {
-        productViewModel.getCurrentConfig().observe(this, currentConfig -> {
-            if (currentConfig != null) {
-                if (!DownloadHelper.isSoundPresent(getApplicationContext())) {
-                    Constraints constraint = new Constraints.Builder()
-                            .setRequiredNetworkType(NetworkType.CONNECTED)
-                            .build();
+        if (!DownloadHelper.isSoundPresent(getApplicationContext())) {
+            Constraints constraint = new Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build();
 
-                    OneTimeWorkRequest downloadSoundWorker = new OneTimeWorkRequest.Builder(DownloadSoundServiceWorker.class)
-                            .setConstraints(constraint)
-                            .setInputData(new Data.Builder().putString("apikey", currentConfig.getAccountToken()).build())
-                            .build();
+            OneTimeWorkRequest downloadSoundWorker = new OneTimeWorkRequest.Builder(DownloadSoundServiceWorker.class)
+                    .setConstraints(constraint)
+                    .setInputData(new Data.Builder().putString("apikey", AccountHelper.getAccountToken(getApplicationContext())).build())
+                    .build();
 
-                    WorkManager.getInstance(this)
-                            .beginUniqueWork("download-sound", ExistingWorkPolicy.KEEP, downloadSoundWorker)
-                            .enqueue();
-                }
-            }
-        });
+            WorkManager.getInstance(this)
+                    .beginUniqueWork("download-sound", ExistingWorkPolicy.KEEP, downloadSoundWorker)
+                    .enqueue();
+        }
     }
 
     private void downloadFlags() {
-        productViewModel.getCurrentConfig().observe(this, currentConfig -> {
-            if (currentConfig != null) {
-                if (currentConfig.isLocalPlay()) {
-                    Constraints constraint = new Constraints.Builder()
-                            .setRequiredNetworkType(NetworkType.CONNECTED)
-                            .build();
+        if (AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone")) {
+            Constraints constraint = new Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build();
 
-                    OneTimeWorkRequest downloadFlagsWorker = new OneTimeWorkRequest.Builder(DownloadFlagsServiceWorker.class)
-                            .setConstraints(constraint)
-                            .setInputData(new Data.Builder().putString("apikey", currentConfig.getAccountToken()).build())
-                            .build();
+            OneTimeWorkRequest downloadFlagsWorker = new OneTimeWorkRequest.Builder(DownloadFlagsServiceWorker.class)
+                    .setConstraints(constraint)
+                    .setInputData(new Data.Builder().putString("apikey", AccountHelper.getAccountToken(getApplicationContext())).build())
+                    .build();
 
-                    WorkManager.getInstance(this)
-                            .beginUniqueWork("download-sound", ExistingWorkPolicy.KEEP, downloadFlagsWorker)
-                            .enqueue();
-                }
-            }
-        });
+            WorkManager.getInstance(this)
+                    .beginUniqueWork("download-sound", ExistingWorkPolicy.KEEP, downloadFlagsWorker)
+                    .enqueue();
+        }
     }
 
     private void downloadMovieSupportImages() {
-        productViewModel.getCurrentConfig().observe(this, currentConfig -> {
-            if (currentConfig != null) {
-                productViewModel.getRoutefilms(currentConfig.getAccountToken()).observe(this, routefilms -> {
-                    if (routefilms.size() > 0 && currentConfig.isLocalPlay()) {
-                        for (Routefilm routefilm : routefilms) {
-                            //SPECIFY INPUT
-                            Data.Builder mediaDownloader = new Data.Builder();
-                            mediaDownloader.putString("INPUT_ROUTEFILM_JSON_STRING", new GsonBuilder().create().toJson(Movie.fromRoutefilm(routefilm), Movie.class));
-                            mediaDownloader.putString("localMediaServer", currentConfig.getPraxCloudMediaServerLocalUrl());
+        productViewModel.getRoutefilms(AccountHelper.getAccountToken(getApplicationContext())).observe(this, routefilms -> {
+            if (routefilms.size() > 0 && AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone")) {
+                for (Routefilm routefilm : routefilms) {
+                    //SPECIFY INPUT
+                    Data.Builder mediaDownloader = new Data.Builder();
+                    mediaDownloader.putString("INPUT_ROUTEFILM_JSON_STRING", new GsonBuilder().create().toJson(Movie.fromRoutefilm(routefilm), Movie.class));
+                    mediaDownloader.putString("localMediaServer", AccountHelper.getAccountMediaServerUrl(getApplicationContext()));
 
-                            //COSNTRAINTS
-                            Constraints constraint = new Constraints.Builder()
-                                    .setRequiredNetworkType(NetworkType.CONNECTED)
-                                    .build();
-                            //WORKREQUEST
-                            OneTimeWorkRequest downloadMovieSupportImagesWorkRequest = new OneTimeWorkRequest.Builder(DownloadMovieImagesServiceWorker.class)
-                                    .setConstraints(constraint)
-                                    .setInputData(mediaDownloader.build())
-                                    .addTag("support-images-routefilm-"+routefilm.getMovieId())
-                                    .build();
-                            //START WORKING
-                            WorkManager.getInstance(this)
-                                    .beginUniqueWork("download-support-images-"+routefilm.getMovieId(), ExistingWorkPolicy.KEEP, downloadMovieSupportImagesWorkRequest)
-                                    .enqueue();
-                        }
-                    }
-                });
+                    //COSNTRAINTS
+                    Constraints constraint = new Constraints.Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build();
+                    //WORKREQUEST
+                    OneTimeWorkRequest downloadMovieSupportImagesWorkRequest = new OneTimeWorkRequest.Builder(DownloadMovieImagesServiceWorker.class)
+                            .setConstraints(constraint)
+                            .setInputData(mediaDownloader.build())
+                            .addTag("support-images-routefilm-"+routefilm.getMovieId())
+                            .build();
+                    //START WORKING
+                    WorkManager.getInstance(this)
+                            .beginUniqueWork("download-support-images-"+routefilm.getMovieId(), ExistingWorkPolicy.KEEP, downloadMovieSupportImagesWorkRequest)
+                            .enqueue();
+                }
             }
         });
     }

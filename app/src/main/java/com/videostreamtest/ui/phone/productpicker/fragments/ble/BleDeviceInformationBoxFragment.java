@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -61,7 +62,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
     private TextView deviceLabel;
     private RecyclerView showBleDevicesRecyclerView;
 
-    private int refreshOverviewCounter =0;
+    private int refreshOverviewCounter = 0;
 
     @Nullable
     @Override
@@ -116,6 +117,29 @@ public class BleDeviceInformationBoxFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        if (scanner != null && bleScanCallback != null) {
+            if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            scanner.stopScan(bleScanCallback);
+            Log.d(TAG, "BLE Scanning stopped.");
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (scanner != null && bleScanCallback != null) {
+            scanner.startScan(bleScanCallback);
+            Log.d(TAG, "BLE Scanning stopped.");
+        }
     }
 
     @Override

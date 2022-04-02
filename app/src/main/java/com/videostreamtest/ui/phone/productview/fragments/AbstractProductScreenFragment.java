@@ -28,6 +28,7 @@ import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.MovieFlag;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.response.Product;
+import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
@@ -90,7 +91,7 @@ public class AbstractProductScreenFragment extends Fragment {
         //Data model
         productViewModel = new ViewModelProvider(requireActivity()).get(ProductViewModel.class);
 
-        apikey = getActivity().getSharedPreferences("app", MODE_PRIVATE).getString("apikey","");
+        apikey = AccountHelper.getAccountToken(getActivity());
 
         Log.d(TAG, "View Tag :: "+view.getTag());
         LogHelper.WriteLogRule(view.getContext().getApplicationContext(),apikey,"Loaded density: "+view.getTag(), "DEBUG", "");
@@ -106,14 +107,14 @@ public class AbstractProductScreenFragment extends Fragment {
         gridLayoutManager.setInitialPrefetchItemCount(50);
 
         routefilmOverview.setLayoutManager(gridLayoutManager);
-        scrollListener = new EndlessRecyclerViewScrollListener(gridLayoutManager) {
-            @Override
-            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                // Triggered only when new data needs to be appended to the list
-                // Add whatever code is needed to append new items to the bottom of the list
-                loadNextDataFromApi(page);
-            }
-        };
+//        scrollListener = new EndlessRecyclerViewScrollListener(gridLayoutManager) {
+//            @Override
+//            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+//                // Triggered only when new data needs to be appended to the list
+//                // Add whatever code is needed to append new items to the bottom of the list
+//                loadNextDataFromApi(page);
+//            }
+//        };
 
         //Views [TOUCH-SCREEN SPECIFIC]
         navigationPad = view.findViewById(R.id.navigation_pad);
@@ -156,18 +157,16 @@ public class AbstractProductScreenFragment extends Fragment {
                 routefilmOverview.setAdapter(routefilmsAdapter);
 
                 loadProductMovies();
-                loadFlags();
-                loadMovieFlags();
             }
         });
         //load selected movie and show selected on screen.
-        productViewModel.getSelectedRoutefilm().observe(getViewLifecycleOwner(), routefilm ->{
-            if (routefilm != null && this.currentposition != getCurrentPosition(routefilm)) {
-                this.currentposition = getCurrentPosition(routefilm);
-            }
-        });
+//        productViewModel.getSelectedRoutefilm().observe(getViewLifecycleOwner(), routefilm ->{
+//            if (routefilm != null && this.currentposition != getCurrentPosition(routefilm)) {
+//                this.currentposition = getCurrentPosition(routefilm);
+//            }
+//        });
 
-        refreshRoutefilmOverView(4,500);
+        refreshRoutefilmOverView(2,500);
     }
 
     //NAVIGATION ARROWS
@@ -254,43 +253,20 @@ public class AbstractProductScreenFragment extends Fragment {
             productViewModel.getProductMovies(apikey)
                     .observe(getViewLifecycleOwner(), routefilms -> {
                 if (routefilms != null) {
-                    this.routefilmsList = routefilms;
+//                    this.routefilmsList = routefilms;
                     preLoadImages(routefilms);
                     if (routefilmsAdapter!=null) {
-                        loadNextDataFromApi(0);
-                        routefilmsAdapter.updateRoutefilmList(routefilms);
-                        routefilmsLoaded = true;
-                        showRoutefilmOverview();
+//                        loadNextDataFromApi(0);
+                        if (!routefilmsLoaded) {
+                            Log.d(TAG, "routefilms loaded");
+                            routefilmsAdapter.updateRoutefilmList(routefilms);
+                            routefilmsLoaded = true;
+                            showRoutefilmOverview();
+                        }
                     }
                 }
             });
         }
-    }
-
-    private void loadFlags() {
-        productViewModel.getAllFlags().observe(getViewLifecycleOwner(), flags -> {
-            if (flags != null) {
-                this.flags = flags;
-                if (routefilmsAdapter!= null) {
-                    routefilmsAdapter.updateFlagList(flags);
-                    flagsLoaded = true;
-                    showRoutefilmOverview();
-                }
-            }
-        });
-    }
-
-    private void loadMovieFlags() {
-        productViewModel.getMovieFlags().observe(getViewLifecycleOwner(), movieFlags -> {
-            if (movieFlags!= null) {
-                this.movieFlags = movieFlags;
-                if (routefilmsAdapter!=null) {
-                    routefilmsAdapter.updateMovieFlagList(movieFlags);
-                    movieFlagsLoaded = true;
-                    showRoutefilmOverview();
-                }
-            }
-        });
     }
 
     private int getCurrentPosition(final Routefilm routefilm) {
@@ -306,7 +282,7 @@ public class AbstractProductScreenFragment extends Fragment {
     }
 
     private void showRoutefilmOverview() {
-        if (isDataLoaded()) {
+//        if (isDataLoaded()) {
             final LinearLayout loadingMessage = getActivity().findViewById(R.id.loading_overview);
             loadingMessage.setVisibility(View.GONE);
 
@@ -315,7 +291,7 @@ public class AbstractProductScreenFragment extends Fragment {
                 navigationPad.setVisibility(View.VISIBLE);
             }
             routefilmOverview.setVisibility(View.VISIBLE);
-        }
+//        }
     }
 
     private void refreshRoutefilmOverView(int howManyTimes, int howLongInMs) {
@@ -337,10 +313,6 @@ public class AbstractProductScreenFragment extends Fragment {
             }
         };
         refreshTimer.postDelayed(refreshRoutefilmOverview, howLongInMs);
-    }
-
-    private boolean isDataLoaded() {
-        return routefilmsLoaded&&flagsLoaded&&movieFlagsLoaded;
     }
 
     private void loadNextDataFromApi(final int page) {
@@ -384,13 +356,30 @@ public class AbstractProductScreenFragment extends Fragment {
 
     private void preLoadImages(List<Routefilm> routefilmList) {
         for (final Routefilm routefilm: routefilmList) {
-            DownloadHelper.setLocalMedia(getActivity().getApplicationContext(), routefilm);
+            //Load local paths if standalone
+            if (selectedProduct!= null && selectedProduct.getSupportStreaming()==0) {
+                DownloadHelper.setLocalMedia(getActivity().getApplicationContext(), routefilm);
+            }
+            //preload scenery
             if (routefilm.getMovieRouteinfoPath().startsWith("/")) {
                 Picasso.get().load(new File(routefilm.getMovieRouteinfoPath())).fetch();
             } else {
                 Picasso.get().load(routefilm.getMovieRouteinfoPath()).fetch();
             }
-
+            //preload maps
+            if (routefilm.getMovieImagepath().startsWith("/")) {
+                Picasso.get().load(new File(routefilm.getMovieImagepath())).fetch();
+            } else {
+                Picasso.get().load(routefilm.getMovieImagepath()).fetch();
+            }
+            //preload flags
+            if (routefilm.getMovieFlagUrl() != null && !routefilm.getMovieFlagUrl().isEmpty()) {
+                if (routefilm.getMovieFlagUrl().startsWith("/")) {
+                    Picasso.get().load(new File(routefilm.getMovieFlagUrl())).fetch();
+                } else {
+                    Picasso.get().load(routefilm.getMovieFlagUrl()).fetch();
+                }
+            }
         }
     }
 }
