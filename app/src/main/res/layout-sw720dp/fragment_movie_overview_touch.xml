@@ -71,7 +71,7 @@
 
         <LinearLayout
             android:id="@+id/selected_route_text_information"
-            android:layout_width="250dp"
+            android:layout_width="350dp"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
@@ -89,14 +89,16 @@
                 />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/selected_route_title"
                 android:text="PlaceholderPlace"
                 android:textColor="#FFFFFF"
-                android:textSize="24sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
+                android:lines="2"
                 android:visibility="invisible"
+                android:layout_weight="5"
                 android:layout_marginBottom="5dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toTopOf="@id/selected_route_distance"/>

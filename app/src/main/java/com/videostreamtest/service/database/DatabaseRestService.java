@@ -79,6 +79,9 @@ public class DatabaseRestService {
     }
 
     public String getAvailableMovieParts(final String apikey, final Integer movieId) {
+        if (apikey == null) {
+            return "failed";
+        }
         final String routeMoviesUrl = url+"/route/movieparts/"+movieId;
         final Request request = new Request.Builder()
                 .url(routeMoviesUrl)

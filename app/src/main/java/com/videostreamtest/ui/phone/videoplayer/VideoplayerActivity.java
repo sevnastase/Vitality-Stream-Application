@@ -888,21 +888,6 @@ public class VideoplayerActivity extends AppCompatActivity {
                     if (mediaPlayer.getTime()/1000L < 2) {
                         mediaPlayer.setVolume(ApplicationSettings.DEFAULT_SOUND_VOLUME);
                     }
-                    if (mediaPlayer.isPlaying() && !hasSound() && !isLoading && mediaPlayer.getTime()/1000L < 3) {
-                        String errorRule = "No Sound Detected!";
-                        if (backgroundSoundTriggers.size()>0) {
-                            errorRule +=" BackgroundItem loaded: "+backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri.getPath().toString();
-                        }
-                        LogHelper.WriteLogRule(getApplicationContext(), getSharedPreferences("app", MODE_PRIVATE).getString("apikey",""), errorRule, "DEBUG", "");
-
-                        Fragment searchFragment = getSupportFragmentManager().findFragmentByTag("NoAudioAlert");
-                        if (searchFragment == null) {
-                            getSupportFragmentManager()
-                                    .beginTransaction()
-                                    .add(R.id.videoplayer_framelayout_statusbar, NoAudioAlertFragment.class, null, "NoAudioAlert")
-                                    .commit();
-                        }
-                    }
 
                     //check for current backgroundsound
                     BackgroundSound backgroundSound = getCurrentBackgroundSoundByCurrentPostion();

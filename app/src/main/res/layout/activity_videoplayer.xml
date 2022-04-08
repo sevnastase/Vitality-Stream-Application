@@ -121,7 +121,6 @@
         android:id="@+id/videoplayer_framelayout_statusbar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/black_overlay"
         android:fitsSystemWindows="true">
     </FrameLayout>
 

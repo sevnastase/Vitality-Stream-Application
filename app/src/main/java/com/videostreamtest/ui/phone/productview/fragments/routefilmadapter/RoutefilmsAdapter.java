@@ -65,13 +65,16 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
     public void onBindViewHolder(@NonNull @NotNull RoutefilmsViewHolder holder, int position) {
         holder.itemView.setSelected(selectedRoutefilm == position);
         if (routefilmList != null && routefilmList.size() > 0) {
+            Log.d(TAG, "Binding view for "+routefilmList.get(position).getMovieTitle()+" on position: "+position);
             holder.bindProduct(routefilmList.get(position), selectedProduct, position, routeInformationBlock, this);
         }
         if (selectedRoutefilm == position) {
             final ImageButton routeSceneryImage = holder.itemView.findViewById(R.id.routeImageCoverButton);
             routeSceneryImage.setFocusableInTouchMode(true);
             routeSceneryImage.setFocusable(true);
-            routeSceneryImage.requestFocus();
+//            if (!routeSceneryImage.isFocused()) {
+                routeSceneryImage.requestFocus();
+//            }
         }
     }
 
@@ -89,35 +92,25 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
         this.selectedRoutefilm = position;
     }
 
-    public List<Routefilm> getRoutefilmList() {
-        return this.routefilmList;
-    }
 
     public int getCurrentSelectedRoutefilmPosition() {return this.selectedRoutefilm;}
 
-    public int getSelectedRoutefilmPosition(final Routefilm routefilm) {
-        if (routefilmList != null && routefilmList.size()>0) {
-            for (int filmIndex = 0; filmIndex<routefilmList.size();filmIndex++) {
-                if (routefilm.getMovieId().intValue()==routefilmList.get(filmIndex).getMovieId().intValue()) {
-                    return filmIndex;
-                }
-            }
-        }
-        return 0;
-    }
 
     public void updateRoutefilmList(final List<Routefilm> requestedRoutefilmList) {
         if (requestedRoutefilmList != null && requestedRoutefilmList.size()>0) {
             for (final Routefilm routefilm: requestedRoutefilmList) {
                 if (!isRoutefilmPresent(routefilm)) {
-                    if (selectedProduct.getSupportStreaming()==0 && DownloadHelper.isMoviePresent(productViewModel.getApplication(), Movie.fromRoutefilm(routefilm))) {
-                        this.routefilmList.add(routefilm);
+                        if (selectedProduct.getSupportStreaming()==0 && DownloadHelper.isMoviePresent(productViewModel.getApplication(), Movie.fromRoutefilm(routefilm))) {
+                            this.routefilmList.add(routefilm);
                     }
                     if (selectedProduct.getSupportStreaming()==1) {
                         this.routefilmList.add(routefilm);
                     }
                 }
+                notifyDataSetChanged();
             }
+            Log.d(TAG, "Update recyclerview");
+
 //            try {
 //                for (final Routefilm routefilm : this.routefilmList) {
 //                    if (isRoutefilmRemoved(routefilm, requestedRoutefilmList)) {

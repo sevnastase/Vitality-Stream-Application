@@ -143,8 +143,9 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
         }
 
         //Set Title
-        titleView.setText(toString().format(itemView.getContext().getString(R.string.catalog_selected_route_title), movie.getMovieTitle()));
+        Log.d(TAG, movie.getMovieTitle());
         titleView.setVisibility(View.VISIBLE);
+        titleView.setText(movie.getMovieTitle());
 
         //Set Distance/Duration of movie
         if (selectedProduct.getProductName().toLowerCase().contains("praxfilm")) {
@@ -347,6 +348,7 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
                             arguments.putString("communication_device", selectedProduct.getCommunicationType());
                             arguments.putString("product_object", new GsonBuilder().create().toJson(selectedProduct, Product.class));
 
+                            //FIXME: navcontroller needs to be activated from main thread
                             AppCompatActivity activity = (AppCompatActivity) itemView.getContext();
                             NavHostFragment navHostFragment =
                                     (NavHostFragment) activity.getSupportFragmentManager().findFragmentById(R.id.product_fragment_view);
