@@ -2,21 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.videostreamtest">
-    <!-- Android 11 and higher: Packages which are used from other installed apps -->
-    <queries>
-        <package android:name="com.dsi.ant.plugins.antplus" />
-        <package android:name="com.dsi.ant" />
-    </queries>
 
     <!-- REQUIRED FOR CONSTRAINT OF INTERNET   -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- REQUIRED FOR SENSORS    -->
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation"/>
 
     <!-- REQUIRED FOR STREAMING VARIANT   -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -65,8 +62,8 @@
 
         <!-- PROVIDERS    -->
         <provider
-            android:name="androidx.work.impl.WorkManagerInitializer"
-            android:authorities="${applicationId}.workmanager-init"
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
             tools:node="remove"/>
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -92,7 +89,6 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
 
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-                <action android:name="com.dsi.ant.server.USB_PERMISSION" />
             </intent-filter>
         </activity>
         <activity
@@ -130,7 +126,6 @@
 <!--                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />-->
 
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-                <action android:name="com.dsi.ant.server.USB_PERMISSION" />
             </intent-filter>
             <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_device_filter" />
         </activity>
@@ -142,15 +137,10 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-                <action android:name="com.dsi.ant.server.USB_PERMISSION" />
             </intent-filter>
             <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_device_filter" />
         </activity>
-        <activity
-            android:name=".ui.phone.catalog.CatalogActivity"
-            android:label="@string/app_name"
-            android:screenOrientation="landscape"
-            android:theme="@style/AppTheme.NoActionBar" />
+
         <activity android:name=".ui.phone.result.ResultActivity"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar"/>
@@ -169,14 +159,10 @@
         </activity> <!-- END ACTIVITIES -->
         <!-- SERVICES -->
         <service
-            android:name=".service.ant.AntPlusService"
-            android:icon="@drawable/ic_launcher_background"
-            android:label="AntplusService" />
-        <service
             android:name=".service.ble.BleService"
             android:icon="@drawable/ic_launcher_background"
-            android:label="BleService" />
-<!--            android:foregroundServiceType="location"-->
+            android:label="BleService"
+            android:foregroundServiceType="location" />
 
         <receiver android:name=".receiver.OnBootCompletedBroadcastReceiver"
             android:enabled="true"

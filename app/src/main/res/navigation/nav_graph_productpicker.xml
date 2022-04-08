@@ -6,18 +6,22 @@
 
     <fragment
         android:id="@+id/productPickerFragment"
-        android:name="com.videostreamtest.ui.phone.productpicker.fragments.ProductPickerFragment"
+        android:name="com.videostreamtest.ui.phone.productpicker.fragments.productpicker.ProductPickerFragment"
         android:label="ProductPickerFragment" />
     <fragment
+        android:id="@+id/downloadsFragment"
+        android:name="com.videostreamtest.ui.phone.productpicker.fragments.downloads.DownloadOverviewFragment"
+        android:label="DownloadsFragment" />
+    <fragment
         android:id="@+id/bleDeviceInformationBoxFragment"
-        android:name="com.videostreamtest.ui.phone.productview.fragments.messagebox.ble.BleDeviceInformationBoxFragment"
+        android:name="com.videostreamtest.ui.phone.productpicker.fragments.ble.BleDeviceInformationBoxFragment"
         android:label="BleDeviceInformationBoxFragment" />
     <fragment
         android:id="@+id/logoutFragment"
-        android:name="com.videostreamtest.ui.phone.productpicker.fragments.LogoutFragment"
+        android:name="com.videostreamtest.ui.phone.productpicker.fragments.logout.LogoutFragment"
         android:label="LogoutFragment" />
     <fragment
         android:id="@+id/permissionErrorMessage"
-        android:name="com.videostreamtest.ui.phone.productview.fragments.messagebox.errors.NoPermissionsMessageFragment"
+        android:name="com.videostreamtest.ui.phone.productpicker.fragments.ble.NoPermissionsMessageFragment"
         android:label="NoPermissionsFragment" />
 </navigation>

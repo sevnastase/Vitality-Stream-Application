@@ -23,7 +23,15 @@ public class RoutefilmRepository {
         return routefilmDao.getRoutefilms(accountToken);
     }
 
-    public LiveData<List<Routefilm>> getAllProductRoutefilms(final String accountToken, final Integer productId) {
-        return routefilmDao.getProductRoutefilms(accountToken, productId);
+    public LiveData<List<Routefilm>> getAllProductRoutefilms(final String accountToken) {
+        return routefilmDao.getSelectedProductRoutefilms(accountToken);
+    }
+
+    public LiveData<Routefilm> getSelectedRoutefilm() {
+        return routefilmDao.getSelectedRoutefilm();
+    }
+
+    public LiveData<List<Routefilm>> getSelectedRoutefilmPerPage(final String accountToken, final Integer pagesize, final Integer offset) {
+        return routefilmDao.getRoutefilmsPage(accountToken, pagesize, offset);
     }
 }

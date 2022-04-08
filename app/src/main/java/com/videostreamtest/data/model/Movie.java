@@ -3,6 +3,8 @@ package com.videostreamtest.data.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.videostreamtest.config.entity.Routefilm;
 
+import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Movie {
     private Integer id;
@@ -18,6 +20,8 @@ public class Movie {
     private Integer recordedSpeed;
     private Integer minimalSpeed;
     private Integer recordedFps;
+
+    private String movieFlagUrl;
 
     public Integer getId() {
         return id;
@@ -115,6 +119,14 @@ public class Movie {
         this.recordedFps = recordedFps;
     }
 
+    public String getMovieFlagUrl() {
+        return movieFlagUrl;
+    }
+
+    public void setMovieFlagUrl(String movieFlagUrl) {
+        this.movieFlagUrl = movieFlagUrl;
+    }
+
     public static Movie fromRoutefilm(final Routefilm routefilm) {
         Movie movieDto = new Movie();
         movieDto.setId(routefilm.getMovieId());
@@ -130,6 +142,7 @@ public class Movie {
         movieDto.setMovieFileSize(routefilm.getMovieFileSize());
         movieDto.setMapFileSize(routefilm.getMapFileSize());
         movieDto.setSceneryFileSize(routefilm.getSceneryFileSize());
+        movieDto.setMovieFlagUrl(routefilm.getMovieFlagUrl());
         return movieDto;
     }
 }

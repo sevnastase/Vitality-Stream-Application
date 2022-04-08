@@ -1,5 +1,7 @@
 package com.videostreamtest.workers;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +14,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.work.Data;
 import androidx.work.Worker;
@@ -22,8 +23,9 @@ import com.videostreamtest.BuildConfig;
 import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
-import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.workers.download.callback.CallbackByteChannel;
+import com.videostreamtest.workers.download.callback.ProgressCallBack;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -34,9 +36,9 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
-public class InstallPackageServiceWorker extends Worker implements ProgressCallBack{
+public class InstallPackageServiceWorker extends Worker implements ProgressCallBack {
     private final static String TAG = InstallPackageServiceWorker.class.getSimpleName();
-    private static final String UPDATE_URL = "http://praxmedia.praxtour.com/app";
+    private static final String UPDATE_URL = PRAXCLOUD_MEDIA_URL+"/app";
 
     private File selectedVolume;
     private DatabaseRestService databaseRestService = new DatabaseRestService();

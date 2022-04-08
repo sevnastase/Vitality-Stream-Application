@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey;
 
 @Entity(tableName = "configuration_table")
 public class Configuration {
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     @NonNull
     private int uid;
     @ColumnInfo(name = "account_token", defaultValue = "unauthorized")

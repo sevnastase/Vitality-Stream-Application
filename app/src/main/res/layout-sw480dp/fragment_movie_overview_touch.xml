@@ -2,8 +2,53 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:tag="480dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <!--    <fragment-->
+    <!--        android:id="@+id/routeinformation_fragment"-->
+    <!--        android:name="com.videostreamtest.ui.phone.productview.fragments.routeinfo.RouteInfoFragment"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_gravity="center"-->
+    <!--        app:defaultNavHost="false"-->
+    <!--        app:layout_constraintLeft_toLeftOf="parent"-->
+    <!--        app:layout_constraintRight_toRightOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <LinearLayout
+        android:id="@+id/loading_overview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_gravity="center|center_horizontal"
+        android:background="@drawable/imagebutton_blue_border"
+        android:backgroundTint="@color/black_overlay"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        android:gravity="center"
+        app:layout_constraintVertical_weight="5"
+        android:padding="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="10dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/loading_message"
+            android:text="@string/loading_general"
+            android:textColor="#FFFFFF"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:padding="15dp"
+            android:layout_marginBottom="5dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/selected_route_distance"/>
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/overlay_route_information"
@@ -17,14 +62,16 @@
         android:background="@drawable/imagebutton_blue_border"
         android:backgroundTint="@color/black_overlay"
         android:orientation="horizontal"
+        android:visibility="gone"
         android:gravity="center"
         app:layout_constraintVertical_weight="5"
         android:padding="5dp"
-        android:layout_marginTop="20dp">
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="10dp">
 
         <LinearLayout
             android:id="@+id/selected_route_text_information"
-            android:layout_width="250dp"
+            android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
@@ -33,16 +80,16 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/selected_route_country"
+                android:id="@+id/selected_route_flag"
                 android:src="@drawable/flag_placeholder"
                 android:background="@drawable/image_black_border"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:visibility="gone"
+                android:visibility="invisible"
                 />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/selected_route_title"
                 android:text="PlaceholderPlace"
@@ -70,7 +117,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/selected_route_infomap_two"
+            android:id="@+id/selected_route_map"
             android:src="@drawable/placeholder_map"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -87,17 +134,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:visibility="gone"
         android:gravity="center"
         app:layout_constraintEnd_toStartOf="@id/recyclerview_available_routefilms"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-    <ImageButton
-        android:id="@+id/up_navigation_arrow"
-        android:background="@null"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        />
+        <ImageButton
+            android:id="@+id/up_navigation_arrow"
+            android:background="@null"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            />
         <LinearLayout
             android:id="@+id/horizontal_navigation_arrows"
             android:layout_width="wrap_content"
@@ -110,24 +158,36 @@
                 android:layout_marginRight="15dp"
                 />
             <ImageButton
-            android:id="@+id/right_navigation_arrow"
+                android:id="@+id/right_navigation_arrow"
+                android:background="@null"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginLeft="15dp"
+                />
+        </LinearLayout>
+        <ImageButton
+            android:id="@+id/down_navigation_arrow"
             android:background="@null"
             android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginLeft="15dp"
-            />
-        </LinearLayout>
-    <ImageButton
-        android:id="@+id/down_navigation_arrow"
-        android:background="@null"
-        android:layout_width="50dp"
-        android:layout_height="50dp"/>
+            android:layout_height="50dp"/>
     </LinearLayout>
+
+    <!--    <androidx.fragment.app.FragmentContainerView-->
+    <!--        android:id="@+id/routefilm_overview_fragment"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_gravity="center"-->
+    <!--        app:defaultNavHost="false"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@id/routeinformation_fragment"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent" />-->
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview_available_routefilms"
         android:layout_width="wrap_content"
-        android:layout_height="450dp"
+        android:visibility="gone"
+        android:layout_height="400dp"
         android:layout_gravity="center"
         android:scrollbars="vertical"
         android:scrollbarThumbVertical="@drawable/scrollbar_shape"

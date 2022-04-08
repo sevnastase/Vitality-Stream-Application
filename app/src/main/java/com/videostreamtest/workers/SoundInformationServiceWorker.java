@@ -13,6 +13,7 @@ import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.EffectSound;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.SoundItem;
+import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,11 +22,8 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.GET;
-import retrofit2.http.Header;
-import retrofit2.http.Path;
 
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_URL;
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
 
 public class SoundInformationServiceWorker extends Worker {
     private static final String TAG = SoundInformationServiceWorker.class.getSimpleName();
@@ -34,17 +32,6 @@ public class SoundInformationServiceWorker extends Worker {
 
     public SoundInformationServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
-    }
-
-    public interface PraxCloud {
-        @GET("/api/route/movies")
-        Call<List<Movie>> getRoutefilms(@Header("api-key") String accountToken);
-        @GET("/api/sound/")
-        Call<List<SoundItem>> getSounds(@Header("api-key") String accountToken);
-        @GET("/api/sound/background/{movie_id}")
-        Call<List<BackgroundSound>> getBackgroundSounds(@Path(value = "movie_id", encoded = true) Integer movieId, @Header("api-key") String accountToken);
-        @GET("/api/sound/effects/{movie_id}")
-        Call<List<EffectSound>> getEffectSounds(@Path(value = "movie_id", encoded = true) Integer movieId, @Header("api-key") String accountToken);
     }
 
     @NonNull
@@ -57,7 +44,7 @@ public class SoundInformationServiceWorker extends Worker {
         Data output = new Data.Builder().build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(PRAXCLOUD_URL)
+                .baseUrl(PRAXCLOUD_API_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 

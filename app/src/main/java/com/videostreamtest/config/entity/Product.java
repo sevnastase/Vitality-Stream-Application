@@ -5,8 +5,6 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import com.videostreamtest.enums.CommunicationType;
-
 @Entity(tableName = "product_table")
 public class Product {
     @PrimaryKey

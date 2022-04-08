@@ -56,7 +56,7 @@
                     android:focusable="false"
                     android:textColor="@color/exo_white"
                     android:textSize="12sp"
-                    android:text="Please enter the password to logout."/>
+                    android:text="@string/logout_action_description"/>
             </LinearLayout>
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -89,9 +89,13 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:padding="10dp"
-            android:text="Logout"
+            android:text="@string/logout_button_label"
             android:background="@null"
             android:backgroundTint="@android:color/holo_red_dark"
-            android:textColor="@color/exo_white"/>
+            android:textColor="@color/exo_white"
+            android:nextFocusUp="@id/password"
+            android:nextFocusLeft="@id/password"
+            android:nextFocusDown="@id/account_logout_button"
+            android:nextFocusRight="@id/account_logout_button"/>
     </LinearLayout>
 </LinearLayout>

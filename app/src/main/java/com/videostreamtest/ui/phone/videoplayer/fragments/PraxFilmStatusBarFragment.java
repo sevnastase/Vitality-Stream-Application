@@ -191,6 +191,14 @@ public class PraxFilmStatusBarFragment extends Fragment {
             }
         });
 
+        //RESET STOPWATCH TO ZERO
+        videoPlayerViewModel.getResetChronometer().observe(getViewLifecycleOwner(), resetChronometer -> {
+            if (resetChronometer) {
+                stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
+                videoPlayerViewModel.setResetChronometer(false);
+            }
+        });
+
         //Movie object related
         videoPlayerViewModel.getSelectedMovie().observe(getViewLifecycleOwner(), selectedMovie -> {
             if (selectedMovie != null) {
@@ -244,12 +252,12 @@ public class PraxFilmStatusBarFragment extends Fragment {
 
         videoPlayerViewModel.getVolumeLevel().observe(getViewLifecycleOwner(), volumeLevel -> {
             if (volumeLevel!= null) {
-                statusbarVolumeIndicator.setText(""+(int) (volumeLevel*100));
+                statusbarVolumeIndicator.setText(""+(int) (volumeLevel));
                 volumeUp.setOnClickListener(clickedView -> {
-                    videoPlayerViewModel.setVolumeLevel(volumeLevel+0.1f);
+                    videoPlayerViewModel.setVolumeLevel(volumeLevel+10);
                 });
                 volumeDown.setOnClickListener(clickedView -> {
-                    videoPlayerViewModel.setVolumeLevel(volumeLevel-0.1f);
+                    videoPlayerViewModel.setVolumeLevel(volumeLevel-10);
                 });
             }
         });

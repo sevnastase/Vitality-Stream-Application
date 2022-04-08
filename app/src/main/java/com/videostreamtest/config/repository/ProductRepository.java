@@ -52,4 +52,8 @@ public class ProductRepository {
         });
     }
 
+    public LiveData<com.videostreamtest.config.entity.Product> getSelectedProduct() {
+        return productDao.getSelectedProduct();
+    }
+
 }

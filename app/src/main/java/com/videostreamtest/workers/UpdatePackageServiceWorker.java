@@ -1,5 +1,7 @@
 package com.videostreamtest.workers;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
+
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -34,7 +36,7 @@ public class UpdatePackageServiceWorker extends Worker {
     private static final String TAG = UpdatePackageServiceWorker.class.getSimpleName();
 
     private static final String UPDATE_INFO_FILE = "/output-metadata.json";
-    private static final String UPDATE_URL = "http://praxmedia.praxtour.com/app";
+    private static final String UPDATE_URL = PRAXCLOUD_MEDIA_URL+"/app";
 
     private File selectedVolume;
     private int onlineVersion = -1;

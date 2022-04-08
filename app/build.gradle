@@ -5,7 +5,7 @@ plugins {
 apply from: 'versionCode.gradle'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     buildToolsVersion "30.0.2"
     ndkVersion "21.4.7075529"
 
@@ -38,27 +38,26 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 }
 
 ext {
     exoplayer_version = "2.13.3"
-    workmanager_version = "2.5.0"
+    workmanager_version = "2.7.1"
     leanback_version = "1.0.0"
     room_version = "2.4.0-alpha01"
     picasso_version = "2.8"
+    paging_version = "3.1.0"
 }
 
 dependencies {
-    implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
-
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'com.google.android.material:material:1.0.0'
-    implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.annotation:annotation:1.3.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     //RestCallFramework
@@ -79,9 +78,6 @@ dependencies {
 
     implementation 'fr.bmartel:jspeedtest:1.32.1'
 
-    //EventBus for leaner implemenation of event driven communication
-//    implementation 'org.greenrobot:eventbus:3.2.0'
-
     // TV-implementation
     implementation "androidx.leanback:leanback:$leanback_version"
     // leanback-preference is an add-on that provides a settings UI for TV apps.
@@ -97,24 +93,30 @@ dependencies {
     implementation "com.google.android.exoplayer:extension-cast:$exoplayer_version"
 
     // https://mvnrepository.com/artifact/org.videolan.android/libvlc-all
-    implementation group: 'org.videolan.android', name: 'libvlc-all', version: '3.3.14'
+    implementation group: 'org.videolan.android', name: 'libvlc-all', version: '3.5.0-eap3'
 
     //WorkManager support for Background tasks/Scheduling
     implementation "androidx.work:work-runtime:$workmanager_version"
     //Fix for conflicting ListenableFuture with JetPack WorkManager and ExoPlayer 2.12x
     implementation 'com.google.guava:guava:29.0-android'
 
-    implementation 'androidx.navigation:navigation-fragment:2.2.2'
-    implementation 'androidx.navigation:navigation-ui:2.2.2'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
+    implementation 'androidx.navigation:navigation-fragment:2.4.1'
+    implementation 'androidx.navigation:navigation-ui:2.4.1'
+//    implementation 'androidx.lifecycle:lifecycle-livedata-extensions:2.2.0'
+//    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
+//    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation "androidx.cardview:cardview:1.0.0"
 
+    //PAGING
+//    implementation "androidx.paging:paging-runtime:$paging_version"
+//    implementation "androidx.paging:paging-rxjava3:$paging_version"
+
     // GOOGLE PLAY CORE
     implementation 'com.google.android.play:core:1.8.0'
 
-    implementation "com.google.android.gms:play-services-cast-framework:15.0.0"
+//    implementation "com.google.android.gms:play-services-cast-framework:15.0.0"
 
 //    testImplementation 'junit:junit:4.12'
     testImplementation(platform('org.junit:junit-bom:5.7.0'))

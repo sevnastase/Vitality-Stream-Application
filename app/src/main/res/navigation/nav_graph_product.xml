@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph_product.xml"
+    app:startDestination="@id/routeFragment">
+
+    <fragment
+        android:id="@+id/routeFragment"
+        android:name="com.videostreamtest.ui.phone.productview.fragments.AbstractProductScreenFragment"
+        android:label="RouteFragment" />
+
+    <fragment
+        android:id="@+id/downloadsFragment"
+        android:name="com.videostreamtest.ui.phone.productpicker.fragments.downloads.DownloadOverviewFragment"
+        android:label="DownloadsFragment" />
+
+    <fragment
+        android:id="@+id/errorFragment"
+        android:name="com.videostreamtest.ui.phone.productview.fragments.errors.SpeedtestErrorFragment"
+        android:label="ErrorFragment" />
+
+</navigation>

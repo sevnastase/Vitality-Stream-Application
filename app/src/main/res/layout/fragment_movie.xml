@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.videostreamtest.ui.phone.productview.layoutmanager.FocusFixFrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
@@ -8,8 +9,7 @@
     android:layout_gravity="center"
     app:cardBackgroundColor="@android:color/transparent"
     app:cardElevation="0dp"
-    android:gravity="center"
-    tools:context=".ui.phone.catalog.MovieFragment">
+    android:gravity="center">
 
     <ImageButton
         android:id="@+id/routeImageCoverButton"
@@ -19,7 +19,7 @@
         android:contentDescription="Route"
         android:background="@null"
         android:src="@drawable/scenery_placeholder" />
-</androidx.cardview.widget.CardView>
+</com.videostreamtest.ui.phone.productview.layoutmanager.FocusFixFrameLayout>
 <!--<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
 <!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
 <!--    xmlns:tools="http://schemas.android.com/tools"-->

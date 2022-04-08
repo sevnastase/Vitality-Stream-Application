@@ -16,22 +16,18 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
-import com.dsi.ant.plugins.antplus.pccbase.AntPluginPcc;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.videostreamtest.R;
-import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.data.model.Profile;
 import com.videostreamtest.enums.CommunicationDevice;
-import com.videostreamtest.service.ant.AntPlusService;
 import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -106,7 +102,7 @@ public class ProfilesActivity extends AppCompatActivity {
 
                     //Koppel de recyclerView aan de layout xml
                     recyclerView = findViewById(R.id.recyclerview_profiles);
-                    recyclerView.setHasFixedSize(true);
+//                    recyclerView.setHasFixedSize(true);
 
                     profileViewModel.getAccountProfiles().observe(this, profiles -> {
                         Log.d(TAG, "ProfileActivity local profile count: "+profiles.size());
@@ -164,23 +160,23 @@ public class ProfilesActivity extends AppCompatActivity {
     }
 
     private void checkForSystemApprovalAntPlusService() {
-        Intent antPlusService = new Intent(getApplicationContext(), AntPlusService.class);
-        startService(antPlusService);
-        Runnable stopAntPlusService = () -> stopService(antPlusService);
-        new Handler(Looper.getMainLooper()).postDelayed( stopAntPlusService, 2000 );
+//        Intent antPlusService = new Intent(getApplicationContext(), AntPlusService.class);
+//        startService(antPlusService);
+//        Runnable stopAntPlusService = () -> stopService(antPlusService);
+//        new Handler(Looper.getMainLooper()).postDelayed( stopAntPlusService, 2000 );
     }
 
     private void loadCommunicationDeviceDrivers(final CommunicationDevice communicationDevice) {
-        switch (communicationDevice) {
-            case ANT_PLUS:
-                //Write log for stating antplus status and version
-                Log.d("ANTPLUS_SETTINGS", "Version number: "+ AntPluginPcc.getInstalledPluginsVersionNumber(getApplicationContext()));
-                if (AntPlusService.isAntPlusDevicePresent(getApplicationContext())) {
-                    checkForSystemApprovalAntPlusService();
-                }
-                break;
-            default:
-        }
+//        switch (communicationDevice) {
+//            case ANT_PLUS:
+//                //Write log for stating antplus status and version
+//                Log.d("ANTPLUS_SETTINGS", "Version number: "+ AntPluginPcc.getInstalledPluginsVersionNumber(getApplicationContext()));
+//                if (AntPlusService.isAntPlusDevicePresent(getApplicationContext())) {
+//                    checkForSystemApprovalAntPlusService();
+//                }
+//                break;
+//            default:
+//        }
     }
 
     private boolean isAccountTokenValid(final String accountToken) {

@@ -8,14 +8,19 @@ import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import com.videostreamtest.config.dao.DownloadStatusDao;
 import com.videostreamtest.config.dao.RoutefilmDao;
 import com.videostreamtest.config.db.PraxtourDatabase;
+import com.videostreamtest.config.entity.Flag;
+import com.videostreamtest.config.entity.MovieFlag;
 import com.videostreamtest.config.entity.Routefilm;
+import com.videostreamtest.config.entity.StandAloneDownloadStatus;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.service.database.DatabaseRestService;
-import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
+import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -28,10 +33,8 @@ import okhttp3.Route;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.GET;
-import retrofit2.http.Header;
 
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_URL;
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
 
 public class UpdateRegisteredMovieServiceWorker extends Worker {
 
@@ -43,11 +46,6 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
         super(context, workerParams);
     }
 
-    public interface PraxCloud {
-        @GET("/api/route/movies")
-        Call<List<Movie>> getRoutefilms(@Header("api-key") String accountToken);
-    }
-
     @NonNull
     @NotNull
     @Override
@@ -56,44 +54,57 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
         final String apikey = getInputData().getString("apikey");
         databaseRestService = new DatabaseRestService();
 
-        if (accountToken==null||accountToken.isEmpty()){
-            SharedPreferences myPreferences = getApplicationContext().getSharedPreferences("app",0);
-            accountToken = myPreferences.getString("apikey", "unauthorized");
-        }
+        accountToken = AccountHelper.getAccountToken(getApplicationContext());
 
         //API CALL
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(PRAXCLOUD_URL)
+                .baseUrl(PRAXCLOUD_API_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
         PraxCloud praxCloud = retrofit.create(PraxCloud.class);
-        Call<List<Movie>> call = praxCloud.getRoutefilms(apikey);
+        Call<List<Movie>> callExternalRoutefilms = praxCloud.getRoutefilms(accountToken);
+        Call<List<MovieFlag>> callExternalMovieFlagLinks = praxCloud.getMovieFlags(accountToken);
+        Call<List<Flag>> callExternalFlags = praxCloud.getFlags(accountToken);
+
         List<Movie> externalRoutefilms = new ArrayList<>();
+        List<MovieFlag> externalMovieFlagLinksList = new ArrayList<>();
+        List<Flag> externalFlags = new ArrayList<>();
 
         //GET ROUTEFILMS
         try {
-            externalRoutefilms = call.execute().body();
+            externalRoutefilms = callExternalRoutefilms.execute().body();
+            externalMovieFlagLinksList = callExternalMovieFlagLinks.execute().body();
+            externalFlags = callExternalFlags.execute().body();
         } catch (IOException ioException) {
             Log.e(TAG, ioException.getLocalizedMessage());
         }
 
-        if (externalRoutefilms.size()>0) {
+        //Routefilm objects sanitized with flagUrl
+        List<Routefilm> externalRoutefilmListWithDetails = getRoutefilmWithDetails(externalRoutefilms, externalFlags, externalMovieFlagLinksList);
+
+        if (externalRoutefilmListWithDetails.size()>0) {
             //LOCAL DATABASE OBJECT
             final RoutefilmDao routefilmDao = PraxtourDatabase.getDatabase(getApplicationContext()).routefilmDao();
+            final DownloadStatusDao downloadStatusDao = PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao();
             final List<Routefilm> localRoutefilms = routefilmDao.getLocalRoutefilms(apikey);
 
             final List<Routefilm> markedForRemoval = new ArrayList<>();
             final List<Routefilm> markedForInsertion = new ArrayList<>();
+            final List<Routefilm> markedForUpdate = new ArrayList<>();
 
             Log.d(TAG, "localRoutefilms counted: "+localRoutefilms.size());
 
             //If local database is filled then check if external movie is already present
             if (localRoutefilms.size() > 0) {
                 //Check if external movie is already present or mark movie for insertion
-                for (final Movie externalMovie: externalRoutefilms) {
-                    if (!movieAlreadyPresentInLocalDatabase(externalMovie, localRoutefilms)) {
-                        markedForInsertion.add(Routefilm.fromMovie(externalMovie, apikey));
+                for (final Routefilm externalRoutefilm: externalRoutefilmListWithDetails) {
+                    if (!movieAlreadyPresentInLocalDatabase(Movie.fromRoutefilm(externalRoutefilm), localRoutefilms)) {
+                        markedForInsertion.add(externalRoutefilm);
+                    } else {
+                        if (hasUpdate(externalRoutefilm, localRoutefilms)) {
+                            markedForUpdate.add(externalRoutefilm);
+                        }
                     }
                 }
                 //Check if local movie is not present in external list and mark for removal
@@ -109,6 +120,7 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
                     for (final Routefilm routefilm:markedForRemoval) {
                         deletePhysicalMovie(Movie.fromRoutefilm(routefilm));
                         routefilmDao.delete(routefilm);
+                        downloadStatusDao.deleteDownloadStatus(routefilm.getMovieId());
                     }
                 }
 
@@ -117,11 +129,28 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
                     Log.d(TAG, "localRoutefilms marked for insertion: "+markedForInsertion.size());
                     for (final Routefilm routefilm:markedForInsertion) {
                         routefilmDao.insert(routefilm);
+                        final StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
+                        standAloneDownloadStatus.setMovieId(routefilm.getMovieId());
+                        standAloneDownloadStatus.setDownloadMovieId(routefilm.getMovieId());
+                        standAloneDownloadStatus.setDownloadStatus(-1);
+                        downloadStatusDao.insert(standAloneDownloadStatus);
+                    }
+                }
+                //MarkforUpdate, problem is the -1 downloadstatus for standalone which cause all movie to re-download on update
+                if (markedForUpdate.size()>0) {
+                    Log.d(TAG, "localRoutefilms marked for update: " + markedForUpdate.size());
+                    for (final Routefilm routefilm : markedForUpdate) {
+                        routefilmDao.insert(routefilm);
                     }
                 }
             } else {
-                for (final Movie routefilm:externalRoutefilms) {
-                    routefilmDao.insert(Routefilm.fromMovie(routefilm, apikey));
+                for (final Routefilm routefilm:externalRoutefilmListWithDetails) {
+                    routefilmDao.insert(routefilm);
+                    final StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
+                    standAloneDownloadStatus.setMovieId(routefilm.getMovieId().intValue());
+                    standAloneDownloadStatus.setDownloadMovieId(routefilm.getMovieId().intValue());
+                    standAloneDownloadStatus.setDownloadStatus(-1);
+                    downloadStatusDao.insert(standAloneDownloadStatus);
                 }
             }
         }
@@ -136,6 +165,68 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
             c. Notify recyclerview adapter of recent change if any, do nothing when nothing has changed
          */
         return Result.success();
+    }
+
+    private boolean hasUpdate(final Routefilm routefilm, final List<Routefilm> localRoutefilmList) {
+        if (localRoutefilmList!= null && localRoutefilmList.size()>0) {
+            for (final Routefilm film: localRoutefilmList) {
+                if (routefilm.getMovieId().intValue() == film.getMovieId().intValue()) {
+                    if (routefilm.getMovieFlagUrl() != null && film.getMovieFlagUrl() != null &&
+                            !routefilm.getMovieFlagUrl().equalsIgnoreCase(film.getMovieFlagUrl())) {
+                        return true;
+                    }
+                    if (!routefilm.getMovieUrl().equalsIgnoreCase(film.getMovieUrl())) {
+                        return true;
+                    }
+                    if (!routefilm.getMovieImagepath().equalsIgnoreCase(film.getMovieImagepath())) {
+                        return true;
+                    }
+                    if (routefilm.getMovieRouteinfoPath().equalsIgnoreCase(film.getMovieRouteinfoPath())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private List<Routefilm> getRoutefilmWithDetails(final List<Movie> externalRoutefilmList,  final List<Flag> flagList, final List<MovieFlag> movieFlagList) {
+        if (externalRoutefilmList!=null && externalRoutefilmList.size()>0) {
+            List<Routefilm> routefilmList = new ArrayList<>();
+            for (final Movie movie: externalRoutefilmList) {
+                final Routefilm routefilm = Routefilm.fromMovie(movie, accountToken);
+                final MovieFlag movieFlag = getRoutefilmFlagLink(movie.getId().intValue(), movieFlagList);
+                if (movieFlag!= null) {
+                    final Flag routefilmFlag = getFlag(movieFlag.getFlagId().intValue(), flagList);
+                    routefilm.setMovieFlagUrl(routefilmFlag.getFlagUrl());
+                }
+                routefilmList.add(routefilm);
+            }
+            return routefilmList;
+        }
+        return new ArrayList<>();
+    }
+
+    private MovieFlag getRoutefilmFlagLink(final int movieId, final List<MovieFlag> movieFlagList) {
+        if (movieFlagList!= null && movieFlagList.size()>0) {
+            for (final MovieFlag movieFlag: movieFlagList) {
+                if (movieId == movieFlag.getMovieId().intValue()) {
+                    return movieFlag;
+                }
+            }
+        }
+        return null;
+    }
+
+    private Flag getFlag(final int flagId, final List<Flag> flagList) {
+        if (flagList != null && flagList.size()>0) {
+            for (final Flag flag: flagList) {
+                if (flagId == flag.getId().intValue()) {
+                    return flag;
+                }
+            }
+        }
+        return null;
     }
 
     private boolean deletePhysicalMovie(final Movie movie) {

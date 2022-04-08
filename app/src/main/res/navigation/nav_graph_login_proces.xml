@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph_productpicker"
+    app:startDestination="@id/usernameFragment">
+
+    <fragment
+        android:id="@+id/usernameFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.UsernameFragment"
+        android:label="UsernameFragment" >
+        <action
+            android:id="@+id/action_usernameFragment_to_passwordFragment"
+            app:destination="@id/passwordFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/passwordFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.PasswordFragment"
+        android:label="PasswordFragment" >
+        <action
+            android:id="@+id/action_passwordFragment_to_loginStatusFragment"
+            app:destination="@id/loginStatusFragment" />
+        <action
+            android:id="@+id/action_passwordFragment_to_usernameFragment"
+            app:destination="@id/usernameFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/loginStatusFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.LoginStatusFragment"
+        android:label="LoginStatusFragment" >
+        <action
+            android:id="@+id/action_loginStatusFragment_to_usernameFragment"
+            app:destination="@id/usernameFragment" />
+        <action
+            android:id="@+id/action_loginStatusFragment_to_storagePermissionFragment"
+            app:destination="@id/storagePermissionFragment" />
+        <action
+            android:id="@+id/action_loginStatusFragment_to_locationPermissionFragment"
+            app:destination="@id/locationPermissionFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/storagePermissionFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.StoragePermissionFragment"
+        android:label="StoragePermissionFragment" >
+        <action
+            android:id="@+id/action_storagePermissionFragment_to_locationPermissionFragment"
+            app:destination="@id/locationPermissionFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/locationPermissionFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.LocationPermissionFragment"
+        android:label="LocationPermissionFragment" >
+        <action
+            android:id="@+id/action_locationPermissionFragment_to_downloadSoundFragment"
+            app:destination="@id/downloadSoundFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/downloadSoundFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.DownloadSoundFragment"
+        android:label="DownloadSoundFragment" >
+        <action
+            android:id="@+id/action_downloadSoundFragment_to_syncDatabaseFragment"
+            app:destination="@id/syncDatabaseFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/syncDatabaseFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.SyncDatabaseFragment"
+        android:label="SyncDatabaseFragment" >
+        <action
+            android:id="@+id/action_syncDatabaseFragment_to_downloadFlagsFragment"
+            app:destination="@id/downloadFlagsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/downloadFlagsFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.DownloadFlagsFragment"
+        android:label="DownloadFlagsFragment" >
+        <action
+            android:id="@+id/action_downloadFlagsFragment_to_downloadMovieSupportImagesFragment"
+            app:destination="@id/downloadMovieSupportImagesFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/downloadMovieSupportImagesFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.DownloadMovieImagesFragment"
+        android:label="DownloadMovieSupportImagesFragment" >
+        <action
+            android:id="@+id/action_downloadMovieSupportImagesFragment_to_downloadMovieRoutepartImagesFragment"
+            app:destination="@id/downloadMovieRoutepartImagesFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/downloadMovieRoutepartImagesFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.DownloadRoutepartsFragment"
+        android:label="DownloadMovieRoutepartImagesFragment" />
+</navigation>

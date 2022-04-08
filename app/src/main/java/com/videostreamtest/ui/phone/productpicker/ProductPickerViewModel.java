@@ -8,14 +8,19 @@ import androidx.lifecycle.LiveData;
 
 import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.config.entity.Product;
+import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.repository.ConfigurationRepository;
 import com.videostreamtest.config.repository.ProductRepository;
+import com.videostreamtest.config.repository.RoutefilmRepository;
+import com.videostreamtest.config.repository.UsageTrackerRepository;
 
 import java.util.List;
 
 public class ProductPickerViewModel extends AndroidViewModel {
     private ConfigurationRepository configurationRepository;
     private ProductRepository productRepository;
+    private UsageTrackerRepository usageTrackerRepository;
+    private RoutefilmRepository routefilmRepository;
 
     private final LiveData<Configuration> currentConfig;
 
@@ -23,6 +28,8 @@ public class ProductPickerViewModel extends AndroidViewModel {
         super(application);
         configurationRepository = new ConfigurationRepository(application);
         productRepository = new ProductRepository(application);
+        routefilmRepository = new RoutefilmRepository(application);
+        usageTrackerRepository = new UsageTrackerRepository(application);
 
         currentConfig = configurationRepository.getCurrentConfiguration();
     }
@@ -42,6 +49,14 @@ public class ProductPickerViewModel extends AndroidViewModel {
 
     public void updateConfiguration(Configuration configuration) {
         configurationRepository.update(configuration);
+    }
+
+    public void setSelectedProductId(final Integer productId) {
+        usageTrackerRepository.setSelectedProduct(productId);
+    }
+
+    public LiveData<List<Routefilm>> getRoutefilms(final String accountToken) {
+        return routefilmRepository.getAllRoutefilms(accountToken);
     }
 
 }

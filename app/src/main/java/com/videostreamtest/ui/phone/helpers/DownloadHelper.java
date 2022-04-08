@@ -7,13 +7,13 @@ import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
+import com.videostreamtest.config.entity.Flag;
+import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.utils.ApplicationSettings;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -70,7 +70,7 @@ public class DownloadHelper {
         for (File externalStorageVolume: externalStorageVolumes) {
             String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/" + movie.getId().intValue();
             File possibleMovieLocation = new File(pathname);
-            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
+            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles() != null && possibleMovieLocation.listFiles().length>0) {
                 long totalSizeOnDisk = 0;
 
                 for (File file: possibleMovieLocation.listFiles()) {
@@ -114,6 +114,75 @@ public class DownloadHelper {
             }
         }
         return false;
+    }
+
+    /**
+     * Check if file is present on harddisk
+     * @param context
+     * @param filepath
+     * @return boolean
+     */
+    public static boolean isFileOnHarddisk(final Context context, final String filepath){
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            List<String> praxtourFilePaths = new ArrayList<>();
+            praxtourFilePaths.add(externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/");
+            praxtourFilePaths.add(externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_SOUND_STORAGE_FOLDER+"/");
+            praxtourFilePaths.add(externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER+"/");
+
+            for (final String storagePath:praxtourFilePaths) {
+                if (searchDirectory(new File(storagePath), filepath)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean searchDirectory(final File file, final String filepath) {
+        if (file.isDirectory() && file.listFiles().length>0) {
+            for (final File f: file.listFiles()) {
+                if (f.isDirectory()) {
+                    searchDirectory(f, filepath);
+                }
+                if (f.getName().equalsIgnoreCase(new File(filepath).getName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static String getFileFromHarddisk(final Context context, final String filepath) {
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            List<String> praxtourFilePaths = new ArrayList<>();
+            praxtourFilePaths.add(externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/");
+            praxtourFilePaths.add(externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_SOUND_STORAGE_FOLDER+"/");
+            praxtourFilePaths.add(externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER+"/");
+
+            for (final String storagePath:praxtourFilePaths) {
+                String found = searchFileInDirectory(new File(storagePath), filepath);
+                if (found  != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String searchFileInDirectory(final File file, final String filepath) {
+        if (file.isDirectory() && file.listFiles().length>0) {
+            for (final File f: file.listFiles()) {
+                if (f.isDirectory()) {
+                    searchDirectory(f, filepath);
+                }
+                if (f.getName().equalsIgnoreCase(new File(filepath).getName())) {
+                    return f.getAbsolutePath();
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -165,38 +234,114 @@ public class DownloadHelper {
     }
 
     /**
+     * Check if sound folder with content is located on any (connected) local storage device within provided context
+     * @param context
+     * @return boolean
+     */
+    public static boolean isFlagsLocalPresent(final Context context){
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            String pathname = externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER;
+            File possibleMovieLocation = new File(pathname);
+            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>1) {
+                long totalSizeOnDisk = 0;
+
+                for (File file: possibleMovieLocation.listFiles()) {
+                    totalSizeOnDisk += file.length();
+                }
+
+                if (totalSizeOnDisk > 0L) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Adjust object url's to local storage paths
      * @param context
      * @param movie
      */
     public static void setLocalMedia(final Context context, final Movie movie) {
-        String movieFileName = "";
-        String sceneryFileName = "";
-        String mapFilename = "";
-        try {
-            URL movieUrl = new URL(movie.getMovieUrl());
-            movieFileName = new File(movieUrl.getFile()).getName();
-            URL sceneryUrl = new URL(movie.getMovieImagepath());
-            sceneryFileName = new File(sceneryUrl.getFile()).getName();
-            URL mapUrl = new URL(movie.getMovieRouteinfoPath());
-            mapFilename = new File(mapUrl.getFile()).getName();
-        } catch (MalformedURLException e) {
-            Log.e(TAG, e.getLocalizedMessage());
-            SharedPreferences sharedPreferences = context.getSharedPreferences("app", MODE_PRIVATE);
-            String apikey = sharedPreferences.getString("apikey", "");
-            LogHelper.WriteLogRule(context, apikey, "ERROR: [SET LOCAL MEDIA] [TITLE:"+movie.getMovieTitle()+"] "+e.getLocalizedMessage(), "ERROR", "");
-            return;
-        }
+        String movieFileName = setLocalFilePath(context, movie.getMovieUrl());
+        String sceneryFileName = setLocalFilePath(context, movie.getMovieImagepath());
+        String mapFilename = setLocalFilePath(context, movie.getMovieRouteinfoPath());
+        String flagFilename = setLocalFilePath(context, movie.getMovieFlagUrl());
+
         File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
         for (File externalStorageVolume: externalStorageVolumes) {
+            //Routefilm files
             String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + movie.getId();
             File possibleMovieLocation = new File(pathname);
             if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
-                movie.setMovieUrl(pathname+"/"+movieFileName);
-                movie.setMovieImagepath(pathname+"/"+sceneryFileName);
-                movie.setMovieRouteinfoPath(pathname+"/"+mapFilename);
+                if (!movieFileName.contains("/")) {
+                    movie.setMovieUrl(pathname + "/" + movieFileName);
+                }
+                if (!sceneryFileName.contains("/")) {
+                    movie.setMovieImagepath(pathname + "/" + sceneryFileName);
+                }
+                if (!mapFilename.contains("/")) {
+                    movie.setMovieRouteinfoPath(pathname + "/" + mapFilename);
+                }
+            }
+
+            //Flag files
+            String pathnameFlags = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER;
+            File possibleFlagLocation = new File(pathnameFlags);
+            if (possibleFlagLocation.exists() && possibleFlagLocation.listFiles().length>0) {
+                if (!flagFilename.contains("/") && !flagFilename.isEmpty()) {
+                    movie.setMovieFlagUrl(pathnameFlags+"/"+flagFilename);
+                }
             }
         }
+    }
+
+    /**
+     * Adjust object url's to local storage paths
+     * @param context
+     * @param routefilm
+     */
+    public static void setLocalMedia(final Context context, final Routefilm routefilm) {
+        String movieFileName = setLocalFilePath(context, routefilm.getMovieUrl());
+        String sceneryFileName = setLocalFilePath(context, routefilm.getMovieImagepath());
+        String mapFilename = setLocalFilePath(context, routefilm.getMovieRouteinfoPath());
+
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + routefilm.getMovieId().intValue();
+            File possibleMovieLocation = new File(pathname);
+            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>0) {
+                if (!movieFileName.contains("/")) {
+                    routefilm.setMovieUrl(pathname + "/" + movieFileName);
+                }
+                if (!sceneryFileName.contains("/")) {
+                    routefilm.setMovieImagepath(pathname + "/" + sceneryFileName);
+                }
+                if (!mapFilename.contains("/")) {
+                    routefilm.setMovieRouteinfoPath(pathname + "/" + mapFilename);
+                }
+            }
+        }
+    }
+
+    private static String setLocalFilePath(final Context context, final String url) {
+        try {
+            if(!isLocalFilePath(url) && !url.isEmpty()) {
+                URL movieUrl = new URL(url);
+                return new File(movieUrl.getFile()).getName();
+            }
+        }
+        catch (MalformedURLException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+            String apikey = AccountHelper.getAccountToken(context);
+            LogHelper.WriteLogRule(context, apikey, "ERROR ROUTEFILM: [SET LOCAL MEDIA] [URL:" + url + "] " + e.getLocalizedMessage(), "ERROR", "");
+        }
+        return url;
+    }
+
+    private static boolean isLocalFilePath(final String filePath) {
+        return (filePath.startsWith("/") && !filePath.contains("http://") && !filePath.contains("https://"));
     }
 
     /**
@@ -244,6 +389,35 @@ public class DownloadHelper {
             }
         }
         return soundItemUri;
+    }
+
+    /**
+     * Get local Flag File object
+     * @param context
+     * @param flagItem
+     * @return
+     */
+    public static File getLocalFlag(final Context context, final Flag flagItem) {
+        String flagFileName = "";
+        try {
+            URL flagUrl = new URL(flagItem.getFlagUrl());
+            flagFileName = new File(flagUrl.getFile()).getName();
+        } catch (MalformedURLException e) {
+            Log.e(TAG, e.getLocalizedMessage());
+            SharedPreferences myPreferences = context.getSharedPreferences("app",0);
+            final String accounttoken = myPreferences.getString("apikey", "unauthorized");
+            LogHelper.WriteLogRule(context, accounttoken, "Flag-url: "+flagItem.getFlagUrl()+" can't be downloaded.", "ERROR",  "");
+            return null;
+        }
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER;
+            File possibleFlagLocation = new File(pathname);
+            if (possibleFlagLocation.exists() && possibleFlagLocation.listFiles().length>0) {
+                return new File(pathname+"/"+flagFileName);
+            }
+        }
+        return null;
     }
 
     /**

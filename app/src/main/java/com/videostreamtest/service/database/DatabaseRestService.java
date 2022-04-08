@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.videostreamtest.data.ResultApiKey;
+import com.videostreamtest.utils.ApplicationSettings;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +22,7 @@ public class DatabaseRestService {
             = MediaType.get("application/json; charset=utf-8");
 
     private OkHttpClient client;
-    private String url ="http://188.166.100.139:8080/api";
+    private String url = ApplicationSettings.PRAXCLOUD_API_URL +"/api";
 
     private String accountKey;
     private String profileKey;
@@ -46,6 +47,7 @@ public class DatabaseRestService {
             final ResultApiKey resultApiKey = objectMapper.readValue(response.body().string(), ResultApiKey.class);
             return resultApiKey.getApiKey();
         } catch (IOException ioException) {
+            Log.e(TAG, ioException.getLocalizedMessage());
             return "Failed";
         }
     }
@@ -77,6 +79,9 @@ public class DatabaseRestService {
     }
 
     public String getAvailableMovieParts(final String apikey, final Integer movieId) {
+        if (apikey == null) {
+            return "failed";
+        }
         final String routeMoviesUrl = url+"/route/movieparts/"+movieId;
         final Request request = new Request.Builder()
                 .url(routeMoviesUrl)
@@ -152,6 +157,28 @@ public class DatabaseRestService {
 
     public String downloadMovie(final String apiKey, final Integer movieId) {
         return "failed";
+    }
+
+    public boolean isOnline() {
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .build();
+        final String getActiveProductsUrl = url+"/server/status";
+        final Request request = new Request.Builder()
+                .url(getActiveProductsUrl)
+                .get()
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            String body = response.body().string();
+            Log.d("DatabaseService","Response got filled in :: "+body);
+            return (!body.isEmpty() && body.contains("streamserver"));
+        } catch (IOException exception) {
+            Log.e(TAG, exception.getLocalizedMessage());
+            return false;
+        }
     }
 
 }

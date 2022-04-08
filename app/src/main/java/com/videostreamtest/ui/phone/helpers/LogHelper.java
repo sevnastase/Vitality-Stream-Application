@@ -4,12 +4,11 @@ import android.content.Context;
 
 import androidx.work.Constraints;
 import androidx.work.Data;
-import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
-import com.videostreamtest.workers.WriteLogServiceWorker;
+import com.videostreamtest.workers.logging.WriteLogServiceWorker;
 
 public class LogHelper {
     private static final String TAG = ProductHelper.class.getSimpleName();

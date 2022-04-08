@@ -1,23 +1,24 @@
 package com.videostreamtest.ui.phone.productview.fragments.routefilmadapter;
 
-import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
+import com.videostreamtest.config.entity.Flag;
+import com.videostreamtest.config.entity.MovieFlag;
 import com.videostreamtest.config.entity.Routefilm;
+import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
-import com.videostreamtest.ui.phone.catalog.CatalogRecyclerViewClickListener;
+import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
 import org.jetbrains.annotations.NotNull;
@@ -33,30 +34,19 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
 
     //INFORMATION PARAMETERS
     private Product selectedProduct;
-    private CommunicationDevice communicationDevice;
+    private LinearLayout routeInformationBlock;
 
     //ELEMENTS FOR LIST WHICH IS ATTACHED TO THE ADAPTER
     private List<Routefilm> routefilmList = new ArrayList<>();
+
     private int selectedRoutefilm = 0;
 
-    //ROUTE INFORMATION BLOCK LISTENER
-    private CatalogRecyclerViewClickListener catalogRecyclerViewClickListener;
-    private LinearLayout routeInformationBlock;
-
-    public RoutefilmsAdapter(final Product activeProduct, final CommunicationDevice communicationDevice, final ProductViewModel productViewModel, final Context applicationContext) {
+    public RoutefilmsAdapter(final Product activeProduct,
+                             final ProductViewModel productViewModel,
+                             final LinearLayout routeInformationBlock) {
         this.selectedProduct = activeProduct;
-        this.communicationDevice = communicationDevice;
         this.productViewModel = productViewModel;
-
-//        productViewModel.getCurrentConfig().observe(, currentConfig -> {
-//            if (currentConfig != null) {
-//                productViewModel.getProductMovies(currentConfig.getAccountToken(), selectedProduct.getId().intValue()).observe(getViewLifecycleOwner(), routefilms -> {
-//                    routefilmsAdapter.updateRoutefilmList(routefilms);
-//                });
-//            } else {
-//                Toast.makeText(getActivity().getApplicationContext(), getString(R.string.product_view_loading_data_message), Toast.LENGTH_LONG).show();
-//            }
-//        });
+        this.routeInformationBlock = routeInformationBlock;
     }
 
     @NonNull
@@ -74,14 +64,17 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
     @Override
     public void onBindViewHolder(@NonNull @NotNull RoutefilmsViewHolder holder, int position) {
         holder.itemView.setSelected(selectedRoutefilm == position);
+        if (routefilmList != null && routefilmList.size() > 0) {
+            Log.d(TAG, "Binding view for "+routefilmList.get(position).getMovieTitle()+" on position: "+position);
+            holder.bindProduct(routefilmList.get(position), selectedProduct, position, routeInformationBlock, this);
+        }
         if (selectedRoutefilm == position) {
-            ImageButton routeSceneryImage = holder.itemView.findViewById(R.id.routeImageCoverButton);
+            final ImageButton routeSceneryImage = holder.itemView.findViewById(R.id.routeImageCoverButton);
             routeSceneryImage.setFocusableInTouchMode(true);
             routeSceneryImage.setFocusable(true);
-            routeSceneryImage.requestFocus();
-        }
-        if (routefilmList != null && routefilmList.size() > 0) {
-            holder.bindProduct(routefilmList.get(position), selectedProduct, communicationDevice, this, position, routeInformationBlock, catalogRecyclerViewClickListener);
+//            if (!routeSceneryImage.isFocused()) {
+                routeSceneryImage.requestFocus();
+//            }
         }
     }
 
@@ -94,55 +87,57 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
         }
     }
 
-    //SETTERS FOR INFORMATION BLOCK
-    public void setCatalogRecyclerViewClickListener(final CatalogRecyclerViewClickListener catalogRecyclerViewClickListener) {
-        this.catalogRecyclerViewClickListener = catalogRecyclerViewClickListener;
-    }
-
-    public void setRouteInformationBlock(final LinearLayout routeInformationBlock) {
-        this.routeInformationBlock = routeInformationBlock;
-    }
-
     //ROUTEFILMS ADAPTER LIST MUTATION METHODS
     public void setSelectedRoutefilm(int position) {
         this.selectedRoutefilm = position;
-//        notifyDataSetChanged();
     }
 
-    public int getSelectedRoutefilm() {return this.selectedRoutefilm;}
 
-    //TODO: CHANGE TO BleDeviceInformationAdapter like behaviour
+    public int getCurrentSelectedRoutefilmPosition() {return this.selectedRoutefilm;}
+
+
     public void updateRoutefilmList(final List<Routefilm> requestedRoutefilmList) {
         if (requestedRoutefilmList != null && requestedRoutefilmList.size()>0) {
             for (final Routefilm routefilm: requestedRoutefilmList) {
                 if (!isRoutefilmPresent(routefilm)) {
-                    this.routefilmList.add(routefilm);
-//                    notifyItemInserted(routefilmList.indexOf(routefilm));
-//                    if (this.routefilmList.size() == (requestedRoutefilmList.size()-1)) {
-                        notifyDataSetChanged();
+                        if (selectedProduct.getSupportStreaming()==0 && DownloadHelper.isMoviePresent(productViewModel.getApplication(), Movie.fromRoutefilm(routefilm))) {
+                            this.routefilmList.add(routefilm);
+                    }
+                    if (selectedProduct.getSupportStreaming()==1) {
+                        this.routefilmList.add(routefilm);
+                    }
+                }
+                notifyDataSetChanged();
+            }
+            Log.d(TAG, "Update recyclerview");
+
+//            try {
+//                for (final Routefilm routefilm : this.routefilmList) {
+//                    if (isRoutefilmRemoved(routefilm, requestedRoutefilmList)) {
+//                        final int removedFilmPosition = this.routefilmList.indexOf(routefilm);
+//                        this.routefilmList.remove(routefilm);
+//                        notifyItemRemoved(removedFilmPosition);
 //                    }
-                }
-            }
-            for (final Routefilm routefilm: this.routefilmList) {
-                if (isRoutefilmRemoved(routefilm, requestedRoutefilmList)) {
-                    final int removedFilmPosition = this.routefilmList.indexOf(routefilm);
-                    this.routefilmList.remove(routefilm);
-                    notifyItemRemoved(removedFilmPosition);
-                }
-            }
+//                }
+//            } catch (Exception concurrencyException) {
+//                if (concurrencyException != null) {
+//                    Log.e(TAG, ""+concurrencyException.getLocalizedMessage());
+//                } else {
+//                    Log.e(TAG, "ConcurrencyException");
+//                }
+//            }
         }
     }
 
     private boolean isRoutefilmRemoved(final Routefilm routefilm, final List<Routefilm> requestedRoutefilmList) {
-        boolean isRemoved = true;
         if (requestedRoutefilmList!= null && requestedRoutefilmList.size()>0) {
             for (final Routefilm film: requestedRoutefilmList) {
                 if (routefilm.getMovieId().intValue() == film.getMovieId().intValue()) {
-                    isRemoved = false;
+                    return false;
                 }
             }
         }
-        return isRemoved;
+        return true;
     }
 
     private boolean isRoutefilmPresent(final Routefilm routefilm) {
@@ -157,4 +152,5 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
             return false;
         }
     }
+
 }

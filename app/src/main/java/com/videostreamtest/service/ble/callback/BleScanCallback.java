@@ -8,7 +8,7 @@ import android.util.Log;
 
 import com.videostreamtest.data.model.BleDeviceInfo;
 import com.videostreamtest.service.ble.CSCProfile;
-import com.videostreamtest.ui.phone.productview.fragments.messagebox.ble.BleDeviceInformationAdapter;
+import com.videostreamtest.ui.phone.productpicker.fragments.ble.BleDeviceInformationAdapter;
 
 import java.util.List;
 

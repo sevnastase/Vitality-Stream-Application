@@ -9,15 +9,14 @@ import android.os.Process;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.work.Data;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.service.database.DatabaseRestService;
-import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -33,21 +32,14 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.GET;
-import retrofit2.http.Header;
 
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_URL;
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
 
 public class DataIntegrityCheckServiceWorker extends Worker {
     private static final String TAG = DataIntegrityCheckServiceWorker.class.getSimpleName();
     private static final String CHECKSUM_DIGEST_MD5_FILENAME = "checksum_digest.md5";
 
     private DatabaseRestService databaseRestService;
-
-    public interface PraxCloud {
-        @GET("/api/route/movies")
-        Call<List<Movie>> getRoutefilms(@Header("api-key") String accountToken);
-    }
 
     public DataIntegrityCheckServiceWorker(@NonNull @NotNull Context context, @NonNull @NotNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -72,7 +64,7 @@ public class DataIntegrityCheckServiceWorker extends Worker {
             @Override
             public void run() {
                 Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl(PRAXCLOUD_URL)
+                        .baseUrl(PRAXCLOUD_API_URL)
                         .addConverterFactory(GsonConverterFactory.create())
                         .build();
                 PraxCloud praxCloud = retrofit.create(PraxCloud.class);
@@ -90,7 +82,7 @@ public class DataIntegrityCheckServiceWorker extends Worker {
                         final String  cloudChecksum = getExternalChecksumDigest(movie);
                         final String localChecksum = calculateCurrentChecksum(movie);
                         Log.d(TAG, "local: "+localChecksum);
-                        Log.d(TAG, "CHECKSUM RESULT: ["+movie.getMovieTitle()+"] "+localChecksum.equals(cloudChecksum));
+//                        Log.d(TAG, "CHECKSUM RESULT: ["+movie.getMovieTitle()+"] "+localChecksum.equals(cloudChecksum));
                         databaseRestService.writeLog(apikey, "DataIntegrityCheckServiceWorker: CHECKSUM RESULT["+movie.getMovieTitle()+"] "+localChecksum.equals(cloudChecksum),"DEBUG", "");
                         if (!cloudChecksum.equals("") && !localChecksum.equals(cloudChecksum)) {
                             databaseRestService.writeLog(apikey, "DataIntegrityCheckServiceWorker: ["+movie.getMovieTitle()+"] Deleted bad movie, disk or file may be corrupted!","ERROR", "");

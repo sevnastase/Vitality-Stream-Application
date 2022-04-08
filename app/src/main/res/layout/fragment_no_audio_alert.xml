@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/status_dialog_videoplayer"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center|center_horizontal"
+    android:background="@drawable/imagebutton_blue_border"
+    android:backgroundTint="@color/black_overlay"
+    android:orientation="vertical"
+    android:visibility="visible"
+    android:layout_weight="1"
+    android:padding="15dp">
+    <TextView
+        android:id="@+id/alert_dialog_title"
+        android:text="Placeholder Title"
+        android:textSize="18dp"
+        android:textColor="#FFFFEE"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:layout_weight="1"
+        android:textAlignment="center"/>
+    <TextView
+        android:id="@+id/alert_dialog_message"
+        android:text="Placeholder message"
+        android:textColor="#FFFFEE"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="25dp"
+        android:layout_weight="1"
+        android:textAlignment="center"/>
+    <ImageButton
+        android:id="@+id/alert_dialog_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="25dp"
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/alert_dialog_return_home_button"
+        style="@style/AppTheme.DefaultButton"
+        android:textSize="10sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/pause_screen_button_text"
+        android:textAlignment="center"/>
+</LinearLayout>

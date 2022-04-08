@@ -13,7 +13,7 @@ import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Routepart;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
-import com.videostreamtest.service.database.DatabaseRestService;
+import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,11 +22,8 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.GET;
-import retrofit2.http.Header;
-import retrofit2.http.Path;
 
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_URL;
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
 
 public class UpdateRoutePartsServiceWorker extends Worker {
     private static final String TAG = UpdateRoutePartsServiceWorker.class.getSimpleName();
@@ -35,13 +32,6 @@ public class UpdateRoutePartsServiceWorker extends Worker {
 
     public UpdateRoutePartsServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
-    }
-
-    public interface PraxCloud {
-        @GET("/api/route/movieparts/{movie_id}")
-        Call<List<MoviePart>> getRoutepartsOfMovieId(@Path (value = "movie_id", encoded = true) Integer movieId, @Header("api-key") String accountToken);
-        @GET("/api/route/movies")
-        Call<List<Movie>> getRoutefilms(@Header("api-key") String accountToken);
     }
 
     @NonNull
@@ -55,7 +45,7 @@ public class UpdateRoutePartsServiceWorker extends Worker {
 
         //API CALL
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(PRAXCLOUD_URL)
+                .baseUrl(PRAXCLOUD_API_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
@@ -72,7 +62,6 @@ public class UpdateRoutePartsServiceWorker extends Worker {
 
         if (routefilms != null && routefilms.size()>0) {
             for (final Movie movie: routefilms) {
-
                 insertRoutepart(movie.getId(), apikey);
             }
         }

@@ -1,5 +1,7 @@
 package com.videostreamtest.workers;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,6 +21,8 @@ import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.workers.download.callback.CallbackByteChannel;
+import com.videostreamtest.workers.download.callback.ProgressCallBack;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -32,11 +36,11 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
-public class PeriodicInstallPackageServiceWorker extends Worker implements ProgressCallBack{
+public class PeriodicInstallPackageServiceWorker extends Worker implements ProgressCallBack {
     private final static String TAG = PeriodicInstallPackageServiceWorker.class.getSimpleName();
 
     private static final String UPDATE_INFO_FILE = "/output-metadata.json";
-    private static final String UPDATE_URL = "http://praxmedia.praxtour.com/app";
+    private static final String UPDATE_URL = PRAXCLOUD_MEDIA_URL+"/app";
 
     private DatabaseRestService databaseRestService = new DatabaseRestService();
 

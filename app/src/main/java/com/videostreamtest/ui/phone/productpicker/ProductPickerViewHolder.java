@@ -1,6 +1,8 @@
 package com.videostreamtest.ui.phone.productpicker;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -12,8 +14,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.GsonBuilder;
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
+import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.ProductActivity;
@@ -32,14 +37,13 @@ public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
     public void bind(Product product, int position) {
         productButton = itemView.findViewById(R.id.product_avatar);
 
-        int defaultProductPixelWidth = 300;
-        int defaultProductPixelHeight = 225;
-
-        ViewHelper.loadImage(itemView.getContext(),
-                productButton,
-                product.getProductLogoButtonPath(),
-                defaultProductPixelWidth,
-                defaultProductPixelHeight);
+        Picasso.get()
+                .load(product.getProductLogoButtonPath())
+                .resize(300, 225)
+                .networkPolicy(NetworkPolicy.NO_CACHE)
+                .placeholder(R.drawable.placeholder_button)
+                .error(R.drawable.placeholder_button)
+                .into(productButton);
 
         if (!isTouchScreen()) {
             initBorders();
@@ -97,6 +101,14 @@ public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
 
                 Intent productView = new Intent(view.getContext(), ProductActivity.class);
                 productView.putExtras(arguments);
+
+                SharedPreferences sharedPreferences = view.getContext().getSharedPreferences("app", Context.MODE_PRIVATE);
+                String accounttoken = sharedPreferences.getString("apikey", "");
+
+                PraxtourDatabase.databaseWriterExecutor.execute(()->{
+                    PraxtourDatabase.getDatabase(view.getContext().getApplicationContext()).usageTrackerDao().setSelectedProduct(accounttoken, product.getId());
+                    Log.d(TAG, "Written to db: "+accounttoken+" , "+product.getId());
+                });
 
                 view.getContext().startActivity(productView);
             }

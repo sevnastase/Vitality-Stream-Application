@@ -5,12 +5,16 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
-import com.videostreamtest.config.dao.ProductMovieDao;
+import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.config.entity.EffectSound;
+import com.videostreamtest.config.entity.Flag;
+import com.videostreamtest.config.entity.MovieFlag;
+import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.entity.StandAloneDownloadStatus;
@@ -19,9 +23,13 @@ import com.videostreamtest.config.repository.BluetoothDefaultDeviceRepository;
 import com.videostreamtest.config.repository.ConfigurationRepository;
 import com.videostreamtest.config.repository.DownloadStatusRepository;
 import com.videostreamtest.config.repository.EffectSoundRepository;
+import com.videostreamtest.config.repository.FlagRepository;
 import com.videostreamtest.config.repository.ProductMovieRepository;
+import com.videostreamtest.config.repository.ProductRepository;
 import com.videostreamtest.config.repository.RoutefilmRepository;
+import com.videostreamtest.config.repository.UsageTrackerRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class ProductViewModel extends AndroidViewModel {
@@ -32,6 +40,11 @@ public class ProductViewModel extends AndroidViewModel {
     private BackgroundSoundRepository backgroundSoundRepository;
     private EffectSoundRepository effectSoundRepository;
     private BluetoothDefaultDeviceRepository bluetoothDefaultDeviceRepository;
+    private FlagRepository flagRepository;
+    private UsageTrackerRepository usageTrackerRepository;
+    private ProductRepository productRepository;
+
+    private MutableLiveData<BigDecimal> measuredConnectionSpeed = new MutableLiveData<>();
 
     public ProductViewModel(@NonNull Application application) {
         super(application);
@@ -42,18 +55,32 @@ public class ProductViewModel extends AndroidViewModel {
         effectSoundRepository = new EffectSoundRepository(application);
         productMovieRepository = new ProductMovieRepository(application);
         bluetoothDefaultDeviceRepository = new BluetoothDefaultDeviceRepository(application);
+        flagRepository = new FlagRepository(application);
+        usageTrackerRepository = new UsageTrackerRepository(application);
+        productRepository = new ProductRepository(application);
     }
 
     public LiveData<Configuration> getCurrentConfig() {
         return configurationRepository.getCurrentConfiguration();
     }
 
+    public LiveData<Flag> getFlagOfMovie() {
+        return flagRepository.getFlagOfMovie();
+    }
+    public LiveData<List<MovieFlag>> getMovieFlags() {
+        return flagRepository.getMovieFlags();
+    }
+
+    public LiveData<List<Flag>> getAllFlags() {
+        return flagRepository.getAllFlags();
+    }
+
     public LiveData<List<Routefilm>> getRoutefilms(final String accountToken) {
         return routefilmRepository.getAllRoutefilms(accountToken);
     }
 
-    public LiveData<List<Routefilm>> getProductMovies(final String accountToken, final Integer productId) {
-        return routefilmRepository.getAllProductRoutefilms(accountToken, productId);
+    public LiveData<List<Routefilm>> getProductMovies(final String accountToken) {
+        return routefilmRepository.getAllProductRoutefilms(accountToken);
     }
 
     public LiveData<List<ProductMovie>> getPMS(final Integer productId) {
@@ -67,6 +94,14 @@ public class ProductViewModel extends AndroidViewModel {
 
     public LiveData<StandAloneDownloadStatus> getDownloadStatus(final Integer movieId) {
         return downloadStatusRepository.getDownloadStatus(movieId);
+    }
+
+    public LiveData<List<StandAloneDownloadStatus>> getAllDownloadStatus() {
+        return downloadStatusRepository.getAllDownloadStatus();
+    }
+
+    public LiveData<List<StandAloneDownloadStatus>> getAllActiveDownloadStatus() {
+        return downloadStatusRepository.getAllActiveDownloadStatus();
     }
 
     public LiveData<List<BackgroundSound>> getBackgroundSounds(final Integer movieId) {
@@ -83,5 +118,21 @@ public class ProductViewModel extends AndroidViewModel {
 
     public void insertBluetoothDefaultDevice(final BluetoothDefaultDevice bluetoothDefaultDevice) {
         bluetoothDefaultDeviceRepository.insertBluetoothDefaultDevice(bluetoothDefaultDevice);
+    }
+
+    public LiveData<Product> getSelectedProduct() {
+        return productRepository.getSelectedProduct();
+    }
+
+    public LiveData<Routefilm> getSelectedRoutefilm() {
+        return routefilmRepository.getSelectedRoutefilm();
+    }
+
+    public LiveData<BigDecimal> getMeasuredConnectionSpeed() {
+        return measuredConnectionSpeed;
+    }
+
+    public void setMeasuredConnectionSpeed(BigDecimal measuredConnectionSpeed) {
+        this.measuredConnectionSpeed.postValue(measuredConnectionSpeed);
     }
 }

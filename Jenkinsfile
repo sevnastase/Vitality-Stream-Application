@@ -9,18 +9,24 @@ pipeline {
         stage('Dry Build') {
             steps {
             	echo 'Building...'
+            	sh './gradlew --version'
                 sh './gradlew clean build --no-daemon'
             }
         }
         stage('Release') {
             steps {
                 echo 'Building release...'
-                sh './gradlew :app:assembleRelease --no-daemon'
+                sh './gradlew :app:assembleRelease'
                 echo 'Storing apk file for publishing'
                 archiveArtifacts artifacts: '**/app/build/outputs/apk/release/*', fingerprint: true
             }
         }
         stage('Deploy') {
+            when {
+                expression {
+                  env.BRANCH_NAME == 'develop' || env.BRANCH_NAME == 'master'
+              }
+            }
             steps {
                 echo 'Deploying on server...'
                 script {
