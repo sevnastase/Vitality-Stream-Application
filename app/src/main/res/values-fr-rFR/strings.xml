@@ -140,4 +140,7 @@
     <string name="downloads_fragment_subtitle">Téléchargez l\'aperçu des nouveaux films sur le parcours.</string>
     <string name="download_information_overlay_main_title">Télécharger l\'information</string>
     <string name="download_information_overlay_error_title">Télécharger les alertes</string>
+    <string name="menu_nav_privacy_policy_title">Politique de confidentialité</string>
+    <string name="show_privacy_policy_description">Cliquez sur le bouton ci-dessous pour ouvrir la politique de confidentialité dans votre navigateur.</string>
+    <string name="open_privacy_policy_button_text">Ouvrir la politique de confidentialité</string>
 </resources>

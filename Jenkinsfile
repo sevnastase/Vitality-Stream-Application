@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Dry Build') {
             steps {
-            	echo 'Building...'
+            	echo 'Building on branch ' + env.BRANCH_NAME + '...'
             	sh './gradlew --version'
                 sh './gradlew clean build --no-daemon'
             }

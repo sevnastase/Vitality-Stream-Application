@@ -70,7 +70,7 @@ public class LoginStatusFragment extends Fragment {
             } else {
 //                loginStatusText.setText("Before first time use you need to accept the following permissions:\n\n");
                 if (arguments.getString("account-type", "").equals("standalone")) {
-                    loginStatusText.setText(loginStatusText.getText() + getString(R.string.login_status_summary_standalone));
+                    loginStatusText.setText(R.string.login_status_summary_standalone);
 //                    loginStatusText.setText(loginStatusText.getText() + "> Location permission: for Bluetooth sensors.\n\n");
 //                    loginStatusText.setText(loginStatusText.getText() + "Please proceed to accept the permissions.");
                     nextButton.setOnClickListener((onClickedView) -> {
@@ -91,7 +91,7 @@ public class LoginStatusFragment extends Fragment {
 
                 }
                 if (arguments.getString("account-type", "").equals("streaming")) {
-                    loginStatusText.setText(loginStatusText.getText() + getString(R.string.login_status_summary_streaming));
+                    loginStatusText.setText(getString(R.string.login_status_summary_streaming));
 //                    loginStatusText.setText(loginStatusText.getText() + "Please proceed to accept the permissions.");
 
                     nextButton.setOnClickListener((onClickedView) -> {

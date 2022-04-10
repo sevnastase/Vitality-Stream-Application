@@ -140,4 +140,7 @@
     <string name="menu_nav_routes_title">Routes</string>
     <string name="ble_connectivity_problems_alert">Bij problemen met BLE de bluetooth en/of de loactie uit en aan zetten.</string>
     <string name="videoplayer_no_audio_alert_content">Audio wordt niet gedetecteerd, dit zijn de meest waarschijnlijke redenen:\n- Apparaat gedempt\n- Geen bestand geladen\n- Volume te laag\n- Android-systeeminstellingen niet correct ingesteld</string>
+    <string name="menu_nav_privacy_policy_title">Privacybeleid</string>
+    <string name="show_privacy_policy_description">Klik op de onderstaande knop om het Privacybeleid in uw browser te openen.</string>
+    <string name="open_privacy_policy_button_text">" Privacybeleid openen"</string>
 </resources>

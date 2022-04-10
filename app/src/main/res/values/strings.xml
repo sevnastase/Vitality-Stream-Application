@@ -146,10 +146,13 @@
     <string name="login_status_summary_streaming">Before first time use you need to accept the following permissions:  \n\n> Location permission: for Bluetooth sensors.  \n\nPlease proceed to accept the permissions.</string>
     <string name="download_speed_ok">Internet speed OK.</string>
     <string name="download_speed_connection_issues">Internet connection issues, please consult an IT-expert.</string>
-    <string name="login_location_permission_summary">Click next to allow Praxtour to access this device\'s location.\n\nIf the location permission is denied Praxtour is not allowed to use BLE functionality ,e.g. the cadence sensor, and therefore the user can\'t use all functionalities.</string>
-    <string name="login_storage_permission_summary">Click next to allow Praxtour to access photos and media on your device.\n\nIf the storage permission is denied Praxtour is not allowed to store media on your device, therefore the app cannot be used.</string>
+    <string name="login_location_permission_summary">Click next to allow PraxCloud to access this device\'s location.\n\nPraxCloud collects location data to enable PraxFit, PraxFilm, and BLE Settings even when the app is closed or not in use.\n\nIf the location permission is denied Praxtour is not allowed to use BLE functionality, e.g. the cadence sensor, and therefore the user can\'t use all functionalities like exercising.</string>
+    <string name="login_storage_permission_summary">Click next to allow Praxtour to access photos and media on your device.\nPraxCloud uses storage to enable the downloading and storing of movie files even when the app is closed or not in use.\nIf the storage permission is denied Praxtour is not allowed to store media on your device, therefore the app cannot be used.</string>
     <string name="downloads_fragment_title">Downloads</string>
     <string name="downloads_fragment_subtitle">Download overview of the new routefilms.</string>
     <string name="download_information_overlay_main_title">Download Information</string>
     <string name="download_information_overlay_error_title">Download Information</string>
+    <string name="menu_nav_privacy_policy_title">Privacy Policy</string>
+    <string name="show_privacy_policy_description">Click on the button below to open the Privacy policy in your browser.</string>
+    <string name="open_privacy_policy_button_text">Open privacy policy</string>
 </resources>

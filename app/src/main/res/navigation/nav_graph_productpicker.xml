@@ -9,6 +9,10 @@
         android:name="com.videostreamtest.ui.phone.productpicker.fragments.productpicker.ProductPickerFragment"
         android:label="ProductPickerFragment" />
     <fragment
+        android:id="@+id/privacyPolicyFragment"
+        android:name="com.videostreamtest.ui.phone.productpicker.fragments.privacypolicy.PrivacyPolicyFragment"
+        android:label="PrivacyPolicyFragment" />
+    <fragment
         android:id="@+id/downloadsFragment"
         android:name="com.videostreamtest.ui.phone.productpicker.fragments.downloads.DownloadOverviewFragment"
         android:label="DownloadsFragment" />

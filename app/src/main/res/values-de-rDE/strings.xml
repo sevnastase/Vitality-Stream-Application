@@ -140,4 +140,7 @@
     <string name="downloads_fragment_subtitle">Download Übersicht der neuen Streckenfilme.</string>
     <string name="download_information_overlay_main_title">Download-Information</string>
     <string name="download_information_overlay_error_title">Benachrichtigungen herunterladen</string>
+    <string name="menu_nav_privacy_policy_title">Datenschutz-Bestimmungen</string>
+    <string name="show_privacy_policy_description">Klicken Sie auf die Schaltfläche unten, um die Datenschutzerklärung in Ihrem Browser zu öffnen.</string>
+    <string name="open_privacy_policy_button_text">Datenschutzrichtlinie öffnen</string>
 </resources>
