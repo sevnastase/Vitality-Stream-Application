@@ -3,22 +3,20 @@ package com.videostreamtest.ui.phone.productpicker;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
+import android.os.StrictMode;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,10 +26,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
-import androidx.navigation.NavGraph;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.ExistingPeriodicWorkPolicy;
@@ -46,6 +41,7 @@ import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.config.entity.Routefilm;
+import com.videostreamtest.config.entity.StandAloneDownloadStatus;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.log.DeviceInformation;
 import com.videostreamtest.service.ble.BleService;
@@ -62,7 +58,6 @@ import com.videostreamtest.workers.PeriodicInstallPackageServiceWorker;
 import com.videostreamtest.workers.SoundInformationServiceWorker;
 import com.videostreamtest.workers.UpdateRegisteredMovieServiceWorker;
 import com.videostreamtest.workers.UpdateRoutePartsServiceWorker;
-import com.videostreamtest.workers.download.ActivateDownloadRunnersServiceWorker;
 import com.videostreamtest.workers.download.DownloadMovieServiceWorker;
 import com.videostreamtest.workers.download.DownloadStatusVerificationServiceWorker;
 import com.videostreamtest.workers.synchronisation.ActiveProductMovieLinksServiceWorker;
@@ -72,13 +67,12 @@ import com.videostreamtest.workers.synchronisation.SyncMovieFlagsServiceWorker;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-import static com.videostreamtest.utils.ApplicationSettings.NUMBER_OF_DOWNLOAD_RUNNERS;
+import static com.videostreamtest.utils.ApplicationSettings.THREAD_POOL_EXECUTOR;
 
 public class ProductPickerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private final static String TAG = ProductPickerActivity.class.getSimpleName();
@@ -98,6 +92,19 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                .permitDiskReads()
+                .detectDiskWrites()
+                .detectNetwork()   // or .detectAll() for all detectable problems
+                .penaltyLog()
+                .build());
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                .detectLeakedSqlLiteObjects()
+                .detectLeakedClosableObjects()
+                .penaltyLog()
+                .penaltyDeath()
+                .build());
+
         setContentView(R.layout.activity_productpicker);
 
         getWindow().getDecorView().setSystemUiVisibility(
@@ -136,52 +143,50 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
 
         //PERIODIC ACTIONS
         syncMovieDatabasePeriodically();
-        checkForUpdatePeriodically();
+        checkForAppUpdatePeriodically();
 
-        productPickerViewModel.getCurrentConfig().observe(this, config -> {
-            if (config != null) {
-                PermissionHelper.requestPermission(getApplicationContext(), this, config);
+        PermissionHelper.requestPermission(getApplicationContext(), this);
 
-                LogHelper.WriteLogRule(getApplicationContext(), config.getAccountToken(),"isTouchscreen: "+isTouchScreen(), "DEBUG", "");
-
-                productPickerViewModel.getAccountProducts(config.getAccountToken(), !config.isLocalPlay()).observe(this, products -> {
-                    if (products!=null && products.size()>0) {
-                        boolean sensorNeeded = false;
-                        for (final Product product: products) {
-                            if (!product.getCommunicationType().equals("NONE")) {
-                                sensorNeeded = true;
-                            }
-                        }
-                        if (sensorNeeded) {
-                            startBleService();
-                        }
+        //START BLE SERVICE IF PRODUCT NEEDS SENSOR
+        productPickerViewModel.getAccountProducts(AccountHelper.getAccountToken(getApplicationContext()), !AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone")).observe(this, products -> {
+            if (products!=null && products.size()>0) {
+                boolean sensorNeeded = false;
+                for (final Product product: products) {
+                    if (!product.getCommunicationType().equals("NONE")) {
+                        sensorNeeded = true;
                     }
-                });
-
-                if (config.isLocalPlay()) {
-                    hideMenuItem(R.id.nav_logout);
-                    downloadLocalMovies();
-                    downloadStatusVerificationCheck();
-                } else {
-                    hideMenuItem(R.id.nav_downloads);
                 }
-
-                settingsButton.setOnClickListener(onClickedView -> {
-                    if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                        drawerLayout.closeDrawer(GravityCompat.START);
-                    } else {
-                        drawerLayout.openDrawer(GravityCompat.START);
-
-                        if (navView.getCheckedItem()!= null) {
-                            navView.requestFocus();
-                        } else {
-                            navView.requestFocus();
-                        }
-                    }
-                });
+                if (sensorNeeded) {
+                    startBleService();
+                }
             }
-            Log.d(TAG, "LIBVLC hash: "+VideoLanLib.getLibVLC(getApplicationContext()).hashCode());
         });
+
+        //HIDE UI MENU ITEMS BASED ON ACCOUNT TYPE
+        if (AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone")) {
+            hideMenuItem(R.id.nav_logout);
+            downloadLocalMovies();
+            downloadStatusVerificationCheck();
+        } else {
+            hideMenuItem(R.id.nav_downloads);
+        }
+
+        //SET ONLICK BEHAVIOUR OF SETTINGS BUTTON
+        settingsButton.setOnClickListener(onClickedView -> {
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START);
+
+                if (navView.getCheckedItem()!= null) {
+                    navView.requestFocus();
+                } else {
+                    navView.requestFocus();
+                }
+            }
+        });
+
+        Log.d(TAG, "LIBVLC hash: "+VideoLanLib.getLibVLC(getApplicationContext()).hashCode());
     }
 
     @Override
@@ -194,6 +199,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         super.onDestroy();
         VideoLanLib.getLibVLC(getApplicationContext()).release();
         VideoLanLib.setLibVlc(null);
+        THREAD_POOL_EXECUTOR.getQueue().drainTo(new ArrayList<>());
     }
 
     private boolean isTouchScreen() {
@@ -293,7 +299,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         return false;
     }
 
-    private void checkForUpdatePeriodically() {
+    private void checkForAppUpdatePeriodically() {
         Data.Builder syncData = new Data.Builder();
         syncData.putString("apikey",  apikey);
         Constraints constraint = new Constraints.Builder()
@@ -335,7 +341,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
     private void downloadLocalMovies() {
             if (isStoragePermissionGranted(AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone"))) {
                 productPickerViewModel.getRoutefilms(AccountHelper.getAccountToken(getApplicationContext())).observe(this, routefilms -> {
-                    if (routefilms.size()>0 && AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone")) {
+                    if (routefilms.size()>0) {
                         //CHECK IF ALL MOVIES FIT TO DISK
                         // Accumulate size of movies
                         long totalDownloadableMovieFileSizeOnDisk = 0L;
@@ -344,13 +350,12 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                                 totalDownloadableMovieFileSizeOnDisk += routefilm.getMovieFileSize();
                             }
                         }
-
                         if (DownloadHelper.canFileBeCopiedToLargestVolume(getApplicationContext(), totalDownloadableMovieFileSizeOnDisk)) {
-
                             for (final Routefilm routefilm: routefilms) {
-                                startDownloadWorker(routefilm.getMovieId(), AccountHelper.getAccountMediaServerUrl(getApplicationContext()));
+                                if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
+                                    startDownloadWorker(routefilm.getMovieId(), AccountHelper.getAccountMediaServerUrl(getApplicationContext()));
+                                }
                             }
-
                         } else {
                             Log.d(TAG, "Movies do not fit on disk, DownloadRunners not started.");
                             LogHelper.WriteLogRule(getApplicationContext(), AccountHelper.getAccountToken(getApplicationContext()), "Movies do not fit on disk, DownloadRunners aborted.","DEBUG", "");
@@ -383,7 +388,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build();
 
-        PeriodicWorkRequest downloadStatusVerificationWorker = new PeriodicWorkRequest.Builder(DownloadStatusVerificationServiceWorker.class, 30, TimeUnit.MINUTES)
+        PeriodicWorkRequest downloadStatusVerificationWorker = new PeriodicWorkRequest.Builder(DownloadStatusVerificationServiceWorker.class, 3, TimeUnit.HOURS)
                 .setConstraints(constraints)
                 .addTag("download-status-verification")
                 .build();
@@ -490,6 +495,8 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         Log.d(TAG, "Product: "+Build.PRODUCT);
         deviceInformation.setProduct(Build.PRODUCT);
         Log.d(TAG, "Bootloader: "+Build.BOOTLOADER);
+        deviceInformation.setTouchScreen(isTouchScreen());
+        Log.d(TAG, "isTouchscreen: "+isTouchScreen());
 
         if (Build.SUPPORTED_ABIS.length>0) {
             Log.d(TAG, "ABIS length: "+Build.SUPPORTED_ABIS.length);

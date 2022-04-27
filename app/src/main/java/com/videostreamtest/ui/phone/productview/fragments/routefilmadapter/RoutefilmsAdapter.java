@@ -100,12 +100,13 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
         if (requestedRoutefilmList != null && requestedRoutefilmList.size()>0) {
             for (final Routefilm routefilm: requestedRoutefilmList) {
                 if (!isRoutefilmPresent(routefilm)) {
-                        if (selectedProduct.getSupportStreaming()==0 && DownloadHelper.isMoviePresent(productViewModel.getApplication(), Movie.fromRoutefilm(routefilm))) {
-                            this.routefilmList.add(routefilm);
-                    }
-                    if (selectedProduct.getSupportStreaming()==1) {
-                        this.routefilmList.add(routefilm);
-                    }
+//                    if (selectedProduct.getSupportStreaming()==0 && DownloadHelper.isMoviePresent(productViewModel.getApplication(), Movie.fromRoutefilm(routefilm))) {
+//                        this.routefilmList.add(routefilm);
+//                    }
+//                    if (selectedProduct.getSupportStreaming()==1) {
+//                        this.routefilmList.add(routefilm);
+//                    }
+                    this.routefilmList.add(routefilm);
                 }
                 notifyDataSetChanged();
             }

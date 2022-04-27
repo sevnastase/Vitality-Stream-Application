@@ -119,8 +119,12 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
                     Log.d(TAG, "localRoutefilms marked for removal: "+markedForRemoval.size());
                     for (final Routefilm routefilm:markedForRemoval) {
                         deletePhysicalMovie(Movie.fromRoutefilm(routefilm));
-                        routefilmDao.delete(routefilm);
-                        downloadStatusDao.deleteDownloadStatus(routefilm.getMovieId());
+                        PraxtourDatabase.databaseWriterExecutor.execute(()-> {
+                            routefilmDao.delete(routefilm);
+                        });
+                        PraxtourDatabase.databaseWriterExecutor.execute(()-> {
+                            downloadStatusDao.deleteDownloadStatus(routefilm.getMovieId());
+                        });
                     }
                 }
 
@@ -128,29 +132,33 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
                 if (markedForInsertion.size()>0) {
                     Log.d(TAG, "localRoutefilms marked for insertion: "+markedForInsertion.size());
                     for (final Routefilm routefilm:markedForInsertion) {
-                        routefilmDao.insert(routefilm);
+                        insertRoutefilm(routefilm);
                         final StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
                         standAloneDownloadStatus.setMovieId(routefilm.getMovieId());
                         standAloneDownloadStatus.setDownloadMovieId(routefilm.getMovieId());
                         standAloneDownloadStatus.setDownloadStatus(-1);
-                        downloadStatusDao.insert(standAloneDownloadStatus);
+                        PraxtourDatabase.databaseWriterExecutor.execute(()->{
+                            downloadStatusDao.insert(standAloneDownloadStatus);
+                        });
                     }
                 }
                 //MarkforUpdate, problem is the -1 downloadstatus for standalone which cause all movie to re-download on update
                 if (markedForUpdate.size()>0) {
                     Log.d(TAG, "localRoutefilms marked for update: " + markedForUpdate.size());
                     for (final Routefilm routefilm : markedForUpdate) {
-                        routefilmDao.insert(routefilm);
+                        insertRoutefilm(routefilm);
                     }
                 }
             } else {
                 for (final Routefilm routefilm:externalRoutefilmListWithDetails) {
-                    routefilmDao.insert(routefilm);
+                    insertRoutefilm(routefilm);
                     final StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
                     standAloneDownloadStatus.setMovieId(routefilm.getMovieId().intValue());
                     standAloneDownloadStatus.setDownloadMovieId(routefilm.getMovieId().intValue());
                     standAloneDownloadStatus.setDownloadStatus(-1);
-                    downloadStatusDao.insert(standAloneDownloadStatus);
+                    PraxtourDatabase.databaseWriterExecutor.execute(()->{
+                        downloadStatusDao.insert(standAloneDownloadStatus);
+                    });
                 }
             }
         }
@@ -181,7 +189,7 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
                     if (!routefilm.getMovieImagepath().equalsIgnoreCase(film.getMovieImagepath())) {
                         return true;
                     }
-                    if (routefilm.getMovieRouteinfoPath().equalsIgnoreCase(film.getMovieRouteinfoPath())) {
+                    if (!routefilm.getMovieRouteinfoPath().equalsIgnoreCase(film.getMovieRouteinfoPath())) {
                         return true;
                     }
                 }
@@ -229,6 +237,15 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
         return null;
     }
 
+    private void insertRoutefilm(final Routefilm routefilm) {
+        if (routefilm.getMovieFlagUrl() == null) {
+            routefilm.setMovieFlagUrl("");
+        }
+        PraxtourDatabase.databaseWriterExecutor.execute(()->{
+            PraxtourDatabase.getDatabase(getApplicationContext()).routefilmDao().insert(routefilm);
+        });
+    }
+
     private boolean deletePhysicalMovie(final Movie movie) {
         final File externalStorageVolume = DownloadHelper.selectLargestStorageVolume(getApplicationContext());
         String existingPathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + movie.getId();
@@ -248,7 +265,7 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
     private boolean movieAlreadyPresentInLocalDatabase(final Movie externalMovie, final List<Routefilm> localMovieList) {
         if (localMovieList.size()>0) {
             for (final Routefilm localFilm : localMovieList) {
-                if (externalMovie.getId() == localFilm.getMovieId()) {
+                if (externalMovie.getId().intValue() == localFilm.getMovieId().intValue()) {
                     return true;
                 }
             }

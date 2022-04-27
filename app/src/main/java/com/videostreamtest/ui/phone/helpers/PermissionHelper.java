@@ -25,10 +25,6 @@ public class PermissionHelper {
     private static final int PERMISSION_REQUEST_CODE = 2323;
 
     public static void requestPermission(Context context, Activity activity) {
-        PermissionHelper.requestPermission(context, activity, null);
-    }
-
-    public static void requestPermission(Context context, Activity activity, Configuration configuration) {
         List<String> permissions = new ArrayList<>();
         Log.d(TAG, "Checking permissions for Build Version Code "+Build.VERSION.SDK_INT);
         // Check if Android M or higher
@@ -41,16 +37,16 @@ public class PermissionHelper {
             permissions.add(Manifest.permission.BLUETOOTH);
             permissions.add(Manifest.permission.BLUETOOTH_ADMIN);
 
-            if (configuration != null) {
-                if (configuration.isBootOnStart()) {
-                    permissions.add(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-                }
 
-                if (configuration.isLocalPlay()) {
-                    permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                    permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-                }
+            if (AccountHelper.isAccountBootable(context)) {
+                permissions.add(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
             }
+
+            if (AccountHelper.getAccountType(context).equalsIgnoreCase("standalone")) {
+                permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            }
+
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {

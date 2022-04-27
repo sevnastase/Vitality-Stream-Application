@@ -222,23 +222,45 @@ public class AbstractProductScreenFragment extends Fragment {
 
     private void loadProductMovies() {
         if (!apikey.equals("")) {
-            productViewModel.getProductMovies(apikey)
-                    .observe(getViewLifecycleOwner(), routefilms -> {
-                if (routefilms != null) {
-                    preLoadImages(routefilms);
-                    if (routefilmsAdapter!=null) {
-                        Log.d(TAG, "routefilms loaded");
-                        routefilmsAdapter.updateRoutefilmList(routefilms);
-                        routefilmOverview.getAdapter().notifyDataSetChanged();
-                        Log.d(TAG, "childCount: "+routefilmOverview.getAdapter().getItemCount());
-                        Log.d(TAG, "routefilms size: "+routefilms.size());
-                        if (routefilmOverview.getAdapter().getItemCount() == routefilms.size()) {
-                            showRoutefilmOverview();
-                            refreshRoutefilmOverView(4, 500);
-                        }
-                    }
-                }
-            });
+            if (AccountHelper.getAccountType(getActivity().getApplicationContext()).equalsIgnoreCase("standalone")) {
+                productViewModel.getStandaloneProductMovies(apikey)
+                        .observe(getViewLifecycleOwner(), routefilms -> {
+                            if (routefilms != null) {
+                                preLoadImages(routefilms);
+                                if (routefilmsAdapter!=null) {
+                                    Log.d(TAG, "routefilms loaded");
+                                    routefilmsAdapter.updateRoutefilmList(routefilms);
+                                    routefilmOverview.getAdapter().notifyDataSetChanged();
+                                    Log.d(TAG, "childCount: "+routefilmOverview.getAdapter().getItemCount());
+                                    Log.d(TAG, "routefilms size: "+routefilms.size());
+                                    if (routefilmOverview.getAdapter().getItemCount() == routefilms.size()) {
+                                        showRoutefilmOverview();
+                                        refreshRoutefilmOverView(4, 500);
+                                    }
+                                }
+                            }
+                        });
+            }
+            if (AccountHelper.getAccountType(getActivity().getApplicationContext()).equalsIgnoreCase("streaming")) {
+                productViewModel.getProductMovies(apikey)
+                        .observe(getViewLifecycleOwner(), routefilms -> {
+                            if (routefilms != null) {
+                                preLoadImages(routefilms);
+                                if (routefilmsAdapter!=null) {
+                                    Log.d(TAG, "routefilms loaded");
+                                    routefilmsAdapter.updateRoutefilmList(routefilms);
+                                    routefilmOverview.getAdapter().notifyDataSetChanged();
+                                    Log.d(TAG, "childCount: "+routefilmOverview.getAdapter().getItemCount());
+                                    Log.d(TAG, "routefilms size: "+routefilms.size());
+                                    if (routefilmOverview.getAdapter().getItemCount() == routefilms.size()) {
+                                        showRoutefilmOverview();
+                                        refreshRoutefilmOverView(4, 500);
+                                    }
+                                }
+                            }
+                        });
+            }
+
         }
     }
 

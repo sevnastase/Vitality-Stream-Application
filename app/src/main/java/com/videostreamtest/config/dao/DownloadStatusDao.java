@@ -6,6 +6,7 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Transaction;
 import androidx.room.Update;
 
 import com.videostreamtest.config.entity.StandAloneDownloadStatus;
@@ -42,6 +43,7 @@ public interface DownloadStatusDao {
     @Query("SELECT * FROM download_table")
     List<StandAloneDownloadStatus> getAllRawDownloadStatus();
 
+    @Transaction
     @Query("SELECT * FROM download_table dt ORDER BY dt.download_status DESC")
     LiveData<List<StandAloneDownloadStatus>> getAllActiveDownloadStatus();
 }

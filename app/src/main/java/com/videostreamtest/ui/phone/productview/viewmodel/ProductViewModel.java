@@ -79,6 +79,10 @@ public class ProductViewModel extends AndroidViewModel {
         return routefilmRepository.getAllRoutefilms(accountToken);
     }
 
+    public LiveData<List<Routefilm>> getStandaloneProductMovies(final String accountToken) {
+        return routefilmRepository.getAllStandaloneProductRoutefilms(accountToken);
+    }
+
     public LiveData<List<Routefilm>> getProductMovies(final String accountToken) {
         return routefilmRepository.getAllProductRoutefilms(accountToken);
     }

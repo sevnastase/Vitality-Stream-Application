@@ -17,8 +17,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import com.google.android.play.core.appupdate.AppUpdateInfo;
@@ -38,8 +41,11 @@ import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.VideoLanLib;
 import com.videostreamtest.workers.InstallPackageServiceWorker;
 import com.videostreamtest.workers.UpdatePackageServiceWorker;
+import com.videostreamtest.workers.download.DownloadStatusVerificationServiceWorker;
 
 import org.videolan.libvlc.LibVLC;
+
+import java.util.concurrent.TimeUnit;
 
 
 public class SplashActivity extends AppCompatActivity {
@@ -63,12 +69,13 @@ public class SplashActivity extends AppCompatActivity {
         splashViewModel = new ViewModelProvider(this).get(SplashViewModel.class);
         splashViewModel.setWorkerProgress(0);
 
-        checkForRecommendedScreenDpi();
+//        checkForRecommendedScreenDpi();
         requestDrawOverlayPermission();
 
         loadTimer = new Handler(Looper.getMainLooper());
 
         checkForUpdates();
+        checkDownloadStatusVerification();
 
         //New way
         splashViewModel.getCurrentConfig().observe(this, config -> {
@@ -83,6 +90,11 @@ public class SplashActivity extends AppCompatActivity {
                 splashViewModel.resetUsageTracker(config.getAccountToken());
                 splashViewModel.resetInterruptedDownloads();
 
+                if (AccountHelper.getAccountToken(getApplicationContext()).equalsIgnoreCase("unauthorized")) {
+                    SharedPreferences.Editor editor = getSharedPreferences("app", MODE_PRIVATE).edit();
+                    editor.putString("apikey",  config.getAccountToken());
+                    editor.commit();
+                }
                 if (AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("undefined")) {
                     SharedPreferences.Editor editor = getSharedPreferences("app", MODE_PRIVATE).edit();
                     if (config.isLocalPlay()) {
@@ -101,6 +113,9 @@ public class SplashActivity extends AppCompatActivity {
                     }
                     editor.commit();
                 }
+                SharedPreferences.Editor editor = getSharedPreferences("app", MODE_PRIVATE).edit();
+                editor.putBoolean("bootable", config.isBootOnStart());
+                editor.commit();
 
                 /**
                  * TODO  if accounttoken is valid (create worker)
@@ -281,6 +296,19 @@ public class SplashActivity extends AppCompatActivity {
                Log.d(TAG, "checkpermission "+getPackageManager().checkPermission(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, getPackageName())) ;
             }
         }
+    }
+
+    private void checkDownloadStatusVerification() {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        OneTimeWorkRequest downloadStatusVerificationWorker = new OneTimeWorkRequest.Builder(DownloadStatusVerificationServiceWorker.class)
+                .setConstraints(constraints)
+                .addTag("download-status-verification")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniqueWork("download-status-verification-worker", ExistingWorkPolicy.REPLACE, downloadStatusVerificationWorker);
     }
 
 }

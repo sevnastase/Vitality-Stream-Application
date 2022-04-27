@@ -234,7 +234,7 @@ public class DownloadHelper {
     }
 
     /**
-     * Check if sound folder with content is located on any (connected) local storage device within provided context
+     * Check if flags folder with content is located on any (connected) local storage device within provided context
      * @param context
      * @return boolean
      */
@@ -256,6 +256,31 @@ public class DownloadHelper {
             }
         }
         return false;
+    }
+
+    /**
+     * Check if flag file is located on any (connected) local storage device within provided context
+     * @param context
+     * @return boolean
+     */
+    public static boolean isFlagLocalPresent(final Context context, final String flagFilename){
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume: externalStorageVolumes) {
+            String pathname = externalStorageVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER;
+            File possibleMovieLocation = new File(pathname);
+            if (possibleMovieLocation.exists() && possibleMovieLocation.listFiles().length>1) {
+                for (File file: possibleMovieLocation.listFiles()) {
+                   if (file.getName().equalsIgnoreCase(flagFilename)) {
+                       return true;
+                   }
+                }
+            }
+        }
+        return false;
+    }
+
+    public static List<Movie> getLocalAvailableMovies(final Context context, final List<Movie> movieList) {
+        return new ArrayList<>();
     }
 
     /**
@@ -630,8 +655,11 @@ public class DownloadHelper {
 
     public static boolean isLocalMediaServerInSameNetwork(final String localMediaServerIp) {
         final String localip = getLocalIpV4Address();
-        final String localDeviceSubNetAddress = localip.substring(0, localip.lastIndexOf("."));
-        return localMediaServerIp.contains(localDeviceSubNetAddress);
+        if (localip!=null) {
+            final String localDeviceSubNetAddress = localip.substring(0, localip.lastIndexOf("."));
+            return localMediaServerIp.contains(localDeviceSubNetAddress);
+        }
+        return false;
     }
 
     public static boolean isWebserverReachable(final String ipAddress) {

@@ -12,6 +12,7 @@ public class DeviceInformation {
     private String model;
     private String product;
     private Integer ramMemoryBytes;
+    private Boolean isTouchScreen;
 
     public String getObjectType() {
         return objectType;
@@ -99,5 +100,13 @@ public class DeviceInformation {
 
     public void setRamMemoryBytes(Integer ramMemoryBytes) {
         this.ramMemoryBytes = ramMemoryBytes;
+    }
+
+    public Boolean getTouchScreen() {
+        return isTouchScreen;
+    }
+
+    public void setTouchScreen(Boolean touchScreen) {
+        isTouchScreen = touchScreen;
     }
 }

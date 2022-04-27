@@ -82,9 +82,6 @@ public class SyncDatabaseFragment extends Fragment {
     private void listeningLiveData() {
         loginViewModel.getRoutefilms().observe(getViewLifecycleOwner(), routefilms -> {
             if (routefilms != null && routefilms.size()>0) {
-                if (arguments!= null && arguments.getString("account-type", "").equals("standalone")) {
-                    generateDownloadStatusRecords(routefilms);
-                }
                 descriptionView.setText(String.format(getString(R.string.login_sync_db_successfull_message), routefilms.size()));
                 determineNextStep();
             }
@@ -149,27 +146,6 @@ public class SyncDatabaseFragment extends Fragment {
                 .then(productRequest)
                 .then(syncDatabaseWorkRequest)
                 .enqueue();
-    }
-
-    private void generateDownloadStatusRecords(final List<Routefilm> routefilms) {
-        List<StandAloneDownloadStatus> newDownloads = new ArrayList<>();
-        if (routefilms!= null&& routefilms.size()>0) {
-            Log.d(getClass().getSimpleName(), "Routefilms downloads records generated: "+routefilms.size());
-            for (final Routefilm routefilm: routefilms) {
-                final StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
-                standAloneDownloadStatus.setMovieId(routefilm.getMovieId().intValue());
-                standAloneDownloadStatus.setDownloadMovieId(routefilm.getMovieId().intValue());
-                standAloneDownloadStatus.setDownloadStatus(-1);
-                newDownloads.add(standAloneDownloadStatus);
-            }
-            if (newDownloads.size()>0) {
-                PraxtourDatabase.databaseWriterExecutor.execute(()->{
-                    for (StandAloneDownloadStatus downloadStatus:newDownloads) {
-                        PraxtourDatabase.getDatabase(getActivity().getApplication()).downloadStatusDao().insert(downloadStatus);
-                    }
-                });
-            }
-        }
     }
 
     private void initButtonClickListener() {

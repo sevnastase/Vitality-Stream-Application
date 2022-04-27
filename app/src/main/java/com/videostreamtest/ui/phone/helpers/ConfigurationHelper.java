@@ -66,49 +66,49 @@ public class ConfigurationHelper {
                 .addTag("accountconfiguration")
                 .build();
 
-        //Active Products
-        Data.Builder productData = new Data.Builder();
-        productData.putString("apikey", accountToken);
-        OneTimeWorkRequest productsRequest = new OneTimeWorkRequest.Builder(ActiveProductsServiceWorker.class)
-                .setConstraints(constraint)
-                .setInputData(productData.build())
-                .addTag("products")
-                .build();
-
-        //Account Profiles
-        Data.Builder profileData = new Data.Builder();
-        profileData.putString("apikey", accountToken);
-        OneTimeWorkRequest profilesRequest = new OneTimeWorkRequest.Builder(ProfileServiceWorker.class)
-                .setConstraints(constraint)
-                .setInputData(profileData.build())
-                .addTag("profiles")
-                .build();
-
-        //Routefilms
-        Data.Builder routeFilmdata = new Data.Builder();
-        routeFilmdata.putString("apikey", accountToken);
-        OneTimeWorkRequest routefilmsRequest = new OneTimeWorkRequest.Builder(UpdateRegisteredMovieServiceWorker.class)
-                .setConstraints(constraint)
-                .setInputData(routeFilmdata.build())
-                .addTag("routefilms")
-                .build();
-
-        //Routeparts
-        OneTimeWorkRequest routeMoviepartsRequest = new OneTimeWorkRequest.Builder(AvailableRoutePartsServiceWorker.class)
-                .addTag("available-movieparts")
-                .build();
-
-        OneTimeWorkRequest soundInformationRequest = new OneTimeWorkRequest.Builder(SoundInformationServiceWorker.class)
-                .addTag("available-sounds")
-                .build();
-
-        //Routefilms
-        Data.Builder pmData = new Data.Builder();
-        pmData.putString("apikey", accountToken);
-        OneTimeWorkRequest productMovieRequest = new OneTimeWorkRequest.Builder(ActiveProductMovieLinksServiceWorker.class)
-                .setInputData(pmData.build())
-                .addTag("productmovie-link")
-                .build();
+//        //Active Products
+//        Data.Builder productData = new Data.Builder();
+//        productData.putString("apikey", accountToken);
+//        OneTimeWorkRequest productsRequest = new OneTimeWorkRequest.Builder(ActiveProductsServiceWorker.class)
+//                .setConstraints(constraint)
+//                .setInputData(productData.build())
+//                .addTag("products")
+//                .build();
+//
+//        //Account Profiles
+//        Data.Builder profileData = new Data.Builder();
+//        profileData.putString("apikey", accountToken);
+//        OneTimeWorkRequest profilesRequest = new OneTimeWorkRequest.Builder(ProfileServiceWorker.class)
+//                .setConstraints(constraint)
+//                .setInputData(profileData.build())
+//                .addTag("profiles")
+//                .build();
+//
+//        //Routefilms
+//        Data.Builder routeFilmdata = new Data.Builder();
+//        routeFilmdata.putString("apikey", accountToken);
+//        OneTimeWorkRequest routefilmsRequest = new OneTimeWorkRequest.Builder(UpdateRegisteredMovieServiceWorker.class)
+//                .setConstraints(constraint)
+//                .setInputData(routeFilmdata.build())
+//                .addTag("routefilms")
+//                .build();
+//
+//        //Routeparts
+//        OneTimeWorkRequest routeMoviepartsRequest = new OneTimeWorkRequest.Builder(AvailableRoutePartsServiceWorker.class)
+//                .addTag("available-movieparts")
+//                .build();
+//
+//        OneTimeWorkRequest soundInformationRequest = new OneTimeWorkRequest.Builder(SoundInformationServiceWorker.class)
+//                .addTag("available-sounds")
+//                .build();
+//
+//        //Routefilms
+//        Data.Builder pmData = new Data.Builder();
+//        pmData.putString("apikey", accountToken);
+//        OneTimeWorkRequest productMovieRequest = new OneTimeWorkRequest.Builder(ActiveProductMovieLinksServiceWorker.class)
+//                .setInputData(pmData.build())
+//                .addTag("productmovie-link")
+//                .build();
 
         //Chain workers and enqueue them
         WorkManager
@@ -116,12 +116,12 @@ public class ConfigurationHelper {
 //                .beginWith(networkInfoRequest)
 //                .then(validateAccountTokenRequest)
 //                .beginWith(accountConfigurationRequest)
-                .then(profilesRequest)
-                .then(productsRequest)
-                .then(routefilmsRequest)
-                .then(routeMoviepartsRequest)
-                .then(soundInformationRequest)
-                .then(productMovieRequest)
+//                .then(profilesRequest)
+//                .then(productsRequest)
+//                .then(routefilmsRequest)
+//                .then(routeMoviepartsRequest)
+//                .then(soundInformationRequest)
+//                .then(productMovieRequest)
                 .enqueue();
     }
 

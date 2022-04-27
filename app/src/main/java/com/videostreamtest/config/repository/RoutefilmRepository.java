@@ -23,6 +23,10 @@ public class RoutefilmRepository {
         return routefilmDao.getRoutefilms(accountToken);
     }
 
+    public LiveData<List<Routefilm>> getAllStandaloneProductRoutefilms(final String accountToken) {
+        return routefilmDao.getStandaloneSelectedProductRoutefilms(accountToken);
+    }
+
     public LiveData<List<Routefilm>> getAllProductRoutefilms(final String accountToken) {
         return routefilmDao.getSelectedProductRoutefilms(accountToken);
     }

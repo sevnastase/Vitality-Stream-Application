@@ -174,6 +174,7 @@ public class PasswordFragment extends Fragment {
                                 arguments.putString("account-type", "streaming");
                                 editor.putString("account-type", "streaming");
                             }
+                            editor.putBoolean("bootable", config.isBootOnStart());
                             editor.commit();
                         }
                         NavHostFragment.findNavController(PasswordFragment.this)

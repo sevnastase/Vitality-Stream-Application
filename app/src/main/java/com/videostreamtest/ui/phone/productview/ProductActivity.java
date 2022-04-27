@@ -160,7 +160,7 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
 
         productViewModel.getCurrentConfig().observe(this, currentConfig ->{
             if (currentConfig != null) {
-                PermissionHelper.requestPermission(getApplicationContext(), this, currentConfig);
+                PermissionHelper.requestPermission(getApplicationContext(), this);
 
                 DisplayMetrics displayMetrics = new DisplayMetrics();
                 getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -195,7 +195,6 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
         downloadFlags();
         downloadMovieSupportImages();
         downloadSound();
-//        downloadLocalMovies();
     }
 
     @Override

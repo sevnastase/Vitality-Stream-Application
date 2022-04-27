@@ -1,6 +1,7 @@
 package com.videostreamtest.workers.download;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
@@ -27,11 +28,20 @@ public class DownloadStatusVerificationServiceWorker extends Worker {
         if (downloadStatusList != null && downloadStatusList.size()>0) {
             for (final StandAloneDownloadStatus downloadStatus: downloadStatusList) {
                 if (downloadStatus.getDownloadStatus() == 100 &&
-                        !DownloadHelper.isMoviePresent(getApplicationContext(), getRoutefilm(downloadStatus.getMovieId()))) {
+                        !DownloadHelper.isMoviePresent(getApplicationContext(), getRoutefilm(downloadStatus.getMovieId().intValue()))) {
+                    Log.d(getClass().getSimpleName(), String.format("Movie %s registered as downloaded but not present on disk.", getRoutefilm(downloadStatus.getMovieId().intValue()).getMovieTitle()));
                     downloadStatus.setDownloadStatus(-1);
-//                    PraxtourDatabase.databaseWriterExecutor.execute(()->{
+                    PraxtourDatabase.databaseWriterExecutor.execute(()->{
                         PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(downloadStatus);
-//                    });
+                    });
+                }
+                if (downloadStatus.getDownloadStatus() < 0 &&
+                    DownloadHelper.isMoviePresent(getApplicationContext(), getRoutefilm(downloadStatus.getMovieId().intValue()))) {
+                    Log.d(getClass().getSimpleName(), String.format("Movie %s registered as NOT downloaded but is present on disk.", getRoutefilm(downloadStatus.getMovieId().intValue()).getMovieTitle()));
+                    downloadStatus.setDownloadStatus(100);
+                    PraxtourDatabase.databaseWriterExecutor.execute(()->{
+                        PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(downloadStatus);
+                    });
                 }
             }
         }

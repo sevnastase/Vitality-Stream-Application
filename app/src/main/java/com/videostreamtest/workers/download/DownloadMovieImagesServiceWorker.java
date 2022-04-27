@@ -136,6 +136,7 @@ public class DownloadMovieImagesServiceWorker extends Worker implements Progress
 
         FileOutputStream fileOutputStream = new FileOutputStream(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder+"/"+fileName);
         fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+        fileOutputStream.close();
     }
 
     @Override

@@ -149,6 +149,7 @@ public class DownloadSoundServiceWorker extends Worker implements ProgressCallBa
 
         FileOutputStream fileOutputStream = new FileOutputStream(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_SOUND_STORAGE_FOLDER+"/"+fileName);
         fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+        fileOutputStream.close();
     }
 
     /**

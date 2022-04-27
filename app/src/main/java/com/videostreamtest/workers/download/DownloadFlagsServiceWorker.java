@@ -34,6 +34,7 @@ import com.videostreamtest.workers.webinterface.PraxCloud;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -106,7 +107,9 @@ public class DownloadFlagsServiceWorker extends Worker implements ProgressCallBa
                     generalDownloadTracker.setDownloadTypeCurrent(generalDownloadTracker.getDownloadTypeCurrent()+1);
                     PraxtourDatabase.getDatabase(getApplicationContext()).generalDownloadTrackerDao().insert(generalDownloadTracker);
 
-                    download(flag.getFlagUrl(), Long.MAX_VALUE);
+                    if (DownloadHelper.isFlagsLocalPresent(getApplicationContext())) {
+                        download(flag.getFlagUrl(), Long.MAX_VALUE);
+                    }
                 }
             }
             generalDownloadTracker.setDownloadCurrentFile("done");
@@ -127,7 +130,9 @@ public class DownloadFlagsServiceWorker extends Worker implements ProgressCallBa
     private void download(final String inputPath, final long expectedSize) throws IOException {
         URL inputUrl = new URL(inputPath);
 
-        ReadableByteChannel readableByteChannel = new CallbackByteChannel(Channels.newChannel(inputUrl.openStream()), expectedSize, this);
+        InputStream flagInputStream = inputUrl.openStream();
+        ReadableByteChannel readableByteChannel = new CallbackByteChannel(Channels.newChannel(flagInputStream), expectedSize, this);
+
         String fileName = new File(inputUrl.getFile()).getName();
 
         if (selectedVolume.exists()) {
@@ -144,15 +149,19 @@ public class DownloadFlagsServiceWorker extends Worker implements ProgressCallBa
             }
         } else {
             Log.e(DownloadFlagsServiceWorker.class.getSimpleName(), "We're doomed");
+            flagInputStream.close();
             return;
         }
 
         if (new File(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER+"/"+fileName).exists()) {
+            flagInputStream.close();
             return;
         }
 
         FileOutputStream fileOutputStream = new FileOutputStream(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_FLAGS_STORAGE_FOLDER+"/"+fileName);
         fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+        flagInputStream.close();
+        fileOutputStream.close();
     }
 
     /**

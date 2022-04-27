@@ -42,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -93,13 +94,13 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         Log.d(TAG, "DownloadRunnerId: "+this.downloadRunnerId);
 
         //Execute write log to cloud
-        databaseRestService.writeLog(apikey, "DownloadRunner "+getTags().toArray(new String[0])[0]+" Started","DEBUG", "");
-        Log.d(TAG, "DownloadRunner "+getTags().toArray(new String[0])[0]+" Started");
+        databaseRestService.writeLog(apikey, "DownloadRunner "+getTags().toArray(new String[0])[0]+" Started with movieId: "+movieId,"DEBUG", "");
+        Log.d(TAG, "DownloadRunner "+getTags().toArray(new String[0])[0]+" Started with movieId: "+movieId);
 
         accountToken = apikey;
 
         if (accountToken==null||accountToken.isEmpty()){
-            SharedPreferences myPreferences = getApplicationContext().getSharedPreferences("app",0);
+            SharedPreferences myPreferences = getApplicationContext().getSharedPreferences("app",Context.MODE_PRIVATE);
             accountToken = myPreferences.getString("apikey", "unauthorized");
         }
 
@@ -107,16 +108,16 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         String progress = "Downloading";
         setForegroundAsync(createForegroundInfo(progress));
 
-        THREAD_POOL_EXECUTOR.execute(() ->{
-            if (movieId == -1) {
-                startDownloadRunner();
-            } else {
+        if (movieId > 0 && !isAlreadyDownloaded(getRoutefilm(movieId))) {
+            THREAD_POOL_EXECUTOR.execute(() -> {
                 startDownload(movieId);
-            }
-        });
+            });
+        }
 
         Log.d(getClass().getSimpleName(), "ActiveCount: "+THREAD_POOL_EXECUTOR.getActiveCount());
+        databaseRestService.writeLog(apikey, "ActiveDownloadThreadCount: "+THREAD_POOL_EXECUTOR.getActiveCount(),"DEBUG", "");
         Log.d(getClass().getSimpleName(), "QueueCount: "+THREAD_POOL_EXECUTOR.getQueue().size());
+        databaseRestService.writeLog(apikey, "DownloadThreadQueueCount: "+THREAD_POOL_EXECUTOR.getQueue().size(),"DEBUG", "");
 
         Data outputData = new Data.Builder()
                 .putString("apikey", apikey)
@@ -161,7 +162,9 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
     private void download(final String inputPath, final long expectedSize, final String movieIdFolder) throws IOException {
         URL inputUrl = new URL(inputPath);
 
-        ReadableByteChannel readableByteChannel = new CallbackByteChannel(Channels.newChannel(inputUrl.openStream()), expectedSize, this);
+        InputStream inputStream = inputUrl.openStream();
+        ReadableByteChannel readableByteChannel = new CallbackByteChannel(Channels.newChannel(inputStream), expectedSize, this);
+
         String fileName = new File(inputUrl.getFile()).getName();
 
         if (selectedVolume.exists()) {
@@ -193,6 +196,8 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         }
         FileOutputStream fileOutputStream = new FileOutputStream(selectedVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER + "/" + movieIdFolder + "/" + fileName);
         fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+        inputStream.close();
+        fileOutputStream.close();
     }
 
     /**
@@ -212,7 +217,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
      */
     private void insertDownloadStatus(int movieId, int downloadProgress) {
         if (downloadProgress > currentDownloadProgress || downloadProgress == 0) {
-            if (downloadProgress>0) {
+            if (downloadProgress > 0) {
                 Log.d(TAG, String.format("Movie %s is for %d percent ready.", routefilm.getMovieTitle(), downloadProgress));
             }
             final StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
@@ -220,13 +225,11 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             standAloneDownloadStatus.setMovieId(movieId);
             standAloneDownloadStatus.setDownloadStatus(downloadProgress);
 
-//            Log.d(TAG, String.format("DownloadStatusInformation: movieId: %d, DownloadStatus: %d, MovieTitle: %s", standAloneDownloadStatus.getDownloadMovieId(), standAloneDownloadStatus.getDownloadStatus(), routefilm.getMovieTitle()));
-
-//            PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(standAloneDownloadStatus);
-
-            PraxtourDatabase.databaseWriterExecutor.execute(() -> {
-                PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(standAloneDownloadStatus);
-            });
+            if (downloadProgress%5 ==0) {
+                PraxtourDatabase.databaseWriterExecutor.execute(() -> {
+                    PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(standAloneDownloadStatus);
+                });
+            }
 
             currentDownloadProgress = downloadProgress;
         }
@@ -237,9 +240,11 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         try {
             // Create a URL for the desired page
             URL url = new URL(getBaseUrl(movie.getMovieUrl())+CHECKSUM_DIGEST_MD5_FILENAME);
-
+//            if (url.openConnection().) {}
             // Read all the text returned by the server
-            BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+            InputStream inputStream = url.openStream();
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader in = new BufferedReader(inputStreamReader);
             String str;
             int linenumber = 0;
             while ((str = in.readLine()) != null) {
@@ -250,11 +255,15 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
                 }
                 linenumber++;
             }
+            inputStream.close();
+            inputStreamReader.close();
             in.close();
         } catch (MalformedURLException e) {
             Log.e(TAG, e.getLocalizedMessage());
         } catch (IOException e) {
             Log.e(TAG,e.getLocalizedMessage());
+        } catch (Exception exception) {
+            Log.e(TAG, exception.getLocalizedMessage());
         }
 
         return checksum;
@@ -370,17 +379,10 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
     }
 
     private void selectDownloadServer(final Movie routefilm) {
-        if (routefilm.getMovieUrl().contains("http://praxmedia.praxtour.com/")) {
-            if (DownloadHelper.isWebserverReachable("178.62.194.237")) {
-                routefilm.setMovieUrl(routefilm.getMovieUrl().replace("http://praxmedia.praxtour.com/",PRAXCLOUD_MEDIA_URL+"/"));
-            } else {
-                databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":CloudServerNotResponding", "ERROR", "");
-            }
-        }
-
         if (localMediaServerUrl != null && DownloadHelper.isLocalMediaServerInSameNetwork(localMediaServerUrl)) {
             if (DownloadHelper.isWebserverReachable(localMediaServerUrl)) {
-                routefilm.setMovieUrl(routefilm.getMovieUrl().replace("http://praxmedia.praxtour.com/","http://"+localMediaServerUrl+"/"));
+                //TODO: DYNAMIC REPLACE HOST WITH LOCALMEDIASERVER URL/IP-ADDRESS
+                routefilm.setMovieUrl(routefilm.getMovieUrl().replace("https://media.praxcloud.eu/","http://"+localMediaServerUrl+"/"));
             } else {
                 databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+":LocalServerNotResponding,"+localMediaServerUrl, "ERROR", "");
             }
@@ -406,18 +408,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
                 //Movie
                 download(routefilm.getMovieUrl(), routefilm.getMovieFileSize(), String.valueOf(routefilm.getId()));
 
-                //Calculate checksum
-                final String checksumDigest = DownloadHelper.calculateMD5(new File(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+routefilm.getId()+"/"+new File(routefilm.getMovieUrl()).getName()));
-                final String externalChecksum = getExternalChecksumDigest(routefilm);
 
-                //Compare the checksums
-                if (checksumDigest != null && !checksumDigest.equals(externalChecksum)) {
-                    new File(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+routefilm.getId()+"/"+new File(routefilm.getMovieUrl()).getName()).delete();
-                    databaseRestService.writeLog(accountToken, routefilm.getMovieTitle()+": Data Integrity Error! File Corrupted!", "ERROR", "");
-//                    return Result.retry();
-                    insertDownloadStatus(routefilm.getId(), -1);
-                    //TODO: keep track of attempts for avoiding infinite downloading loop e.g. when a disk is corrupt.
-                }
             } catch (IOException ioException) {
                 Log.e(TAG, ioException.getLocalizedMessage());
                 Log.e(TAG, "Error downloading");
