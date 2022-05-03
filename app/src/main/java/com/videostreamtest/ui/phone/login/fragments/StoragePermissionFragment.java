@@ -134,7 +134,6 @@ public class StoragePermissionFragment extends Fragment {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            permissionsNeeded.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
             permissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
 

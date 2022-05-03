@@ -267,9 +267,6 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
             if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
                 Log.d(TAG, "ACCESS_FINE_LOCATION PERMISSION GRANTED");
             }
-            if (checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED){
-                Log.d(TAG, "ACCESS_BACKGROUND_LOCATION PERMISSION GRANTED");
-            }
         }
     }
 

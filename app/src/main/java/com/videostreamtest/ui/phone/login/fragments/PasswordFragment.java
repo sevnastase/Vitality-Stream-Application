@@ -96,6 +96,12 @@ public class PasswordFragment extends Fragment {
         passwordInput.requestFocus();
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        loginViewModel.getUsername().removeObservers(this);
+    }
+
     private void login(final String username, final String password) {
         Constraints constraint = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -177,6 +183,8 @@ public class PasswordFragment extends Fragment {
                             editor.putBoolean("bootable", config.isBootOnStart());
                             editor.commit();
                         }
+                        loginViewModel.setPassword("");
+                        loginViewModel.setUsername("");
                         NavHostFragment.findNavController(PasswordFragment.this)
                                 .navigate(R.id.action_passwordFragment_to_loginStatusFragment, arguments);
                     }

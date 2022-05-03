@@ -50,7 +50,7 @@
 
     <!--zoom=center-crop fit=center-inside fill-stretch-->
     <com.google.android.exoplayer2.ui.PlayerView
-        android:id="@+id/playerView"
+        android:id="@+id/background_player_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
@@ -60,7 +60,7 @@
         app:resize_mode="zoom"
         android:fitsSystemWindows="false"
         app:repeat_toggle_modes="all|one"
-        android:visibility="gone"/>
+        android:visibility="invisible"/>
 
     <org.videolan.libvlc.util.VLCVideoLayout
         android:id="@+id/vlc_player_view"

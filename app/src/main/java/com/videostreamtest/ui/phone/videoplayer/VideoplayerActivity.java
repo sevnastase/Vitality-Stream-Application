@@ -26,10 +26,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
@@ -45,14 +43,12 @@ import com.google.android.gms.cast.framework.CastContext;
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.BackgroundSound;
-import com.videostreamtest.config.entity.EffectSound;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.enums.CommunicationType;
 import com.videostreamtest.receiver.CadenceSensorBroadcastReceiver;
 import com.videostreamtest.service.ble.BleService;
-import com.videostreamtest.service.ble.BleWrapper;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
@@ -62,18 +58,13 @@ import com.videostreamtest.ui.phone.result.ResultActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFilmStatusBarFragment;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFitStatusBarFragment;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxSpinStatusBarFragment;
-import com.videostreamtest.ui.phone.videoplayer.fragments.alerts.NoAudioAlertFragment;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.RpmVectorLookupTable;
 import com.videostreamtest.utils.VideoLanLib;
 
-import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
-import org.videolan.libvlc.MediaList;
 import org.videolan.libvlc.MediaPlayer;
-import org.videolan.libvlc.RendererDiscoverer;
-import org.videolan.libvlc.RendererItem;
 import org.videolan.libvlc.util.VLCVideoLayout;
 
 import java.util.ArrayList;
@@ -94,7 +85,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private PlayerView playerView;
     private SimpleExoPlayer videoPlayer;
-    private SimpleExoPlayer backgroundSoundPlayer;//TODO: Test if can be replaced by VLC MediaPlayer
+    private ExoPlayer backgroundSoundPlayer;//TODO: Test if can be replaced by VLC MediaPlayer
     private CadenceSensorBroadcastReceiver cadenceSensorBroadcastReceiver;
 
     //VLC
@@ -153,7 +144,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
         //EXO player
-        playerView = findViewById(R.id.playerView);
+        playerView = findViewById(R.id.background_player_view);
         playerView.setUseController(false);
 
         // VLC PLayer
@@ -1156,37 +1147,32 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private void initializeBackgroundSoundPlayer() {
         if (backgroundSoundPlayer == null) {
-            final MediaSourceFactory mediaSourceFactory = new DefaultMediaSourceFactory(this);
-            DefaultLoadControl defaultLoadControl = new DefaultLoadControl.Builder().setPrioritizeTimeOverSizeThresholds(true).build();
-            backgroundSoundPlayer = new SimpleExoPlayer.Builder(this)
-                    .setLoadControl(defaultLoadControl)
-                    .setMediaSourceFactory(mediaSourceFactory)
-                    .build();
-
+            backgroundSoundPlayer = new ExoPlayer.Builder(this).build();
             PlaybackParameters playbackParameters  = new PlaybackParameters(1.0f, PlaybackParameters.DEFAULT.pitch);
             backgroundSoundPlayer.setPlaybackParameters(playbackParameters);
             backgroundSoundPlayer.setDeviceVolume(backgroundSoundPlayer.getDeviceInfo().maxVolume);
+            playerView.setPlayer(backgroundSoundPlayer);
         }
     }
 
-    private void prepareVideoMediaSource(Uri mUri) {
-        final MediaItem mediaItem = MediaItem.fromUri(mUri);
-        videoPlayer.setMediaItem(mediaItem);
-        videoPlayer.setVideoScalingMode(C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
-        Log.d(TAG,"Player preparing!");
-        videoPlayer.prepare();
-
-        videoPlayer.addListener(new VideoPlayerEventListener());
-        videoPlayer.addListener(new Player.EventListener()
-        {
-            @Override
-            public void onPlaybackStateChanged(int state) {
-                if (state == ExoPlayer.STATE_READY) {
-                    Log.d(TAG,"Player ready to start playing!");
-                }
-            }
-        });
-    }
+//    private void prepareVideoMediaSource(Uri mUri) {
+//        final MediaItem mediaItem = MediaItem.fromUri(mUri);
+//        videoPlayer.setMediaItem(mediaItem);
+//        videoPlayer.setVideoScalingMode(C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
+//        Log.d(TAG,"Player preparing!");
+//        videoPlayer.prepare();
+//
+//        videoPlayer.addListener(new VideoPlayerEventListener());
+//        videoPlayer.addListener(new Player.EventListener()
+//        {
+//            @Override
+//            public void onPlaybackStateChanged(int state) {
+//                if (state == ExoPlayer.STATE_READY) {
+//                    Log.d(TAG,"Player ready to start playing!");
+//                }
+//            }
+//        });
+//    }
 
     private void prepareBackgroundSoundPlayer() {
         if (movieId != 0) {

@@ -35,7 +35,6 @@ public class ProductPickerFragment extends Fragment {
         productPickerViewModel = new ViewModelProvider(requireActivity()).get(ProductPickerViewModel.class);
 
         productOverview = view.findViewById(R.id.recyclerview_products);
-        productOverview.setHasFixedSize(true);
 
         return view;
     }

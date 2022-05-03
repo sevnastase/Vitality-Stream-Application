@@ -124,14 +124,6 @@ public class NoPermissionsMessageFragment extends Fragment {
             showSettingsButton.setText(getString(R.string.permission_settings_text_location_permission));
             errorMessage.setText(toString().format(getString(R.string.permission_error_message), getString(R.string.permission_settings_text_location_permission)));
         }
-
-        if (ContextCompat.checkSelfPermission(getActivity(),
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                != PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-        ) {
-            Log.d(TAG, "No ACCESS_BACKGROUND_LOCATION permission.");
-            showSettingsButton.setText(getString(R.string.show_settings_button));
-        }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
@@ -165,14 +157,6 @@ public class NoPermissionsMessageFragment extends Fragment {
             Log.d(TAG, "No ACCES_COARSE_LOCATION permission.");
 //            startActivityForResult(new Intent(Settings.ACTION_APPLICATION_SETTINGS), 0);
             PermissionHelper.requestPermission(getContext(), getActivity());
-        }
-
-        if (ContextCompat.checkSelfPermission(getActivity(),
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                != PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-        ) {
-            Log.d(TAG, "No ACCESS_BACKGROUND_LOCATION permission.");
-            startActivityForResult(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), 0);
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -212,13 +196,6 @@ public class NoPermissionsMessageFragment extends Fragment {
                 Manifest.permission.BLUETOOTH)
                 != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "No BLUETOOTH permission.");
-            permissionsAcquired = false;
-        }
-        if (ContextCompat.checkSelfPermission(getActivity(),
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                != PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-        ) {
-            Log.d(TAG, "No ACCESS_BACKGROUND_LOCATION permission.");
             permissionsAcquired = false;
         }
         return permissionsAcquired;

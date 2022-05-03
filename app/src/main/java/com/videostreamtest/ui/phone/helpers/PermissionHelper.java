@@ -54,7 +54,6 @@ public class PermissionHelper {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            permissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
             permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
 
@@ -121,8 +120,6 @@ public class PermissionHelper {
             boolean locationServicesActive = LocationManagerCompat.isLocationEnabled(locationManager);
 
             higherThanVersion10Features = (ContextCompat.checkSelfPermission(context,
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(context,
                     Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED) && locationServicesActive;
 

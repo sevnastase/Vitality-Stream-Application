@@ -92,7 +92,6 @@ public class PraxFitStatusBarFragment extends Fragment {
             isLocalPlay = arguments.getBoolean("localPlay");
         }
 
-        statusbarRouteparts.setHasFixedSize(true);
         LinearLayoutManager layoutManager
                 = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         statusbarRouteparts.setLayoutManager(layoutManager);

@@ -95,11 +95,6 @@ public class BleWrapper {
                 != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "No BLUETOOTH permission.");
         }
-        if (ContextCompat.checkSelfPermission(context,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "No ACCESS_BACKGROUND_LOCATION permission.");
-        }
         bluetoothGattCallback =
                 new BluetoothGattCallback() {
 

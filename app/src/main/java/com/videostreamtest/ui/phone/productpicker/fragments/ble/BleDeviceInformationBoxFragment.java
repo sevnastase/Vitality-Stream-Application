@@ -241,13 +241,6 @@ public class BleDeviceInformationBoxFragment extends Fragment {
             permissionsAcquired = false;
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                != PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-                ) {
-            Log.d(TAG, "No ACCESS_BACKGROUND_LOCATION permission.");
-            permissionsAcquired = false;
-        }
-        if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH_SCAN)
                 != PackageManager.PERMISSION_GRANTED && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
         ) {
@@ -300,7 +293,6 @@ public class BleDeviceInformationBoxFragment extends Fragment {
             /**
              * First idea is to write NONE to the room database of default ble device on logout
              */
-            showBleDevicesRecyclerView.setHasFixedSize(true);
 
             //Maak lineaire layoutmanager en zet deze op horizontaal
             LinearLayoutManager layoutManager

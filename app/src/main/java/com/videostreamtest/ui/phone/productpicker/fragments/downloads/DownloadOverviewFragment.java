@@ -62,7 +62,6 @@ public class DownloadOverviewFragment extends Fragment {
         errorDownloadInformationContent = view.findViewById(R.id.general_overlay_download_information_content);
         errorDownloadInformationTitle = view.findViewById(R.id.general_overlay_download_information_title);
 
-        routeDownloadsOverview.setHasFixedSize(true);
         routeDownloadsOverview.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false));
         routefilmDownloadsAdapter = new RoutefilmDownloadsAdapter();
         routeDownloadsOverview.setAdapter(routefilmDownloadsAdapter);

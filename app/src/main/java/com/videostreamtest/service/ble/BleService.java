@@ -44,6 +44,7 @@ import com.videostreamtest.ui.phone.helpers.BleHelper;
 import com.videostreamtest.ui.phone.profiles.ProfilesActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -139,6 +140,7 @@ public class BleService extends Service {
                 //No connection so try a new connection with default device
                 startScan();
             } else {
+                refreshDeviceCache(bluetoothGatt);
                 //Disconnect
                 if (bluetoothDeviceAddress.equals("NONE") || bluetoothDeviceAddress.equals("")) {
                     bluetoothGatt.close();
@@ -150,6 +152,17 @@ public class BleService extends Service {
             // Stop the service using the startId, so that we don't stop
             // the service in the middle of handling another job
 //            stopSelf(msg.arg1);
+        }
+
+        private void refreshDeviceCache(BluetoothGatt gatt) {
+            try {
+                Method localMethod = gatt.getClass().getMethod("refresh");
+                if(localMethod != null) {
+                    localMethod.invoke(gatt);
+                }
+            } catch(Exception localException) {
+                Log.d("BLE Refresh Exception", localException.toString());
+            }
         }
     }
 
@@ -395,38 +408,6 @@ public class BleService extends Service {
         initialised = init();
 
         Log.d(TAG, "BLE Service onStartCommand");
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            createNotificationChannel(CHANNEL_DEFAULT_IMPORTANCE, MAIN_CHANNEL_NAME);
-//
-//            // Create the PendingIntent
-//            PendingIntent notifyPendingIntent = PendingIntent.getActivity(
-//                    this,
-//                    0,
-//                    new Intent(this.getApplicationContext(), ProfilesActivity.class),
-//                    PendingIntent.FLAG_UPDATE_CURRENT);
-//
-//            // build a notification
-//            Notification notification =
-//                    new Notification.Builder(this, CHANNEL_DEFAULT_IMPORTANCE)
-//                            .setContentTitle(getText(R.string.app_name))
-//                            .setContentText("Active")
-//                            .setAutoCancel(true)
-//                            .setContentIntent(notifyPendingIntent)
-//                            .setTicker(getText(R.string.app_name))
-//                            .build();
-//
-//            startForeground(ONGOING_NOTIFICATION_ID, notification);
-//        } else {
-//            Notification notification = new NotificationCompat.Builder(this, CHANNEL_DEFAULT_IMPORTANCE)
-//                    .setContentTitle(getString(R.string.app_name))
-//                    .setContentText("Active")
-//                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-//                    .setAutoCancel(true)
-//                    .build();
-//
-//            startForeground(ONGOING_NOTIFICATION_ID, notification);
-//        }
-
         Message msg = serviceHandler.obtainMessage();
         msg.arg1 = startId;
         serviceHandler.sendMessage(msg);

@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -104,7 +105,9 @@ public class DownloadMovieImagesServiceWorker extends Worker implements Progress
     private void download(final String inputPath, final long expectedSize, final String movieIdFolder) throws IOException {
         URL inputUrl = new URL(inputPath);
 
-        ReadableByteChannel readableByteChannel = new CallbackByteChannel(Channels.newChannel(inputUrl.openStream()), expectedSize, this);
+        InputStream inputStream = inputUrl.openStream();
+
+        ReadableByteChannel readableByteChannel = new CallbackByteChannel(Channels.newChannel(inputStream), expectedSize, this);
         String fileName = new File(inputUrl.getFile()).getName();
 
         if (selectedVolume.exists()) {
@@ -131,11 +134,13 @@ public class DownloadMovieImagesServiceWorker extends Worker implements Progress
             }
         } else {
             Log.e(TAG, "We're doomed");
+            inputStream.close();
             return;
         }
 
         FileOutputStream fileOutputStream = new FileOutputStream(selectedVolume.getAbsolutePath()+ ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER+"/"+movieIdFolder+"/"+fileName);
         fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+        inputStream.close();
         fileOutputStream.close();
     }
 

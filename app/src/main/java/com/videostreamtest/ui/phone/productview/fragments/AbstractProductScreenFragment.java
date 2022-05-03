@@ -96,7 +96,6 @@ public class AbstractProductScreenFragment extends Fragment {
         routeInformationBlock = view.findViewById(R.id.overlay_route_information);
         //Routefilm overview
         routefilmOverview = view.findViewById(R.id.recyclerview_available_routefilms);
-        routefilmOverview.setHasFixedSize(true);
 
         CustomGridLayoutManager gridLayoutManager = new CustomGridLayoutManager(getActivity(), 4);
         gridLayoutManager.setItemPrefetchEnabled(true);

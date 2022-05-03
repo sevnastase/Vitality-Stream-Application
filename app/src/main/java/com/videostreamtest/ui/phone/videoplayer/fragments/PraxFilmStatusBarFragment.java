@@ -108,7 +108,6 @@ public class PraxFilmStatusBarFragment extends Fragment {
             }
         });
 
-        statusbarRouteparts.setHasFixedSize(true);
         LinearLayoutManager layoutManager
                 = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         statusbarRouteparts.setLayoutManager(layoutManager);
