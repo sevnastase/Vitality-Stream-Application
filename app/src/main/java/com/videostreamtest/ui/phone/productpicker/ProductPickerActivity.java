@@ -61,6 +61,7 @@ import com.videostreamtest.workers.UpdateRoutePartsServiceWorker;
 import com.videostreamtest.workers.download.DownloadMovieServiceWorker;
 import com.videostreamtest.workers.download.DownloadStatusVerificationServiceWorker;
 import com.videostreamtest.workers.synchronisation.ActiveProductMovieLinksServiceWorker;
+import com.videostreamtest.workers.synchronisation.ActiveProductsServiceWorker;
 import com.videostreamtest.workers.synchronisation.SyncFlagsServiceWorker;
 import com.videostreamtest.workers.synchronisation.SyncMovieFlagsServiceWorker;
 
@@ -420,6 +421,15 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         Constraints constraint = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build();
+
+        PeriodicWorkRequest productRequest = new PeriodicWorkRequest.Builder(ActiveProductsServiceWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .setInputData(syncData.build())
+                .addTag("products")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-products-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productRequest);
+
 
         PeriodicWorkRequest productMovieRequest = new PeriodicWorkRequest.Builder(ActiveProductMovieLinksServiceWorker.class, 30, TimeUnit.MINUTES)
                 .setConstraints(constraint)
