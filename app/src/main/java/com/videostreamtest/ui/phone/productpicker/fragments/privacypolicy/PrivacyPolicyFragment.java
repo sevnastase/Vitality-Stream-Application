@@ -41,7 +41,7 @@ public class PrivacyPolicyFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         privacyPolicyButton.setOnClickListener((clickedView) -> {
-            openWebPage("https://www.praxtour.com/en/privacy-policy-english/".trim());
+            openWebPage("https://www.praxcloud.nl/privacy-policy/".trim());
         });
     }
 
