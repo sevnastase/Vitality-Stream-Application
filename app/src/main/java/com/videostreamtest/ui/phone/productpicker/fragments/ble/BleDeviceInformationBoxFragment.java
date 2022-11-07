@@ -229,16 +229,28 @@ public class BleDeviceInformationBoxFragment extends Fragment {
             permissionsAcquired = false;
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        ) {
+            Log.d(TAG, "No ACCESS_FINE_LOCATION permission then ASK, otherwise no popup is shown.");
+//            permissionsAcquired = false;
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 113);
+        }
+        if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH_ADMIN)
-                != PackageManager.PERMISSION_GRANTED) {
+                != PackageManager.PERMISSION_GRANTED
+                    && Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
             Log.d(TAG, "No BLUETOOTH_ADMIN permission.");
             permissionsAcquired = false;
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH)
-                != PackageManager.PERMISSION_GRANTED) {
+                != PackageManager.PERMISSION_GRANTED
+                && Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
             Log.d(TAG, "No BLUETOOTH permission.");
             permissionsAcquired = false;
+            requestPermissions(new String[]{Manifest.permission.BLUETOOTH}, 113);
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH_SCAN)
@@ -246,6 +258,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         ) {
             Log.d(TAG, "No BLUETOOTH_SCAN permission.");
             permissionsAcquired = false;
+            requestPermissions(new String[]{Manifest.permission.BLUETOOTH_SCAN}, 113);
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH_CONNECT)
@@ -253,6 +266,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         ) {
             Log.d(TAG, "No BLUETOOTH_CONNECT permission.");
             permissionsAcquired = false;
+            requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 113);
         }
 
         return permissionsAcquired;

@@ -172,7 +172,6 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Localip: "+DownloadHelper.getLocalIpAddress(), "DEBUG", "");
                 LogHelper.WriteLogRule(getApplicationContext(), currentConfig.getAccountToken(),"Density: sw-"+this.getResources().getDisplayMetrics().densityDpi, "DEBUG", "");
 
-
                 //PERIODIC ACTIONS FOR STANDALONE SPECIFIC
                 if (currentConfig.isLocalPlay()) {
                     periodicSyncDownloadMovieRouteParts(currentConfig.getAccountToken());

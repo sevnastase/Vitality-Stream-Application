@@ -1,5 +1,6 @@
 package com.videostreamtest.service.ble;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -29,6 +30,7 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.ParcelUuid;
 import android.os.Process;
 import android.util.Log;
 
@@ -40,8 +42,9 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.constants.CadenceSensorConstants;
+import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.BleHelper;
-import com.videostreamtest.ui.phone.profiles.ProfilesActivity;
+import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import java.lang.reflect.Method;
@@ -459,18 +462,21 @@ public class BleService extends Service {
 
     private void startScan() {
         if (bluetoothAdapter == null) {
+            LogHelper.WriteLogRule(getApplicationContext(), AccountHelper.getAccountToken(getApplicationContext()),"BLE Service :: No BLE adapter", "ERROR", "");
             return;
         }
         scanner = bluetoothAdapter.getBluetoothLeScanner();
 
         scanCallback = new ScanCallback() {
+            @SuppressLint("MissingPermission")
             @Override
             public void onScanResult(int callbackType, ScanResult result) {
 
-                if(result != null && result.getDevice()!=null && result.getDevice().getAddress() != null) {
+                if(result != null && result.getDevice()!= null && result.getDevice().getAddress() != null) {
                     if (bluetoothDeviceAddress.equals(result.getDevice().getAddress())) {
                         if (bluetoothGatt == null) {
                             bluetoothGatt = result.getDevice().connectGatt(getApplicationContext(), true, gattCallback, BluetoothDevice.TRANSPORT_LE);
+                            bluetoothGatt.discoverServices();
                             scanner.stopScan(this);
                         } else {
                             scanner.stopScan(this);

@@ -32,6 +32,7 @@ import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.android.play.core.tasks.Task;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
+import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
@@ -124,11 +125,16 @@ public class SplashActivity extends AppCompatActivity {
                  *  based on number of products == 1 > Load product
                  *  based on number of products == 0 > login activity
                  */
-                splashViewModel.getAccountProducts(config.getAccountToken(), !config.isLocalPlay()).observe(this, products -> {
+                splashViewModel.getAllAccountProducts(config.getAccountToken()).observe(this, products -> {
                     if (products != null) {
-//                        config.setProductCount(products.size());
-//                        splashViewModel.updateConfiguration(config);
+                        Log.d(TAG, "Current product count: "+products.size());
+                        Log.d(TAG, "config.isLocalPlay() = "+config.isLocalPlay());
                         if(products.size() > 0) {
+                            for (Product p: products) {
+                                Log.d(TAG, "P.streaming: "+p.getSupportStreaming());
+                                Log.d(TAG, "P.blocked: "+p.getBlocked());
+                                Log.d(TAG, "P.name: "+p.getProductName());
+                            }
                             Log.d(TAG, "Set current configuration");
 //                            if (products.size() > 1 ) {
                                 if (!productPickerLoaded) {
@@ -186,18 +192,19 @@ public class SplashActivity extends AppCompatActivity {
                             // This happens when the trial time expires
                             //Login activity will be shown
                             Log.d(TAG, "Unset current configuration when product count = 0");
-                            Runnable showLoginScreen = new Runnable() {
-                                public void run() {
-                                    config.setCurrent(false);
-                                    splashViewModel.updateConfiguration(config);
-                                    //Redirect to login activity
-                                    startActivity(new Intent(SplashActivity.this, LoginActivity.class));
-                                    //Close this activity and release resources
-                                    SplashActivity.this.finish();
-                                }
-                            };
+                            LogHelper.WriteLogRule(getApplicationContext(), config.getAccountToken(), "WARNING! Subscriptions expired! Or closed during login process!", "ERROR", "");
+//                            Runnable showLoginScreen = new Runnable() {
+//                                public void run() {
+//                                    config.setCurrent(false);
+//                                    splashViewModel.updateConfiguration(config);
+//                                    //Redirect to login activity
+//                                    startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+//                                    //Close this activity and release resources
+//                                    SplashActivity.this.finish();
+//                                }
+//                            };
                             //Redirect to login activity if timer exceeds 5 seconds
-                            loadTimer.postDelayed( showLoginScreen, 15000 );
+//                            loadTimer.postDelayed( showLoginScreen, 15000 );
                         }
                     }
                 });

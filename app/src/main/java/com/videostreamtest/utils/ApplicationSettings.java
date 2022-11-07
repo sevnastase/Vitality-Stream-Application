@@ -22,7 +22,7 @@ public class ApplicationSettings {
     //INTERNAL (BUS) COMMUNICATION
     public final static String COMMUNICATION_INTENT_FILTER = "com.fitstream.sensor.DATA";
 
-    public static final String PRAXCLOUD_API_URL = "https://api.praxcloud.eu:8443";
+    public static final String PRAXCLOUD_API_URL = "https://api.praxcloud.eu";
     public static final String PRAXCLOUD_MEDIA_URL = "https://media.praxcloud.eu";
 
     //STANDALONE
@@ -34,7 +34,7 @@ public class ApplicationSettings {
     public static final long MINIMUM_DISK_SPACE_BYTES = 1024L*1024L*1024L*14L;
 
 //    public static final BigDecimal SPEEDTEST_MINIMUM_SPEED = new BigDecimal(3072000);
-    public static final BigDecimal SPEEDTEST_MINIMUM_SPEED = new BigDecimal(25000000);//25 Mbps
+    public static final BigDecimal SPEEDTEST_MINIMUM_SPEED = new BigDecimal(15000000);//25 Mbps
 
     public static final int ROUTEFILM_OVERVIEW_PAGESIZE = 12;
     public static final int NUMBER_OF_DOWNLOAD_RUNNERS = 4;

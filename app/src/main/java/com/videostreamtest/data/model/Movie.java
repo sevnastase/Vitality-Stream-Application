@@ -11,6 +11,7 @@ public class Movie {
     private String movieTitle;
     private Integer movieLength;
     private String movieUrl; // e.g. /streams/{vodId}.mp4
+    private String movieDashUrl; // e.g. /streams/{vodId}.mp4
     private long movieFileSize;
     private String movieImagepath;
     private long sceneryFileSize;
@@ -53,6 +54,14 @@ public class Movie {
 
     public void setMovieUrl(String movieUrl) {
         this.movieUrl = movieUrl;
+    }
+
+    public String getMovieDashUrl() {
+        return movieDashUrl;
+    }
+
+    public void setMovieDashUrl(String movieDashUrl) {
+        this.movieDashUrl = movieDashUrl;
     }
 
     public String getMovieImagepath() {
@@ -143,6 +152,7 @@ public class Movie {
         movieDto.setMapFileSize(routefilm.getMapFileSize());
         movieDto.setSceneryFileSize(routefilm.getSceneryFileSize());
         movieDto.setMovieFlagUrl(routefilm.getMovieFlagUrl());
+        movieDto.setMovieDashUrl(routefilm.getMovieDashUrl());
         return movieDto;
     }
 }

@@ -29,7 +29,7 @@
             android:id="@+id/login_form_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/exo_white"
+            android:textColor="@color/colorWhite"
             android:textStyle="bold"
             android:gravity="center"
             android:layout_gravity="center"
@@ -62,7 +62,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/exo_white"
+                    android:textColor="@color/colorWhite"
                     android:text="Server Online:" />
             </LinearLayout>
             <LinearLayout

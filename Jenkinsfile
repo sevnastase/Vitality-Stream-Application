@@ -41,7 +41,7 @@ pipeline {
                     sshPut remote: remote, from: 'app/build/outputs/apk/release/app-release.apk', into: '/var/www/html/app/'
                     sshPut remote: remote, from: 'app/build/outputs/apk/release/output-metadata.json', into: '/var/www/html/app/'
                 }
-                echo 'Deploy SUCCESSFULL'
+                echo 'Deploy SUCCESSFUL'
             }
         }
     }

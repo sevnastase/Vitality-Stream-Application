@@ -37,6 +37,10 @@ public class Routefilm {
     @NonNull
     private String movieUrl; // e.g. /streams/{vodId}.mp4
 
+    @ColumnInfo(name = "movie_dash_url")
+    @NonNull
+    private String movieDashUrl; // e.g. /streams/{vodId}.mp4
+
     @ColumnInfo(name = "movie_imagepath")
     @NonNull
     private String movieImagepath;
@@ -127,6 +131,15 @@ public class Routefilm {
 
     public void setMovieUrl(@NonNull String movieUrl) {
         this.movieUrl = movieUrl;
+    }
+
+    @NonNull
+    public String getMovieDashUrl() {
+        return movieDashUrl;
+    }
+
+    public void setMovieDashUrl(@NonNull String movieDashUrl) {
+        this.movieDashUrl = movieDashUrl;
     }
 
     @NonNull
@@ -222,6 +235,7 @@ public class Routefilm {
         dbRoutefilm.setMovieFileSize(movie.getMovieFileSize());
         dbRoutefilm.setMapFileSize(movie.getMapFileSize());
         dbRoutefilm.setSceneryFileSize(movie.getSceneryFileSize());
+        dbRoutefilm.setMovieDashUrl(movie.getMovieDashUrl());
         return dbRoutefilm;
     }
 }

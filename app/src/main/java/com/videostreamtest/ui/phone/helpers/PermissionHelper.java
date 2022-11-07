@@ -37,7 +37,6 @@ public class PermissionHelper {
             permissions.add(Manifest.permission.BLUETOOTH);
             permissions.add(Manifest.permission.BLUETOOTH_ADMIN);
 
-
             if (AccountHelper.isAccountBootable(context)) {
                 permissions.add(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
             }
@@ -50,11 +49,17 @@ public class PermissionHelper {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+//            permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissions.add(Manifest.permission.BLUETOOTH_SCAN);
+            permissions.add(Manifest.permission.BLUETOOTH_CONNECT);
         }
 
         if (permissions.size()>0) {
@@ -62,6 +67,7 @@ public class PermissionHelper {
                 if (ContextCompat.checkSelfPermission(context,
                         permission)
                         != PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, String.format("Permission not GRANTED: "+permission));
                     ActivityCompat.requestPermissions(
                             activity,
                             new String[]{permission},

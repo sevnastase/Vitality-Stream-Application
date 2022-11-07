@@ -14,8 +14,10 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.MoviePart;
+import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
+import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 
 import java.io.File;
 
@@ -155,7 +157,11 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
             @Override
             public void onClick(View v) {
                 moviePartCoverImage.requestFocus();
-                VideoplayerActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
+                if (AccountHelper.getAccountType(itemView.getContext()).equalsIgnoreCase("standalone")) {
+                    VideoplayerActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
+                } else {
+                    VideoplayerExoActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
+                }
             }
         });
     }

@@ -36,7 +36,7 @@
     <string name="video_screen_total_distance">%d m</string>
     <string name="videoplayer_chronometer_message">%s</string>
     <string name="catalog_selected_route_title">%s</string>
-    <string name="login_information_dialog">Weitere Informationen finden Sie auf der Website praxtour.com</string>
+    <string name="login_information_dialog">Weitere Informationen finden Sie auf der Website praxcloud.eu</string>
     <string name="catalog_no_movies_warning">Für dieses Konto wurden keine Videos gefunden!</string>
     <string name="profile_add_form_warning">Formular nicht richtig ausgefüllt</string>
     <string name="profile_add_form_error">Profil kann nicht erstellt werden!</string>

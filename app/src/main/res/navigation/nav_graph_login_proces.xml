@@ -36,6 +36,9 @@
         <action
             android:id="@+id/action_loginStatusFragment_to_locationPermissionFragment"
             app:destination="@id/locationPermissionFragment" />
+        <action
+            android:id="@+id/action_loginStatusFragment_to_downloadSoundFragment"
+            app:destination="@id/downloadSoundFragment" />
     </fragment>
     <fragment
         android:id="@+id/storagePermissionFragment"
