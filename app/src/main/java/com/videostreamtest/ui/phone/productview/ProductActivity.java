@@ -47,6 +47,7 @@ import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.log.DeviceInformation;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
+import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
@@ -158,6 +159,8 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
         super.onPostCreate(savedInstanceState);
         navView.setNavigationItemSelectedListener(this);
 
+        stopSensorService(); //comment if v203-zonder-ble-kill works
+
         productViewModel.getCurrentConfig().observe(this, currentConfig ->{
             if (currentConfig != null) {
                 PermissionHelper.requestPermission(getApplicationContext(), this);
@@ -194,6 +197,8 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
         downloadFlags();
         downloadMovieSupportImages();
         downloadSound();
+
+        stopSensorService(); //comment if v203-zonder-ble-kill works
     }
 
     @Override
@@ -245,6 +250,11 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
                     .beginUniqueWork("download-sound", ExistingWorkPolicy.KEEP, downloadSoundWorker)
                     .enqueue();
         }
+    }
+
+    private void stopSensorService() {
+        final Intent bleService = new Intent(getApplicationContext(), BleService.class);
+        stopService(bleService);
     }
 
     private void downloadFlags() {

@@ -308,10 +308,10 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         }
 
         videoPlayerViewModel.getVolumeLevel().observe(this, volumeLevel -> {
-            if (mediaPlayer!=null) {
-                mediaPlayer.setVolume(volumeLevel);
+            if (mediaPlayer!=null && volumeLevel != null) {
+                final Float bgVolumeLevel = Float.valueOf(""+volumeLevel) / 100;
+                mediaPlayer.setVolume(bgVolumeLevel);
                 if (backgroundSoundTriggers!= null && backgroundSoundTriggers.size()>0) {
-                    final Float bgVolumeLevel = Float.valueOf(""+volumeLevel) / 100;
                     backgroundSoundPlayer.setVolume(bgVolumeLevel);
                 }
             }
@@ -1079,7 +1079,6 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             switch (communicationDevice) {
                 case ANT_PLUS:
                     //DEPRECATED:: Start AntPlus service to connect with cadence sensor
-
                 case BLE:
                     //Start BLE to connect with sensor device
                     final Intent bleService = new Intent(getApplicationContext(), BleService.class);
