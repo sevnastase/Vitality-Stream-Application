@@ -81,6 +81,7 @@
         <activity
             android:name=".ui.phone.splash.SplashActivity"
             android:label="@string/app_name"
+            android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/SplashScreenTheme">
             <intent-filter>
@@ -119,6 +120,7 @@
             android:name=".ui.phone.profiles.ProfilesActivity"
             android:label="@string/title_activity_fullscreen"
             android:screenOrientation="landscape"
+            android:exported="true"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
 <!--                <action android:name="android.intent.action.MAIN" />-->
@@ -134,6 +136,7 @@
             android:name=".ui.phone.videoplayer.VideoplayerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_videoplayer"
+            android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -145,6 +148,7 @@
             android:name=".ui.phone.videoplayer.VideoplayerExoActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_videoplayer"
+            android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
