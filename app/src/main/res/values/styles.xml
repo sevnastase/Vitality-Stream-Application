@@ -16,7 +16,7 @@
     <style name="AppTheme.ProductMainButton">
         <!-- Buttons -->
         <item name="android:background">@drawable/transparant_product_main_button</item>
-        <item name="android:textColor">@color/exo_white</item>
+        <item name="android:textColor">@color/colorWhite</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:textStyle">bold</item>
@@ -25,7 +25,7 @@
     <style name="AppTheme.ProductPickerMainButton">
         <!-- Buttons -->
         <item name="android:background">@drawable/transparant_productpicker_main_button</item>
-        <item name="android:textColor">@color/exo_white</item>
+        <item name="android:textColor">@color/colorWhite</item>
         <item name="android:textSize">8sp</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:textStyle">bold</item>

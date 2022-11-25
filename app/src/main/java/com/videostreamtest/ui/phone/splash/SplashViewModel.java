@@ -55,6 +55,10 @@ public class SplashViewModel extends AndroidViewModel {
         return productRepository.getAccountProducts(accountToken, isStreamingAccount);
     }
 
+    public LiveData<List<com.videostreamtest.config.entity.Product>> getAllAccountProducts(final String accountToken) {
+        return productRepository.getAllAccountProducts(accountToken);
+    }
+
     public void insertProduct(final com.videostreamtest.config.entity.Product product) {
         productRepository.insert(product);
     }

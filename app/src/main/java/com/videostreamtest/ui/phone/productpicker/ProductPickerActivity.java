@@ -95,6 +95,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         super.onCreate(savedInstanceState);
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
                 .permitDiskReads()
+                .permitDiskWrites()
                 .detectDiskWrites()
                 .detectNetwork()   // or .detectAll() for all detectable problems
                 .penaltyLog()
@@ -143,13 +144,16 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         logDeviceInformation();
 
         //PERIODIC ACTIONS
+//        isValidAccount();
         syncMovieDatabasePeriodically();
         checkForAppUpdatePeriodically();
 
         PermissionHelper.requestPermission(getApplicationContext(), this);
 
         //START BLE SERVICE IF PRODUCT NEEDS SENSOR
-        productPickerViewModel.getAccountProducts(AccountHelper.getAccountToken(getApplicationContext()), !AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone")).observe(this, products -> {
+        productPickerViewModel
+                .getAccountProducts(AccountHelper.getAccountToken(getApplicationContext()), !AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone"))
+                .observe(this, products -> {
             if (products!=null && products.size()>0) {
                 boolean sensorNeeded = false;
                 for (final Product product: products) {
@@ -246,29 +250,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
     }
 
     private void requestAppPermissions() {
-        // Check if Android M or higher
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // Show alert dialog to the user saying a separate permission is needed
-            requestPermissions(new String[]{
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Manifest.permission.INTERNET,
-                    Manifest.permission.ACCESS_NETWORK_STATE,
-                    Manifest.permission.BLUETOOTH,
-                    Manifest.permission.BLUETOOTH_ADMIN,
-            }, 2323);
-            if (checkSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED){
-                Log.d(TAG, "BLUETOOTH PERMISSION GRANTED");
-            }
-            if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_GRANTED){
-                Log.d(TAG, "BLUETOOTH_ADMIN PERMISSION GRANTED");
-            }
-            if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-                Log.d(TAG, "ACCESS_COARSE_LOCATION PERMISSION GRANTED");
-            }
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-                Log.d(TAG, "ACCESS_FINE_LOCATION PERMISSION GRANTED");
-            }
-        }
+        PermissionHelper.requestPermission(getApplicationContext(), this);
     }
 
     @Override
@@ -413,6 +395,21 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
             }
         }
         return false;
+    }
+
+    private void isValidAccount() {
+        //TODO: Create ServiceWorker for periodic background process
+        productPickerViewModel.getAccountProducts(AccountHelper.getAccountToken(this), !AccountHelper.getAccountType(this).equalsIgnoreCase("standalone"))
+            .observe(this, products ->{
+                if (products != null) {
+                    if (products.size() > 0) {
+                        //NOTHING
+                    } else {
+                        //ALERT USER FOR EXPIRED PRODUCT(S)
+                        //LOGOUT
+                    }
+                }
+            });
     }
 
     private void syncMovieDatabasePeriodically() {

@@ -49,18 +49,18 @@
     </RelativeLayout>
 
     <!--zoom=center-crop fit=center-inside fill-stretch-->
-<!--    <com.google.android.exoplayer2.ui.PlayerView-->
-<!--        android:id="@+id/background_player_view"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:layout_gravity="center"-->
-<!--        android:background="@color/black_overlay"-->
-<!--        android:keepScreenOn="true"-->
-<!--        app:surface_type="surface_view"-->
-<!--        app:resize_mode="zoom"-->
-<!--        android:fitsSystemWindows="false"-->
-<!--        app:repeat_toggle_modes="all|one"-->
-<!--        android:visibility="invisible"/>-->
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/background_player_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:background="@color/black_overlay"
+        android:keepScreenOn="true"
+        app:surface_type="surface_view"
+        app:resize_mode="zoom"
+        android:fitsSystemWindows="false"
+        app:repeat_toggle_modes="all|one"
+        android:visibility="invisible"/>
 
     <androidx.media3.ui.PlayerView
         android:id="@+id/google_exoplayer_view"
@@ -72,14 +72,6 @@
         android:fitsSystemWindows="false"
         app:resize_mode="fill"
         android:visibility="invisible"/>
-
-    <org.videolan.libvlc.util.VLCVideoLayout
-        android:id="@+id/vlc_player_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="invisible"
-        android:keepScreenOn="true"
-        />
 
     <LinearLayout
         android:id="@+id/status_dialog_videoplayer"

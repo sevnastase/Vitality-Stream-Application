@@ -156,7 +156,7 @@ public class DownloadOverviewFragment extends Fragment {
                     }
                 });
                 speedTestSocket.startDownload(PRAXCLOUD_MEDIA_URL+"/1M.iso");
-                speedtestHandler.postDelayed(this::run, 5*60*1000);//MINUTES * SECONDS * MILLISECONDS
+                speedtestHandler.postDelayed(this::run, 15*60*1000);//MINUTES * SECONDS * MILLISECONDS
             }
         };
         speedtestHandler.postDelayed(runnableSpeedTest,0);

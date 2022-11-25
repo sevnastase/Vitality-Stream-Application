@@ -11,14 +11,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.videostreamtest.R;
 import com.videostreamtest.ui.phone.login.LoginViewModel;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
@@ -58,6 +63,25 @@ public class LocationPermissionFragment extends Fragment {
                 String[] perms = requestPermissions.toArray(new String[0]);
                 requestPermissions(perms,
                         LOCATION_PERMISSION_REQUEST_CODE);
+
+//                if (ContextCompat.checkSelfPermission(
+//                        getContext(), Manifest.permission.ACCESS_FINE_LOCATION) ==
+//                        PackageManager.PERMISSION_GRANTED) {
+//                    // You can use the API that requires the permission.
+////                    performAction(...);
+//                    Log.d(getClass().getSimpleName(), "PERM GRANTED");
+//                } else if (shouldShowRequestPermissionRationale(perms[0])) {
+//                    // In an educational UI, explain to the user why your app requires this
+//                    // permission for a specific feature to behave as expected. In this UI,
+//                    // include a "cancel" or "no thanks" button that allows the user to
+//                    // continue using your app without granting the permission.
+//                    Toast.makeText(getContext(), "WHAT HAPPEND", Toast.LENGTH_LONG).show();
+//                } else {
+//                    // You can directly ask for the permission.
+//                    // The registered ActivityResultCallback gets the result of this request.
+//                    requestPermissionLauncher.launch(
+//                            Manifest.permission.ACCESS_FINE_LOCATION);
+//                }
             } else {
                 gotoNextFragment();
             }
@@ -76,8 +100,38 @@ public class LocationPermissionFragment extends Fragment {
         showCurrentStepInTitleView(locationpermissionTitle);
     }
 
+    private ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    // Permission is granted. Continue the action or workflow in your
+                    // app.
+                    Toast.makeText(getContext(), "Granted", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Explain to the user that the feature is unavailable because the
+                    // features requires a permission that the user has denied. At the
+                    // same time, respect the user's decision. Don't link to system
+                    // settings in an effort to convince the user to change their
+                    // decision.
+                    Snackbar.make(this.getView(), R.string.action_register_user,
+                            Snackbar.LENGTH_INDEFINITE).setAction(R.string.cast_tracks_chooser_dialog_ok, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            // Request the permission
+                            ActivityCompat.requestPermissions(LocationPermissionFragment.this.requireActivity(),
+                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                    LOCATION_PERMISSION_REQUEST_CODE);
+                        }
+                    }).show();
+                }
+            });
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
+        Log.d(getClass().getSimpleName(), "RequestCode: "+requestCode+ " , grantResults: "+grantResults.length);
+        if (grantResults.length>0) {
+            Log.d(getClass().getSimpleName(), "First GrantResult: "+grantResults[0]);
+        }
+
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             int allGranted = 0;
             for (String permission : permissions) {
@@ -101,8 +155,13 @@ public class LocationPermissionFragment extends Fragment {
             permissionsNeeded.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
             permissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissionsNeeded.add(Manifest.permission.BLUETOOTH_SCAN);
+            permissionsNeeded.add(Manifest.permission.BLUETOOTH_CONNECT);
         }
 
         List<String> permissionRequests = new ArrayList<>();

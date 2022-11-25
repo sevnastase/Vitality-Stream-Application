@@ -12,7 +12,7 @@ android {
     defaultConfig {
         applicationId "com.videostreamtest"
         minSdkVersion 23
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode Integer.parseInt(VERSION_CODE)
         versionName VERSION_NAME+''+versionCode
 
@@ -44,6 +44,7 @@ android {
 }
 
 ext {
+    media_version = "1.0.0-alpha03"
     exoplayer_version = "2.17.1"
     workmanager_version = "2.7.1"
     leanback_version = "1.0.0"
@@ -92,8 +93,17 @@ dependencies {
     implementation "com.google.android.exoplayer:extension-mediasession:$exoplayer_version"
     implementation "com.google.android.exoplayer:extension-cast:$exoplayer_version"
 
+    // For media playback using ExoPlayer
+    implementation "androidx.media3:media3-exoplayer:$media_version"
+    // For building media playback UIs
+    implementation "androidx.media3:media3-ui:$media_version"
+    // For HLS playback support with ExoPlayer
+    implementation "androidx.media3:media3-exoplayer-hls:$media_version"
+    // For integrating with Cast
+    implementation "androidx.media3:media3-cast:$media_version"
+
     // https://mvnrepository.com/artifact/org.videolan.android/libvlc-all
-    implementation group: 'org.videolan.android', name: 'libvlc-all', version: '3.5.0-eap3'
+    implementation group: 'org.videolan.android', name: 'libvlc-all', version: '3.5.1'
 
     //WorkManager support for Background tasks/Scheduling
     implementation "androidx.work:work-runtime:$workmanager_version"

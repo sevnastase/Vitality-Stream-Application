@@ -22,6 +22,10 @@ public class ProductRepository {
         return productDao.getAccountProducts(accountToken, iStreamAccount);
     }
 
+    public LiveData<List<com.videostreamtest.config.entity.Product>> getAllAccountProducts(final String accountToken) {
+        return productDao.getAllAccountProducts(accountToken);
+    }
+
     public void insertMultipleProducts(final List<Product> productList, final String accountToken) {
         //Check if there are stored products already AND provided product list is filled
         if (productList.size() > 0) {

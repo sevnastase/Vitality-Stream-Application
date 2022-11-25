@@ -23,6 +23,11 @@ public interface Videoplayer {
     void setRate(final float playbackSpeedRate);
 
     /**
+     * Set PlayBack speed of the videoplayer
+     */
+    void setVolume(final float volumeLevel);
+
+    /**
      * Play videoplayer
      */
     void play();
@@ -91,4 +96,8 @@ public interface Videoplayer {
      */
     void goToPosition(long positionMs);
 
+    /**
+     * Set view visibility
+     */
+    void setVisible(final boolean visible);
 }

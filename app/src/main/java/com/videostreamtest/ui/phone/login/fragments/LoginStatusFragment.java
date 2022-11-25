@@ -92,16 +92,17 @@ public class LoginStatusFragment extends Fragment {
                 }
                 if (arguments.getString("account-type", "").equals("streaming")) {
                     loginStatusText.setText(getString(R.string.login_status_summary_streaming));
-//                    loginStatusText.setText(loginStatusText.getText() + "Please proceed to accept the permissions.");
 
                     nextButton.setOnClickListener((onClickedView) -> {
                         if (getLocationPermissionsForRequest().size() > 0) {
                             NavHostFragment.findNavController(LoginStatusFragment.this)
                                     .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
                         } else {
-                            Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
-                            startActivity(splashScreenActivity);
-                            getActivity().finish();
+//                            Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
+//                            startActivity(splashScreenActivity);
+//                            getActivity().finish();
+                            NavHostFragment.findNavController(LoginStatusFragment.this)
+                                    .navigate(R.id.action_loginStatusFragment_to_downloadSoundFragment, arguments);
                         }
                         loginViewModel.addInstallationStep();
                     });

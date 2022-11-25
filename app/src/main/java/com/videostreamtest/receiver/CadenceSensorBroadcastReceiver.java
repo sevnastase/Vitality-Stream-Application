@@ -7,7 +7,9 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.videostreamtest.constants.CadenceSensorConstants;
+import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
+import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 
 public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
     private static final String TAG = CadenceSensorBroadcastReceiver.class.getSimpleName();
@@ -36,7 +38,12 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
             Log.d(TAG, "Action: " + intent.getAction() + "\n");
             Log.d(TAG, "Intent cadence received: "+rpmReceived+"\n");
 
-            VideoplayerActivity.getInstance().updateVideoPlayerScreen(rpmReceived);
+            if (VideoplayerActivity.getInstance() != null) {
+                VideoplayerActivity.getInstance().updateVideoPlayerScreen(rpmReceived);
+            }
+            if (VideoplayerExoActivity.getInstance() != null) {
+                VideoplayerExoActivity.getInstance().updateVideoPlayerScreen(rpmReceived);
+            }
 
             /* ONLY FOR VIDEO SPEED!
              * When the rpm is above 0 ( there is activity) ) and
@@ -49,7 +56,12 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
             if (rpmReceived > 100) {
                 rpmReceived = 100;
             }
-            VideoplayerActivity.getInstance().updateVideoPlayerParams(rpmReceived);
+            if (VideoplayerActivity.getInstance() != null) {
+                VideoplayerActivity.getInstance().updateVideoPlayerParams(rpmReceived);
+            }
+            if (VideoplayerExoActivity.getInstance() != null) {
+                VideoplayerExoActivity.getInstance().updateVideoPlayerParams(rpmReceived);
+            }
 
 
             return intent.getAction();
