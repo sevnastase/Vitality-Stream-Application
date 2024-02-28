@@ -1,6 +1,13 @@
 package com.videostreamtest.ui.phone.productpicker.fragments.productpicker;
 
+import android.app.job.JobScheduler;
+import android.app.job.JobService;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,6 +34,15 @@ public class ProductPickerFragment extends Fragment {
 
     private ProductPickerViewModel productPickerViewModel;
     private RecyclerView productOverview;
+    private ProductPickerAdapter productPickerAdapter;
+
+    private BroadcastReceiver startFilmReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            startCurrentFilm();
+        }
+    };
 
     @Nullable
     @Override
@@ -35,6 +52,10 @@ public class ProductPickerFragment extends Fragment {
         productPickerViewModel = new ViewModelProvider(requireActivity()).get(ProductPickerViewModel.class);
 
         productOverview = view.findViewById(R.id.recyclerview_products);
+
+        // Initialise BroadcastReceiver
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(startFilmReceiver,
+                new IntentFilter("com.videostreamtest.ACTION_START_FILM"));
 
         return view;
     }
@@ -80,6 +101,10 @@ public class ProductPickerFragment extends Fragment {
             //Zet de layoutmanager erin
             productOverview.setLayoutManager(gridLayoutManager);
         });
+
+    }
+
+    private void startCurrentFilm() {
 
     }
 }
