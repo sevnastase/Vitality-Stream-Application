@@ -1,1 +1,1 @@
-# Vitality-Stream-Application (Sever)
+# Vitality-Stream-Application
