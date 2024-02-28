@@ -80,7 +80,7 @@ public class PraxFilmStatusBarFragment extends Fragment {
         }
 
         routeparts = new ArrayList<>();
-        routePartsAdapter = new RoutePartsAdapter(routeparts, isLocalPlay);
+        routePartsAdapter = new RoutePartsAdapter(routeparts, isLocalPlay, videoPlayerViewModel, getViewLifecycleOwner());
 //        statusbarRouteparts.setAdapter(routePartsAdapter);
 
         //INIT VALUES

@@ -1,18 +1,25 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments.routeparts;
 
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Routepart;
 import com.videostreamtest.data.model.MoviePart;
+import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 
+import org.apache.commons.net.imap.IMAP;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class RoutePartsAdapter extends RecyclerView.Adapter<RoutePartsViewHolder>{
@@ -21,13 +28,18 @@ public class RoutePartsAdapter extends RecyclerView.Adapter<RoutePartsViewHolder
 
     private int selectedMoviePart = 0;
     private boolean isLocalPlay = false;
+    private VideoPlayerViewModel videoPlayerViewModel;
+    private LifecycleOwner lifecycleOwner;
 
     public RoutePartsAdapter(MoviePart[] movieParts) {
         this.movieParts = movieParts;
     }
 
-    public RoutePartsAdapter(List<Routepart> routeparts, boolean isLocalPlay) {
+    public RoutePartsAdapter(List<Routepart> routeparts, boolean isLocalPlay, VideoPlayerViewModel videoPlayerViewModel, LifecycleOwner lifecycleOwner) {
         this.isLocalPlay = isLocalPlay;
+        this.videoPlayerViewModel = videoPlayerViewModel;
+        this.lifecycleOwner = lifecycleOwner;
+
         if (routeparts.size()>0) {
             movieParts = new MoviePart[routeparts.size()];
             for (int partIndex = 0; partIndex<routeparts.size();partIndex++) {
@@ -68,7 +80,7 @@ public class RoutePartsAdapter extends RecyclerView.Adapter<RoutePartsViewHolder
         //Haal de fragment op waar de recylerview  mee gevuld gaat worden
         View view = layoutInflater.inflate(R.layout.fragment_moviepart, parent, false);
         //retourneer de holder die de koppeling maakt aan de hierboven geselecteerde view
-        return new RoutePartsViewHolder(view);
+        return new RoutePartsViewHolder(view, videoPlayerViewModel, lifecycleOwner);
     }
 
     @Override

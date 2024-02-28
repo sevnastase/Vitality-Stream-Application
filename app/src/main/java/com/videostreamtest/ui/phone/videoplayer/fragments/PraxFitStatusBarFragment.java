@@ -27,8 +27,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
+import com.videostreamtest.data.model.Movie;
+import com.videostreamtest.data.model.MoviePart;
+import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
+import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
+import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.DistanceLookupTable;
@@ -58,10 +63,25 @@ public class PraxFitStatusBarFragment extends Fragment {
     private ImageButton volumeUp;
     private ImageButton volumeDown;
 
+    //SEEK BAR
+    private ImageButton seekBarT1;
+    private ImageButton seekBarT2;
+    private ImageButton seekBarT3;
+    private ImageButton seekBarT4;
+    private ImageButton seekBarT5;
+    private ImageButton seekBarT6;
+    private int seekBarWidth;
+    private ImageButton[] seekBarButtons;
+    private MoviePart[] movieParts;
+    private int frameNumber;
+    private int finalFrame;
+    private float position;
+
     //ROUTE PROGRESS
     private SeekBar progressBar;
-
     private boolean isLocalPlay = false;
+    private int distanceOffset;
+
 
     @Nullable
     @Override
@@ -86,6 +106,23 @@ public class PraxFitStatusBarFragment extends Fragment {
         //INIT VALUES
         stopwatchCurrentRide.setFormat(getString(R.string.videoplayer_chronometer_message));
         stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
+
+        //SEEKBAR BUTTONS
+        seekBarT1 = view.findViewById(R.id.statusbar_praxfit_seekbar_t1);
+        seekBarT2 = view.findViewById(R.id.statusbar_praxfit_seekbar_t2);
+        seekBarT3 = view.findViewById(R.id.statusbar_praxfit_seekbar_t3);
+        seekBarT4 = view.findViewById(R.id.statusbar_praxfit_seekbar_t4);
+        seekBarT5 = view.findViewById(R.id.statusbar_praxfit_seekbar_t5);
+        seekBarT6 = view.findViewById(R.id.statusbar_praxfit_seekbar_t6);
+
+        //FILL SEEKBARBUTTONS ARRAY
+        seekBarButtons = new ImageButton[6];
+        seekBarButtons[0] = seekBarT1;
+        seekBarButtons[1] = seekBarT2;
+        seekBarButtons[2] = seekBarT3;
+        seekBarButtons[3] = seekBarT4;
+        seekBarButtons[4] = seekBarT5;
+        seekBarButtons[5] = seekBarT6;
 
         Bundle arguments = getArguments();
         if (arguments != null) {
@@ -185,21 +222,126 @@ public class PraxFitStatusBarFragment extends Fragment {
                 //Set movie title
                 statusbarMovieTitle.setText(selectedMovie.getMovieTitle());
 
+                seekBarT1.setOnClickListener(v -> {
+                    seekBarT1.requestFocus();
+                    if (AccountHelper.getAccountType(v.getContext()).equalsIgnoreCase("standalone")) {
+                        VideoplayerActivity.getInstance().goToFrameNumber(movieParts[0].getFrameNumber().intValue());
+                    } else {
+                        VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[0].getFrameNumber().intValue());
+                    }
+                    Log.d(TAG, "movieParts[0] frame as int = " + movieParts[0].getFrameNumber().intValue());
+                    toggleMoviePartsVisibility();
+                    videoPlayerViewModel.resetDistance(movieParts[0], selectedMovie);
+                });
+                seekBarT2.setOnClickListener(v -> {
+                    seekBarT2.requestFocus();
+                    if (AccountHelper.getAccountType(v.getContext()).equalsIgnoreCase("standalone")) {
+                        VideoplayerActivity.getInstance().goToFrameNumber(movieParts[1].getFrameNumber().intValue());
+                    } else {
+                        VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[1].getFrameNumber().intValue());
+                    }
+                    Log.d(TAG, "movieParts[1] frame as int = " + movieParts[1].getFrameNumber().intValue());
+                    toggleMoviePartsVisibility();
+                    videoPlayerViewModel.resetDistance(movieParts[1], selectedMovie);
+                });
+                seekBarT3.setOnClickListener(v -> {
+                    seekBarT3.requestFocus();
+                    if (AccountHelper.getAccountType(v.getContext()).equalsIgnoreCase("standalone")) {
+                        VideoplayerActivity.getInstance().goToFrameNumber(movieParts[2].getFrameNumber().intValue());
+                    } else {
+                        VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[2].getFrameNumber().intValue());
+                    }
+                    Log.d(TAG, "movieParts[2] frame as int = " + movieParts[2].getFrameNumber().intValue());
+                    toggleMoviePartsVisibility();
+                    videoPlayerViewModel.resetDistance(movieParts[2], selectedMovie);
+                });
+                seekBarT4.setOnClickListener(v -> {
+                    seekBarT4.requestFocus();
+                    if (AccountHelper.getAccountType(v.getContext()).equalsIgnoreCase("standalone")) {
+                        VideoplayerActivity.getInstance().goToFrameNumber(movieParts[3].getFrameNumber().intValue());
+                    } else {
+                        VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[3].getFrameNumber().intValue());
+                    }
+                    Log.d(TAG, "movieParts[3] frame as int = " + movieParts[3].getFrameNumber().intValue());
+                    toggleMoviePartsVisibility();
+                    videoPlayerViewModel.resetDistance(movieParts[3], selectedMovie);
+                });
+                seekBarT5.setOnClickListener(v -> {
+                    seekBarT5.requestFocus();
+                    if (AccountHelper.getAccountType(v.getContext()).equalsIgnoreCase("standalone")) {
+                        VideoplayerActivity.getInstance().goToFrameNumber(movieParts[4].getFrameNumber().intValue());
+                    } else {
+                        VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[4].getFrameNumber().intValue());
+                    }
+                    Log.d(TAG, "movieParts[4] frame as int = " + movieParts[4].getFrameNumber().intValue());
+                    toggleMoviePartsVisibility();
+                    videoPlayerViewModel.resetDistance(movieParts[4], selectedMovie);
+                });
+                seekBarT6.setOnClickListener(v -> {
+                    seekBarT6.requestFocus();
+                    if (AccountHelper.getAccountType(v.getContext()).equalsIgnoreCase("standalone")) {
+                        VideoplayerActivity.getInstance().goToFrameNumber(movieParts[5].getFrameNumber().intValue());
+                    } else {
+                        VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[5].getFrameNumber().intValue());
+                    }
+                    Log.d(TAG, "movieParts[5] frame as int = " + movieParts[5].getFrameNumber().intValue());
+                    toggleMoviePartsVisibility();
+                    videoPlayerViewModel.resetDistance(movieParts[5], selectedMovie);
+                });
+
                 //set distance text values
                 //PLAYER TIME AND DISTANCE related
                 videoPlayerViewModel.getMovieTotalDurationSeconds().observe(getViewLifecycleOwner(), movieTotalDurationSeconds ->{
                     if (movieTotalDurationSeconds!=null) {
                         videoPlayerViewModel.getMovieSpendDurationSeconds().observe(getViewLifecycleOwner(), movieSpendDurationSeconds -> {
                             if (movieSpendDurationSeconds!=null) {
-                                final float mps = DistanceLookupTable.getMeterPerSecond(selectedMovie.getMovieLength(), movieTotalDurationSeconds / 1000);
-                                final int currentMetersDone = (int) (mps * (movieSpendDurationSeconds / 1000));
-                                statusbarDistance.setText(toString().format(getString(R.string.video_screen_distance), currentMetersDone));
-
-                                final int metersToGo = selectedMovie.getMovieLength() - currentMetersDone;
-                                statusbarTotalDistance.setText(String.format(getString(R.string.video_screen_total_distance), metersToGo));
+//                                final float mps = DistanceLookupTable.getMeterPerSecond(selectedMovie.getMovieLength(), movieTotalDurationSeconds / 1000);
+//                                int currentMetersDone = (int) (mps * (movieSpendDurationSeconds / 1000)) - distanceOffset;
+//                                if (currentMetersDone < 0) currentMetersDone = 0;
+//
+//                                videoPlayerViewModel.setCurrentMetersDone(currentMetersDone);
+//                                videoPlayerViewModel.getCurrentMetersDone().observe(getViewLifecycleOwner(), updatedCurrentMetersDone -> {
+//                                    if (updatedCurrentMetersDone != null) {
+//                                        statusbarDistance.setText(String.format(getString(R.string.video_screen_distance), updatedCurrentMetersDone));
+//                                    }
+//                                });
+//
+//                                final int metersToGo = selectedMovie.getMovieLength() - currentMetersDone - distanceOffset;
+//
+//                                videoPlayerViewModel.setMetersToGo(metersToGo);
+//                                videoPlayerViewModel.getMetersToGo().observe(getViewLifecycleOwner(), updatedMetersToGo -> {
+//                                    if (updatedMetersToGo != null) {
+//                                        statusbarTotalDistance.setText(String.format(getString(R.string.video_screen_total_distance), updatedMetersToGo));
+//                                    }
+//                                });
 
                                 progressBar.setMax(movieTotalDurationSeconds.intValue());
                                 progressBar.setProgress(movieSpendDurationSeconds.intValue());
+
+                                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Log.d(TAG, "finalFrame = " + finalFrame);
+                                        Log.d(TAG, "seekBarWidth = " + seekBarWidth);
+                                        Log.d(TAG,"progressBar.getWidth() = " + progressBar.getWidth());
+                                        Log.d(TAG, "progressBar.getPaddingStart()" + progressBar.getPaddingStart());
+                                        Log.d(TAG, "progressBar.getPaddingEnd()" + progressBar.getPaddingEnd());
+                                        seekBarWidth = progressBar.getWidth() - progressBar.getPaddingStart() - progressBar.getPaddingEnd();
+                                        if (movieParts != null) {
+                                            for (int i = 0; i < movieParts.length; i++) {
+                                                frameNumber = movieParts[i].getFrameNumber().intValue();
+                                                Log.d(TAG, "movieParts[" + i + "] frameNumber = " + frameNumber);
+                                                position = ((float) frameNumber / finalFrame) * seekBarWidth;
+                                                Log.d(TAG, "position of movieParts[" + i + "] = " + position);
+                                                if (seekBarButtons[i] != null) {
+                                                    seekBarButtons[i].setX(progressBar.getX() + progressBar.getPaddingStart() + position);
+                                                    Log.d(TAG, "seekBarButtons[" + i + "] position = " +
+                                                            progressBar.getX() + progressBar.getPaddingStart() + position);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }, 5500);
                             }
                         });
                     }
@@ -208,7 +350,7 @@ public class PraxFitStatusBarFragment extends Fragment {
                 //LOAD ROUTEPARTS IF AVAILABLE
                 videoPlayerViewModel.getRoutePartsOfMovieId(selectedMovie.getId()).observe(getViewLifecycleOwner(), routeparts -> {
                     if (routeparts != null && routeparts.size()>0) {
-                        routePartsAdapter = new RoutePartsAdapter(routeparts, isLocalPlay);
+                        routePartsAdapter = new RoutePartsAdapter(routeparts, isLocalPlay, videoPlayerViewModel, getViewLifecycleOwner());
                         statusbarRouteparts.setAdapter(routePartsAdapter);
                     }
                 });
@@ -232,6 +374,20 @@ public class PraxFitStatusBarFragment extends Fragment {
             }
         });
 
+        videoPlayerViewModel.getCurrentMetersDone().observe(getViewLifecycleOwner(), updatedCurrentMetersDone -> {
+            if (updatedCurrentMetersDone != null) {
+                statusbarDistance.setText(String.format(getString(R.string.video_screen_distance), updatedCurrentMetersDone));
+            }
+        });
+
+        videoPlayerViewModel.getMetersToGo().observe(getViewLifecycleOwner(), updatedMetersToGo -> {
+            if (updatedMetersToGo != null) {
+                statusbarTotalDistance.setText(String.format(getString(R.string.video_screen_total_distance), updatedMetersToGo));
+            }
+        });
+
+        getMovieParts(videoPlayerViewModel);
+        getFinalFrame(videoPlayerViewModel);
     }
 
     public float convertDpToPx(Context context, float dp) {
@@ -263,4 +419,36 @@ public class PraxFitStatusBarFragment extends Fragment {
     private boolean isTouchScreen() {
         return getView().getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
     }
+
+    public MoviePart[] getMovieParts(VideoPlayerViewModel videoPlayerViewModel) {
+        videoPlayerViewModel.getSelectedMovie().observe(getViewLifecycleOwner(), selectedMovie -> {
+            if (selectedMovie!= null) {
+                videoPlayerViewModel.getRoutePartsOfMovieId(selectedMovie.getId()).observe(getViewLifecycleOwner(), routeparts -> {
+                    if (routeparts.size()>0) {
+                        movieParts = new MoviePart[routeparts.size()];
+                        for (int partIndex = 0; partIndex<routeparts.size();partIndex++) {
+                            movieParts[partIndex] = MoviePart.fromRoutepartEntity(routeparts.get(partIndex));
+                        }
+                    }
+                });
+            }
+        });
+        return movieParts;
+    }
+
+    public int getFinalFrame(VideoPlayerViewModel videoPlayerViewModel) {
+        videoPlayerViewModel.getSelectedMovie().observe(getViewLifecycleOwner(), selectedMovie -> {
+            videoPlayerViewModel.getMovieTotalDurationSeconds().observe(getViewLifecycleOwner(), movieTotalDurationSeconds -> {
+                finalFrame = (int) ((movieTotalDurationSeconds / 1000) * selectedMovie.getRecordedFps().intValue());
+            });
+        });
+        return finalFrame;
+    }
+
+//    public int resetDistance(MoviePart moviePart, Movie selectedMovie, float mps) {
+//        int seekBarPartFrameNumber = moviePart.getFrameNumber().intValue();
+//        int seekBarPartDurationSeconds = (1000 * seekBarPartFrameNumber) / selectedMovie.getRecordedFps().intValue();
+//        distanceOffset = (int) (mps * (seekBarPartDurationSeconds / 1000));
+//        return distanceOffset;
+//    }
 }

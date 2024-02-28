@@ -1,6 +1,7 @@
 package com.videostreamtest.ui.phone.productpicker;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -51,6 +52,7 @@ import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
+import com.videostreamtest.ui.phone.videoplayer.MQTTService;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.VideoLanLib;
@@ -127,7 +129,25 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         navView = drawerLayout.findViewById(R.id.nav_view);
 
         apikey = getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
+
+
+        // FOR CHINESPORT
+        Intent intent = new Intent(this, MQTTService.class);
+        startService(intent);
     }
+
+     // FOR CHINESPORT
+//    @Override
+//    public void onStart() {
+//        super.onStart();
+//        productPickerAdapter.registerReceiver(this);
+//    }
+//
+//    @Override
+//    protected void onStop() {
+//        productPickerAdapter.unregisterReceiver(this);
+//        super.onStop();
+//    }
 
     @Override
     public void onUserInteraction() {

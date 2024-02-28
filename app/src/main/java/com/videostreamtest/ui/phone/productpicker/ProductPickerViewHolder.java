@@ -78,7 +78,7 @@ public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
         productButton.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                Log.d(TAG, "Selected ProductButton: "+getAdapterPosition()+" hasFocus: "+hasFocus);
+                Log.d(TAG, "hasFocus: "+hasFocus);
                 itemView.setSelected(true);
                 if (hasFocus) {
                     drawSelectionBorder();
@@ -89,7 +89,7 @@ public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
         });
     }
 
-    private void initOnClickListener(final Product product) {
+    public void initOnClickListener(final Product product) {
         //Set onclick on imagebutton
         productButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,5 +117,26 @@ public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
 
     private boolean isTouchScreen() {
         return itemView.getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
+    }
+
+    public void startFilm(Product product) {
+        productButton.requestFocus();
+
+        Context context = itemView.getContext();
+        Bundle arguments = new Bundle();
+        arguments.putString("product_object", new GsonBuilder().create().toJson(product, Product.class));
+
+        Intent productView = new Intent(context, ProductActivity.class);
+        productView.putExtras(arguments);
+
+        SharedPreferences sharedPreferences = context.getSharedPreferences("app", Context.MODE_PRIVATE);
+        String accounttoken = sharedPreferences.getString("apikey", "");
+
+        PraxtourDatabase.databaseWriterExecutor.execute(()->{
+            PraxtourDatabase.getDatabase(context.getApplicationContext()).usageTrackerDao().setSelectedProduct(accounttoken, product.getId());
+            Log.d(TAG, "Written to db: "+accounttoken+" , "+product.getId());
+        });
+
+        context.startActivity(productView);
     }
 }

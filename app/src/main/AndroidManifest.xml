@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.videostreamtest">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- REQUIRED FOR CONSTRAINT OF INTERNET   -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- FOR CHINESPORT MOTOLIFE    -->
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <!-- REQUIRED FOR SENSORS    -->
     <!--    OLDER DEVICES -->
@@ -193,6 +195,9 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
+
+        <!-- FOR CHINESPORT MOTOLIFE    -->
+        <service android:name="com.videostreamtest.ui.phone.videoplayer.MQTTService" />
     </application>
 
 </manifest>

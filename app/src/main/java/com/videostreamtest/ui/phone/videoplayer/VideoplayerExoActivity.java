@@ -994,8 +994,8 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     }
 
     private boolean isPraxtourMediaPlayerReady() {
-        boolean videoPlayerReady = false;
-        boolean backgroundPlayerReady = false;
+        boolean videoPlayerReady;
+        boolean backgroundPlayerReady;
         boolean soundReady = backgroundSoundTriggers.size()>0;
 
 //        videoPlayerReady = (mediaPlayer.isSeekable() && mediaPlayer.getLength() != -1 && mediaPlayer.getVideoTrack()>2);

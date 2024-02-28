@@ -6,22 +6,18 @@ apply from: 'versionCode.gradle'
 
 android {
     compileSdkVersion 31
-    buildToolsVersion "30.0.2"
     ndkVersion "21.4.7075529"
 
     defaultConfig {
-        applicationId "com.videostreamtest"
+        applicationId "com.videostreamtest.chinesport"
         minSdkVersion 23
-        targetSdkVersion 31
+        targetSdkVersion 25
         versionCode Integer.parseInt(VERSION_CODE)
         versionName VERSION_NAME+''+versionCode
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    lintOptions {
-        abortOnError false
-    }
 
     signingConfigs {
         release {
@@ -45,6 +41,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+    lint {
+        abortOnError false
+    }
+    namespace 'com.videostreamtest'
 }
 
 ext {
@@ -140,5 +140,10 @@ dependencies {
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+    //MQTT Service
+    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
+    implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
+    implementation 'org.json:json:20210307'
 
 }

@@ -2,33 +2,62 @@ package com.videostreamtest.ui.phone.videoplayer.fragments.routeparts;
 
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.cast.framework.media.zzbv;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
+import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
+import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
+import com.videostreamtest.utils.DistanceLookupTable;
 
 import java.io.File;
+import java.util.Objects;
 
 public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
 
     final static String TAG = RoutePartsViewHolder.class.getSimpleName();
 
     private ImageButton moviePartCoverImage;
+    private VideoPlayerViewModel videoPlayerViewModel;
+    private LifecycleOwner lifecycleOwner;
+    private int distanceOffset;
 
-    public RoutePartsViewHolder(@NonNull View itemView) {
+//    public void setVideoPlayerViewModel(VideoPlayerViewModel videoPlayerViewModel) {
+//        this.videoPlayerViewModel = videoPlayerViewModel;
+//    }
+//
+//    public void setLifecycleOwner(LifecycleOwner lifecycleOwner) {
+//        this.lifecycleOwner = lifecycleOwner;
+//    }
+    public RoutePartsViewHolder(@NonNull View itemView, VideoPlayerViewModel videoPlayerViewModel, LifecycleOwner lifecycleOwner) {
         super(itemView);
+        this.videoPlayerViewModel = videoPlayerViewModel;
+        this.lifecycleOwner = lifecycleOwner;
+
+        videoPlayerViewModel.getDistanceOffset().observe(lifecycleOwner, new Observer<Integer>() {
+            @Override
+            public void onChanged(Integer offset) {
+                distanceOffset = offset;
+            }
+        });
     }
 
     public void bind(MoviePart moviePart, boolean isLocalPlay, int position) {
@@ -65,6 +94,7 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
                         .placeholder(R.drawable.placeholder_movieparts)
                         .error(R.drawable.placeholder_movieparts)
                         .into(moviePartCoverImage, new Callback() {
+
                             @Override
                             public void onSuccess() {
 
@@ -72,7 +102,10 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
 
                             @Override
                             public void onError(Exception e) {
-                                Toast.makeText(itemView.getContext(), "[ERROR][EXTERNAL] "+e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                                String errorMessage = "[ERROR][EXTERNAL] " + e.getLocalizedMessage();
+                                Toast.makeText(itemView.getContext(), errorMessage, Toast.LENGTH_LONG).show();
+                                Log.e("Picasso Error test" + errorMessage, errorMessage);
+//                                Toast.makeText(itemView.getContext(), "[ERROR][EXTERNAL] "+e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                             }
                         });
             }
@@ -151,19 +184,59 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
         drawSelectionBorder();
     }
 
-    private void initOnClickListener(final MoviePart moviePart) {
-        //Set onclick on imagebutton
-        moviePartCoverImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                moviePartCoverImage.requestFocus();
-                if (AccountHelper.getAccountType(itemView.getContext()).equalsIgnoreCase("standalone")) {
-                    VideoplayerActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
-                } else {
-                    VideoplayerExoActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
+    public void initOnClickListener(final MoviePart moviePart) {
+        videoPlayerViewModel.getSelectedMovie().observe(lifecycleOwner, selectedMovie -> {
+            moviePartCoverImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    moviePartCoverImage.requestFocus();
+                    if (AccountHelper.getAccountType(itemView.getContext()).equalsIgnoreCase("standalone")) {
+                        VideoplayerActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
+                    } else {
+                        VideoplayerExoActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
+                    }
+                    Log.d(TAG, "moviePart frame as int = " + moviePart.getFrameNumber().intValue());
+                    videoPlayerViewModel.resetDistance(moviePart, selectedMovie);
                 }
-            }
+            });
         });
+//        videoPlayerViewModel.getSelectedMovie().observe(lifecycleOwner, selectedMovie -> {
+//            if (selectedMovie != null) {
+//                videoPlayerViewModel.getMovieTotalDurationSeconds().observe(lifecycleOwner, movieTotalDurationSeconds -> {
+//                    if (movieTotalDurationSeconds != null) {
+//                        videoPlayerViewModel.getMovieSpendDurationSeconds().observe(lifecycleOwner, movieSpendDurationSeconds -> {
+//                            if (movieSpendDurationSeconds != null) {
+//                                final float mps = DistanceLookupTable.getMeterPerSecond(selectedMovie.getMovieLength(), movieTotalDurationSeconds / 1000);
+//                                int currentMetersDone = (int) (mps * (movieSpendDurationSeconds / 1000)) - distanceOffset;
+//                                Log.d(TAG, "currentMetersDone = " + currentMetersDone);
+//                                Log.d(TAG, "distanceOffset = " + distanceOffset);
+//                                if (currentMetersDone < 0) currentMetersDone = 0;
+//                                videoPlayerViewModel.setCurrentMetersDone(currentMetersDone);
+//
+//                                final int metersToGo = selectedMovie.getMovieLength() - currentMetersDone - distanceOffset;
+//                                videoPlayerViewModel.setMetersToGo(metersToGo);
+//
+//                                //Set onclick on imagebutton
+//                                moviePartCoverImage.setOnClickListener(new View.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(View v) {
+//                                        moviePartCoverImage.requestFocus();
+//                                        if (AccountHelper.getAccountType(itemView.getContext()).equalsIgnoreCase("standalone")) {
+//                                            VideoplayerActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
+//                                        } else {
+//                                            VideoplayerExoActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
+//                                        }
+//                                        Log.d(TAG, "moviePart frame as int = " + moviePart.getFrameNumber().intValue());
+//
+//                                        resetDistance(moviePart, selectedMovie, mps);
+//                                    }
+//                                });
+//                            }
+//                        });
+//                    }
+//                });
+//            }
+//        });
     }
 
     private void initOnFocusChangeListener() {
@@ -195,5 +268,13 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
     private boolean isTouchScreen() {
         return itemView.getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
     }
+
+//    private void resetDistance(MoviePart moviePart, Movie selectedMovie, float mps) {
+//        int seekBarPartFrameNumber = moviePart.getFrameNumber().intValue();
+//        int seekBarPartDurationSeconds = (1000 * seekBarPartFrameNumber) / selectedMovie.getRecordedFps().intValue();
+//        int newDistanceOffset = (int) (mps * (seekBarPartDurationSeconds / 1000));
+//
+//        videoPlayerViewModel.setDistanceOffset(newDistanceOffset);
+//    }
 
 }

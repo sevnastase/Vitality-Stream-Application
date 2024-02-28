@@ -1,5 +1,6 @@
 package com.videostreamtest.service.ble;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -36,6 +37,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 import com.videostreamtest.R;
@@ -136,9 +138,9 @@ public class BleService extends Service {
 
         @Override
         public void handleMessage(Message msg) {
-            Log.d(TAG, "msg startId: "+msg.arg1);
+            Log.d(TAG, "msg startId: " + msg.arg1);
             bluetoothDeviceAddress = getSharedPreferences("app", MODE_PRIVATE).getString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, "NONE");
-            Log.d(TAG, "device addr: "+bluetoothDeviceAddress);
+            Log.d(TAG, "device addr: " + bluetoothDeviceAddress);
             if (bluetoothGatt == null) {
                 //No connection so try a new connection with default device
                 startScan();
@@ -160,10 +162,10 @@ public class BleService extends Service {
         private void refreshDeviceCache(BluetoothGatt gatt) {
             try {
                 Method localMethod = gatt.getClass().getMethod("refresh");
-                if(localMethod != null) {
+                if (localMethod != null) {
                     localMethod.invoke(gatt);
                 }
-            } catch(Exception localException) {
+            } catch (Exception localException) {
                 Log.d("BLE Refresh Exception", localException.toString());
             }
         }
@@ -182,7 +184,7 @@ public class BleService extends Service {
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
                         connectionState = STATE_CONNECTED;
                         Log.i(TAG, "Connected to GATT server.");
-                        if (gatt.getDevice()!=null) {
+                        if (gatt.getDevice() != null) {
                             Log.i(TAG, "Connected to GATT server {" + gatt.getDevice().getName() + "}");
                         }
                         Log.i(TAG, "Attempting to start service discovery:" +

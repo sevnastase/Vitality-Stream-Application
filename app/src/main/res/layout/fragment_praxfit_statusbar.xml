@@ -244,7 +244,7 @@
         </LinearLayout>
     </LinearLayout>
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
@@ -258,7 +258,65 @@
                 android:thumb="@drawable/bicycle_thumb_praxfilm"
                 android:splitTrack="false"
                 />
-        </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/statusbar_praxfit_seekbar_t1"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:scaleType="fitCenter"
+                android:layout_centerVertical="true"
+                android:src="@drawable/nummer_1_wit"
+                android:background="@android:color/transparent"/>
+
+            <ImageButton
+                android:id="@+id/statusbar_praxfit_seekbar_t2"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:scaleType="fitCenter"
+                android:layout_centerVertical="true"
+                android:src="@drawable/nummer_2_wit"
+                android:background="@android:color/transparent"/>
+
+            <ImageButton
+                android:id="@+id/statusbar_praxfit_seekbar_t3"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginLeft="213.33dp"
+                android:scaleType="fitCenter"
+                android:layout_centerVertical="true"
+                android:src="@drawable/nummer_3_wit"
+                android:background="@android:color/transparent"/>
+
+            <ImageButton
+                android:id="@+id/statusbar_praxfit_seekbar_t4"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginLeft="330dp"
+                android:scaleType="fitCenter"
+                android:layout_centerVertical="true"
+                android:src="@drawable/nummer_4_wit"
+                android:background="@android:color/transparent"/>
+
+            <ImageButton
+                android:id="@+id/statusbar_praxfit_seekbar_t5"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginLeft="446.67dp"
+                android:scaleType="fitCenter"
+                android:layout_centerVertical="true"
+                android:src="@drawable/nummer_5_wit"
+                android:background="@android:color/transparent"/>
+
+            <ImageButton
+                android:id="@+id/statusbar_praxfit_seekbar_t6"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginLeft="543.34dp"
+                android:scaleType="fitCenter"
+                android:layout_centerVertical="true"
+                android:src="@drawable/nummer_6_wit"
+                android:background="@android:color/transparent"/>
+        </RelativeLayout>
 
     </LinearLayout>
 

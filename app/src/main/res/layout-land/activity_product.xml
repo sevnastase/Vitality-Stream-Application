@@ -71,10 +71,12 @@
         android:layout_gravity="start|bottom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textSize="40sp"
+        android:textColor="#FFFFFF"
         android:text="@string/productpicker_close_button_text"
         android:padding="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="20dp"
         app:layout_constraintStart_toEndOf="@id/product_menu_button"
         app:layout_constraintBottom_toTopOf="@id/app_build_number"/>
     <TextView
