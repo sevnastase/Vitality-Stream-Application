@@ -1,5 +1,6 @@
 package com.videostreamtest.ui.phone.productpicker;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -25,39 +26,14 @@ public class ProductPickerAdapter extends RecyclerView.Adapter<ProductPickerView
     private Product[] productList;
     private int selectedProduct = 0;
 
-    private Product currentFilm;
-    ProductPickerViewHolder holder;
+    // FOR CHINESPORT
+    private int selectedPosition = -1;
+    private Context context;
+
 
     public ProductPickerAdapter(Product[] productList) {
         this.productList = productList;
     }
-
-//    private BroadcastReceiver motoLifeDataReceiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            ArrayList<String> motoLifeData = intent.getStringArrayListExtra("motoLifeData");
-//
-//            Log.d(TAG, "motoLifeDat.get(0) = " + motoLifeData.get(0));
-//            if (motoLifeData.get(0) == "StartLeg" || motoLifeData.get(0) == "StartArm") {
-//                Log.d(TAG, "is current film null: " + String.valueOf(currentFilm != null));
-//                if (currentFilm != null) {
-//                    Log.d(TAG, "currentFilm: " + currentFilm);
-//                    holder.startFilm(currentFilm);
-//                }
-//            }
-//        }
-//    };
-
-//    public void registerReceiver(Context context) {
-//        if (context != null) {
-//            LocalBroadcastManager.getInstance(context).registerReceiver(motoLifeDataReceiver,
-//                    new IntentFilter("com.videostreamtest.MQTT_DATA_UPDATE"));
-//        }
-//    }
-//
-//    public void unregisterReceiver(Context context) {
-//        LocalBroadcastManager.getInstance(context).unregisterReceiver(motoLifeDataReceiver);
-//    }
 
     @NonNull
     @Override
@@ -70,6 +46,7 @@ public class ProductPickerAdapter extends RecyclerView.Adapter<ProductPickerView
         return new ProductPickerViewHolder(view);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onBindViewHolder(@NonNull ProductPickerViewHolder holder, int position) {
         Log.d(TAG, "Binding products");
@@ -83,12 +60,32 @@ public class ProductPickerAdapter extends RecyclerView.Adapter<ProductPickerView
 
         if (productList.length > 0) {
             holder.bind(productList[position], position);
-            currentFilm = productList[position];
         }
+
+        // When we switch to a different film among the selections, notify that the currently highlighted film is now changed
+        holder.itemView.setOnFocusChangeListener((view, hasFocus) -> {
+            if (hasFocus) {
+                selectedPosition = position;
+                notifyDataSetChanged();
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
         return productList.length;
+    }
+
+    // FOR CHINESPORT
+
+    /**
+     * Get the currently selected product, to be used in ProductPickerFragment.
+     * @return the currently highlighted film.
+     */
+    public Product getSelectedProduct() {
+        if (selectedPosition >= 0 && selectedPosition < getItemCount()) {
+            return productList[selectedPosition];
+        }
+        return null;
     }
 }

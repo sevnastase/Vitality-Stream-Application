@@ -31,7 +31,15 @@ public class MQTTManager {
     private ArrayList<String> motoLifeData = new ArrayList<String>(Collections.nCopies(5, "0"));
     private DataUpdateListener dataUpdateListener;
 
-
+    /**
+     * Constructor method assigning the characteristics defining an MQTTManager object.
+     *
+     * @param brokerUrl             The URL of the MQTT broker (host) needed to connect
+     * @param clientId              clientID unique to each device conencting to broker, not necessary
+     * @param username              Username needed to connect to broker
+     * @param password              Password needed to connect to broker
+     * @param automaticReconnect    Boolean whether to automatically reconnect to the broker if connection is lost
+     */
     private MQTTManager(String brokerUrl, String clientId, String username, String password, boolean automaticReconnect) {
         this.brokerUrl = brokerUrl;
         this.clientId = clientId;
@@ -40,6 +48,12 @@ public class MQTTManager {
         this.automaticReconnect = automaticReconnect;
     }
 
+    /**
+     * Makes sure that only one instance of the MQTTManager exists at a time (The app connects to the
+     * broker as a client, and there is only one instance of this client).
+     *
+     * @return instance         The new instance of the MQTTManager object, or the existing one if it exists
+     */
     public static synchronized MQTTManager getInstance(String brokerUrl, String clientId, String username, String password, boolean automaticReconnect) {
         if (instance == null) {
             instance = new MQTTManager(brokerUrl, clientId, username, password, automaticReconnect);
@@ -52,6 +66,12 @@ public class MQTTManager {
         return instance;
     }
 
+    /**
+     * Connects to the broker as a client with the username, password. If a message arrives via MQTT
+     * it is stored and fed to the getMotoLifeData to handle the message.
+     *
+     * @throws MqttException
+     */
     public void connect() throws MqttException {
         MqttConnectOptions options = new MqttConnectOptions();
         options.setCleanSession(true);
@@ -98,6 +118,13 @@ public class MQTTManager {
         Log.d(TAG, "MQTT Manager connecting...");
     }
 
+    /**
+     * After connecting to the broker, subscribe to the various topics eg .../LWT or .../[Serial Nr.]
+     *
+     * @param topic             The topic to connect to
+     * @param qos               Quality of Service protocol for the messages
+     * @throws MqttException
+     */
     public void subscribe(String topic, int qos) throws MqttException {
         Log.d(TAG, "subscribe method");
         client.subscribe(topic, qos);
@@ -111,6 +138,9 @@ public class MQTTManager {
         }
     }
 
+    /**
+     * Notifies when new MQTT message comes in.
+     */
     public interface DataUpdateListener {
         void onDataUpdate(ArrayList<String> motoLifeData);
     }
@@ -123,6 +153,16 @@ public class MQTTManager {
 //        return receivedMessage;
 //    }
 
+    /**
+     * The getMotoLifeData method checks the type of message (Check MotoLife integration documentation)
+     * received by the MotoLife via the MQTT protocol. Depending on the message, either display the
+     * data in the film as requested, or start the currently highlighted film (startleg or startarm),
+     * or deal with the pause/spasm/resume
+     *
+     * @param message           The received message from the MotoLife
+     * @return messageData      Returns the list of messages that were provided by the JSON MQTT message
+     * @throws JSONException
+     */
     public ArrayList<String> getMotoLifeData(String message) throws JSONException {
         ArrayList<String> messageData = new ArrayList<>();
 
@@ -131,45 +171,38 @@ public class MQTTManager {
             JSONObject motoLifeData = new JSONObject(message);
 
             // Extract "Value" object
-            JSONObject value = motoLifeData.getJSONObject("Value");
-            Log.d(TAG, "value: " + value);
-//            if (value instanceof String) {
-//                if (value == "StartLeg") {
-//                    messageData.add("StartLeg");
-//                }
-//            }
-//            boolean isSpeed = value.keys().next().startsWith("Speed");
-//
-//            if (!isSpeed) {
-//                // Check if one of the other commands have been sent other than motolife data
-//                checkValue(value, messageData);
-//            } else {
-//                // Extract individual data
-//                String speed = value.getString("Speed");
-//                String power = value.getString("Power");
-//                String mode = value.getString("Mode");
-//                String direction = value.getString("Direction");
-//                String time = value.getString("Time");
-//
-//                messageData.add(speed);
-//                messageData.add(power);
-//                messageData.add(mode);
-//                messageData.add(direction);
-//                messageData.add(time);
-//            }
+            Object valueObj = motoLifeData.get("Value");
 
-            String speed = value.getString("Speed");
-            String power = value.getString("Power");
-            String mode = value.getString("Mode");
-            String direction = value.getString("Direction");
-            String time = value.getString("Time");
+            if (valueObj instanceof JSONObject) {
+                JSONObject value = (JSONObject) valueObj;
+                Log.d(TAG, "value: " + value);
 
-            messageData.add(speed);
-            messageData.add(power);
-            messageData.add(mode);
-            messageData.add(direction);
-            messageData.add(time);
+                boolean isSpeed = value.has("Speed");
 
+                if (isSpeed) {
+                    // Extract individual data
+                    String speed = value.getString("Speed");
+                    String power = value.getString("Power");
+                    String mode = value.getString("Mode");
+                    String direction = value.getString("Direction");
+                    String time = value.getString("Time");
+
+                    messageData.add(speed);
+                    messageData.add(power);
+                    messageData.add(mode);
+                    messageData.add(direction);
+                    messageData.add(time);
+                }
+            } else if (valueObj instanceof String) {
+                // Handle String "Value"
+                String value = (String) valueObj;
+                if ("StartLeg".equals(value)) {
+                    messageData.add("StartLeg");
+                } else if ("StartArm".equals(value)) {
+                    // Handle "startarm" similarly
+                    messageData.add("StartArm");
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

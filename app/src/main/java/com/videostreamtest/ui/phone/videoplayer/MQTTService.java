@@ -31,10 +31,17 @@ public class MQTTService extends Service {
         Log.d(TAG, "MQTT Manager initialised");
 
         mqttManager.setDataUpdateListener(motoLifeData -> {
-            Intent intent = new Intent("com.videostreamtest.MQTT_DATA_UPDATE");
-            intent.putStringArrayListExtra("motoLifeData", motoLifeData);
-            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+            if (motoLifeData.contains("StartLeg") || motoLifeData.contains("StartArm")) {
+                Intent startFilmIntent = new Intent("com.videostreamtest.ACTION_START_FILM");
+                LocalBroadcastManager.getInstance(this).sendBroadcast(startFilmIntent);
+            } else {
+                // Handle other data updates as before
+                Intent intent = new Intent("com.videostreamtest.MQTT_DATA_UPDATE");
+                intent.putStringArrayListExtra("motoLifeData", motoLifeData);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+            }
         });
+
     }
 
     @Override

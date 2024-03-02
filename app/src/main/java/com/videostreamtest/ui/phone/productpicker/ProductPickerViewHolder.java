@@ -119,24 +119,4 @@ public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
         return itemView.getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
     }
 
-    public void startFilm(Product product) {
-        productButton.requestFocus();
-
-        Context context = itemView.getContext();
-        Bundle arguments = new Bundle();
-        arguments.putString("product_object", new GsonBuilder().create().toJson(product, Product.class));
-
-        Intent productView = new Intent(context, ProductActivity.class);
-        productView.putExtras(arguments);
-
-        SharedPreferences sharedPreferences = context.getSharedPreferences("app", Context.MODE_PRIVATE);
-        String accounttoken = sharedPreferences.getString("apikey", "");
-
-        PraxtourDatabase.databaseWriterExecutor.execute(()->{
-            PraxtourDatabase.getDatabase(context.getApplicationContext()).usageTrackerDao().setSelectedProduct(accounttoken, product.getId());
-            Log.d(TAG, "Written to db: "+accounttoken+" , "+product.getId());
-        });
-
-        context.startActivity(productView);
-    }
 }
