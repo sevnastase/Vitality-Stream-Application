@@ -95,6 +95,17 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
 
     public int getCurrentSelectedRoutefilmPosition() {return this.selectedRoutefilm;}
 
+    /**
+     * Use the getCurrentSelectedRoutefilmPosition method to find the current routefilm at that
+     * index
+     *
+     * @return currentFilm      The currently highlighted film
+     */
+    public Routefilm getCurrentSelectedRoutefilm() {
+        Routefilm currentFilm = this.routefilmList.get(getCurrentSelectedRoutefilmPosition());
+        Log.d(TAG, "Currently selected film: " + currentFilm);
+        return currentFilm;
+    }
 
     public void updateRoutefilmList(final List<Routefilm> requestedRoutefilmList) {
         if (requestedRoutefilmList != null && requestedRoutefilmList.size()>0) {

@@ -4,6 +4,10 @@ import static android.content.Context.MODE_PRIVATE;
 
 import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -18,8 +22,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.GsonBuilder;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -27,15 +33,19 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.MovieFlag;
 import com.videostreamtest.config.entity.Routefilm;
+import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.fragments.routefilmadapter.RoutefilmsAdapter;
+import com.videostreamtest.ui.phone.productview.fragments.routefilmadapter.RoutefilmsViewHolder;
 import com.videostreamtest.ui.phone.productview.layoutmanager.CustomGridLayoutManager;
 import com.videostreamtest.ui.phone.productview.layoutmanager.EndlessRecyclerViewScrollListener;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
+import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
+import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import java.io.File;
@@ -134,6 +144,10 @@ public class AbstractProductScreenFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        // FOR CHINESPORT
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(mqttMessageReceiver,
+                new IntentFilter("com.videostreamtest.ACTION_START_FILM"));
+
         //set selected product en load navigation arrows
         productViewModel.getSelectedProduct().observe(getViewLifecycleOwner(), selectedProduct-> {
             if (selectedProduct != null && this.selectedProduct == null) {
@@ -147,6 +161,75 @@ public class AbstractProductScreenFragment extends Fragment {
             }
         });
     }
+
+    /**
+     * Interface signalling to start the current film when the mqtt message is received.
+     */
+    // FOR CHINESPORT
+    BroadcastReceiver mqttMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            startSelectedMovie();
+        }
+    };
+
+    // FOR CHINESPORT
+    @Override
+    public void onDestroyView() {
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(mqttMessageReceiver);
+        super.onDestroyView();
+    }
+
+    // FOR CHINESPORT
+    /**
+     * This method starts the currently selected movie. It first retrieves the currently selected
+     * route film via the routefilms adapter, after which we pass the bundle to the videplayerintent,
+     * so that it can retrieve the current product, and film within that product, along with tying
+     * the apikey to the currently logged in account.
+     */
+    private void startSelectedMovie() {
+        if (routefilmsAdapter != null) {
+            Routefilm selectedRoutefilm = routefilmsAdapter.getCurrentSelectedRoutefilm();
+            if (selectedRoutefilm != null) {
+                Bundle arguments = generateBundleParameters(selectedRoutefilm, selectedProduct, apikey);
+
+                Intent videoPlayerIntent;
+                if (selectedProduct.getSupportStreaming() == 0) {
+                    Log.d(TAG, "Context Fragment VideoplayerActivity class: " + getContext());
+                    videoPlayerIntent = new Intent(getContext(), VideoplayerActivity.class);
+                    videoPlayerIntent.putExtras(arguments);
+                } else {
+                    Log.d(TAG, "Context Fragment VideoplayerExoActivity class: " + getContext());
+                    videoPlayerIntent = new Intent(getContext(), VideoplayerExoActivity.class);
+                    videoPlayerIntent.putExtras(arguments);
+                }
+
+                videoPlayerIntent.putExtras(arguments);
+                startActivity(videoPlayerIntent);
+            }
+        }
+    }
+
+    // FOR CHINESPORT
+    /**
+     * Generate bundle parameters analagous to how it is done in RoutefilmsViewHolder. Don't fully
+     * understand the motivation behind this yet, but it is needed to start the correct film.
+     *
+     * @param routefilm         The currently highlighted film
+     * @param selectedProduct   The current product (PraxFit/PraxSpin/PraxFit)
+     * @param apikey            The unique token for this account
+     * @return                  Return the bundle of arguments
+     */
+    private Bundle generateBundleParameters(Routefilm routefilm, Product selectedProduct, String apikey) {
+        Bundle arguments = new Bundle();
+        arguments.putString("movieObject", new GsonBuilder().create().toJson(Movie.fromRoutefilm(routefilm), Movie.class));
+        arguments.putString("productObject", new GsonBuilder().create().toJson(selectedProduct, Product.class));
+        arguments.putString("communication_device", selectedProduct.getCommunicationType());
+        arguments.putString("accountToken", apikey);
+        arguments.putBoolean("localPlay", selectedProduct.getSupportStreaming() == 0);
+        return arguments;
+    }
+
 
     //NAVIGATION ARROWS
     private void loadNavigationArrows() {

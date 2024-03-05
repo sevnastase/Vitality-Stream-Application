@@ -272,11 +272,13 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
     }
 
     private void initVideoPlayer(final Bundle arguments) {
+        Log.d(TAG, "Context Viewholder VideoplayerActivity class: " + itemView.getContext());
         videoPlayer = new Intent(itemView.getContext(), VideoplayerActivity.class);
         videoPlayer.putExtras(arguments);
     }
 
     private void initStreamVideoPlayer(final Bundle arguments) {
+        Log.d(TAG, "Context Viewholder VideoplayerExoActivity class: " + itemView.getContext());
         videoPlayerExo = new Intent(itemView.getContext(), VideoplayerExoActivity.class);
         videoPlayerExo.putExtras(arguments);
     }
@@ -383,12 +385,11 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
         startVideoplayerExo();
     }
 
-    private void startVideoplayer() {
+    public void startVideoplayer() {
         itemView.getContext().startActivity(videoPlayer);
     }
 
-    private void startVideoplayerExo() {
+    public void startVideoplayerExo() {
         itemView.getContext().startActivity(videoPlayerExo);
     }
-
 }

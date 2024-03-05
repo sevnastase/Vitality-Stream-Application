@@ -26,10 +26,6 @@ public class ProductPickerAdapter extends RecyclerView.Adapter<ProductPickerView
     private Product[] productList;
     private int selectedProduct = 0;
 
-    // FOR CHINESPORT
-    private int selectedPosition = -1;
-    private Context context;
-
 
     public ProductPickerAdapter(Product[] productList) {
         this.productList = productList;
@@ -61,14 +57,6 @@ public class ProductPickerAdapter extends RecyclerView.Adapter<ProductPickerView
         if (productList.length > 0) {
             holder.bind(productList[position], position);
         }
-
-        // When we switch to a different film among the selections, notify that the currently highlighted film is now changed
-        holder.itemView.setOnFocusChangeListener((view, hasFocus) -> {
-            if (hasFocus) {
-                selectedPosition = position;
-                notifyDataSetChanged();
-            }
-        });
     }
 
     @Override
@@ -76,16 +64,4 @@ public class ProductPickerAdapter extends RecyclerView.Adapter<ProductPickerView
         return productList.length;
     }
 
-    // FOR CHINESPORT
-
-    /**
-     * Get the currently selected product, to be used in ProductPickerFragment.
-     * @return the currently highlighted film.
-     */
-    public Product getSelectedProduct() {
-        if (selectedPosition >= 0 && selectedPosition < getItemCount()) {
-            return productList[selectedPosition];
-        }
-        return null;
-    }
 }

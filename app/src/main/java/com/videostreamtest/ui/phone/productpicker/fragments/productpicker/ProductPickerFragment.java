@@ -44,21 +44,6 @@ public class ProductPickerFragment extends Fragment {
     private RecyclerView productOverview;
     private ProductPickerAdapter productPickerAdapter;
 
-
-    // FOR CHINESPORT
-    /**
-     * When a new MQTT message comes in, the MQTTService sends out a broadcast intent message signifying
-     * that a new message has arrived. The BroadcastReceiver receives this message (either the
-     * StartLeg or StartArm message), and starts the currently selected film. The starting of the film
-     * doesn't fully work yet.
-     */
-    private BroadcastReceiver startFilmReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            startCurrentFilm();
-        }
-    };
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -99,10 +84,6 @@ public class ProductPickerFragment extends Fragment {
             //set recyclerview visible
             productOverview.setVisibility(View.VISIBLE);
 
-            // Initialise BroadcastReceiver
-            LocalBroadcastManager.getInstance(requireContext()).registerReceiver(startFilmReceiver,
-                    new IntentFilter("com.videostreamtest.ACTION_START_FILM"));
-
             //For UI alignment in center with less then 5 products
             int spanCount = 5;
             if (products.size() < 5) {
@@ -117,46 +98,5 @@ public class ProductPickerFragment extends Fragment {
             productOverview.setLayoutManager(gridLayoutManager);
         });
 
-    }
-
-    /**
-     * The broadcast receiver is initialised in the onviewcreated method and so is the productpickeradapter.
-     * Once the productpickeradapter is initalised, we can access the currently selected product via the
-     * getSelectedProduct() method from the productpickeradapter class. Then, start this film.
-     */
-    private void startCurrentFilm() {
-
-        if (productPickerAdapter != null) {
-            Product selectedProduct = productPickerAdapter.getSelectedProduct();
-
-            if (selectedProduct != null) {
-                // Start the film
-                Bundle arguments = new Bundle();
-                arguments.putString("product_object", new GsonBuilder().create().toJson(selectedProduct, Product.class));
-
-                Intent startFilmView = new Intent(getContext(), ProductActivity.class);
-                startFilmView.putExtras(arguments);
-
-                SharedPreferences sharedPreferences = Objects.requireNonNull(getContext()).getSharedPreferences("app", Context.MODE_PRIVATE);
-                String accounttoken = sharedPreferences.getString("apikey", "");
-
-                PraxtourDatabase.databaseWriterExecutor.execute(()->{
-                    PraxtourDatabase.getDatabase(getContext().getApplicationContext()).usageTrackerDao().setSelectedProduct(accounttoken, selectedProduct.getId());
-                    Log.d(TAG, "Written to db: "+accounttoken+" , "+selectedProduct.getId());
-                });
-
-                getContext().startActivity(startFilmView);
-            } else {
-                Toast.makeText(getContext(), "No product selected", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            Log.e(TAG, "Adapter is null. This should not happen if the broadcast is received after onViewCreated.");
-        }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(startFilmReceiver);
     }
 }
