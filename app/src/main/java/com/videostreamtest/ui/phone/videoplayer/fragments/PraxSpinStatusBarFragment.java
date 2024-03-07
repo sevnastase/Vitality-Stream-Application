@@ -1,10 +1,12 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -707,5 +709,41 @@ public class PraxSpinStatusBarFragment extends Fragment {
             });
         });
         return finalFrame;
+    }
+
+    private void showPauseOrStopDialog() {
+        Context context = getActivity();
+        if(context == null)
+        {
+            return;
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Pause or Stop");
+        builder.setMessage("Do you want to pause or stop?");
+
+        builder.setPositiveButton("Pause", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // Handle Pause action
+                // TODO: Implement your pause logic here
+                Log.d(TAG, "Pause selected.");
+            }
+        });
+
+        builder.setNegativeButton("Stop", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // Handle Stop action
+                // TODO: Implement your stop logic here
+                Log.d(TAG, "Stop selected.");
+            }
+        });
+
+        builder.setNeutralButton("Cancel", null); // just dismisses the dialog
+
+        // Create and show the AlertDialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }

@@ -299,40 +299,4 @@ public class PraxFilmStatusBarFragment extends Fragment {
     private boolean isTouchScreen() {
         return getView().getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
     }
-
-    private void showPauseOrStopDialog() {
-        Context context = getActivity();
-        if(context == null)
-        {
-            return;
-        }
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Pause or Stop");
-        builder.setMessage("Do you want to pause or stop?");
-
-        builder.setPositiveButton("Pause", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                // Handle Pause action
-                // TODO: Implement your pause logic here
-                Log.d(TAG, "Pause selected.");
-            }
-        });
-
-        builder.setNegativeButton("Stop", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                // Handle Stop action
-                // TODO: Implement your stop logic here
-                Log.d(TAG, "Stop selected.");
-            }
-        });
-
-        builder.setNeutralButton("Cancel", null); // just dismisses the dialog
-
-        // Create and show the AlertDialog
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
 }
