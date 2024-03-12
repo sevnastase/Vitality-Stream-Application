@@ -1,3 +1,10 @@
+/*
+Deprecated class, app has storage permission in all public directories of external
+devices by default on Android 13+.
+https://stackoverflow.com/questions/77735245/android-sdk-34-appcompatactivity-requestpermissions-does-not-display-permission
+TODO: eliminate usages since this uses deprecated methods
+ */
+
 package com.videostreamtest.ui.phone.login.fragments;
 
 import android.Manifest;
@@ -89,7 +96,7 @@ public class StoragePermissionFragment extends Fragment {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
             int allGranted = 0;
             for (String permission : permissions) {
