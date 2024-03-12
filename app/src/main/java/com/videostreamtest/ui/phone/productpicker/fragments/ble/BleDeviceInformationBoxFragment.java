@@ -64,6 +64,8 @@ public class BleDeviceInformationBoxFragment extends Fragment {
 
     private int refreshOverviewCounter = 0;
 
+    private final int requestCode = 113;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -235,7 +237,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         ) {
             Log.d(TAG, "No ACCESS_FINE_LOCATION permission then ASK, otherwise no popup is shown.");
 //            permissionsAcquired = false;
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 113);
+            requestPermission(Manifest.permission.ACCESS_FINE_LOCATION);
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH_ADMIN)
@@ -250,7 +252,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
                 && Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
             Log.d(TAG, "No BLUETOOTH permission.");
             permissionsAcquired = false;
-            requestPermissions(new String[]{Manifest.permission.BLUETOOTH}, 113);
+            requestPermission(Manifest.permission.BLUETOOTH);
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH_SCAN)
@@ -258,7 +260,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         ) {
             Log.d(TAG, "No BLUETOOTH_SCAN permission.");
             permissionsAcquired = false;
-            requestPermissions(new String[]{Manifest.permission.BLUETOOTH_SCAN}, 113);
+            requestPermission(Manifest.permission.BLUETOOTH_SCAN);
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH_CONNECT)
@@ -266,12 +268,17 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         ) {
             Log.d(TAG, "No BLUETOOTH_CONNECT permission.");
             permissionsAcquired = false;
-            requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 113);
+            requestPermission(Manifest.permission.BLUETOOTH_CONNECT);
         }
 
         return permissionsAcquired;
     }
 
+    private void requestPermission(String permission) {
+        ActivityCompat.requestPermissions(this.getActivity(),
+                new String[]{permission},
+                requestCode);
+    }
     private void showNoPermissionsMessagefragment() {
         NavHostFragment navHostFragment =
                 (NavHostFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
