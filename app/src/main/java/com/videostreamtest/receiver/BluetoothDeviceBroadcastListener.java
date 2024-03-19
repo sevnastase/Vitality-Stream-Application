@@ -14,7 +14,7 @@ public class BluetoothDeviceBroadcastListener extends BroadcastReceiver {
         Log.d(TAG, intent.getAction());
         final PendingResult pendingResult = goAsync();
         final Task asyncTask = new Task(pendingResult, intent);
-        asyncTask.execute();
+        asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private static class Task extends AsyncTask<String, Integer, String> {
