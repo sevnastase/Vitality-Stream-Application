@@ -745,5 +745,34 @@ public class PraxSpinStatusBarFragment extends Fragment {
         // Create and show the AlertDialog
         AlertDialog dialog = builder.create();
         dialog.show();
+
+        builder.setPositiveButton("Pause", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // Handle Pause action
+                pauseBike();
+                Log.d(TAG, "Pause selected.");
+            }
+        });
+
+        builder.setNegativeButton("Stop", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // Handle Stop action
+                shutdownBike();
+                Log.d(TAG, "Stop selected.");
+            }
+        });
+
+        private void pauseBike()
+        {
+            //TODO: steps to take to pause bike
+        }
+
+        private void shutdownBike()
+        {
+            //TODO: steps to take to shutdown bike
+        }
+
     }
 }
