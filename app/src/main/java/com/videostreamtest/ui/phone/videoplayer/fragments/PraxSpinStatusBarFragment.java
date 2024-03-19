@@ -64,7 +64,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class PraxSpinStatusBarFragment extends Fragment {
+public class PraxSpinStatusBarFragment extends Fragment implements BluetoothHelper.BluetoothDeviceListener {
 
     private BluetoothHelper bluetoothHelper;
     private static final String TAG = PraxSpinStatusBarFragment.class.getSimpleName();
@@ -794,18 +794,22 @@ public class PraxSpinStatusBarFragment extends Fragment {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        // Forward the permission results to BluetoothHelper
-        bluetoothHelper.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
     public void onDeviceFound(BluetoothDevice device) {
         // Handle a found Bluetooth device
     }
 
+    @Override
     public void onDevicePaired(BluetoothDevice device) {
         // Handle a paired Bluetooth device
+    }
+
+    // ... other methods ...
+
+    // Make sure to override the onRequestPermissionsResult to forward the results
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        bluetoothHelper.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
     
 }
