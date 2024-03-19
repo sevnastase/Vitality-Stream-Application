@@ -1,5 +1,12 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Service;
@@ -764,15 +771,17 @@ public class PraxSpinStatusBarFragment extends Fragment {
             }
         });
 
-        private void pauseBike()
-        {
-            //TODO: steps to take to pause bike
-        }
-
-        private void shutdownBike()
-        {
-            //TODO: steps to take to shutdown bike
-        }
-
     }
+
+    private void pauseBike()
+    {
+        //TODO: steps to take to pause bike
+    }
+
+    private void shutdownBike()
+    {
+        //TODO: steps to take to shutdown bike
+    }
+
+    
 }
