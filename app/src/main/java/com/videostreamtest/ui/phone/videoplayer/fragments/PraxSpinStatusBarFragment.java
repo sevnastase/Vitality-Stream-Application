@@ -803,9 +803,6 @@ public class PraxSpinStatusBarFragment extends Fragment implements BluetoothHelp
         // Handle a paired Bluetooth device
     }
 
-    // ... other methods ...
-
-    // Make sure to override the onRequestPermissionsResult to forward the results
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
