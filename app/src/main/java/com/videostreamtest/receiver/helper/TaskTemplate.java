@@ -5,11 +5,11 @@ import android.content.Intent;
 import android.os.Handler;
 
 public abstract class TaskTemplate implements Runnable {
-    private final BroadcastReceiver.PendingResult pendingResult;
-    private final Intent intent;
-    private final Handler handler;
+    protected final BroadcastReceiver.PendingResult pendingResult;
+    protected final Intent intent;
+    protected final Handler handler;
 
-    private TaskTemplate(BroadcastReceiver.PendingResult pendingResult, Intent intent, Handler handler) {
+    protected TaskTemplate(BroadcastReceiver.PendingResult pendingResult, Intent intent, Handler handler) {
         this.pendingResult = pendingResult;
         this.intent = intent;
         this.handler = handler;
