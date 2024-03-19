@@ -132,7 +132,8 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
         connectButton.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                Log.d(TAG, "Selected BleDeviceInfo: "+getAdapterPosition()+" hasFocus: "+hasFocus);
+                Log.d(TAG, "Selected BleDeviceInfo: "+getBindingAdapterPosition()+
+                        " hasFocus: "+hasFocus);
                 itemView.setSelected(true);
                 if (hasFocus) {
                     drawSelectionBorder();
