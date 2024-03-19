@@ -4,9 +4,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.videostreamtest.constants.CadenceSensorConstants;
+import com.videostreamtest.receiver.helper.TaskTemplate;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
@@ -17,22 +20,20 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         final PendingResult pendingResult = goAsync();
-        final Task asyncTask = new Task(pendingResult, intent);
-        asyncTask.execute();
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        CadenceTask task = new CadenceTask(pendingResult, intent, mainHandler);
+        Thread thread = new Thread(task);
+
+        thread.start();
     }
 
-    private static class Task extends AsyncTask<String, Integer, String> {
-
-        private final PendingResult pendingResult;
-        private final Intent intent;
-
-        private Task(PendingResult pendingResult, Intent intent) {
-            this.pendingResult = pendingResult;
-            this.intent = intent;
+    private static class CadenceTask extends TaskTemplate {
+        private CadenceTask(PendingResult pendingResult, Intent intent, Handler handler) {
+            super(pendingResult, intent, handler);
         }
 
         @Override
-        protected String doInBackground(String... strings) {
+        public void run() {
             int rpmReceived = intent.getIntExtra(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, 0);
 
             Log.d(TAG, "Action: " + intent.getAction() + "\n");
@@ -63,16 +64,15 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
                 VideoplayerExoActivity.getInstance().updateVideoPlayerParams(rpmReceived);
             }
 
+            String result = intent.getAction();
 
-            return intent.getAction();
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            // Must call finish() so the BroadcastReceiver can be recycled.
-            pendingResult.finish();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    // Must call finish() so the BroadcastReceiver can be recycled.
+                    pendingResult.finish();
+                }
+            });
         }
     }
-
 }
