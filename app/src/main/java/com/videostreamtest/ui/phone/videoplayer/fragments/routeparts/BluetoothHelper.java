@@ -86,6 +86,4 @@ public class BluetoothHelper {
         }
     };
 
-    // ... other methods and classes ...
-
 }

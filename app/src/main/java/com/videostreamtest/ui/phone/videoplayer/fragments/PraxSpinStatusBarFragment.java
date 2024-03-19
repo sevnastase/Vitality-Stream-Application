@@ -51,6 +51,7 @@ import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.videoplayer.MQTTService;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
+import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.BluetoothHelper;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsViewHolder;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
@@ -64,6 +65,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class PraxSpinStatusBarFragment extends Fragment {
+
+    private BluetoothHelper bluetoothHelper;
     private static final String TAG = PraxSpinStatusBarFragment.class.getSimpleName();
     private VideoPlayerViewModel videoPlayerViewModel;
     private RoutePartsAdapter routePartsAdapter;
@@ -783,5 +786,26 @@ public class PraxSpinStatusBarFragment extends Fragment {
         //TODO: steps to take to shutdown bike
     }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Initialize the BluetoothHelper with the fragment's context and the listener implementation
+        bluetoothHelper = new BluetoothHelper(getActivity(), this);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // Forward the permission results to BluetoothHelper
+        bluetoothHelper.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    public void onDeviceFound(BluetoothDevice device) {
+        // Handle a found Bluetooth device
+    }
+
+    public void onDevicePaired(BluetoothDevice device) {
+        // Handle a paired Bluetooth device
+    }
     
 }
