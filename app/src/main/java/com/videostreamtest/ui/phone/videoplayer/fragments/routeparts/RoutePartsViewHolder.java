@@ -243,7 +243,7 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
         moviePartCoverImage.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                Log.d(TAG, "Selected MoviePart: "+getAdapterPosition()+" hasFocus: "+hasFocus);
+                Log.d(TAG, "Selected MoviePart: "+getAbsoluteAdapterPosition()+" hasFocus: "+hasFocus);
                 itemView.setSelected(true);
                 if (hasFocus) {
                     drawSelectionBorder();
