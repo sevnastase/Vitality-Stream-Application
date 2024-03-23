@@ -34,6 +34,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -802,11 +803,4 @@ public class PraxSpinStatusBarFragment extends Fragment implements BluetoothHelp
     public void onDevicePaired(BluetoothDevice device) {
         // Handle a paired Bluetooth device
     }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        bluetoothHelper.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-    
 }
