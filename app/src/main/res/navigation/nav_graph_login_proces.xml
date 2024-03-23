@@ -42,7 +42,7 @@
     </fragment>
     <fragment
         android:id="@+id/storagePermissionFragment"
-        android:name="com.videostreamtest.ui.phone.login.fragments.StoragePermissionFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.permissions.StoragePermissionFragment"
         android:label="StoragePermissionFragment" >
         <action
             android:id="@+id/action_storagePermissionFragment_to_locationPermissionFragment"
@@ -50,7 +50,7 @@
     </fragment>
     <fragment
         android:id="@+id/locationPermissionFragment"
-        android:name="com.videostreamtest.ui.phone.login.fragments.LocationPermissionFragment"
+        android:name="com.videostreamtest.ui.phone.login.fragments.permissions.LocationPermissionFragment"
         android:label="LocationPermissionFragment" >
         <action
             android:id="@+id/action_locationPermissionFragment_to_downloadSoundFragment"
