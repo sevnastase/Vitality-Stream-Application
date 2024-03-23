@@ -1,5 +1,12 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Service;
@@ -44,6 +51,7 @@ import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.videoplayer.MQTTService;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
+import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.BluetoothHelper;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsViewHolder;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
@@ -56,7 +64,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class PraxSpinStatusBarFragment extends Fragment {
+public class PraxSpinStatusBarFragment extends Fragment implements BluetoothHelper.BluetoothDeviceListener {
+
+    private BluetoothHelper bluetoothHelper;
     private static final String TAG = PraxSpinStatusBarFragment.class.getSimpleName();
     private VideoPlayerViewModel videoPlayerViewModel;
     private RoutePartsAdapter routePartsAdapter;
@@ -745,5 +755,58 @@ public class PraxSpinStatusBarFragment extends Fragment {
         // Create and show the AlertDialog
         AlertDialog dialog = builder.create();
         dialog.show();
+
+        builder.setPositiveButton("Pause", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // Handle Pause action
+                pauseBike();
+                Log.d(TAG, "Pause selected.");
+            }
+        });
+
+        builder.setNegativeButton("Stop", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // Handle Stop action
+                shutdownBike();
+                Log.d(TAG, "Stop selected.");
+            }
+        });
+
     }
+
+    private void pauseBike()
+    {
+        //TODO: steps to take to pause bike
+    }
+
+    private void shutdownBike()
+    {
+        //TODO: steps to take to shutdown bike
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Initialize the BluetoothHelper with the fragment's context and the listener implementation
+        bluetoothHelper = new BluetoothHelper(getActivity(), this);
+    }
+
+    @Override
+    public void onDeviceFound(BluetoothDevice device) {
+        // Handle a found Bluetooth device
+    }
+
+    @Override
+    public void onDevicePaired(BluetoothDevice device) {
+        // Handle a paired Bluetooth device
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        bluetoothHelper.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+    
 }
