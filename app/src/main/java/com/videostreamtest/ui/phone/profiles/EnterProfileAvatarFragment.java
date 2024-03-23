@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.Data;
@@ -174,7 +175,7 @@ public class EnterProfileAvatarFragment extends Fragment {
         avatarFemaleView.setAlpha(alphaDefaultValue);
         avatarMaleView.setSelected(false);
         avatarFemaleView.setSelected(false);
-        final Drawable border = getResources().getDrawable(R.drawable.imagebutton_blue_border);
+        final Drawable border = ContextCompat.getDrawable(getActivity(), R.drawable.imagebutton_blue_border);
         selectedImage.setBackground(border);
         selectedImage.setAlpha(1.0f);
         selectedImage.setSelected(true);
