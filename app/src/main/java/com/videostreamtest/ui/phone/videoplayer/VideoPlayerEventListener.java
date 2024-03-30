@@ -13,19 +13,8 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 public class VideoPlayerEventListener implements Player.Listener {
 
     @Override
-    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-
-    }
-
-    @Override
-    public void onLoadingChanged(boolean isLoading) {
-
-    }
-
-    @Override
-    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+    public void onPlayWhenReadyChanged(boolean playWhenReady, int playbackState) {
         switch (playbackState) {
-
             case Player.STATE_BUFFERING:
                 break;
             case Player.STATE_ENDED:
@@ -44,31 +33,5 @@ public class VideoPlayerEventListener implements Player.Listener {
             default:
                 break;
         }
-
-    }
-
-    @Override
-    public void onRepeatModeChanged(int repeatMode) {
-
-    }
-
-    @Override
-    public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
-
-    }
-
-    @Override
-    public void onPositionDiscontinuity(int reason) {
-
-    }
-
-    @Override
-    public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-
-    }
-
-    @Override
-    public void onSeekProcessed() {
-
     }
 }
