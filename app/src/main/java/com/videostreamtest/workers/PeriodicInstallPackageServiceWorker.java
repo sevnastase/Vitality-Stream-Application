@@ -101,20 +101,18 @@ public class PeriodicInstallPackageServiceWorker extends Worker implements Progr
                     }
 
                     //REQUEST TO INSTALL UPDATE TO USER
+                    File file = new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(),
+                            updateFileName).toString());
                     Uri contentUri = FileProvider.getUriForFile(
                             getApplicationContext(),
                             BuildConfig.APPLICATION_ID + ".provider",
-                            new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()));
+                            file);
 
-                    Intent autoUpdatePackage = new Intent(Intent.ACTION_VIEW);
-                    autoUpdatePackage.setAction(Intent.ACTION_INSTALL_PACKAGE);
-                    autoUpdatePackage.putExtra(Intent.EXTRA_RETURN_RESULT, true);
-                    autoUpdatePackage.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true);
-                    autoUpdatePackage.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    autoUpdatePackage.setDataAndType(
-                            contentUri,
-                            "application/vnd.android.package-archive");
-                    getApplicationContext().startActivity(autoUpdatePackage);
+                    Intent promptInstallPackage = new Intent(Intent.ACTION_VIEW);
+                    promptInstallPackage.setDataAndType(contentUri, "application/vnd.android.package-archive");
+                    promptInstallPackage.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    promptInstallPackage.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    getApplicationContext().startActivity(promptInstallPackage);
                 }
             }
         }
