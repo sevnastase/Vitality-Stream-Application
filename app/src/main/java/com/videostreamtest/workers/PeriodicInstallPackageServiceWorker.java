@@ -41,7 +41,6 @@ public class PeriodicInstallPackageServiceWorker extends Worker implements Progr
 
     private static final String UPDATE_INFO_FILE = "/output-metadata.json";
     private static final String UPDATE_URL = PRAXCLOUD_MEDIA_URL+"/app";
-
     private DatabaseRestService databaseRestService = new DatabaseRestService();
 
     private File selectedVolume;
@@ -92,11 +91,12 @@ public class PeriodicInstallPackageServiceWorker extends Worker implements Progr
                     Log.e(TAG, e.getLocalizedMessage());
                 }
 
-                if (ConfigurationHelper.getVersionNumberCode(getApplicationContext()) >= ConfigurationHelper.getLocalUpdatePackageInfo(getApplicationContext()).versionCode) {
+                if (ConfigurationHelper.getVersionNumberCode(getApplicationContext()) >=
+                        ConfigurationHelper.getLocalUpdatePackageInfo(getApplicationContext()).getLongVersionCode()) {
                     //DELETE LOCAL UPDATE
                     new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()).delete();
                 } else {
-                    if (apikey != null && apikey != ""){
+                    if (apikey != null && ! apikey.equals("")) {
                         databaseRestService.writeLog(apikey, "UPDATE FOUND AND REQUESTING INSTALLATION", "DEBUG", "");
                     }
 
