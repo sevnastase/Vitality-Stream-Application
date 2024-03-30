@@ -955,10 +955,11 @@ public class VideoplayerActivity extends AppCompatActivity {
             if (mediaPlayer.getMedia() != null
                     && (backgroundSoundPlayer != null)
             ) {
-                Log.d(TAG, "AudioTrack uri bgsPlayer: "+backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri.toString());
+                Log.d(TAG, "AudioTrack uri bgsPlayer: "+backgroundSoundPlayer.getCurrentMediaItem().localConfiguration.uri.toString());
                 Log.d(TAG, "AudioTrack uri should be: "+backgroundSoundurl);
                 Log.d(TAG, "AudioTrack localFileName: "+localFileName);
-                if (backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri.toString().contains(localFileName)) {
+                // TODO: check if localConfiguration was a good replacement for playbackProperties
+                if (backgroundSoundPlayer.getCurrentMediaItem().localConfiguration.uri.toString().contains(localFileName)) {
                     if (!backgroundSoundPlayer.isPlaying()) {
                         backgroundSoundPlayer.play();
                     }
@@ -1221,7 +1222,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         mediaItem = MediaItem.fromUri(uri);
 
         for (final MediaItem bgSound: backgroundMediaItems) {
-            if (    getSoundFileName(bgSound.playbackProperties.uri).toLowerCase()
+            if (    getSoundFileName(bgSound.localConfiguration.uri).toLowerCase()
                     .equals(
                         getSoundFileName(Uri.parse(backgroundSound.getSoundUrl().toLowerCase()))
                     )
@@ -1239,7 +1240,7 @@ public class VideoplayerActivity extends AppCompatActivity {
             }
             backgroundSoundPlayer.prepare();
 
-            Log.d(TAG, "Add (AUDIO) to SOUND VLC Player: "+backgroundMediaItems.get(0).playbackProperties.uri.toString());
+            Log.d(TAG, "Add (AUDIO) to SOUND VLC Player: "+backgroundMediaItems.get(0).localConfiguration.uri.toString());
 //            mediaPlayer.addSlave(IMedia.Slave.Type.Audio, backgroundMediaItems.get(0).playbackProperties.uri, false );
 
         }
@@ -1322,7 +1323,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         boolean videoVolume = true;
         if (backgroundSoundTriggers.size()>0) {
             backgroundPlayer = backgroundSoundPlayer != null && backgroundSoundPlayer.isPlaying();
-            backgroundItemLoaded = backgroundSoundPlayer.getCurrentMediaItem() != null && !backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri.toString().isEmpty();
+            backgroundItemLoaded = backgroundSoundPlayer.getCurrentMediaItem() != null &&
+                    !backgroundSoundPlayer.getCurrentMediaItem().localConfiguration.uri.toString().isEmpty();
             videoVolume = true;
         }
         boolean backgroundSoundPlayerVolume = backgroundSoundPlayer.getVolume()>0;
