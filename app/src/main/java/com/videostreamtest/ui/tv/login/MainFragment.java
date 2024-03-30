@@ -10,6 +10,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.leanback.app.BackgroundManager;
 import androidx.leanback.app.BrowseSupportFragment;
 import androidx.loader.app.LoaderManager;
@@ -62,8 +63,10 @@ public class MainFragment extends BrowseSupportFragment implements
     private void prepareBackgroundManager() {
         backgroundManager = BackgroundManager.getInstance(getActivity());
         backgroundManager.attach(getActivity().getWindow());
-        Drawable defaultBackground = getResources()
-                .getDrawable(R.drawable.default_tv_background);
+        Drawable defaultBackground = ResourcesCompat.getDrawable(getResources(),
+                R.drawable.default_tv_background,
+                null);
+
         DisplayMetrics metrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
     }
