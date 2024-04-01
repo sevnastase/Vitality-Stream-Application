@@ -2,12 +2,7 @@ package com.videostreamtest.ui.phone.videoplayer;
 
 import android.util.Log;
 
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 
 @Deprecated
 public class VideoPlayerEventListener implements Player.Listener {

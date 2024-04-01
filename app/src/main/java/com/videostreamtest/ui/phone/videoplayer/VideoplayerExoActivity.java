@@ -27,23 +27,11 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-
-//import com.google.android.exoplayer2.DefaultLoadControl;
-//import com.google.android.exoplayer2.ExoPlayer;
-//import com.google.android.exoplayer2.MediaItem;
-//import com.google.android.exoplayer2.PlaybackParameters;
-//import com.google.android.exoplayer2.Player;
-//import com.google.android.exoplayer2.SimpleExoPlayer;
-//import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
-//import com.google.android.exoplayer2.source.MediaSourceFactory;
-//import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-//import com.google.android.exoplayer2.ui.PlayerView;
-
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
-import androidx.media3.ui.PlayerView;
 import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.ui.PlayerView;
 
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
@@ -68,11 +56,6 @@ import com.videostreamtest.ui.phone.videoplayer.fragments.PraxSpinStatusBarFragm
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.RpmVectorLookupTable;
-import com.videostreamtest.utils.VideoLanLib;
-
-import org.videolan.libvlc.Media;
-import org.videolan.libvlc.MediaPlayer;
-import org.videolan.libvlc.util.VLCVideoLayout;
 
 import java.util.ArrayList;
 import java.util.List;

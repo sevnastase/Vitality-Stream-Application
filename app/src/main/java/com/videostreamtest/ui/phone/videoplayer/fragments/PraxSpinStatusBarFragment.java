@@ -1,26 +1,16 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Service;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
@@ -34,7 +24,6 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -42,10 +31,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.Update;
 
 import com.videostreamtest.R;
-import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
@@ -56,14 +43,8 @@ import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.BluetoothHe
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsViewHolder;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
-import com.videostreamtest.utils.DistanceLookupTable;
-
-import org.checkerframework.checker.units.qual.A;
-import org.json.JSONException;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class PraxSpinStatusBarFragment extends Fragment implements BluetoothHelper.BluetoothDeviceListener {
 
