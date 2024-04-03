@@ -1,4 +1,4 @@
-package com.videostreamtest.receiver.helper;
+package com.videostreamtest.receiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Intent;
