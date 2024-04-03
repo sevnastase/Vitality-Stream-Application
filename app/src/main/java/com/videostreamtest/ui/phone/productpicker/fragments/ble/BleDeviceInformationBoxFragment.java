@@ -1,5 +1,7 @@
 package com.videostreamtest.ui.phone.productpicker.fragments.ble;
 
+import static android.content.Context.BLUETOOTH_SERVICE;
+
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -40,10 +42,9 @@ import com.videostreamtest.service.ble.callback.BleScanCallback;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.utils.BlePermission;
 
 import org.jetbrains.annotations.NotNull;
-
-import static android.content.Context.BLUETOOTH_SERVICE;
 
 public class BleDeviceInformationBoxFragment extends Fragment {
     private static final String TAG = BleDeviceInformationBoxFragment.class.getSimpleName();
@@ -132,9 +133,9 @@ public class BleDeviceInformationBoxFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (scanner != null && bleScanCallback != null) {
-            if (ActivityCompat.checkSelfPermission(this.getActivity(),
-                    Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                // requestPermission(Manifest.permission.BLUETOOTH_SCAN);
+            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_SCAN)
+                    != PackageManager.PERMISSION_GRANTED) {
+                BlePermission.ask(getActivity(), Manifest.permission.BLUETOOTH_SCAN);
             }
             scanner.startScan(bleScanCallback);
             Log.d(TAG, "BLE Scanning stopped.");
@@ -145,9 +146,9 @@ public class BleDeviceInformationBoxFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         if (scanner != null && bleScanCallback != null) {
-            if (ActivityCompat.checkSelfPermission(this.getActivity(),
-                    Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                // requestPermission(Manifest.permission.BLUETOOTH_SCAN);
+            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_SCAN)
+                    != PackageManager.PERMISSION_GRANTED) {
+                BlePermission.ask(getActivity(), Manifest.permission.BLUETOOTH_SCAN);
             }
             scanner.stopScan(bleScanCallback);
             Log.d(TAG, "BLE Scanning stopped.");
@@ -161,21 +162,21 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         LinearLayout linearLayoutConnectionDeviceSummary = getView().findViewById(R.id.overlay_connection_info_box);
 
         if (bluetoothAdapter != null) {
-            if (ActivityCompat.checkSelfPermission(this.getActivity(),
-                    Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                // requestPermission(Manifest.permission.BLUETOOTH_SCAN);
+            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_CONNECT)
+                    != PackageManager.PERMISSION_GRANTED) {
+                BlePermission.ask(getActivity(), Manifest.permission.BLUETOOTH_CONNECT);
             }
             bluetoothAdapter.enable();
             linearLayoutConnectionDeviceSummary.setVisibility(View.VISIBLE);
 
             productViewModel.getBluetoothDefaultDevices().observe(getViewLifecycleOwner(), bluetoothDefaultDevices -> {
-                if (bluetoothDefaultDevices != null && bluetoothDefaultDevices.size()>0) {
+                if (bluetoothDefaultDevices != null && bluetoothDefaultDevices.size() > 0) {
                     LinearLayout searchSensorLayout = getView().findViewById(R.id.overlay_messagebox_connection_info_summary);
                     LinearLayout sensorStatusView = getView().findViewById(R.id.overlay_connection_info_box);
 
                     if (!bluetoothDefaultDevices.get(0).getBleAddress().equals("NONE")
                             && !bluetoothDefaultDevices.get(0).getBleAddress().equals("") //&& !deviceAddress.equals("NONE")
-                        ) {
+                    ) {
                         searchSensorLayout.setVisibility(View.GONE);
                         sensorStatusView.setVisibility(View.VISIBLE);
                     } else {
@@ -190,11 +191,11 @@ public class BleDeviceInformationBoxFragment extends Fragment {
                         startScanForDevices(bluetoothManager.getAdapter());
                     }
 
-                    BluetoothDefaultDevice bluetoothDefaultDevice =  bluetoothDefaultDevices.get(0);
+                    BluetoothDefaultDevice bluetoothDefaultDevice = bluetoothDefaultDevices.get(0);
                     if (bluetoothDefaultDevice.getBleName() != null && !bluetoothDefaultDevice.getBleName().isEmpty()
-                        && !bluetoothDefaultDevices.get(0).getBleAddress().equals("NONE")) {
+                            && !bluetoothDefaultDevices.get(0).getBleAddress().equals("NONE")) {
                         deviceNameLabel.setText(bluetoothDefaultDevice.getBleName());
-                        if (!bluetoothDefaultDevice.getBleBatterylevel().isEmpty() && bluetoothDefaultDevice.getBleBatterylevel()!="") {
+                        if (!bluetoothDefaultDevice.getBleBatterylevel().isEmpty() && bluetoothDefaultDevice.getBleBatterylevel() != "") {
                             deviceBatterylevelLabel.setText(bluetoothDefaultDevice.getBleBatterylevel() + "%");
                         }
                         if (bluetoothDefaultDevice.getBleSignalStrength() != null && !bluetoothDefaultDevice.getBleSignalStrength().isEmpty()) {
@@ -242,12 +243,12 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         ) {
             Log.d(TAG, "No ACCESS_FINE_LOCATION permission then ASK, otherwise no popup is shown.");
 //            permissionsAcquired = false;
-            requestPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 113);
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH_ADMIN)
                 != PackageManager.PERMISSION_GRANTED
-                    && Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
+                && Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
             Log.d(TAG, "No BLUETOOTH_ADMIN permission.");
             permissionsAcquired = false;
         }
@@ -257,7 +258,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
                 && Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
             Log.d(TAG, "No BLUETOOTH permission.");
             permissionsAcquired = false;
-            requestPermission(Manifest.permission.BLUETOOTH);
+            requestPermissions(new String[]{Manifest.permission.BLUETOOTH}, 113);
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH_SCAN)
@@ -265,7 +266,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         ) {
             Log.d(TAG, "No BLUETOOTH_SCAN permission.");
             permissionsAcquired = false;
-            requestPermission(Manifest.permission.BLUETOOTH_SCAN);
+            requestPermissions(new String[]{Manifest.permission.BLUETOOTH_SCAN}, 113);
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH_CONNECT)
@@ -273,17 +274,12 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         ) {
             Log.d(TAG, "No BLUETOOTH_CONNECT permission.");
             permissionsAcquired = false;
-            requestPermission(Manifest.permission.BLUETOOTH_CONNECT);
+            requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 113);
         }
 
         return permissionsAcquired;
     }
 
-    private void requestPermission(String permission) {
-        ActivityCompat.requestPermissions(this.getActivity(),
-                new String[]{permission},
-                requestCode);
-    }
     private void showNoPermissionsMessagefragment() {
         NavHostFragment navHostFragment =
                 (NavHostFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
@@ -313,9 +309,9 @@ public class BleDeviceInformationBoxFragment extends Fragment {
             final BleDeviceInformationAdapter bleDeviceInformationAdapter = new BleDeviceInformationAdapter(productViewModel);
             bleScanCallback = new BleScanCallback(bleDeviceInformationAdapter);
             if (scanner != null) {
-                if (ActivityCompat.checkSelfPermission(this.getActivity(),
-                        Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                    // requestPermission(Manifest.permission.BLUETOOTH_SCAN);
+                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_SCAN)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    BlePermission.ask(getActivity(), Manifest.permission.BLUETOOTH_SCAN);
                 }
                 scanner.startScan(bleScanCallback);
             }
