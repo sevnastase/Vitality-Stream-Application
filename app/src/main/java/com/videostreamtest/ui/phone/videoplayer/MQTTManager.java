@@ -1,10 +1,8 @@
 package com.videostreamtest.ui.phone.videoplayer;
+
 import static com.videostreamtest.service.database.DatabaseRestService.TAG;
 
-import android.content.Intent;
 import android.util.Log;
-
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -85,7 +83,7 @@ public class MQTTManager {
             @Override
             public void connectionLost(Throwable cause) {
                 // Called when the client lost the connection to the broker
-                cause.printStackTrace();
+                Log.d(TAG, String.format("Connection lost: " + cause.toString()));
             }
 
             @Override
@@ -204,7 +202,7 @@ public class MQTTManager {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.d(TAG, String.format("getMotoLifeData failed: " + e.toString()));
         }
 
         return messageData;
@@ -253,7 +251,7 @@ public class MQTTManager {
                 messageData.add(end);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.d(TAG, String.format("Value check failed: " + e.toString()));
         }
     }
 

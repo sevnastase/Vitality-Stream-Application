@@ -148,7 +148,7 @@ public class InstallPackageServiceWorker extends Worker implements ProgressCallB
                 }
                 session.fsync(out);
             } catch (IOException e) {
-                e.printStackTrace();
+
             }
 
             Intent intent = new Intent(getApplicationContext(), InstallPackageServiceWorker.class);
@@ -156,7 +156,7 @@ public class InstallPackageServiceWorker extends Worker implements ProgressCallB
                     0, intent, PendingIntent.FLAG_IMMUTABLE);
             session.commit(pendingIntent.getIntentSender());
         } catch (IOException e) {
-            Log.e(TAG, "Error installing package", e);
+            Log.e(TAG, String.format("Installation failed: " + e.toString()));
         }
     }
 

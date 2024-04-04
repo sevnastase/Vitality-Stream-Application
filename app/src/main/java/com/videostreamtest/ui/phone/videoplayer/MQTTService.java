@@ -2,8 +2,6 @@ package com.videostreamtest.ui.phone.videoplayer;
 
 import static com.videostreamtest.service.database.DatabaseRestService.TAG;
 
-import static java.lang.Thread.sleep;
-
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
@@ -13,10 +11,6 @@ import android.util.Log;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.json.JSONException;
-
-import java.util.ArrayList;
-import java.util.Collections;
 
 public class MQTTService extends Service {
     MQTTManager mqttManager;
@@ -57,7 +51,7 @@ public class MQTTService extends Service {
             mqttManager.subscribe("Chinesport/Motolife/240000006", 1);
             Log.d(TAG, "Subscribed to ../240000006");
         } catch (MqttException e) {
-            e.printStackTrace();
+            Log.d(TAG, String.format("MQTT connection failed: " + e.toString()));
         }
 
 
@@ -72,7 +66,7 @@ public class MQTTService extends Service {
             mqttManager.disconnect();
             Log.d(TAG, "MQTT Manager disconnected");
         } catch (MqttException e) {
-            e.printStackTrace();
+            Log.d(TAG, String.format("Disconnecting MQTT manager failed: " + e.toString()));
         }
     }
 
