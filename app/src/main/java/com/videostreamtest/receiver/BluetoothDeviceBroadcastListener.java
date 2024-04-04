@@ -7,8 +7,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import com.videostreamtest.receiver.helper.TaskTemplate;
-
 public class BluetoothDeviceBroadcastListener extends BroadcastReceiver {
     private static final String TAG = BluetoothDeviceBroadcastListener.class.getSimpleName();
 
