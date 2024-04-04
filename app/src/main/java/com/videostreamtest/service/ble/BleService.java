@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -31,22 +30,21 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.os.ParcelUuid;
 import android.os.Process;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
 
-import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.constants.CadenceSensorConstants;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.BleHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
+import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import java.lang.reflect.Method;
@@ -55,6 +53,8 @@ import java.util.List;
 
 public class BleService extends Service {
     private static final String TAG = BleService.class.getSimpleName();
+
+    private final String blePermNeeded = "Bluetooth permissions are needed to use this application";
 
     private Binder binder = new LocalBinder();
 
@@ -148,6 +148,11 @@ public class BleService extends Service {
                 refreshDeviceCache(bluetoothGatt);
                 //Disconnect
                 if (bluetoothDeviceAddress.equals("NONE") || bluetoothDeviceAddress.equals("")) {
+                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                        Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
+                        openMainActivity();
+                        return;
+                    }
                     bluetoothGatt.close();
                     stopSelf(msg.arg1);
                 } else {
@@ -181,6 +186,12 @@ public class BleService extends Service {
                 @Override
                 public void onConnectionStateChange(BluetoothGatt gatt, int status,
                                                     int newState) {
+                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                        Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
+                        openMainActivity();
+                        return;
+                    }
+
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
                         connectionState = STATE_CONNECTED;
                         Log.i(TAG, "Connected to GATT server.");
@@ -205,18 +216,23 @@ public class BleService extends Service {
                     Log.d(TAG, "Services Discovered: " + gatt.getServices().size());
 
                     String serviceStatus = "ACTIVE";
-                    for(BluetoothGattService bluetoothGattService : gatt.getServices()) {
-                        Log.d(TAG, "Service Type: "+bluetoothGattService.getType() + " Service UUID: "+bluetoothGattService.getUuid());
+                    for (BluetoothGattService bluetoothGattService : gatt.getServices()) {
+                        Log.d(TAG, "Service Type: " + bluetoothGattService.getType() + " Service UUID: " + bluetoothGattService.getUuid());
 
                         if (CSCProfile.BATTERY_SERVICE.equals(bluetoothGattService.getUuid())) {
                             mRegisteredServices.add(bluetoothGattService);
-                            Log.d(TAG, "BATTERY SERVICE Charas: "+bluetoothGattService.getCharacteristics().size());
+                            Log.d(TAG, "BATTERY SERVICE Charas: " + bluetoothGattService.getCharacteristics().size());
                             mbatteryCharacteristic = bluetoothGattService.getCharacteristic(CSCProfile.BATTERY_MEASUREMENT);
                         }
 
                         if (CSCProfile.RSC_SERVICE.equals(bluetoothGattService.getUuid())) {
                             mRegisteredServices.add(bluetoothGattService);
-                            Log.d(TAG, "RSC SERVICE Charas: "+bluetoothGattService.getCharacteristics().size());
+                            Log.d(TAG, "RSC SERVICE Charas: " + bluetoothGattService.getCharacteristics().size());
+                            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                                Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
+                                openMainActivity();
+                                return;
+                            }
                             gatt.setCharacteristicNotification(bluetoothGattService.getCharacteristic(CSCProfile.RSC_MEASUREMENT), true);
                             BluetoothGattDescriptor descriptor = bluetoothGattService.getCharacteristic(CSCProfile.RSC_MEASUREMENT).getDescriptor(CSCProfile.CLIENT_CONFIG);
                             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
@@ -225,7 +241,7 @@ public class BleService extends Service {
 
                         if (CSCProfile.CSC_SERVICE.equals(bluetoothGattService.getUuid())) {
                             mRegisteredServices.add(bluetoothGattService);
-                            Log.d(TAG, "CSC SERVICE Charas: "+bluetoothGattService.getCharacteristics().size());
+                            Log.d(TAG, "CSC SERVICE Charas: " + bluetoothGattService.getCharacteristics().size());
 
                             boolean activateCSC = gatt.setCharacteristicNotification(bluetoothGattService.getCharacteristic(CSCProfile.CSC_MEASUREMENT), true);
 
@@ -250,18 +266,19 @@ public class BleService extends Service {
                     if (status == BluetoothGatt.GATT_SUCCESS) {
 
                         if (characteristic.getUuid().equals(CSCProfile.BATTERY_MEASUREMENT)) {
-                            Log.d(TAG,"BATTERY_SERVICE: "+characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0));
+                            Log.d(TAG, "BATTERY_SERVICE: " + characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
                             List<BluetoothDefaultDevice> bluetoothDefaultDevices = PraxtourDatabase.getDatabase(getApplicationContext()).bluetoothDefaultDeviceDao().getRawBluetoothDefaultDevice(1);
-                            if (bluetoothDefaultDevices!= null && bluetoothDefaultDevices.size()>0) {
-                                bluetoothDefaultDevices.get(0).setBleBatterylevel(""+characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0));
+                            if (bluetoothDefaultDevices != null && bluetoothDefaultDevices.size() > 0) {
+                                bluetoothDefaultDevices.get(0).setBleBatterylevel("" + characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
                                 PraxtourDatabase.getDatabase(getApplicationContext()).bluetoothDefaultDeviceDao().insert(bluetoothDefaultDevices.get(0));
-                            };
+                            }
+                            ;
                         }
 
-                        Log.d(TAG, "READ SUCCES UUID: "+characteristic.getUuid()+" > "+characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8,0));
+                        Log.d(TAG, "READ SUCCES UUID: " + characteristic.getUuid() + " > " + characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0));
                         broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
                     } else {
-                        Log.e(TAG, "Status code: "+status);
+                        Log.e(TAG, "Status code: " + status);
                     }
                 }
 
@@ -269,10 +286,15 @@ public class BleService extends Service {
                 public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
                     Log.d(TAG, "Notification set on chars: " + characteristic.getUuid().toString());
 
+                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                        Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
+                        openMainActivity();
+                        return;
+                    }
                     Log.d(TAG, "Device Name: " + gatt.getDevice().getName());
                     Log.d(TAG, "Device Address: " + gatt.getDevice().getAddress());
 
-                    if (bluetoothDeviceAddress!= null && !bluetoothDeviceAddress.equals("") &&
+                    if (bluetoothDeviceAddress != null && !bluetoothDeviceAddress.equals("") &&
                             gatt.getDevice().getAddress().equals(bluetoothDeviceAddress)) {
                         Log.d(TAG, "Selected Device Triggered");
 
@@ -291,21 +313,21 @@ public class BleService extends Service {
                             final int cadence = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, offset);
                             offset += 1;
 
-                            Log.d(TAG, "instantaneousStrideLengthPresent: "+instantaneousStrideLengthPresent + " > totalDistancePresent: "+totalDistancePresent+" statusRunning > "+statusRunning+" Speed: "+speed+" cadence: "+cadence);
+                            Log.d(TAG, "instantaneousStrideLengthPresent: " + instantaneousStrideLengthPresent + " > totalDistancePresent: " + totalDistancePresent + " statusRunning > " + statusRunning + " Speed: " + speed + " cadence: " + cadence);
 
                             Integer strideLength = null;
                             if (instantaneousStrideLengthPresent) {
                                 strideLength = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset);
                                 offset += 2;
                             }
-                            Log.d(TAG, "strideLength: "+strideLength);
+                            Log.d(TAG, "strideLength: " + strideLength);
 
                             Float totalDistance = null;
                             if (totalDistancePresent) {
                                 totalDistance = characteristic.getFloatValue(BluetoothGattCharacteristic.FORMAT_UINT32, offset);
                                 // offset += 4;
                             }
-                            Log.d(TAG, "totalDistance: "+totalDistance);
+                            Log.d(TAG, "totalDistance: " + totalDistance);
                             updateCadenceMeasurementList(cadence);
                             broadcastData(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, getLastMeasuredCadenceValue());
                         }
@@ -343,13 +365,12 @@ public class BleService extends Service {
                                 if (lastCumCrankEventTime == 0) {
                                     lastCumCrankEventTime = cumulativeEventTime;
                                 } else {
-                                    if (lastCumCrankEventTime>cumulativeEventTime) {
+                                    if (lastCumCrankEventTime > cumulativeEventTime) {
                                         int maxValue = 65536;
                                         lastCrankEventTime = (maxValue - lastCumCrankEventTime) + cumulativeEventTime;
                                         Log.d(TAG, "Threshold overload!");
-                                        Log.d(TAG, "lastCumCrankEventTime {"+lastCumCrankEventTime+"?} > cumulativeEventTime {"+cumulativeEventTime+"}");
-                                    }
-                                    else {
+                                        Log.d(TAG, "lastCumCrankEventTime {" + lastCumCrankEventTime + "?} > cumulativeEventTime {" + cumulativeEventTime + "}");
+                                    } else {
                                         lastCrankEventTime = cumulativeEventTime - lastCumCrankEventTime;
                                     }
                                     lastCumCrankEventTime = cumulativeEventTime;
@@ -362,9 +383,9 @@ public class BleService extends Service {
                                     } else {
                                         lastCadence = 0;
                                     }
-                                    Log.d(TAG, "CADENCE: "+lastCadence);
-                                    Log.d(TAG, "cumulativeRotations: "+cumulativeRotations);
-                                    Log.d(TAG, "cumulativeEventTime: "+cumulativeEventTime);
+                                    Log.d(TAG, "CADENCE: " + lastCadence);
+                                    Log.d(TAG, "cumulativeRotations: " + cumulativeRotations);
+                                    Log.d(TAG, "cumulativeEventTime: " + cumulativeEventTime);
 
                                     updateCadenceMeasurementList(lastCadence);
                                     broadcastData(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, getLastMeasuredCadenceValue());
@@ -372,7 +393,7 @@ public class BleService extends Service {
                             }
                         }
                         gatt.readRemoteRssi();
-                        if (mbatteryCharacteristic !=null) {
+                        if (mbatteryCharacteristic != null) {
                             gatt.readCharacteristic(mbatteryCharacteristic);
                         }
                     } else {
@@ -382,18 +403,23 @@ public class BleService extends Service {
 
                 @Override
                 public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-                    SharedPreferences sharedPreferences = getSharedPreferences("app",MODE_PRIVATE);
+                    SharedPreferences sharedPreferences = getSharedPreferences("app", MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_CONNECTION_STRENGTH_KEY, BleHelper.getRssiStrengthIndicator(getApplicationContext(), rssi));
                     editor.commit();
 
                     List<BluetoothDefaultDevice> bluetoothDefaultDevices = PraxtourDatabase.getDatabase(getApplicationContext()).bluetoothDefaultDeviceDao().getRawBluetoothDefaultDevice(1);
-                    if (bluetoothDefaultDevices!= null && bluetoothDefaultDevices.size()>0) {
+                    if (bluetoothDefaultDevices != null && bluetoothDefaultDevices.size() > 0) {
                         bluetoothDefaultDevices.get(0).setBleSignalStrength(BleHelper.getRssiStrengthIndicator(getApplicationContext(), rssi));
                         PraxtourDatabase.getDatabase(getApplicationContext()).bluetoothDefaultDeviceDao().insert(bluetoothDefaultDevices.get(0));
                     }
                 }
             };
+
+    private void openMainActivity() {
+        Intent intent = new Intent(getApplicationContext(), ProductPickerActivity.class);
+        startActivity(intent);
+    }
 
     @Override
     public void onCreate() {
@@ -432,8 +458,13 @@ public class BleService extends Service {
         Log.d(TAG, "Service stopped/destroyed.");
         if (initialised) {
             // stop BLE
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
+                openMainActivity();
+                return;
+            }
             BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
-            if (bluetoothAdapter != null && bluetoothAdapter.isEnabled() && bluetoothGatt!=null) {
+            if (bluetoothAdapter != null && bluetoothAdapter.isEnabled() && bluetoothGatt != null) {
                 bluetoothGatt.disconnect();
             }
             if (scanner != null) {
@@ -454,6 +485,11 @@ public class BleService extends Service {
             Log.e(TAG, "Bluetooth LE isn't supported. This won't run");
             return false;
         }
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
+            openMainActivity();
+            return false;
+        }
         if (!bluetoothAdapter.isEnabled()) {
             Log.d(TAG, "Bluetooth is currently disabled...enabling");
             bluetoothAdapter.enable();
@@ -468,6 +504,12 @@ public class BleService extends Service {
             return;
         }
         scanner = bluetoothAdapter.getBluetoothLeScanner();
+
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
+            openMainActivity();
+            return;
+        }
 
         scanCallback = new ScanCallback() {
             @SuppressLint("MissingPermission")
