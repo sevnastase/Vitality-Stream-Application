@@ -243,7 +243,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         ) {
             Log.d(TAG, "No ACCESS_FINE_LOCATION permission then ASK, otherwise no popup is shown.");
 //            permissionsAcquired = false;
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 113);
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 113);
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH_ADMIN)
@@ -258,7 +258,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
                 && Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
             Log.d(TAG, "No BLUETOOTH permission.");
             permissionsAcquired = false;
-            requestPermissions(new String[]{Manifest.permission.BLUETOOTH}, 113);
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.BLUETOOTH}, 113);
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH_SCAN)
@@ -266,7 +266,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         ) {
             Log.d(TAG, "No BLUETOOTH_SCAN permission.");
             permissionsAcquired = false;
-            requestPermissions(new String[]{Manifest.permission.BLUETOOTH_SCAN}, 113);
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.BLUETOOTH_SCAN}, 113);
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH_CONNECT)
@@ -274,7 +274,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         ) {
             Log.d(TAG, "No BLUETOOTH_CONNECT permission.");
             permissionsAcquired = false;
-            requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 113);
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 113);
         }
 
         return permissionsAcquired;
