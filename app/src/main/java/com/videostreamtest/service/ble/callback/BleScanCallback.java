@@ -1,10 +1,16 @@
 package com.videostreamtest.service.ble.callback;
 
+import android.Manifest;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.ParcelUuid;
 import android.util.Log;
+import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
 
 import com.videostreamtest.data.model.BleDeviceInfo;
 import com.videostreamtest.service.ble.CSCProfile;
@@ -15,10 +21,15 @@ import java.util.List;
 public class BleScanCallback extends ScanCallback {
     private static final String TAG = BleScanCallback.class.getSimpleName();
 
+    private final String blePermNeeded = "Bluetooth permissions are needed to use this application";
+
+    private final Context context;
+
     private BleDeviceInformationAdapter bleDeviceInformationAdapter;
 
-    public BleScanCallback(BleDeviceInformationAdapter bleDeviceInformationAdapter) {
+    public BleScanCallback(BleDeviceInformationAdapter bleDeviceInformationAdapter, Context context) {
         this.bleDeviceInformationAdapter = bleDeviceInformationAdapter;
+        this.context = context;
     }
 
     @Override
@@ -28,12 +39,16 @@ public class BleScanCallback extends ScanCallback {
             return;
         }
 
-        if(result != null && result.getDevice()!=null && result.getDevice().getName()!=null) {
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(context, blePermNeeded, Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (result != null && result.getDevice() != null && result.getDevice().getName() != null) {
             Log.d(TAG, "ScanResult NAME:: " + result.getDevice().getName());
-            if (result.getScanRecord().getServiceUuids()!= null) {
+            if (result.getScanRecord().getServiceUuids() != null) {
                 Log.d(TAG, "ScanResult SIZE :: " + result.getScanRecord().getServiceUuids().size());
-                if (result.getScanRecord().getServiceUuids().size() > 0 ) {
-                    for (ParcelUuid parcelUuid: result.getScanRecord().getServiceUuids()) {
+                if (result.getScanRecord().getServiceUuids().size() > 0) {
+                    for (ParcelUuid parcelUuid : result.getScanRecord().getServiceUuids()) {
                         Log.d(TAG, parcelUuid.toString());
 
                         if (parcelUuid.getUuid().equals(CSCProfile.RSC_SERVICE)) {
@@ -52,7 +67,7 @@ public class BleScanCallback extends ScanCallback {
                                 addNearbyBleDeviceToList(result.getDevice(), result.getRssi(), "CYCLING");
                             }
                         }
-                        Log.d(TAG, "RSSI: "+result.getRssi());
+                        Log.d(TAG, "RSSI: " + result.getRssi());
                     }
                 }
             }
@@ -61,20 +76,24 @@ public class BleScanCallback extends ScanCallback {
 
     @Override
     public void onBatchScanResults(List<ScanResult> results) {
-        Log.d(TAG, "ScanBatchResult :: "+results.size());
+        Log.d(TAG, "ScanBatchResult :: " + results.size());
     }
 
     @Override
     public void onScanFailed(int errorCode) {
-        Log.d(TAG, "ScanFailedResult :: "+errorCode);
+        Log.d(TAG, "ScanFailedResult :: " + errorCode);
     }
 
     private boolean deviceAlreadyScanned(final BluetoothDevice bluetoothDevice) {
         if (bleDeviceInformationAdapter == null) {
             return false;
         }
-        if (bleDeviceInformationAdapter.getItemCount()>0) {
-            for (BleDeviceInfo bleDeviceInfo: bleDeviceInformationAdapter.getAllBleDeviceInfo()) {
+        if (bleDeviceInformationAdapter.getItemCount() > 0) {
+            for (BleDeviceInfo bleDeviceInfo : bleDeviceInformationAdapter.getAllBleDeviceInfo()) {
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(context, blePermNeeded, Toast.LENGTH_LONG).show();
+                    return false;
+                }
                 if (bluetoothDevice.getName().toLowerCase().equals(bleDeviceInfo.getBluetoothDevice().getName().toLowerCase())) {
                     return true;
                 }
@@ -100,6 +119,10 @@ public class BleScanCallback extends ScanCallback {
         }
         if (bleDeviceInformationAdapter.getItemCount()>0) {
             for (BleDeviceInfo bleDeviceInfo: bleDeviceInformationAdapter.getAllBleDeviceInfo()) {
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(context, blePermNeeded, Toast.LENGTH_LONG).show();
+                    return;
+                }
                 if (bluetoothDevice.getName().toLowerCase().equals(bleDeviceInfo.getBluetoothDevice().getName().toLowerCase())) {
                     bleDeviceInfo.setBluetoothDevice(bluetoothDevice);
                     bleDeviceInfo.setConnectionStrength(rssi);

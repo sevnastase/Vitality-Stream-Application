@@ -307,7 +307,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
             scanner = bluetoothAdapter.getBluetoothLeScanner();
 
             final BleDeviceInformationAdapter bleDeviceInformationAdapter = new BleDeviceInformationAdapter(productViewModel);
-            bleScanCallback = new BleScanCallback(bleDeviceInformationAdapter);
+            bleScanCallback = new BleScanCallback(bleDeviceInformationAdapter, getContext());
             if (scanner != null) {
                 if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_SCAN)
                         != PackageManager.PERMISSION_GRANTED) {
