@@ -5,15 +5,14 @@
     <!-- REQUIRED FOR CONSTRAINT OF INTERNET   -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- FOR CHINESPORT MOTOLIFE    -->
-    <uses-permission android:name="android.permission.INTERNET"/>
-
     <!-- REQUIRED FOR SENSORS    -->
     <!--    OLDER DEVICES -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion = "30" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!--    SDK >=29    -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation"/>
@@ -21,6 +20,7 @@
     <!-- REQUIRED FOR STREAMING VARIANT   -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
     <!-- REQUIRED FOR STANDALONE VARIANT   -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -44,12 +44,6 @@
         android:required="false" />
     <uses-feature android:name="android.hardware.usb.host" />
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
-    <uses-feature
-        android:name="android.hardware.location.gps"
-        android:required="false" />
-    <uses-feature
-        android:name="android.hardware.bluetooth"
-        android:required="false" />
 
     <application
         android:name=".config.application.PraxtourApplication"
@@ -186,8 +180,7 @@
             android:name=".service.ble.BleService"
             android:icon="@drawable/ic_launcher_background"
             android:label="BleService"
-            android:foregroundServiceType="location"
-            tools:ignore="ForegroundServicePermission" />
+            android:foregroundServiceType="location" />
 
         <receiver android:name=".receiver.OnBootCompletedBroadcastReceiver"
             android:enabled="true"
