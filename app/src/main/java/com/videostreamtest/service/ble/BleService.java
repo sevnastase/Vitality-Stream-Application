@@ -150,7 +150,7 @@ public class BleService extends Service {
                 if (bluetoothDeviceAddress.equals("NONE") || bluetoothDeviceAddress.equals("")) {
                     if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                         Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-                        openMainActivity();
+                        openProductPickerActivity();
                         return;
                     }
                     bluetoothGatt.close();
@@ -188,7 +188,7 @@ public class BleService extends Service {
                                                     int newState) {
                     if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                         Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-                        openMainActivity();
+                        openProductPickerActivity();
                         return;
                     }
 
@@ -230,7 +230,7 @@ public class BleService extends Service {
                             Log.d(TAG, "RSC SERVICE Charas: " + bluetoothGattService.getCharacteristics().size());
                             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                                 Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-                                openMainActivity();
+                                openProductPickerActivity();
                                 return;
                             }
                             gatt.setCharacteristicNotification(bluetoothGattService.getCharacteristic(CSCProfile.RSC_MEASUREMENT), true);
@@ -288,7 +288,7 @@ public class BleService extends Service {
 
                     if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                         Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-                        openMainActivity();
+                        openProductPickerActivity();
                         return;
                     }
                     Log.d(TAG, "Device Name: " + gatt.getDevice().getName());
@@ -416,7 +416,7 @@ public class BleService extends Service {
                 }
             };
 
-    private void openMainActivity() {
+    private void openProductPickerActivity() {
         Intent intent = new Intent(getApplicationContext(), ProductPickerActivity.class);
         startActivity(intent);
     }
@@ -460,7 +460,7 @@ public class BleService extends Service {
             // stop BLE
             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-                openMainActivity();
+                openProductPickerActivity();
                 return;
             }
             BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
@@ -487,7 +487,7 @@ public class BleService extends Service {
         }
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-            openMainActivity();
+            openProductPickerActivity();
             return false;
         }
         if (!bluetoothAdapter.isEnabled()) {
@@ -507,7 +507,7 @@ public class BleService extends Service {
 
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-            openMainActivity();
+            openProductPickerActivity();
             return;
         }
 

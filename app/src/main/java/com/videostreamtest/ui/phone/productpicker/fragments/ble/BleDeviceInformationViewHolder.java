@@ -1,5 +1,6 @@
 package com.videostreamtest.ui.phone.productpicker.fragments.ble;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -31,6 +33,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
     final static String TAG = BleDeviceInformationViewHolder.class.getSimpleName();
+
+    private final String blePermNeeded = "Bluetooth permissions are needed to use this application";
 
     private ProductViewModel productViewModel;
     private Button connectButton;
@@ -63,6 +67,10 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
         }
 
         TextView deviceNameText = itemView.findViewById(R.id.single_ble_device_name);
+        if (ActivityCompat.checkSelfPermission(itemView.getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(itemView.getContext(), blePermNeeded, Toast.LENGTH_LONG).show();
+            return;
+        }
         deviceNameText.setText(bleDeviceInfo.getBluetoothDevice().getName());
 
         TextView deviceConnectionStrengthText = itemView.findViewById(R.id.single_ble_device_connection_strength);
@@ -90,7 +98,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
         drawSelectionBorder();
         undrawSelectionBorder();
 
-        if (itemView.isSelected() ) {
+        if (itemView.isSelected()) {
             drawSelectionBorder();
         } else {
             undrawSelectionBorder();
@@ -132,8 +140,8 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
         connectButton.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                Log.d(TAG, "Selected BleDeviceInfo: "+getBindingAdapterPosition()+
-                        " hasFocus: "+hasFocus);
+                Log.d(TAG, "Selected BleDeviceInfo: " + getBindingAdapterPosition() +
+                        " hasFocus: " + hasFocus);
                 itemView.setSelected(true);
                 if (hasFocus) {
                     drawSelectionBorder();
@@ -147,6 +155,10 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
     private void initOnClickListener(final BleDeviceInfo bleDeviceInfo) {
         connectButton.setOnClickListener(onClickedView -> {
             connectButton.requestFocus();
+            if (ActivityCompat.checkSelfPermission(itemView.getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(itemView.getContext(), blePermNeeded, Toast.LENGTH_LONG).show();
+                return;
+            }
             Log.d(TAG, "CLICKED ON DEVICE ITEMVIEW : " + bleDeviceInfo.getBluetoothDevice().getName());
             saveDefaultSelectedDevice(bleDeviceInfo);
             showConnectedMessage(bleDeviceInfo);
@@ -160,6 +172,10 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
             SharedPreferences sharedPreferences = itemView.getContext().getSharedPreferences("app", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, bleDeviceInfo.getBluetoothDevice().getAddress());
+            if (ActivityCompat.checkSelfPermission(itemView.getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(itemView.getContext(), blePermNeeded, Toast.LENGTH_LONG).show();
+                return;
+            }
             editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_NAME_KEY, bleDeviceInfo.getBluetoothDevice().getName());
             editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_CONNECTION_STRENGTH_KEY, BleHelper.getRssiStrengthIndicator(itemView.getContext().getApplicationContext(), bleDeviceInfo.getConnectionStrength()));
             editor.commit();
@@ -167,7 +183,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
             StrictMode.setThreadPolicy(oldPolicy);
         }
 
-        if (productViewModel==null) {
+        if (productViewModel == null) {
             return;
         }
 
@@ -186,7 +202,11 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
         Intent bleService = new Intent(itemView.getContext().getApplicationContext(), BleService.class);
         itemView.getContext().startService(bleService);
 
-        Toast.makeText(itemView.getContext(), "Succesfully connected to "+bleDeviceInfo.getBluetoothDevice().getName()+"!", Toast.LENGTH_LONG).show();
+        if (ActivityCompat.checkSelfPermission(itemView.getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(itemView.getContext(), blePermNeeded, Toast.LENGTH_LONG).show();
+            return;
+        }
+        Toast.makeText(itemView.getContext(), "Succesfully connected to " + bleDeviceInfo.getBluetoothDevice().getName() + "!", Toast.LENGTH_LONG).show();
     }
 
     private void closeMessageBox() {
