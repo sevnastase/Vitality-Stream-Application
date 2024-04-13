@@ -30,7 +30,7 @@
             android:textColor="@color/exo_white"
             android:textSize="16dp"
             android:textStyle="bold"/>
-        <SeekBar
+        <androidx.appcompat.widget.AppCompatSeekBar
             android:id="@+id/routefilm_download_item_progressbar"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
