@@ -24,6 +24,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.videostreamtest.R;
 import com.videostreamtest.ui.phone.login.LoginViewModel;
+import com.videostreamtest.ui.phone.login.fragments.permissions.LocationPermissionFragment;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 
 import org.jetbrains.annotations.NotNull;
@@ -81,9 +82,11 @@ public class LoginStatusFragment extends Fragment {
                             NavHostFragment.findNavController(LoginStatusFragment.this)
                                     .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
                         } else {
-                            Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
-                            startActivity(splashScreenActivity);
-                            getActivity().finish();
+                            NavHostFragment.findNavController(LoginStatusFragment.this)
+                                    .navigate(R.id.action_locationPermissionFragment_to_downloadSoundFragment, getArguments());
+                            // Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
+                            // startActivity(splashScreenActivity);
+                            // getActivity().finish();
                         }
                         loginViewModel.addInstallationStep();
                     });
