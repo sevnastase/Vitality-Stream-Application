@@ -83,7 +83,7 @@ public class LoginStatusFragment extends Fragment {
                                     .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
                         } else {
                             NavHostFragment.findNavController(LoginStatusFragment.this)
-                                    .navigate(R.id.action_locationPermissionFragment_to_downloadSoundFragment, getArguments());
+                                    .navigate(R.id.action_loginStatusFragment_to_downloadSoundFragment, getArguments());
                             // Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
                             // startActivity(splashScreenActivity);
                             // getActivity().finish();
