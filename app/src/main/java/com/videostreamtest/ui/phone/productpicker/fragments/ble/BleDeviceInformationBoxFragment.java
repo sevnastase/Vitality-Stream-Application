@@ -314,7 +314,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
             Toast.makeText(getActivity(), getString(R.string.ble_choose_connected_device_toast_message), Toast.LENGTH_LONG).show();
             scanner = bluetoothAdapter.getBluetoothLeScanner();
 
-            final BleDeviceInformationAdapter bleDeviceInformationAdapter = new BleDeviceInformationAdapter(productViewModel);
+            final BleDeviceInformationAdapter bleDeviceInformationAdapter = new BleDeviceInformationAdapter(productViewModel, getActivity());
             bleScanCallback = new BleScanCallback(bleDeviceInformationAdapter, getActivity());
             if (scanner != null) {
                 checkBLEScanPermission();

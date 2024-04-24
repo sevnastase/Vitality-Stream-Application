@@ -1,5 +1,6 @@
 package com.videostreamtest.ui.phone.productpicker.fragments.ble;
 
+import android.app.Activity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,9 +27,12 @@ public class BleDeviceInformationAdapter extends RecyclerView.Adapter<BleDeviceI
 
     private ProductViewModel productViewModel;
 
-    public BleDeviceInformationAdapter(final ProductViewModel productViewModel) {
+    private Activity activity;
+
+    public BleDeviceInformationAdapter(final ProductViewModel productViewModel, final Activity activity) {
         this.productViewModel = productViewModel;
         this.bleDeviceInfoList = new ArrayList<>();
+        this.activity = activity;
     }
 
     @NonNull
@@ -51,7 +55,7 @@ public class BleDeviceInformationAdapter extends RecyclerView.Adapter<BleDeviceI
 
         if (bleDeviceInfoList != null && bleDeviceInfoList.size() > 0) {
             Log.d(TAG, "position intended: "+position);
-            holder.bind(bleDeviceInfoList.get(position), productViewModel, this, position);
+            holder.bind(bleDeviceInfoList.get(position), productViewModel, this, position, activity);
         }
 
         if (selectedBleDeviceInfo == position) {
