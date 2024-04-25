@@ -95,19 +95,17 @@ public class BleScanCallback extends ScanCallback {
         // Split on Android v12
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(context, blePermNeeded + " " + from, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, blePermNeeded, Toast.LENGTH_LONG).show();
                 BlePermission.ask(activity, Manifest.permission.BLUETOOTH_CONNECT);
             }
         } else {
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
-                // Toast.makeText(context, "BLUETOOTH" + " " + blePermNeeded + " " + from, Toast.LENGTH_LONG).show();
-                Toast.makeText(context, "nope bt", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, blePermNeeded, Toast.LENGTH_LONG).show();
                 BlePermission.ask(activity, Manifest.permission.BLUETOOTH);
             }
 
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // Toast.makeText(context,  "LOCATION" + " " + blePermNeeded + " " + from, Toast.LENGTH_LONG).show();
-                Toast.makeText(context, "nope loc", Toast.LENGTH_LONG).show();
+                Toast.makeText(context,  blePermNeeded, Toast.LENGTH_LONG).show();
                 BlePermission.ask(activity, Manifest.permission.ACCESS_FINE_LOCATION);
             }
         }
