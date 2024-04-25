@@ -9,6 +9,7 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
@@ -58,6 +59,9 @@ public class PermissionHelper {
                         permission)
                         != PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, String.format("Permission not GRANTED: " + permission));
+
+                    Toast.makeText(context, permission, Toast.LENGTH_LONG).show();
+
                     ActivityCompat.requestPermissions(
                             activity,
                             new String[]{permission},
