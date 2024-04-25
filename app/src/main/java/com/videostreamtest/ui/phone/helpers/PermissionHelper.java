@@ -31,27 +31,31 @@ public class PermissionHelper {
         // Check if Android S (12) or lower
         // Android Q (10) is our least target build sdk
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-
-            permissions.add(Manifest.permission.INTERNET);
-            permissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
-
             permissions.add(Manifest.permission.BLUETOOTH);
             permissions.add(Manifest.permission.BLUETOOTH_ADMIN);
 
             if (AccountHelper.isAccountBootable(context)) {
                 permissions.add(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
             }
-
         } else { // Android 12 or higher
             permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
             permissions.add(Manifest.permission.BLUETOOTH_SCAN);
             permissions.add(Manifest.permission.BLUETOOTH_CONNECT);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                permissions.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION);
+            }
         }
 
         if (AccountHelper.getAccountType(context).equalsIgnoreCase("standalone")) {
             permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
         }
+
+        permissions.add(Manifest.permission.INTERNET);
+        permissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
+        permissions.add(Manifest.permission.FOREGROUND_SERVICE);
 
         requestPermissions(permissions, activity);
     }
