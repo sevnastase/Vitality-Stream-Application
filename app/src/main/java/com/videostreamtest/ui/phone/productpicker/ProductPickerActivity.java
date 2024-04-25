@@ -168,7 +168,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         syncMovieDatabasePeriodically();
         checkForAppUpdatePeriodically();
 
-        PermissionHelper.requestPermission(getApplicationContext(), this);
+        PermissionHelper.requestPermission(this);
 
         //START BLE SERVICE IF PRODUCT NEEDS SENSOR
         productPickerViewModel
@@ -270,7 +270,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
     }
 
     private void requestAppPermissions() {
-        PermissionHelper.requestPermission(getApplicationContext(), this);
+        PermissionHelper.requestPermission(this);
     }
 
     @Override

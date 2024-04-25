@@ -140,14 +140,14 @@ public class NoPermissionsMessageFragment extends Fragment {
                 != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "No BLUETOOTH_ADMIN permission.");
 //            startActivityForResult(new Intent(Settings.ACTION_APPLICATION_SETTINGS), 0);
-            PermissionHelper.requestPermission(getContext(), getActivity());
+            PermissionHelper.requestPermission(getActivity());
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.BLUETOOTH)
                 != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "No BLUETOOTH permission.");
 //            startActivityForResult(new Intent(Settings.ACTION_APPLICATION_SETTINGS), 0);
-            PermissionHelper.requestPermission(getContext(), getActivity());
+            PermissionHelper.requestPermission(getActivity());
         }
 
         if (ContextCompat.checkSelfPermission(getActivity(),
@@ -156,7 +156,7 @@ public class NoPermissionsMessageFragment extends Fragment {
                 && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)) {
             Log.d(TAG, "No ACCES_COARSE_LOCATION permission.");
 //            startActivityForResult(new Intent(Settings.ACTION_APPLICATION_SETTINGS), 0);
-            PermissionHelper.requestPermission(getContext(), getActivity());
+            PermissionHelper.requestPermission(getActivity());
         }
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -164,7 +164,7 @@ public class NoPermissionsMessageFragment extends Fragment {
                 && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
         ) {
             Log.d(TAG, "No ACCESS_FINE_LOCATION permission.");
-            PermissionHelper.requestPermission(getContext(), getActivity());
+            PermissionHelper.requestPermission(getActivity());
         }
     }
 

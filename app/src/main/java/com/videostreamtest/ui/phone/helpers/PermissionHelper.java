@@ -24,12 +24,14 @@ public class PermissionHelper {
     private final static String TAG = PermissionHelper.class.getSimpleName();
     private static final int PERMISSION_REQUEST_CODE = 2323;
 
-    public static void requestPermission(Context context, Activity activity) {
+    public static void requestPermission(Activity activity) {
+        Context context = activity.getApplicationContext();
+
         List<String> permissions = new ArrayList<>();
         Log.d(TAG, "Checking permissions for Build Version Code "+Build.VERSION.SDK_INT);
-        // Check if Android M or higher
-        // Android M is also our least target build sdk
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        // Check if Android S (12) or lower
+        // Android Q (10) is our least target build sdk
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
 
             permissions.add(Manifest.permission.INTERNET);
             permissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
@@ -41,33 +43,23 @@ public class PermissionHelper {
                 permissions.add(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
             }
 
-            if (AccountHelper.getAccountType(context).equalsIgnoreCase("standalone")) {
-                permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-            }
-
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+        } else { // Android 12 or higher
             permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
-//            permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             permissions.add(Manifest.permission.BLUETOOTH_SCAN);
             permissions.add(Manifest.permission.BLUETOOTH_CONNECT);
         }
 
-        if (permissions.size()>0) {
-            for (String permission: permissions) {
+        if (AccountHelper.getAccountType(context).equalsIgnoreCase("standalone")) {
+            permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
+
+        if (!permissions.isEmpty()) {
+            for (String permission : permissions) {
                 if (ContextCompat.checkSelfPermission(context,
                         permission)
                         != PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, String.format("Permission not GRANTED: "+permission));
+                    Log.d(TAG, String.format("Permission not GRANTED: " + permission));
                     ActivityCompat.requestPermissions(
                             activity,
                             new String[]{permission},
