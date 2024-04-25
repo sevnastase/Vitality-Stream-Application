@@ -3,6 +3,7 @@ package com.videostreamtest.ui.phone.productpicker.fragments.ble;
 import static android.content.Context.BLUETOOTH_SERVICE;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -39,6 +40,7 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.service.ble.callback.BleScanCallback;
+import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -48,6 +50,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class BleDeviceInformationBoxFragment extends Fragment {
     private static final String TAG = BleDeviceInformationBoxFragment.class.getSimpleName();
+
+    private final String blePermNeeded = "Bluetooth permissions are needed to use this application";
 
     private BluetoothManager bluetoothManager;
     private BleScanCallback bleScanCallback;
@@ -117,52 +121,40 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         //showWarningBle(1, 30000);
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onPause() {
         super.onPause();
         if (scanner != null && bleScanCallback != null) {
-            checkBLEScanPermission();
+            PermissionHelper.requestPermissions(getActivity());
             scanner.stopScan(bleScanCallback);
             Log.d(TAG, "BLE Scanning stopped.");
         }
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onResume() {
         super.onResume();
         if (scanner != null && bleScanCallback != null) {
-            checkBLEScanPermission();
+            PermissionHelper.requestPermissions(getActivity());
             scanner.startScan(bleScanCallback);
             Log.d(TAG, "BLE Scanning stopped.");
         }
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         if (scanner != null && bleScanCallback != null) {
-            checkBLEScanPermission();
+            PermissionHelper.requestPermissions(getActivity());
             scanner.stopScan(bleScanCallback);
             Log.d(TAG, "BLE Scanning stopped.");
         }
     }
 
-    private void checkBLEScanPermission() {
-        // Split on Android v12
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-                BlePermission.ask(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
-            }
-        } else {
-            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_SCAN)
-                    != PackageManager.PERMISSION_GRANTED) {
-                BlePermission.ask(getActivity(), Manifest.permission.BLUETOOTH_SCAN);
-            }
-        }
-
-    }
-
+    @SuppressLint("MissingPermission")
     private void loadBluetoothDefaultDeviceInformation() {
         BluetoothManager bluetoothManager = (BluetoothManager) getActivity().getSystemService(BLUETOOTH_SERVICE);
         assert bluetoothManager != null;
@@ -170,10 +162,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         LinearLayout linearLayoutConnectionDeviceSummary = getView().findViewById(R.id.overlay_connection_info_box);
 
         if (bluetoothAdapter != null) {
-            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.BLUETOOTH_CONNECT)
-                    != PackageManager.PERMISSION_GRANTED) {
-                BlePermission.ask(getActivity(), Manifest.permission.BLUETOOTH_CONNECT);
-            }
+            PermissionHelper.requestPermissions(getActivity());
             bluetoothAdapter.enable();
             linearLayoutConnectionDeviceSummary.setVisibility(View.VISIBLE);
 
@@ -309,6 +298,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         return true;
     }
 
+    @SuppressLint("MissingPermission")
     private void startScanForDevices(final BluetoothAdapter bluetoothAdapter) {
         if (checkBluetoothSupport(bluetoothAdapter)) {
             Toast.makeText(getActivity(), getString(R.string.ble_choose_connected_device_toast_message), Toast.LENGTH_LONG).show();
@@ -317,7 +307,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
             final BleDeviceInformationAdapter bleDeviceInformationAdapter = new BleDeviceInformationAdapter(productViewModel, getActivity());
             bleScanCallback = new BleScanCallback(bleDeviceInformationAdapter, getActivity());
             if (scanner != null) {
-                checkBLEScanPermission();
+                PermissionHelper.requestPermissions(getActivity());
                 scanner.startScan(bleScanCallback);
             }
 
