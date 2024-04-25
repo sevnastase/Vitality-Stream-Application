@@ -23,7 +23,7 @@ public class PermissionHelper {
     private final static String TAG = PermissionHelper.class.getSimpleName();
     private static final int PERMISSION_REQUEST_CODE = 2323;
 
-    public static void requestPermissions(Activity activity) {
+    public static void checkPermissions(Activity activity) {
         Context context = activity.getApplicationContext();
 
         List<String> permissions = new ArrayList<>();
@@ -52,6 +52,12 @@ public class PermissionHelper {
             permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
         }
+
+        requestPermissions(permissions, activity);
+    }
+
+    private static void requestPermissions(List<String> permissions, Activity activity) {
+        Context context = activity.getApplicationContext();
 
         if (!permissions.isEmpty()) {
             for (String permission : permissions) {

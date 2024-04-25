@@ -42,7 +42,7 @@ public class BleScanCallback extends ScanCallback {
             return;
         }
 
-        PermissionHelper.requestPermissions(activity);
+        PermissionHelper.checkPermissions(activity);
 
         if (result != null && result.getDevice() != null && result.getDevice().getName() != null) {
             Log.d(TAG, "ScanResult NAME:: " + result.getDevice().getName());
@@ -92,7 +92,7 @@ public class BleScanCallback extends ScanCallback {
         }
         if (bleDeviceInformationAdapter.getItemCount() > 0) {
             for (BleDeviceInfo bleDeviceInfo : bleDeviceInformationAdapter.getAllBleDeviceInfo()) {
-                PermissionHelper.requestPermissions(activity);
+                PermissionHelper.checkPermissions(activity);
 
                 if (bluetoothDevice.getName().toLowerCase().equals(bleDeviceInfo.getBluetoothDevice().getName().toLowerCase())) {
                     return true;
@@ -120,7 +120,7 @@ public class BleScanCallback extends ScanCallback {
         }
         if (bleDeviceInformationAdapter.getItemCount()>0) {
             for (BleDeviceInfo bleDeviceInfo: bleDeviceInformationAdapter.getAllBleDeviceInfo()) {
-                PermissionHelper.requestPermissions(activity);
+                PermissionHelper.checkPermissions(activity);
 
                 if (bluetoothDevice.getName().toLowerCase().equals(bleDeviceInfo.getBluetoothDevice().getName().toLowerCase())) {
                     bleDeviceInfo.setBluetoothDevice(bluetoothDevice);

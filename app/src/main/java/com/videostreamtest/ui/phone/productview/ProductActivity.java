@@ -143,7 +143,7 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
 
         productViewModel.getCurrentConfig().observe(this, currentConfig ->{
             if (currentConfig != null) {
-                PermissionHelper.requestPermissions(this);
+                PermissionHelper.checkPermissions(this);
 
                 DisplayMetrics displayMetrics = new DisplayMetrics();
                 getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);

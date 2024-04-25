@@ -74,7 +74,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
 
         TextView deviceNameText = itemView.findViewById(R.id.single_ble_device_name);
 
-        PermissionHelper.requestPermissions(activity);
+        PermissionHelper.checkPermissions(activity);
 
         deviceNameText.setText(bleDeviceInfo.getBluetoothDevice().getName());
 
@@ -162,7 +162,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
         connectButton.setOnClickListener(onClickedView -> {
             connectButton.requestFocus();
 
-            PermissionHelper.requestPermissions(activity);
+            PermissionHelper.checkPermissions(activity);
             Log.d(TAG, "CLICKED ON DEVICE ITEMVIEW : " + bleDeviceInfo.getBluetoothDevice().getName());
             saveDefaultSelectedDevice(bleDeviceInfo, activity);
             showConnectedMessage(bleDeviceInfo, activity);
@@ -177,7 +177,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
             SharedPreferences sharedPreferences = itemView.getContext().getSharedPreferences("app", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, bleDeviceInfo.getBluetoothDevice().getAddress());
-            PermissionHelper.requestPermissions(activity);
+            PermissionHelper.checkPermissions(activity);
             editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_NAME_KEY, bleDeviceInfo.getBluetoothDevice().getName());
             editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_CONNECTION_STRENGTH_KEY, BleHelper.getRssiStrengthIndicator(itemView.getContext().getApplicationContext(), bleDeviceInfo.getConnectionStrength()));
             editor.commit();
@@ -205,7 +205,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
         Intent bleService = new Intent(itemView.getContext().getApplicationContext(), BleService.class);
         itemView.getContext().startService(bleService);
 
-        PermissionHelper.requestPermissions(activity);
+        PermissionHelper.checkPermissions(activity);
         Toast.makeText(itemView.getContext(), "Succesfully connected to " + bleDeviceInfo.getBluetoothDevice().getName() + "!", Toast.LENGTH_LONG).show();
     }
 

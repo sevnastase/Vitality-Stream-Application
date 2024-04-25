@@ -125,7 +125,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
     public void onPause() {
         super.onPause();
         if (scanner != null && bleScanCallback != null) {
-            PermissionHelper.requestPermissions(getActivity());
+            PermissionHelper.checkPermissions(getActivity());
             scanner.stopScan(bleScanCallback);
             Log.d(TAG, "BLE Scanning stopped.");
         }
@@ -136,7 +136,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (scanner != null && bleScanCallback != null) {
-            PermissionHelper.requestPermissions(getActivity());
+            PermissionHelper.checkPermissions(getActivity());
             scanner.startScan(bleScanCallback);
             Log.d(TAG, "BLE Scanning stopped.");
         }
@@ -147,7 +147,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         if (scanner != null && bleScanCallback != null) {
-            PermissionHelper.requestPermissions(getActivity());
+            PermissionHelper.checkPermissions(getActivity());
             scanner.stopScan(bleScanCallback);
             Log.d(TAG, "BLE Scanning stopped.");
         }
@@ -161,7 +161,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
         LinearLayout linearLayoutConnectionDeviceSummary = getView().findViewById(R.id.overlay_connection_info_box);
 
         if (bluetoothAdapter != null) {
-            PermissionHelper.requestPermissions(getActivity());
+            PermissionHelper.checkPermissions(getActivity());
             bluetoothAdapter.enable();
             linearLayoutConnectionDeviceSummary.setVisibility(View.VISIBLE);
 
@@ -306,7 +306,7 @@ public class BleDeviceInformationBoxFragment extends Fragment {
             final BleDeviceInformationAdapter bleDeviceInformationAdapter = new BleDeviceInformationAdapter(productViewModel, getActivity());
             bleScanCallback = new BleScanCallback(bleDeviceInformationAdapter, getActivity());
             if (scanner != null) {
-                PermissionHelper.requestPermissions(getActivity());
+                PermissionHelper.checkPermissions(getActivity());
                 scanner.startScan(bleScanCallback);
             }
 
