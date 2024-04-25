@@ -1,6 +1,5 @@
 package com.videostreamtest.ui.phone.productpicker.fragments.ble;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -9,7 +8,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
@@ -20,7 +18,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,7 +29,6 @@ import com.videostreamtest.ui.phone.helpers.BleHelper;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
-import com.videostreamtest.utils.BlePermission;
 
 import org.jetbrains.annotations.NotNull;
 

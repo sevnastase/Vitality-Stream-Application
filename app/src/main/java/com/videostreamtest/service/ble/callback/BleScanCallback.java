@@ -1,27 +1,18 @@
 package com.videostreamtest.service.ble.callback;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.ParcelUuid;
 import android.util.Log;
-import android.widget.Toast;
-
-import androidx.core.app.ActivityCompat;
 
 import com.videostreamtest.data.model.BleDeviceInfo;
 import com.videostreamtest.service.ble.CSCProfile;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.productpicker.fragments.ble.BleDeviceInformationAdapter;
-import com.videostreamtest.ui.phone.splash.SplashActivity;
-import com.videostreamtest.utils.BlePermission;
 
 import java.util.List;
 

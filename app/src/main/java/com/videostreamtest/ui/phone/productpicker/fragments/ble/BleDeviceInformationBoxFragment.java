@@ -44,7 +44,6 @@ import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
-import com.videostreamtest.utils.BlePermission;
 
 import org.jetbrains.annotations.NotNull;
 
