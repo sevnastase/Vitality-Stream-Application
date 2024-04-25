@@ -1,6 +1,7 @@
 package com.videostreamtest.ui.phone.productpicker.fragments.ble;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +29,7 @@ import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.data.model.BleDeviceInfo;
 import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.ui.phone.helpers.BleHelper;
+import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.BlePermission;
@@ -37,8 +39,7 @@ import org.jetbrains.annotations.NotNull;
 public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
     final static String TAG = BleDeviceInformationViewHolder.class.getSimpleName();
 
-    // private final String blePermNeeded = "Bluetooth permissions are needed to use this application";
-    private final String blePermNeeded = "BLE perm needed";
+    private final String blePermNeeded = "Bluetooth permissions are needed to use this application";
 
     private ProductViewModel productViewModel;
     private Button connectButton;
@@ -47,6 +48,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
         super(itemView);
     }
 
+    @SuppressLint("MissingPermission")
     public void bind(BleDeviceInfo bleDeviceInfo,
                      ProductViewModel productViewModel,
                      final BleDeviceInformationAdapter bleDeviceInformationAdapter,
@@ -62,7 +64,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
             initBorders();
             initOnFocusChangeListener();
         }
-        initOnClickListener(bleDeviceInfo);
+        initOnClickListener(bleDeviceInfo, activity);
 
         ImageView iconImage = itemView.findViewById(R.id.single_ble_icon);
         if (bleDeviceInfo.getDeviceType().toLowerCase().equals("running")) {
@@ -76,7 +78,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
 
         TextView deviceNameText = itemView.findViewById(R.id.single_ble_device_name);
 
-        checkBLEConnectPermission("BleDeviceInformationViewHolder#bind", activity);
+        PermissionHelper.requestPermissions(activity);
 
         deviceNameText.setText(bleDeviceInfo.getBluetoothDevice().getName());
 
@@ -99,30 +101,6 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
                 }
             }
         });
-    }
-
-    private void checkBLEConnectPermission(String from, Activity activity) {
-        Context context = activity.getApplicationContext();
-
-        // Split on Android v12
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(context, blePermNeeded + " " + from, Toast.LENGTH_LONG).show();
-                BlePermission.ask(activity, Manifest.permission.BLUETOOTH_CONNECT);
-            }
-        } else {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
-                // Toast.makeText(context, "BLUETOOTH" + " " + blePermNeeded + " " + from, Toast.LENGTH_LONG).show();
-                Toast.makeText(context, "nope bt", Toast.LENGTH_LONG).show();
-                BlePermission.ask(activity, Manifest.permission.BLUETOOTH);
-            }
-
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // Toast.makeText(context,  "LOCATION" + " " + blePermNeeded + " " + from, Toast.LENGTH_LONG).show();
-                Toast.makeText(context, "nope loc", Toast.LENGTH_LONG).show();
-                BlePermission.ask(activity, Manifest.permission.ACCESS_FINE_LOCATION);
-            }
-        }
     }
 
     private void initBorders() {
@@ -183,30 +161,27 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
         });
     }
 
-    private void initOnClickListener(final BleDeviceInfo bleDeviceInfo) {
+    @SuppressLint("MissingPermission")
+    private void initOnClickListener(final BleDeviceInfo bleDeviceInfo, final Activity activity) {
         connectButton.setOnClickListener(onClickedView -> {
             connectButton.requestFocus();
-            if (ActivityCompat.checkSelfPermission(itemView.getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(itemView.getContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-                return;
-            }
+
+            PermissionHelper.requestPermissions(activity);
             Log.d(TAG, "CLICKED ON DEVICE ITEMVIEW : " + bleDeviceInfo.getBluetoothDevice().getName());
-            saveDefaultSelectedDevice(bleDeviceInfo);
-            showConnectedMessage(bleDeviceInfo);
+            saveDefaultSelectedDevice(bleDeviceInfo, activity);
+            showConnectedMessage(bleDeviceInfo, activity);
         });
     }
 
-    private void saveDefaultSelectedDevice(final BleDeviceInfo bleDeviceInfo) {
+    @SuppressLint("MissingPermission")
+    private void saveDefaultSelectedDevice(final BleDeviceInfo bleDeviceInfo, final Activity activity) {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.getThreadPolicy();
         try {
             StrictMode.setThreadPolicy(StrictMode.allowThreadDiskWrites());
             SharedPreferences sharedPreferences = itemView.getContext().getSharedPreferences("app", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, bleDeviceInfo.getBluetoothDevice().getAddress());
-            if (ActivityCompat.checkSelfPermission(itemView.getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(itemView.getContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-                return;
-            }
+            PermissionHelper.requestPermissions(activity);
             editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_NAME_KEY, bleDeviceInfo.getBluetoothDevice().getName());
             editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_CONNECTION_STRENGTH_KEY, BleHelper.getRssiStrengthIndicator(itemView.getContext().getApplicationContext(), bleDeviceInfo.getConnectionStrength()));
             editor.commit();
@@ -229,14 +204,12 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
 
     }
 
-    private void showConnectedMessage(final BleDeviceInfo bleDeviceInfo) {
+    @SuppressLint("MissingPermission")
+    private void showConnectedMessage(final BleDeviceInfo bleDeviceInfo, final Activity activity) {
         Intent bleService = new Intent(itemView.getContext().getApplicationContext(), BleService.class);
         itemView.getContext().startService(bleService);
 
-        if (ActivityCompat.checkSelfPermission(itemView.getContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(itemView.getContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-            return;
-        }
+        PermissionHelper.requestPermissions(activity);
         Toast.makeText(itemView.getContext(), "Succesfully connected to " + bleDeviceInfo.getBluetoothDevice().getName() + "!", Toast.LENGTH_LONG).show();
     }
 
