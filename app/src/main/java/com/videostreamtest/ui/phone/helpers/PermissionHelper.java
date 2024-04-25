@@ -15,8 +15,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.location.LocationManagerCompat;
 
-import com.videostreamtest.config.entity.Configuration;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +22,7 @@ public class PermissionHelper {
     private final static String TAG = PermissionHelper.class.getSimpleName();
     private static final int PERMISSION_REQUEST_CODE = 2323;
 
-    public static void requestPermission(Activity activity) {
+    public static void requestPermissions(Activity activity) {
         Context context = activity.getApplicationContext();
 
         List<String> permissions = new ArrayList<>();

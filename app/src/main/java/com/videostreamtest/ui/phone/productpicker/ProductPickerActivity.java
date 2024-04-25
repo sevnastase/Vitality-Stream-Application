@@ -1,7 +1,6 @@
 package com.videostreamtest.ui.phone.productpicker;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -12,7 +11,6 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
 import android.os.StrictMode;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,7 +40,6 @@ import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.config.entity.Routefilm;
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.log.DeviceInformation;
 import com.videostreamtest.service.ble.BleService;
@@ -168,7 +165,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         syncMovieDatabasePeriodically();
         checkForAppUpdatePeriodically();
 
-        PermissionHelper.requestPermission(this);
+        PermissionHelper.requestPermissions(this);
 
         //START BLE SERVICE IF PRODUCT NEEDS SENSOR
         productPickerViewModel
@@ -270,7 +267,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
     }
 
     private void requestAppPermissions() {
-        PermissionHelper.requestPermission(this);
+        PermissionHelper.requestPermissions(this);
     }
 
     @Override
