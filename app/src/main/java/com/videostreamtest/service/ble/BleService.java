@@ -44,6 +44,7 @@ import com.videostreamtest.constants.CadenceSensorConstants;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.BleHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
+import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import java.lang.reflect.Method;
@@ -135,6 +136,7 @@ public class BleService extends Service {
             super(looper);
         }
 
+        @SuppressLint("MissingPermission")
         @Override
         public void handleMessage(Message msg) {
             Log.d(TAG, "msg startId: " + msg.arg1);
@@ -147,9 +149,7 @@ public class BleService extends Service {
                 refreshDeviceCache(bluetoothGatt);
                 //Disconnect
                 if (bluetoothDeviceAddress.equals("NONE") || bluetoothDeviceAddress.equals("")) {
-                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                        alertMissingPerms(new String[]{"BLUETOOTH_CONNECT"});
-                    }
+                    PermissionHelper.checkPermissions();
                     bluetoothGatt.close();
                     stopSelf(msg.arg1);
                 } else {
@@ -180,12 +180,11 @@ public class BleService extends Service {
                 private long lastCumulativeCrankRevolution = 0;
                 private BluetoothGattCharacteristic mbatteryCharacteristic;
 
+                @SuppressLint("MissingPermission")
                 @Override
                 public void onConnectionStateChange(BluetoothGatt gatt, int status,
                                                     int newState) {
-                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                        alertMissingPerms(new String[]{"BLUETOOTH_CONNECT"});
-                    }
+                    PermissionHelper.checkPermissions();
 
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
                         connectionState = STATE_CONNECTED;
@@ -204,6 +203,7 @@ public class BleService extends Service {
                     }
                 }
 
+                @SuppressLint("MissingPermission")
                 @Override
                 // New services discovered
                 public void onServicesDiscovered(BluetoothGatt gatt, int status) {
@@ -223,9 +223,7 @@ public class BleService extends Service {
                         if (CSCProfile.RSC_SERVICE.equals(bluetoothGattService.getUuid())) {
                             mRegisteredServices.add(bluetoothGattService);
                             Log.d(TAG, "RSC SERVICE Charas: " + bluetoothGattService.getCharacteristics().size());
-                            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                                alertMissingPerms(new String[]{"BLUETOOTH_CONNECT"});
-                            }
+                            PermissionHelper.checkPermissions();
                             gatt.setCharacteristicNotification(bluetoothGattService.getCharacteristic(CSCProfile.RSC_MEASUREMENT), true);
                             BluetoothGattDescriptor descriptor = bluetoothGattService.getCharacteristic(CSCProfile.RSC_MEASUREMENT).getDescriptor(CSCProfile.CLIENT_CONFIG);
                             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
@@ -275,13 +273,12 @@ public class BleService extends Service {
                     }
                 }
 
+                @SuppressLint("MissingPermission")
                 @Override
                 public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
                     Log.d(TAG, "Notification set on chars: " + characteristic.getUuid().toString());
 
-                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                        alertMissingPerms(new String[]{"BLUETOOTH_CONNECT"});
-                    }
+                    PermissionHelper.checkPermissions();
                     Log.d(TAG, "Device Name: " + gatt.getDevice().getName());
                     Log.d(TAG, "Device Address: " + gatt.getDevice().getAddress());
 
@@ -407,16 +404,6 @@ public class BleService extends Service {
                 }
             };
 
-    private void alertMissingPerms(String[] perms) {
-        StringBuilder sb = new StringBuilder();
-        for (String perm : perms) {
-            sb.append(perm).append(", ");
-        }
-        sb.delete(sb.length() - 3, sb.length());
-
-        Toast.makeText(getApplicationContext(), "Permission missing: " + sb, Toast.LENGTH_LONG).show();
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -448,15 +435,14 @@ public class BleService extends Service {
         return binder;
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "Service stopped/destroyed.");
         if (initialised) {
             // stop BLE
-            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                alertMissingPerms(new String[]{"BLUETOOTH_CONNECT"});
-            }
+            PermissionHelper.checkPermissions();
             BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
             if (bluetoothAdapter != null && bluetoothAdapter.isEnabled() && bluetoothGatt != null) {
                 bluetoothGatt.disconnect();
@@ -468,6 +454,7 @@ public class BleService extends Service {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private boolean init() {
         bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         if(bluetoothManager == null) {
@@ -479,9 +466,7 @@ public class BleService extends Service {
             Log.e(TAG, "Bluetooth LE isn't supported. This won't run");
             return false;
         }
-        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            alertMissingPerms(new String[]{"BLUETOOTH_CONNECT"});
-        }
+        PermissionHelper.checkPermissions();
         if (!bluetoothAdapter.isEnabled()) {
             Log.d(TAG, "Bluetooth is currently disabled...enabling");
             bluetoothAdapter.enable();
@@ -490,6 +475,7 @@ public class BleService extends Service {
         return true;
     }
 
+    @SuppressLint("MissingPermission")
     private void startScan() {
         if (bluetoothAdapter == null) {
             LogHelper.WriteLogRule(getApplicationContext(), AccountHelper.getAccountToken(getApplicationContext()),"BLE Service :: No BLE adapter", "ERROR", "");
@@ -497,9 +483,7 @@ public class BleService extends Service {
         }
         scanner = bluetoothAdapter.getBluetoothLeScanner();
 
-        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-            alertMissingPerms(new String[]{"BLUETOOTH_SCAN"});
-        }
+        PermissionHelper.checkPermissions();
 
         scanCallback = new ScanCallback() {
             @SuppressLint("MissingPermission")

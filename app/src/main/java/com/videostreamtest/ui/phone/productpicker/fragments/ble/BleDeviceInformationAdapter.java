@@ -55,7 +55,7 @@ public class BleDeviceInformationAdapter extends RecyclerView.Adapter<BleDeviceI
 
         if (bleDeviceInfoList != null && bleDeviceInfoList.size() > 0) {
             Log.d(TAG, "position intended: "+position);
-            holder.bind(bleDeviceInfoList.get(position), productViewModel, this, position, activity);
+            holder.bind(bleDeviceInfoList.get(position), productViewModel, this, position);
         }
 
         if (selectedBleDeviceInfo == position) {
