@@ -37,6 +37,7 @@ import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
+import com.videostreamtest.config.application.BaseActivity;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
@@ -63,7 +64,7 @@ import java.util.List;
 /**
  * Full-screen videoplayer activity
  */
-public class VideoplayerExoActivity extends AppCompatActivity {
+public class VideoplayerExoActivity extends BaseActivity {
     private static final String TAG = VideoplayerExoActivity.class.getSimpleName();
 
     private static final int MAX_PAUSE_TIME_SEC = 55;

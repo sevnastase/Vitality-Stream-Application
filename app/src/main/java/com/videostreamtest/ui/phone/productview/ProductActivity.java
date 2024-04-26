@@ -36,6 +36,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
+import com.videostreamtest.config.application.BaseActivity;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
@@ -63,7 +64,7 @@ import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
 
 import org.jetbrains.annotations.NotNull;
 
-public class ProductActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ProductActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private final static String TAG = ProductActivity.class.getSimpleName();
 
     private ProductViewModel productViewModel;

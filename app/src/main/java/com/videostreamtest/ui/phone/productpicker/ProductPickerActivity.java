@@ -38,6 +38,7 @@ import androidx.work.WorkManager;
 import com.google.android.material.navigation.NavigationView;
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
+import com.videostreamtest.config.application.BaseActivity;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
@@ -74,7 +75,7 @@ import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
 import static com.videostreamtest.utils.ApplicationSettings.THREAD_POOL_EXECUTOR;
 
-public class ProductPickerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ProductPickerActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private final static String TAG = ProductPickerActivity.class.getSimpleName();
 
     private ProductPickerViewModel productPickerViewModel;

@@ -7,6 +7,7 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.videostreamtest.config.application.BaseActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
@@ -14,7 +15,7 @@ import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
 
 
-public class ScreensaverActivity extends AppCompatActivity {
+public class ScreensaverActivity extends BaseActivity {
     private final static String TAG = ScreensaverActivity.class.getSimpleName();
 
     @Override
