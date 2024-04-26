@@ -34,9 +34,9 @@ public class PermissionHelper {
             permissions.add(Manifest.permission.BLUETOOTH);
             permissions.add(Manifest.permission.BLUETOOTH_ADMIN);
 
-            if (AccountHelper.isAccountBootable(context)) {
-                permissions.add(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-            }
+            //if (AccountHelper.isAccountBootable(context)) {
+            //    permissions.add(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+            //}
         } else { // Android 12 or higher
             permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
             permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);

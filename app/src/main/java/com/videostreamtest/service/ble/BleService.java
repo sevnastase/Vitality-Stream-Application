@@ -44,7 +44,6 @@ import com.videostreamtest.constants.CadenceSensorConstants;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.BleHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
-import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import java.lang.reflect.Method;
@@ -149,9 +148,7 @@ public class BleService extends Service {
                 //Disconnect
                 if (bluetoothDeviceAddress.equals("NONE") || bluetoothDeviceAddress.equals("")) {
                     if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                        Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-                        openProductPickerActivity();
-                        return;
+                        alertMissingPerms(new String[]{"BLUETOOTH_CONNECT"});
                     }
                     bluetoothGatt.close();
                     stopSelf(msg.arg1);
@@ -187,9 +184,7 @@ public class BleService extends Service {
                 public void onConnectionStateChange(BluetoothGatt gatt, int status,
                                                     int newState) {
                     if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                        Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-                        openProductPickerActivity();
-                        return;
+                        alertMissingPerms(new String[]{"BLUETOOTH_CONNECT"});
                     }
 
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
@@ -229,9 +224,7 @@ public class BleService extends Service {
                             mRegisteredServices.add(bluetoothGattService);
                             Log.d(TAG, "RSC SERVICE Charas: " + bluetoothGattService.getCharacteristics().size());
                             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                                Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-                                openProductPickerActivity();
-                                return;
+                                alertMissingPerms(new String[]{"BLUETOOTH_CONNECT"});
                             }
                             gatt.setCharacteristicNotification(bluetoothGattService.getCharacteristic(CSCProfile.RSC_MEASUREMENT), true);
                             BluetoothGattDescriptor descriptor = bluetoothGattService.getCharacteristic(CSCProfile.RSC_MEASUREMENT).getDescriptor(CSCProfile.CLIENT_CONFIG);
@@ -287,9 +280,7 @@ public class BleService extends Service {
                     Log.d(TAG, "Notification set on chars: " + characteristic.getUuid().toString());
 
                     if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                        Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-                        openProductPickerActivity();
-                        return;
+                        alertMissingPerms(new String[]{"BLUETOOTH_CONNECT"});
                     }
                     Log.d(TAG, "Device Name: " + gatt.getDevice().getName());
                     Log.d(TAG, "Device Address: " + gatt.getDevice().getAddress());
@@ -416,9 +407,14 @@ public class BleService extends Service {
                 }
             };
 
-    private void openProductPickerActivity() {
-        Intent intent = new Intent(getApplicationContext(), ProductPickerActivity.class);
-        startActivity(intent);
+    private void alertMissingPerms(String[] perms) {
+        StringBuilder sb = new StringBuilder();
+        for (String perm : perms) {
+            sb.append(perm).append(", ");
+        }
+        sb.delete(sb.length() - 3, sb.length());
+
+        Toast.makeText(getApplicationContext(), "Permission missing: " + sb, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -459,9 +455,7 @@ public class BleService extends Service {
         if (initialised) {
             // stop BLE
             if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-                openProductPickerActivity();
-                return;
+                alertMissingPerms(new String[]{"BLUETOOTH_CONNECT"});
             }
             BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
             if (bluetoothAdapter != null && bluetoothAdapter.isEnabled() && bluetoothGatt != null) {
@@ -486,9 +480,7 @@ public class BleService extends Service {
             return false;
         }
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-            openProductPickerActivity();
-            return false;
+            alertMissingPerms(new String[]{"BLUETOOTH_CONNECT"});
         }
         if (!bluetoothAdapter.isEnabled()) {
             Log.d(TAG, "Bluetooth is currently disabled...enabling");
@@ -506,9 +498,7 @@ public class BleService extends Service {
         scanner = bluetoothAdapter.getBluetoothLeScanner();
 
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(getApplicationContext(), blePermNeeded, Toast.LENGTH_LONG).show();
-            openProductPickerActivity();
-            return;
+            alertMissingPerms(new String[]{"BLUETOOTH_SCAN"});
         }
 
         scanCallback = new ScanCallback() {
