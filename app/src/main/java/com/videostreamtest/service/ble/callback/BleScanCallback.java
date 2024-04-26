@@ -22,16 +22,10 @@ public class BleScanCallback extends ScanCallback {
     //private final String blePermNeeded = "Bluetooth permissions are needed to use this application";
     private final String blePermNeeded = "BLE perm needed";
 
-    private final Activity activity;
-
-    private final Context context;
-
     private BleDeviceInformationAdapter bleDeviceInformationAdapter;
 
-    public BleScanCallback(BleDeviceInformationAdapter bleDeviceInformationAdapter, Activity activity) {
+    public BleScanCallback(BleDeviceInformationAdapter bleDeviceInformationAdapter) {
         this.bleDeviceInformationAdapter = bleDeviceInformationAdapter;
-        this.activity = activity;
-        this.context = activity.getApplicationContext();
     }
 
     @SuppressLint("MissingPermission")
@@ -42,7 +36,7 @@ public class BleScanCallback extends ScanCallback {
             return;
         }
 
-        PermissionHelper.checkPermissions(activity);
+        PermissionHelper.checkPermissions();
 
         if (result != null && result.getDevice() != null && result.getDevice().getName() != null) {
             Log.d(TAG, "ScanResult NAME:: " + result.getDevice().getName());
@@ -92,7 +86,7 @@ public class BleScanCallback extends ScanCallback {
         }
         if (bleDeviceInformationAdapter.getItemCount() > 0) {
             for (BleDeviceInfo bleDeviceInfo : bleDeviceInformationAdapter.getAllBleDeviceInfo()) {
-                PermissionHelper.checkPermissions(activity);
+                PermissionHelper.checkPermissions();
 
                 if (bluetoothDevice.getName().toLowerCase().equals(bleDeviceInfo.getBluetoothDevice().getName().toLowerCase())) {
                     return true;
@@ -120,7 +114,7 @@ public class BleScanCallback extends ScanCallback {
         }
         if (bleDeviceInformationAdapter.getItemCount()>0) {
             for (BleDeviceInfo bleDeviceInfo: bleDeviceInformationAdapter.getAllBleDeviceInfo()) {
-                PermissionHelper.checkPermissions(activity);
+                PermissionHelper.checkPermissions();
 
                 if (bluetoothDevice.getName().toLowerCase().equals(bleDeviceInfo.getBluetoothDevice().getName().toLowerCase())) {
                     bleDeviceInfo.setBluetoothDevice(bluetoothDevice);

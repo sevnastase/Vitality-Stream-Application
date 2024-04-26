@@ -48,8 +48,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
     public void bind(BleDeviceInfo bleDeviceInfo,
                      ProductViewModel productViewModel,
                      final BleDeviceInformationAdapter bleDeviceInformationAdapter,
-                     int position,
-                     Activity activity) {
+                     int position) {
         this.productViewModel = productViewModel;
 
         this.connectButton = itemView.findViewById(R.id.single_ble_device_connect_button);
@@ -60,7 +59,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
             initBorders();
             initOnFocusChangeListener();
         }
-        initOnClickListener(bleDeviceInfo, activity);
+        initOnClickListener(bleDeviceInfo);
 
         ImageView iconImage = itemView.findViewById(R.id.single_ble_icon);
         if (bleDeviceInfo.getDeviceType().toLowerCase().equals("running")) {
@@ -74,7 +73,7 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
 
         TextView deviceNameText = itemView.findViewById(R.id.single_ble_device_name);
 
-        PermissionHelper.checkPermissions(activity);
+        PermissionHelper.checkPermissions();
 
         deviceNameText.setText(bleDeviceInfo.getBluetoothDevice().getName());
 
@@ -158,26 +157,26 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
     }
 
     @SuppressLint("MissingPermission")
-    private void initOnClickListener(final BleDeviceInfo bleDeviceInfo, final Activity activity) {
+    private void initOnClickListener(final BleDeviceInfo bleDeviceInfo) {
         connectButton.setOnClickListener(onClickedView -> {
             connectButton.requestFocus();
 
-            PermissionHelper.checkPermissions(activity);
+            PermissionHelper.checkPermissions();
             Log.d(TAG, "CLICKED ON DEVICE ITEMVIEW : " + bleDeviceInfo.getBluetoothDevice().getName());
-            saveDefaultSelectedDevice(bleDeviceInfo, activity);
-            showConnectedMessage(bleDeviceInfo, activity);
+            saveDefaultSelectedDevice(bleDeviceInfo);
+            showConnectedMessage(bleDeviceInfo);
         });
     }
 
     @SuppressLint("MissingPermission")
-    private void saveDefaultSelectedDevice(final BleDeviceInfo bleDeviceInfo, final Activity activity) {
+    private void saveDefaultSelectedDevice(final BleDeviceInfo bleDeviceInfo) {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.getThreadPolicy();
         try {
             StrictMode.setThreadPolicy(StrictMode.allowThreadDiskWrites());
             SharedPreferences sharedPreferences = itemView.getContext().getSharedPreferences("app", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, bleDeviceInfo.getBluetoothDevice().getAddress());
-            PermissionHelper.checkPermissions(activity);
+            PermissionHelper.checkPermissions();
             editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_NAME_KEY, bleDeviceInfo.getBluetoothDevice().getName());
             editor.putString(ApplicationSettings.DEFAULT_BLE_DEVICE_CONNECTION_STRENGTH_KEY, BleHelper.getRssiStrengthIndicator(itemView.getContext().getApplicationContext(), bleDeviceInfo.getConnectionStrength()));
             editor.commit();
@@ -201,11 +200,11 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
     }
 
     @SuppressLint("MissingPermission")
-    private void showConnectedMessage(final BleDeviceInfo bleDeviceInfo, final Activity activity) {
+    private void showConnectedMessage(final BleDeviceInfo bleDeviceInfo) {
         Intent bleService = new Intent(itemView.getContext().getApplicationContext(), BleService.class);
         itemView.getContext().startService(bleService);
 
-        PermissionHelper.checkPermissions(activity);
+        PermissionHelper.checkPermissions();
         Toast.makeText(itemView.getContext(), "Succesfully connected to " + bleDeviceInfo.getBluetoothDevice().getName() + "!", Toast.LENGTH_LONG).show();
     }
 

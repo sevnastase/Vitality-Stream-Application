@@ -144,7 +144,7 @@ public class ProductActivity extends BaseActivity implements NavigationView.OnNa
 
         productViewModel.getCurrentConfig().observe(this, currentConfig ->{
             if (currentConfig != null) {
-                PermissionHelper.checkPermissions(this);
+                PermissionHelper.checkPermissions();
 
                 DisplayMetrics displayMetrics = new DisplayMetrics();
                 getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);

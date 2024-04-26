@@ -166,7 +166,7 @@ public class ProductPickerActivity extends BaseActivity implements NavigationVie
         syncMovieDatabasePeriodically();
         checkForAppUpdatePeriodically();
 
-        PermissionHelper.checkPermissions(this);
+        PermissionHelper.checkPermissions();
 
         //START BLE SERVICE IF PRODUCT NEEDS SENSOR
         productPickerViewModel
@@ -268,7 +268,7 @@ public class ProductPickerActivity extends BaseActivity implements NavigationVie
     }
 
     private void requestAppPermissions() {
-        PermissionHelper.checkPermissions(this);
+        PermissionHelper.checkPermissions();
     }
 
     @Override
