@@ -27,6 +27,11 @@ public class PermissionHelper {
 
     public static void checkPermissions() {
         Activity activity = PraxtourApplication.currentActivity;
+        if (activity == null) {
+            Log.d(TAG, "Activity == null");
+            return;
+        }
+
         Context context = activity.getApplicationContext();
 
         List<String> permissions = new ArrayList<>();
