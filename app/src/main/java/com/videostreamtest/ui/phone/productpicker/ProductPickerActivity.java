@@ -19,7 +19,6 @@ import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -50,7 +49,6 @@ import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
-import com.videostreamtest.ui.phone.videoplayer.MQTTService;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.VideoLanLib;
@@ -127,25 +125,7 @@ public class ProductPickerActivity extends BaseActivity implements NavigationVie
         navView = drawerLayout.findViewById(R.id.nav_view);
 
         apikey = getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
-
-
-        // FOR CHINESPORT
-        Intent intent = new Intent(this, MQTTService.class);
-        startService(intent);
     }
-
-     // FOR CHINESPORT
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//        productPickerAdapter.registerReceiver(this);
-//    }
-//
-//    @Override
-//    protected void onStop() {
-//        productPickerAdapter.unregisterReceiver(this);
-//        super.onStop();
-//    }
 
     @Override
     public void onUserInteraction() {

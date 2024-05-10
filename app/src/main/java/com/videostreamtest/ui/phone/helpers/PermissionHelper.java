@@ -37,7 +37,7 @@ public class PermissionHelper {
         List<String> permissions = new ArrayList<>();
         Log.d(TAG, "Checking permissions for Build Version Code "+Build.VERSION.SDK_INT);
         // Check if Android S (12) or lower
-        // Android Q (10) is our least target build sdk
+        // Android P (V: 9, SDK: 28) is our least target build sdk
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             permissions.add(Manifest.permission.BLUETOOTH);
             permissions.add(Manifest.permission.BLUETOOTH_ADMIN);
@@ -54,6 +54,11 @@ public class PermissionHelper {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 permissions.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION);
             }
+        }
+
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         }
 
         if (AccountHelper.getAccountType(context).equalsIgnoreCase("standalone")) {

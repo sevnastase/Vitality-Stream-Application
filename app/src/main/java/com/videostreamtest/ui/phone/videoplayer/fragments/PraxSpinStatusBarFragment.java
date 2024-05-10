@@ -36,7 +36,6 @@ import com.videostreamtest.R;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
-import com.videostreamtest.ui.phone.videoplayer.MQTTService;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.BluetoothHelper;
@@ -99,15 +98,6 @@ public class PraxSpinStatusBarFragment extends Fragment implements BluetoothHelp
     private SeekBar progressBar;
     private boolean isLocalPlay = false;
 
-    //FOR CHINESPORT
-    private View chinesportStatsContainer;
-    private Button chinesportToggle;
-    private TextView chinesportSpeed;
-    private TextView chinesportPower;
-    private TextView chinesportMode;
-    private TextView chinesportDirection;
-    private TextView chinesportTime;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -157,32 +147,6 @@ public class PraxSpinStatusBarFragment extends Fragment implements BluetoothHelp
         seekBarButtons[3] = seekBarT4;
         seekBarButtons[4] = seekBarT5;
         seekBarButtons[5] = seekBarT6;
-
-        // CHINESPORT DATA
-        chinesportStatsContainer = view.findViewById(R.id.statusbar_information_display_blocks_chinesport);
-        chinesportToggle = view.findViewById(R.id.chinesport_detailed_stats_button);
-        chinesportSpeed = view.findViewById(R.id.chinesport_speed_box_value);
-        chinesportPower = view.findViewById(R.id.chinesport_power_box_value);
-        chinesportMode = view.findViewById(R.id.chinesport_mode_box_value);
-        chinesportDirection = view.findViewById(R.id.chinesport_direction_box_value);
-        chinesportTime = view.findViewById(R.id.chinesport_time_box_value);
-
-        chinesportToggle.setOnClickListener(new View.OnClickListener() {
-
-            /**
-             * Called when a view has been clicked.
-             *
-             * @param v The view that was clicked.
-             */
-            @Override
-            public void onClick(View v) {
-                if (chinesportStatsContainer.getVisibility() == View.VISIBLE) {
-                    chinesportStatsContainer.setVisibility(View.GONE);
-                } else {
-                    chinesportStatsContainer.setVisibility(View.VISIBLE);
-                }
-            }
-        });
 
         Bundle arguments = getArguments();
         if (arguments!= null) {
@@ -471,31 +435,6 @@ public class PraxSpinStatusBarFragment extends Fragment implements BluetoothHelp
         getFinalFrame(videoPlayerViewModel);
     }
 
-    // FOR CHINESPORT
-    private BroadcastReceiver motoLifeDataReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            ArrayList<String> motoLifeData = intent.getStringArrayListExtra("motoLifeData");
-
-            if (!motoLifeData.get(0).equals("Speed")) {
-                executeCommand(motoLifeData);
-            } else {
-                // Update UI here
-                chinesportSpeed.setText(motoLifeData.get(0));
-                chinesportPower.setText(motoLifeData.get(1));
-                chinesportMode.setText(motoLifeData.get(2));
-                chinesportDirection.setText(motoLifeData.get(3));
-                chinesportTime.setText(motoLifeData.get(4));
-            }
-
-            chinesportSpeed.setText(motoLifeData.get(0));
-            chinesportPower.setText(motoLifeData.get(1));
-            chinesportMode.setText(motoLifeData.get(2));
-            chinesportDirection.setText(motoLifeData.get(3));
-            chinesportTime.setText(motoLifeData.get(4));
-        }
-    };
-
     private void executeCommand(ArrayList<String> motoLifeData) {
         if (motoLifeData.get(0) == "Stop") {
 //            onStop();
@@ -513,148 +452,6 @@ public class PraxSpinStatusBarFragment extends Fragment implements BluetoothHelp
 
         }
     }
-
-     // FOR CHINESPORT
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        if (getContext() != null) {
-            Intent serviceIntent = new Intent(getContext(), MQTTService.class);
-            getContext().startService(serviceIntent);
-
-            LocalBroadcastManager.getInstance(getContext()).registerReceiver(motoLifeDataReceiver,
-                    new IntentFilter("com.videostreamtest.MQTT_DATA_UPDATE"));
-        }
-    }
-
-     // FOR CHINESPORT
-    @Override
-    public void onStop() {
-        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(motoLifeDataReceiver);
-        super.onStop();
-
-        if (getContext() != null) {
-            Intent serviceIntent = new Intent(getContext(), MQTTService.class);
-            getContext().stopService(serviceIntent);
-        }
-    }
-
-//    // FOR CHINESPORT
-//    private ServiceConnection serviceConnection = new ServiceConnection() {
-//
-//        /**
-//         * Called when a connection to the Service has been established, with
-//         * the {@link IBinder} of the communication channel to the
-//         * Service.
-//         *
-//         * <p class="note"><b>Note:</b> If the system has started to bind your
-//         * client app to a service, it's possible that your app will never receive
-//         * this callback. Your app won't receive a callback if there's an issue with
-//         * the service, such as the service crashing while being created.
-//         *
-//         * @param name    The concrete component name of the service that has
-//         *                been connected.
-//         * @param service The IBinder of the Service's communication channel,
-//         *                which you can now make calls on.
-//         */
-//        @Override
-//        public void onServiceConnected(ComponentName name, IBinder service) {
-//            MQTTService.LocalBinder binder = (MQTTService.LocalBinder) service;
-//            mqttService = binder.getService();
-//            isBound = true;
-//
-//            fetchData();
-//        }
-//
-//        /**
-//         * Called when a connection to the Service has been lost.  This typically
-//         * happens when the process hosting the service has crashed or been killed.
-//         * This does <em>not</em> remove the ServiceConnection itself -- this
-//         * binding to the service will remain active, and you will receive a call
-//         * to {@link #onServiceConnected} when the Service is next running.
-//         *
-//         * @param name The concrete component name of the service whose
-//         *             connection has been lost.
-//         */
-//        @Override
-//        public void onServiceDisconnected(ComponentName name) {
-//            isBound = false;
-//        }
-//    };
-//
-//    // FOR CHINESPORT
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//        Intent serviceIntent = new Intent(getActivity(), MQTTService.class);
-//        getActivity().bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
-//    }
-//
-//    // FOR CHINESPORT
-//    @Override
-//    public void onStop() {
-//        handler.removeCallbacks(dataUpdateRunnable);
-//
-//        if (isBound) {
-//            getActivity().unbindService(serviceConnection);
-//            isBound = false;
-//        }
-//
-//        super.onStop();
-//    }
-//
-//    // FOR CHINESPORT
-//    private Runnable dataUpdateRunnable = new Runnable() {
-//
-//        /**
-//         * When an object implementing interface <code>Runnable</code> is used
-//         * to create a thread, starting the thread causes the object's
-//         * <code>run</code> method to be called in that separately executing
-//         * thread.
-//         * <p>
-//         * The general contract of the method <code>run</code> is that it may
-//         * take any action whatsoever.
-//         *
-//         * @see Thread#run()
-//         */
-//        @Override
-//        public void run() {
-//            if (isBound && mqttService != null) {
-//                try {
-//                    ArrayList<String> data;
-//                    if (mqttService.getData() == null || mqttService.getData().isEmpty()) {
-//                        data = new ArrayList<>(Collections.nCopies(5, "0"));
-//                    } else {
-//                        data = mqttService.getData();
-//                    }
-//                    updateUI(data);
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//
-//            handler.postDelayed(this, 5000);
-//        }
-//    };
-//
-//    // FOR CHINESPORT
-//    private void updateUI(@NonNull ArrayList<String> data) {
-//        String speed = data.get(0);
-//        String power = data.get(1);
-//        String mode = data.get(2);
-//        String direction = data.get(3);
-//        String time = data.get(4);
-//
-//        // Update UI elements for each component
-//    }
-//
-//    // FOR CHINESPORT
-//    private void fetchData() {
-//        handler.post(dataUpdateRunnable);
-//    }
-
-
 
     private void toggleMoviePartsVisibility() {
         if (moviePartsLayout.getVisibility() == View.GONE) {
@@ -701,71 +498,6 @@ public class PraxSpinStatusBarFragment extends Fragment implements BluetoothHelp
             });
         });
         return finalFrame;
-    }
-
-    private void showPauseOrStopDialog() {
-        Context context = getActivity();
-        if(context == null)
-        {
-            return;
-        }
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Pause or Stop");
-        builder.setMessage("Do you want to pause or stop?");
-
-        builder.setPositiveButton("Pause", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                // Handle Pause action
-                // TODO: Implement your pause logic here
-                Log.d(TAG, "Pause selected.");
-            }
-        });
-
-        builder.setNegativeButton("Stop", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                // Handle Stop action
-                // TODO: Implement your stop logic here
-                Log.d(TAG, "Stop selected.");
-            }
-        });
-
-        builder.setNeutralButton("Cancel", null); // just dismisses the dialog
-
-        // Create and show the AlertDialog
-        AlertDialog dialog = builder.create();
-        dialog.show();
-
-        builder.setPositiveButton("Pause", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                // Handle Pause action
-                pauseBike();
-                Log.d(TAG, "Pause selected.");
-            }
-        });
-
-        builder.setNegativeButton("Stop", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                // Handle Stop action
-                shutdownBike();
-                Log.d(TAG, "Stop selected.");
-            }
-        });
-
-    }
-
-    private void pauseBike()
-    {
-        //TODO: steps to take to pause bike
-    }
-
-    private void shutdownBike()
-    {
-        //TODO: steps to take to shutdown bike
     }
 
     @Override

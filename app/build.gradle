@@ -10,9 +10,9 @@ android {
 
     defaultConfig {
         applicationId "com.videostreamtest.chinesport"
-        minSdkVersion 29
+        minSdkVersion 23
         //noinspection EditedTargetSdkVersion
-        targetSdkVersion 29
+        targetSdkVersion 28
         versionCode Integer.parseInt(VERSION_CODE)
         versionName VERSION_NAME+''+versionCode
 
