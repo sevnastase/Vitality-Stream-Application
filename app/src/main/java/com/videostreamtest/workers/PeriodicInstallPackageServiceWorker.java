@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -91,28 +92,22 @@ public class PeriodicInstallPackageServiceWorker extends Worker implements Progr
                     Log.e(TAG, e.getLocalizedMessage());
                 }
 
-                if (ConfigurationHelper.getVersionNumberCode(getApplicationContext()) >=
-                        ConfigurationHelper.getLocalUpdatePackageInfo(getApplicationContext()).getLongVersionCode()) {
-                    //DELETE LOCAL UPDATE
-                    new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()).delete();
-                } else {
-                    if (apikey != null && ! apikey.equals("")) {
-                        databaseRestService.writeLog(apikey, "UPDATE FOUND AND REQUESTING INSTALLATION", "DEBUG", "");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    if (ConfigurationHelper.getVersionNumberCode(getApplicationContext()) >=
+                            ConfigurationHelper.getLocalUpdatePackageInfo(getApplicationContext()).getLongVersionCode()) {
+                        //DELETE LOCAL UPDATE
+                        new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()).delete();
+                    } else {
+                        prepUpdate(apikey);
                     }
-
-                    //REQUEST TO INSTALL UPDATE TO USER
-                    File file = new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(),
-                            updateFileName).toString());
-                    Uri contentUri = FileProvider.getUriForFile(
-                            getApplicationContext(),
-                            BuildConfig.APPLICATION_ID + ".provider",
-                            file);
-
-                    Intent promptInstallPackage = new Intent(Intent.ACTION_VIEW);
-                    promptInstallPackage.setDataAndType(contentUri, "application/vnd.android.package-archive");
-                    promptInstallPackage.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    promptInstallPackage.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    getApplicationContext().startActivity(promptInstallPackage);
+                } else {
+                    if (ConfigurationHelper.getVersionNumberCode(getApplicationContext()) >=
+                            ConfigurationHelper.getLocalUpdatePackageInfo(getApplicationContext()).versionCode) {
+                        //DELETE LOCAL UPDATE
+                        new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()).delete();
+                    } else {
+                        prepUpdate(apikey);
+                    }
                 }
             }
         }
@@ -123,6 +118,26 @@ public class PeriodicInstallPackageServiceWorker extends Worker implements Progr
                 .build();
 
         return Result.success(outputData);
+    }
+
+    private void prepUpdate(String apikey) {
+        if (apikey != null && ! apikey.equals("")) {
+            databaseRestService.writeLog(apikey, "UPDATE FOUND AND REQUESTING INSTALLATION", "DEBUG", "");
+        }
+
+        //REQUEST TO INSTALL UPDATE TO USER
+        File file = new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(),
+                updateFileName).toString());
+        Uri contentUri = FileProvider.getUriForFile(
+                getApplicationContext(),
+                BuildConfig.APPLICATION_ID + ".provider",
+                file);
+
+        Intent promptInstallPackage = new Intent(Intent.ACTION_VIEW);
+        promptInstallPackage.setDataAndType(contentUri, "application/vnd.android.package-archive");
+        promptInstallPackage.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        promptInstallPackage.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getApplicationContext().startActivity(promptInstallPackage);
     }
 
     private void download(final String inputPath, final long expectedSize) throws IOException {
