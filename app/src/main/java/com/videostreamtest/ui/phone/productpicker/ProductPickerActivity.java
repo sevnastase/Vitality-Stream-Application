@@ -1,7 +1,6 @@
 package com.videostreamtest.ui.phone.productpicker;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -12,7 +11,6 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
 import android.os.StrictMode;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,7 +40,6 @@ import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.config.entity.Routefilm;
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.log.DeviceInformation;
 import com.videostreamtest.service.ble.BleService;
@@ -52,7 +49,6 @@ import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
-import com.videostreamtest.ui.phone.videoplayer.MQTTService;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.VideoLanLib;
@@ -129,25 +125,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         navView = drawerLayout.findViewById(R.id.nav_view);
 
         apikey = getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
-
-
-        // FOR CHINESPORT
-        Intent intent = new Intent(this, MQTTService.class);
-        startService(intent);
     }
-
-     // FOR CHINESPORT
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//        productPickerAdapter.registerReceiver(this);
-//    }
-//
-//    @Override
-//    protected void onStop() {
-//        productPickerAdapter.unregisterReceiver(this);
-//        super.onStop();
-//    }
 
     @Override
     public void onUserInteraction() {

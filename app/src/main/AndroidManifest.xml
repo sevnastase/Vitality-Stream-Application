@@ -195,9 +195,6 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
-
-        <!-- FOR CHINESPORT MOTOLIFE    -->
-        <service android:name="com.videostreamtest.ui.phone.videoplayer.MQTTService" />
     </application>
 
 </manifest>

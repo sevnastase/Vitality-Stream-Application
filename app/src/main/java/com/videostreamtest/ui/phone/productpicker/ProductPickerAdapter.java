@@ -1,10 +1,6 @@
 package com.videostreamtest.ui.phone.productpicker;
 
 import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,14 +8,10 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.ui.phone.videoplayer.MQTTService;
-
-import java.util.ArrayList;
 
 public class ProductPickerAdapter extends RecyclerView.Adapter<ProductPickerViewHolder> {
     private final static String TAG = ProductPickerAdapter.class.getSimpleName();
