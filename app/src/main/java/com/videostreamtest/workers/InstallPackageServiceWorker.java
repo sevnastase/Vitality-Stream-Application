@@ -3,12 +3,15 @@ package com.videostreamtest.workers;
 import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
 
 import android.Manifest;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -32,6 +35,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -85,36 +90,20 @@ public class InstallPackageServiceWorker extends Worker implements ProgressCallB
                     Log.e(TAG, e.getLocalizedMessage());
                 }
 
-                if (ConfigurationHelper.getVersionNumberCode(getApplicationContext()) >= ConfigurationHelper.getLocalUpdatePackageInfo(getApplicationContext()).versionCode) {
-                    //DELETE LOCAL UPDATE
-                    new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()).delete();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    if (ConfigurationHelper.getVersionNumberCode(getApplicationContext()) >= ConfigurationHelper.getLocalUpdatePackageInfo(getApplicationContext()).getLongVersionCode()) {
+                        //DELETE LOCAL UPDATE
+                        new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()).delete();
+                    } else {
+                        prepUpdate(apikey, updateFileName);
+                    }
                 } else {
-                    if (apikey != null && apikey != ""){
-                        databaseRestService.writeLog(apikey, "UPDATE FOUND AND REQUESTING INSTALLATION", "DEBUG", "");
+                    if (ConfigurationHelper.getVersionNumberCode(getApplicationContext()) >= ConfigurationHelper.getLocalUpdatePackageInfo(getApplicationContext()).versionCode) {
+                        //DELETE LOCAL UPDATE
+                        new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()).delete();
+                    } else {
+                        prepUpdate(apikey, updateFileName);
                     }
-
-                    //REQUEST TO INSTALL UPDATE TO USER
-                    Uri contentUri = FileProvider.getUriForFile(
-                            getApplicationContext(),
-                            BuildConfig.APPLICATION_ID + ".provider",
-                            new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()));
-
-                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.INSTALL_PACKAGES) != PackageManager.PERMISSION_GRANTED){
-                        Toast.makeText(getApplicationContext(), "No permission to install update!", Toast.LENGTH_LONG).show();
-                        if (apikey != null && apikey != ""){
-                            databaseRestService.writeLog(apikey, "No permission to install update!", "ERROR", "");
-                        }
-                    }
-
-                    Intent autoUpdatePackage = new Intent(Intent.ACTION_VIEW);
-                    autoUpdatePackage.setAction(Intent.ACTION_INSTALL_PACKAGE);
-                    autoUpdatePackage.putExtra(Intent.EXTRA_RETURN_RESULT, true);
-                    autoUpdatePackage.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true);
-                    autoUpdatePackage.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    autoUpdatePackage.setDataAndType(
-                            contentUri,
-                            "application/vnd.android.package-archive");
-                    getApplicationContext().startActivity(autoUpdatePackage);
                 }
             }
         }
@@ -125,6 +114,64 @@ public class InstallPackageServiceWorker extends Worker implements ProgressCallB
                 .build();
 
         return Result.success(outputData);
+    }
+
+
+    private void prepUpdate(String apikey, String updateFileName) {
+        if (apikey != null && apikey != ""){
+            databaseRestService.writeLog(apikey, "UPDATE FOUND AND REQUESTING INSTALLATION", "DEBUG", "");
+        }
+
+        //REQUEST TO INSTALL UPDATE TO USER
+        Uri contentUri = FileProvider.getUriForFile(
+                getApplicationContext(),
+                BuildConfig.APPLICATION_ID + ".provider",
+                new File(DownloadHelper.getLocalUpdateFileUri(getApplicationContext(), updateFileName).toString()));
+
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.INSTALL_PACKAGES) != PackageManager.PERMISSION_GRANTED){
+            Toast.makeText(getApplicationContext(), "No permission to install update!", Toast.LENGTH_LONG).show();
+            if (apikey != null && apikey != ""){
+                databaseRestService.writeLog(apikey, "No permission to install update!", "ERROR", "");
+            }
+        }
+
+        Intent autoUpdatePackage = new Intent(Intent.ACTION_VIEW);
+        startInstallation(contentUri);
+        autoUpdatePackage.putExtra(Intent.EXTRA_RETURN_RESULT, true);
+        autoUpdatePackage.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true);
+        autoUpdatePackage.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+        autoUpdatePackage.setDataAndType(
+                contentUri,
+                "application/vnd.android.package-archive");
+        getApplicationContext().startActivity(autoUpdatePackage);
+    }
+    private void startInstallation(Uri apkUri) {
+        try {
+            PackageInstaller packageInstaller = getApplicationContext().getPackageManager().getPackageInstaller();
+            PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(
+                    PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+            int sessionId = packageInstaller.createSession(params);
+            PackageInstaller.Session session = packageInstaller.openSession(sessionId);
+
+            try (OutputStream out = session.openWrite("CUSTAPP", 0, -1);
+                 InputStream in = getApplicationContext().getContentResolver().openInputStream(apkUri)) {
+                byte[] buffer = new byte[65536];
+                int c;
+                while ((c = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, c);
+                }
+                session.fsync(out);
+            } catch (IOException e) {
+
+            }
+
+            Intent intent = new Intent(getApplicationContext(), InstallPackageServiceWorker.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),
+                    0, intent, PendingIntent.FLAG_IMMUTABLE);
+            session.commit(pendingIntent.getIntentSender());
+        } catch (IOException e) {
+            Log.e(TAG, String.format("Installation failed: " + e.toString()));
+        }
     }
 
     private void download(final String inputPath, final long expectedSize) throws IOException {

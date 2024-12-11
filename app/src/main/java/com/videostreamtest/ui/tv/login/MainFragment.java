@@ -1,6 +1,7 @@
 package com.videostreamtest.ui.tv.login;
 
 import android.graphics.Movie;
+import android.graphics.drawable.AnimatedImageDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -9,6 +10,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.leanback.app.BackgroundManager;
 import androidx.leanback.app.BrowseSupportFragment;
 import androidx.loader.app.LoaderManager;
@@ -20,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MainFragment extends BrowseSupportFragment implements
-        LoaderManager.LoaderCallbacks<HashMap<String, List<Movie>>> {
+        LoaderManager.LoaderCallbacks<HashMap<String, List<AnimatedImageDrawable>>> {
 
     private BackgroundManager backgroundManager;
 
@@ -42,25 +44,29 @@ public class MainFragment extends BrowseSupportFragment implements
 
     @NonNull
     @Override
-    public Loader<HashMap<String, List<Movie>>> onCreateLoader(int id, @Nullable Bundle args) {
+    public Loader<HashMap<String, List<AnimatedImageDrawable>>> onCreateLoader(int id, @Nullable Bundle args) {
         return null;
     }
 
     @Override
-    public void onLoadFinished(@NonNull Loader<HashMap<String, List<Movie>>> loader, HashMap<String, List<Movie>> data) {
+    public void onLoadFinished(@NonNull Loader<HashMap<String,
+                            List<AnimatedImageDrawable>>> loader,
+                            HashMap<String, List<AnimatedImageDrawable>> data) {
 
     }
 
     @Override
-    public void onLoaderReset(@NonNull Loader<HashMap<String, List<Movie>>> loader) {
+    public void onLoaderReset(@NonNull Loader<HashMap<String, List<AnimatedImageDrawable>>> loader) {
 
     }
 
     private void prepareBackgroundManager() {
         backgroundManager = BackgroundManager.getInstance(getActivity());
         backgroundManager.attach(getActivity().getWindow());
-        Drawable defaultBackground = getResources()
-                .getDrawable(R.drawable.default_tv_background);
+        Drawable defaultBackground = ResourcesCompat.getDrawable(getResources(),
+                R.drawable.default_tv_background,
+                null);
+
         DisplayMetrics metrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
     }

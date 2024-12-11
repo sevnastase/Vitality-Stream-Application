@@ -49,6 +49,7 @@ import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
+import com.videostreamtest.config.application.BaseActivity;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
@@ -80,7 +81,7 @@ import java.util.List;
 /**
  * Full-screen videoplayer activity
  */
-public class VideoplayerActivity extends AppCompatActivity {
+public class VideoplayerActivity extends BaseActivity {
     private static final String TAG = VideoplayerActivity.class.getSimpleName();
 
     private static final int MAX_PAUSE_TIME_SEC = 55;
@@ -955,10 +956,11 @@ public class VideoplayerActivity extends AppCompatActivity {
             if (mediaPlayer.getMedia() != null
                     && (backgroundSoundPlayer != null)
             ) {
-                Log.d(TAG, "AudioTrack uri bgsPlayer: "+backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri.toString());
+                Log.d(TAG, "AudioTrack uri bgsPlayer: "+backgroundSoundPlayer.getCurrentMediaItem().localConfiguration.uri.toString());
                 Log.d(TAG, "AudioTrack uri should be: "+backgroundSoundurl);
                 Log.d(TAG, "AudioTrack localFileName: "+localFileName);
-                if (backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri.toString().contains(localFileName)) {
+                // TODO: check if localConfiguration was a good replacement for playbackProperties
+                if (backgroundSoundPlayer.getCurrentMediaItem().localConfiguration.uri.toString().contains(localFileName)) {
                     if (!backgroundSoundPlayer.isPlaying()) {
                         backgroundSoundPlayer.play();
                     }
@@ -1221,7 +1223,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         mediaItem = MediaItem.fromUri(uri);
 
         for (final MediaItem bgSound: backgroundMediaItems) {
-            if (    getSoundFileName(bgSound.playbackProperties.uri).toLowerCase()
+            if (    getSoundFileName(bgSound.localConfiguration.uri).toLowerCase()
                     .equals(
                         getSoundFileName(Uri.parse(backgroundSound.getSoundUrl().toLowerCase()))
                     )
@@ -1239,7 +1241,7 @@ public class VideoplayerActivity extends AppCompatActivity {
             }
             backgroundSoundPlayer.prepare();
 
-            Log.d(TAG, "Add (AUDIO) to SOUND VLC Player: "+backgroundMediaItems.get(0).playbackProperties.uri.toString());
+            Log.d(TAG, "Add (AUDIO) to SOUND VLC Player: "+backgroundMediaItems.get(0).localConfiguration.uri.toString());
 //            mediaPlayer.addSlave(IMedia.Slave.Type.Audio, backgroundMediaItems.get(0).playbackProperties.uri, false );
 
         }
@@ -1322,7 +1324,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         boolean videoVolume = true;
         if (backgroundSoundTriggers.size()>0) {
             backgroundPlayer = backgroundSoundPlayer != null && backgroundSoundPlayer.isPlaying();
-            backgroundItemLoaded = backgroundSoundPlayer.getCurrentMediaItem() != null && !backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri.toString().isEmpty();
+            backgroundItemLoaded = backgroundSoundPlayer.getCurrentMediaItem() != null &&
+                    !backgroundSoundPlayer.getCurrentMediaItem().localConfiguration.uri.toString().isEmpty();
             videoVolume = true;
         }
         boolean backgroundSoundPlayerVolume = backgroundSoundPlayer.getVolume()>0;

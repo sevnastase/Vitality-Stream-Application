@@ -1,6 +1,7 @@
 package com.videostreamtest.utils;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -21,7 +22,7 @@ public class Security {
             }
             generatedPassword = sb.toString();
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            Log.d("GETSHA", String.format("Getting SHA512 value failed: " + e.toString()));
         }
         return generatedPassword;
     }

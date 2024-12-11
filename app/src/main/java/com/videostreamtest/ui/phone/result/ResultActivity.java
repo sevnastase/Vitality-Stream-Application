@@ -7,8 +7,9 @@ import android.view.View;
 import android.widget.Button;
 
 import com.videostreamtest.R;
+import com.videostreamtest.config.application.BaseActivity;
 
-public class ResultActivity extends AppCompatActivity {
+public class ResultActivity extends BaseActivity {
 
     private Button returnButton;
 

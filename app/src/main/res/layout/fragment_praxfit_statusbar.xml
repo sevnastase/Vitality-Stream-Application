@@ -249,7 +249,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <SeekBar
+            <androidx.appcompat.widget.AppCompatSeekBar
                 android:id="@+id/statusbar_praxfit_progress_indicator"
                 android:layout_width="700dp"
                 android:focusable="false"

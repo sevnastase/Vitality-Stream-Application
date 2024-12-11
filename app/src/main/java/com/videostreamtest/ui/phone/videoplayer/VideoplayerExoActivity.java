@@ -27,28 +27,17 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-
-//import com.google.android.exoplayer2.DefaultLoadControl;
-//import com.google.android.exoplayer2.ExoPlayer;
-//import com.google.android.exoplayer2.MediaItem;
-//import com.google.android.exoplayer2.PlaybackParameters;
-//import com.google.android.exoplayer2.Player;
-//import com.google.android.exoplayer2.SimpleExoPlayer;
-//import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
-//import com.google.android.exoplayer2.source.MediaSourceFactory;
-//import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-//import com.google.android.exoplayer2.ui.PlayerView;
-
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
-import androidx.media3.ui.PlayerView;
 import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.ui.PlayerView;
 
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
+import com.videostreamtest.config.application.BaseActivity;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
@@ -68,11 +57,6 @@ import com.videostreamtest.ui.phone.videoplayer.fragments.PraxSpinStatusBarFragm
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.RpmVectorLookupTable;
-import com.videostreamtest.utils.VideoLanLib;
-
-import org.videolan.libvlc.Media;
-import org.videolan.libvlc.MediaPlayer;
-import org.videolan.libvlc.util.VLCVideoLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +64,7 @@ import java.util.List;
 /**
  * Full-screen videoplayer activity
  */
-public class VideoplayerExoActivity extends AppCompatActivity {
+public class VideoplayerExoActivity extends BaseActivity {
     private static final String TAG = VideoplayerExoActivity.class.getSimpleName();
 
     private static final int MAX_PAUSE_TIME_SEC = 55;
@@ -945,10 +929,10 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             if (mediaPlayer.getCurrentMediaItem() != null
                     && (backgroundSoundPlayer != null)
             ) {
-                Log.d(TAG, "AudioTrack uri bgsPlayer: "+backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri.toString());
+                Log.d(TAG, "AudioTrack uri bgsPlayer: "+backgroundSoundPlayer.getCurrentMediaItem().localConfiguration.uri.toString());
                 Log.d(TAG, "AudioTrack uri should be: "+backgroundSoundurl);
                 Log.d(TAG, "AudioTrack localFileName: "+localFileName);
-                if (backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri.toString().contains(localFileName)) {
+                if (backgroundSoundPlayer.getCurrentMediaItem().localConfiguration.uri.toString().contains(localFileName)) {
                     if (!backgroundSoundPlayer.isPlaying()) {
                         backgroundSoundPlayer.play();
                     }
@@ -1210,7 +1194,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         mediaItem = MediaItem.fromUri(uri);
 
         for (final MediaItem bgSound: backgroundMediaItems) {
-            if (    getSoundFileName(bgSound.playbackProperties.uri).toLowerCase()
+            if (    getSoundFileName(bgSound.localConfiguration.uri).toLowerCase()
                     .equals(
                         getSoundFileName(Uri.parse(backgroundSound.getSoundUrl().toLowerCase()))
                     )
@@ -1228,7 +1212,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             }
             backgroundSoundPlayer.prepare();
 
-            Log.d(TAG, "Add (AUDIO) to SOUND VLC Player: "+backgroundMediaItems.get(0).playbackProperties.uri.toString());
+            Log.d(TAG, "Add (AUDIO) to SOUND VLC Player: "+backgroundMediaItems.get(0).localConfiguration.uri.toString());
 //            mediaPlayer.addSlave(IMedia.Slave.Type.Audio, backgroundMediaItems.get(0).playbackProperties.uri, false );
 
         }
@@ -1303,7 +1287,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         boolean videoVolume = true;
         if (backgroundSoundTriggers.size()>0) {
             backgroundPlayer = backgroundSoundPlayer != null && backgroundSoundPlayer.isPlaying();
-            backgroundItemLoaded = backgroundSoundPlayer.getCurrentMediaItem() != null && !backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri.toString().isEmpty();
+            backgroundItemLoaded = backgroundSoundPlayer.getCurrentMediaItem() != null && !backgroundSoundPlayer.getCurrentMediaItem().localConfiguration.uri.toString().isEmpty();
             videoVolume = true;
         }
         boolean backgroundSoundPlayerVolume = backgroundSoundPlayer.getVolume()>0;

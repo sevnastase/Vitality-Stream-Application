@@ -3,17 +3,21 @@ package com.videostreamtest.ui.phone.login.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavDestination;
+import androidx.navigation.NavHost;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.work.Constraints;
 import androidx.work.Data;
@@ -84,8 +88,13 @@ public class DownloadFlagsFragment extends Fragment {
 
     private void gotoNextFragment() {
         loginViewModel.addInstallationStep();
-        NavHostFragment.findNavController(DownloadFlagsFragment.this)
-                .navigate(R.id.action_downloadFlagsFragment_to_downloadMovieSupportImagesFragment, getArguments());
+        try {
+            NavHostFragment.findNavController(DownloadFlagsFragment.this)
+                    .navigate(R.id.action_downloadFlagsFragment_to_downloadMovieSupportImagesFragment, getArguments());
+        } catch (Exception e) {
+            Log.d("FML", "FML " + e);
+        }
+        Log.d("Navigating", "Navigating to downloading movie support images");
     }
 
     private boolean downloadFlags() {

@@ -9,13 +9,14 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.location.LocationManagerCompat;
 
-import com.videostreamtest.config.entity.Configuration;
+import com.videostreamtest.config.application.PraxtourApplication;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,50 +25,66 @@ public class PermissionHelper {
     private final static String TAG = PermissionHelper.class.getSimpleName();
     private static final int PERMISSION_REQUEST_CODE = 2323;
 
-    public static void requestPermission(Context context, Activity activity) {
+    public static void checkPermissions() {
+        Activity activity = PraxtourApplication.currentActivity;
+        if (activity == null) {
+            Log.d(TAG, "Activity == null");
+            return;
+        }
+
+        Context context = activity.getApplicationContext();
+
         List<String> permissions = new ArrayList<>();
         Log.d(TAG, "Checking permissions for Build Version Code "+Build.VERSION.SDK_INT);
-        // Check if Android M or higher
-        // Android M is also our least target build sdk
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
-            permissions.add(Manifest.permission.INTERNET);
-            permissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
-
+        // Check if Android S (12) or lower
+        // Android P (V: 9, SDK: 28) is our least target build sdk
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             permissions.add(Manifest.permission.BLUETOOTH);
             permissions.add(Manifest.permission.BLUETOOTH_ADMIN);
 
-            if (AccountHelper.isAccountBootable(context)) {
-                permissions.add(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-            }
-
-            if (AccountHelper.getAccountType(context).equalsIgnoreCase("standalone")) {
-                permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-            }
-
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            //if (AccountHelper.isAccountBootable(context)) {
+            //    permissions.add(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+            //}
+        } else { // Android 12 or higher
             permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
-//            permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
             permissions.add(Manifest.permission.BLUETOOTH_SCAN);
             permissions.add(Manifest.permission.BLUETOOTH_CONNECT);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                permissions.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION);
+            }
         }
 
-        if (permissions.size()>0) {
-            for (String permission: permissions) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        }
+
+        if (AccountHelper.getAccountType(context).equalsIgnoreCase("standalone")) {
+            permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
+
+        permissions.add(Manifest.permission.INTERNET);
+        permissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
+        permissions.add(Manifest.permission.FOREGROUND_SERVICE);
+
+        requestPermissions(permissions, activity);
+    }
+
+    private static void requestPermissions(List<String> permissions, Activity activity) {
+        Context context = activity.getApplicationContext();
+
+        if (!permissions.isEmpty()) {
+            for (String permission : permissions) {
                 if (ContextCompat.checkSelfPermission(context,
                         permission)
                         != PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, String.format("Permission not GRANTED: "+permission));
+                    Log.d(TAG, String.format("Permission not GRANTED: " + permission));
+
+                    // Toast.makeText(context, permission, Toast.LENGTH_LONG).show();
+
                     ActivityCompat.requestPermissions(
                             activity,
                             new String[]{permission},

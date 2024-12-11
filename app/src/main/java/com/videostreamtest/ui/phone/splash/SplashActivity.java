@@ -31,6 +31,7 @@ import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.android.play.core.tasks.Task;
 import com.videostreamtest.R;
+import com.videostreamtest.config.application.BaseActivity;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
@@ -49,7 +50,7 @@ import org.videolan.libvlc.LibVLC;
 import java.util.concurrent.TimeUnit;
 
 
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends BaseActivity {
 
     private static final String TAG = SplashActivity.class.getSimpleName();
     private static final int MY_REQUEST_CODE = 1337;

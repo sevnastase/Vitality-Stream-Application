@@ -24,10 +24,11 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
+import com.videostreamtest.config.application.BaseActivity;
 import com.videostreamtest.data.model.response.Result;
 import com.videostreamtest.workers.AddProfileServiceWorker;
 
-public class AddProfileActivity extends AppCompatActivity {
+public class AddProfileActivity extends BaseActivity {
     private final static String TAG = AddProfileActivity.class.getSimpleName();
 
     private ProfileViewModel profileViewModel;

@@ -27,6 +27,7 @@ import androidx.work.WorkManager;
 
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
+import com.videostreamtest.config.application.BaseActivity;
 import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.workers.synchronisation.ActiveConfigurationServiceWorker;
@@ -35,7 +36,7 @@ import com.videostreamtest.workers.ServerStatusServiceWorker;
 
 import java.util.concurrent.TimeUnit;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BaseActivity {
     private static final String TAG = LoginActivity.class.getSimpleName();
 
     private LoginViewModel loginViewModel;

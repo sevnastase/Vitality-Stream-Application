@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.videostreamtest.R;
+import com.videostreamtest.config.application.BaseActivity;
 import com.videostreamtest.data.model.Profile;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.service.ble.BleService;
@@ -39,7 +40,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-public class ProfilesActivity extends AppCompatActivity {
+public class ProfilesActivity extends BaseActivity {
     private static final String TAG = ProfilesActivity.class.getSimpleName();
     private ProfileViewModel profileViewModel;
 
