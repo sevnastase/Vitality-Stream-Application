@@ -1,5 +1,7 @@
 package com.videostreamtest.ui.phone.productview.fragments.routefilmadapter;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,20 +13,16 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
-import com.videostreamtest.config.entity.Flag;
-import com.videostreamtest.config.entity.MovieFlag;
 import com.videostreamtest.config.entity.Routefilm;
-import com.videostreamtest.data.model.Movie;
+import com.videostreamtest.constants.SharedPreferencesConstants;
 import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.enums.CommunicationDevice;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
-import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolder> {
     private static final String TAG = RoutefilmsAdapter.class.getSimpleName();
@@ -70,11 +68,11 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
         }
         if (selectedRoutefilm == position) {
             final ImageButton routeSceneryImage = holder.itemView.findViewById(R.id.routeImageCoverButton);
-            routeSceneryImage.setFocusableInTouchMode(true);
-            routeSceneryImage.setFocusable(true);
-//            if (!routeSceneryImage.isFocused()) {
+            if (!routeSceneryImage.hasFocus()) {
+                routeSceneryImage.setFocusableInTouchMode(true);
+                routeSceneryImage.setFocusable(true);
                 routeSceneryImage.requestFocus();
-//            }
+            }
         }
     }
 
@@ -141,6 +139,15 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
         }
     }
 
+    public void rebuildRoutefilmList(final List<Routefilm> requestedRoutefilmList) {
+        if (requestedRoutefilmList == null || requestedRoutefilmList.isEmpty()) {
+            return;
+        }
+
+        routefilmList.clear();
+        updateRoutefilmList(requestedRoutefilmList);
+    }
+
     private boolean isRoutefilmRemoved(final Routefilm routefilm, final List<Routefilm> requestedRoutefilmList) {
         if (requestedRoutefilmList!= null && requestedRoutefilmList.size()>0) {
             for (final Routefilm film: requestedRoutefilmList) {
@@ -163,6 +170,10 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
         } else {
             return false;
         }
+    }
+
+    public List<Routefilm> getRoutefilms() {
+        return this.routefilmList;
     }
 
 }

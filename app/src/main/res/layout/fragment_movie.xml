@@ -19,6 +19,38 @@
         android:contentDescription="Route"
         android:background="@null"
         android:src="@drawable/scenery_placeholder" />
+
+    <ImageView
+        android:id="@+id/favorite_button_filled"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="fitCenter"
+        android:paddingTop="25dp"
+        android:background="@null"
+        android:layout_gravity="top|end"
+        android:src="@drawable/filled_star_favorite_2"
+        android:visibility="gone"/>
+
+    <ImageView
+        android:id="@+id/favorite_button_empty"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="fitCenter"
+        android:paddingTop="25dp"
+        android:background="@null"
+        android:layout_gravity="top|end"
+        android:src="@drawable/empty_star_favorite"
+        android:visibility="gone"/>
+
+    <ImageButton
+        android:id="@+id/favorite_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="fitCenter"
+        android:paddingTop="25dp"
+        android:background="@null"
+        android:layout_gravity="top|end"
+        android:visibility="visible"/>
 </com.videostreamtest.ui.phone.productview.layoutmanager.FocusFixFrameLayout>
 <!--<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
 <!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->

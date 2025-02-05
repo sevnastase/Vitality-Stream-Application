@@ -1,13 +1,17 @@
 package com.videostreamtest.ui.phone.productview.fragments.routefilmadapter;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,6 +25,7 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Routefilm;
+import com.videostreamtest.constants.SharedPreferencesConstants;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
@@ -32,6 +37,10 @@ import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
     private static final String TAG = RoutefilmsViewHolder.class.getSimpleName();
@@ -42,9 +51,13 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
     private int position = 0;
     private LinearLayout routeInformationBlock;
     private RoutefilmsAdapter routefilmsAdapter;
+    private boolean favorited;
 
     //VIEW ELEMENTS
     private ImageButton routefilmScenery;
+    private ImageButton favoriteButton;
+    private ImageView favoritedStar;
+    private ImageView unfavoritedStar;
 
     //APP APIKEY
     private String apikey;
@@ -73,6 +86,9 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
 
         //LOAD VIEW ELEMENT
         routefilmScenery = itemView.findViewById(R.id.routeImageCoverButton);
+        favoriteButton = itemView.findViewById(R.id.favorite_button);
+        favoritedStar = itemView.findViewById(R.id.favorite_button_filled);
+        unfavoritedStar = itemView.findViewById(R.id.favorite_button_empty);
 
         initMovie(selectedProduct);
         if (performStaticChecks(selectedProduct)) {
@@ -88,6 +104,7 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
         initMovieImages();
         initOnFocusChangeListener(selectedProduct);
         initView();
+        initFavorite();
     }
 
     private void initView() {
@@ -309,6 +326,106 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
         else {
             return true;
         }
+    }
+
+    private void initFavorite() {
+        favoriteButton.setOnClickListener(view -> {
+            favoriteButton.setEnabled(false);
+
+            if (favorited) {
+                favoritedStar.setVisibility(View.GONE);
+                unfavoritedStar.setVisibility(View.VISIBLE);
+                unfavorite();
+            } else {
+                unfavoritedStar.setVisibility(View.GONE);
+                favoritedStar.setVisibility(View.VISIBLE);
+                favorite();
+            }
+
+            new Handler().postDelayed(() -> {
+                favoriteButton.setEnabled(true);
+            }, 100);
+
+            arrangeMoviesByFavorites();
+        });
+
+        Set<String> favoritedMovieIds = itemView.getContext().getSharedPreferences("app", Context.MODE_PRIVATE).getStringSet(SharedPreferencesConstants.FAVORITE_MOVIES, null);
+        if (favoritedMovieIds != null) {
+            favorited = favoritedMovieIds.contains(Routefilm.fromMovie(movie, apikey).getMovieId().toString());
+        }
+
+        recolorFavoriteButton();
+    }
+
+    private void arrangeMoviesByFavorites() {
+        Set<String> favoritedMovieIds = itemView.getContext().getSharedPreferences("app", Context.MODE_PRIVATE)
+                .getStringSet(SharedPreferencesConstants.FAVORITE_MOVIES, null);
+
+        if (favoritedMovieIds == null) {
+            return;
+        }
+
+        List<Routefilm> routefilmList = routefilmsAdapter.getRoutefilms();
+        List<Routefilm> sortedRoutefilmList = new ArrayList<>();
+
+        // Add favorited movies first
+        for (Routefilm routefilm : routefilmList) {
+            if (favoritedMovieIds.contains(routefilm.getMovieId().toString())) {
+                sortedRoutefilmList.add(routefilm);
+            }
+        }
+
+        // Then add rest
+        for (Routefilm routefilm : routefilmList) {
+            if (! sortedRoutefilmList.contains(routefilm)) {
+                sortedRoutefilmList.add(routefilm);
+            }
+        }
+
+        routefilmsAdapter.rebuildRoutefilmList(sortedRoutefilmList);
+    }
+
+    private void recolorFavoriteButton() {
+        if (favorited) {
+            favoritedStar.setVisibility(View.VISIBLE);
+            unfavoritedStar.setVisibility(View.GONE);
+        } else {
+            favoritedStar.setVisibility(View.GONE);
+            unfavoritedStar.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void favorite() {
+        // Retrieve already favorited set
+        SharedPreferences sp = super.itemView.getContext().getSharedPreferences("app", Context.MODE_PRIVATE);
+        Set<String> favoritedMovieIds = sp.getStringSet(SharedPreferencesConstants.FAVORITE_MOVIES, null);
+        if (favoritedMovieIds == null) {
+            favoritedMovieIds = new HashSet<>();
+        }
+        Set<String> updatedFavoritedMovieIds = new HashSet<>(favoritedMovieIds);
+
+        // Add the new movie to it
+        updatedFavoritedMovieIds.add(Routefilm.fromMovie(movie, apikey).getMovieId().toString());
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putStringSet(SharedPreferencesConstants.FAVORITE_MOVIES, updatedFavoritedMovieIds);
+        editor.apply();
+        favorited = true;
+    }
+
+    private void unfavorite() {
+        SharedPreferences sp = super.itemView.getContext().getSharedPreferences("app", Context.MODE_PRIVATE);
+        Set<String> favoritedMovieIds = sp.getStringSet(SharedPreferencesConstants.FAVORITE_MOVIES, null);
+        if (favoritedMovieIds == null) {
+            return;
+        }
+
+        Set<String> updatedFavoritedMovieIds = new HashSet<>(favoritedMovieIds);
+        updatedFavoritedMovieIds.remove(Routefilm.fromMovie(movie, apikey).getMovieId().toString());
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putStringSet(SharedPreferencesConstants.FAVORITE_MOVIES, updatedFavoritedMovieIds);
+        editor.apply();
+
+        favorited = false;
     }
 
     private void performSpeedtestAndStartVideoPlayer() {
