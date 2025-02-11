@@ -9,7 +9,7 @@ android {
     ndkVersion "21.4.7075529"
 
     defaultConfig {
-        applicationId "com.videostreamtest.chinesport"
+        applicationId "com.videostreamtest"
         minSdkVersion 23
         targetSdkVersion 25
         versionCode Integer.parseInt(VERSION_CODE)

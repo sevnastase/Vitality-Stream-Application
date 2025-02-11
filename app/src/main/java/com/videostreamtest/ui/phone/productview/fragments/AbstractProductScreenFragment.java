@@ -33,6 +33,7 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.MovieFlag;
 import com.videostreamtest.config.entity.Routefilm;
+import com.videostreamtest.constants.SharedPreferencesConstants;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
@@ -51,6 +52,7 @@ import com.videostreamtest.utils.ApplicationSettings;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class AbstractProductScreenFragment extends Fragment {
     private static final String TAG = AbstractProductScreenFragment.class.getSimpleName();
@@ -343,7 +345,44 @@ public class AbstractProductScreenFragment extends Fragment {
                         });
             }
 
+            new Handler().postDelayed(this::arrangeMoviesByFavorites, 100);
+            new Handler().postDelayed(this::arrangeMoviesByFavorites, 100);
+            new Handler().postDelayed(this::arrangeMoviesByFavorites, 100);
+
         }
+    }
+
+    private void arrangeMoviesByFavorites() {
+        Set<String> favoritedMovieIds;
+        try {
+            favoritedMovieIds = getContext().getSharedPreferences("app", Context.MODE_PRIVATE)
+                    .getStringSet(SharedPreferencesConstants.FAVORITE_MOVIES, null);
+        } catch (NullPointerException e) {
+            return;
+        }
+
+        if (favoritedMovieIds == null) {
+            return;
+        }
+        // FIXME getRoutefilms() returns nothing yet, ig its not initialized
+        List<Routefilm> routefilmList = routefilmsAdapter.getRoutefilms();
+        List<Routefilm> sortedRoutefilmList = new ArrayList<>();
+
+        // Add favorited movies first
+        for (Routefilm routefilm : routefilmList) {
+            if (favoritedMovieIds.contains(routefilm.getMovieId().toString())) {
+                sortedRoutefilmList.add(routefilm);
+            }
+        }
+
+        // Then add rest
+        for (Routefilm routefilm : routefilmList) {
+            if (! sortedRoutefilmList.contains(routefilm)) {
+                sortedRoutefilmList.add(routefilm);
+            }
+        }
+
+        routefilmsAdapter.rebuildRoutefilmList(sortedRoutefilmList);
     }
 
     private void showRoutefilmOverview() {
