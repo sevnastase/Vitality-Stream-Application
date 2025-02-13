@@ -51,6 +51,7 @@ public class VideoPlayerViewModel extends AndroidViewModel {
     private Boolean     isPlayerPaused          = false;
     private Long        totalDurationSeconds    = 0L;
     private Long        spendDurationSeconds    = 0L;
+    private String productName;
 
     public VideoPlayerViewModel(@NonNull Application application) {
         super(application);
@@ -74,6 +75,17 @@ public class VideoPlayerViewModel extends AndroidViewModel {
         this.movieSpendDurationSeconds.observeForever(duration -> distanceCalculationLogic());
     }
 
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public String getProductName() {
+        if (productName == null) {
+            return "";
+        }
+        return productName;
+    }
+
     public LiveData<Integer> getRpmData() {
         return rpmData;
     }
@@ -90,6 +102,20 @@ public class VideoPlayerViewModel extends AndroidViewModel {
         this.kmhData.setValue(kmhData);
     }
 
+    /**
+     * Changes the kmh data by {@code value}. If the new kmhData would not be positive,
+     * the value is not changed.
+     *
+     * @param value that {@link this#kmhData} will be modified by
+     */
+    public void changeKmhBy(Integer value) {
+        if (kmhData.getValue() != null &&
+                kmhData.getValue() + value > 0) {
+
+            this.kmhData.setValue(kmhData.getValue() + value);
+        }
+    }
+
     public MutableLiveData<Integer> getVolumeLevel() {
         return volumeLevel;
     }
@@ -97,6 +123,22 @@ public class VideoPlayerViewModel extends AndroidViewModel {
     public void setVolumeLevel(Integer volumeLevel) {
         if(volumeLevel >= 0 && volumeLevel <= 100) {
             this.volumeLevel.setValue(volumeLevel);
+        }
+    }
+
+    /**
+     * Changes the volume level of the media playing by {@code value}. If the new value would
+     * exceed 100 or fall below 0, the value is not changed.
+     *
+     * @modifies volumeLevel
+     * @param value that {@link this.volumeLevel} will be modified by.
+     */
+    public void changeVolumeLevelBy(Integer value) {
+        if (volumeLevel.getValue() != null &&
+                volumeLevel.getValue() + value >= 0 &&
+                volumeLevel.getValue() + value <= 100) {
+
+            this.volumeLevel.setValue(volumeLevel.getValue() + value);
         }
     }
 
@@ -204,9 +246,9 @@ public class VideoPlayerViewModel extends AndroidViewModel {
             if (calculatedCurrentMetersDone < 0) calculatedCurrentMetersDone = 0;
             final int calculatedMetersToGo = selectedMovieVal.getMovieLength() - calculatedCurrentMetersDone - distanceOffsetVal;
 
-            Log.d(TAG, "calculatedCurrentMetersDone = " + calculatedCurrentMetersDone);
-            Log.d(TAG, "distanceOffset = " + distanceOffsetVal);
-            Log.d(TAG, "calculatedMetersToGo = " + calculatedMetersToGo);
+            // Log.d(TAG, "calculatedCurrentMetersDone = " + calculatedCurrentMetersDone);
+            // Log.d(TAG, "distanceOffset = " + distanceOffsetVal);
+            // Log.d(TAG, "calculatedMetersToGo = " + calculatedMetersToGo);
 
             currentMetersDone.postValue(calculatedCurrentMetersDone);
             metersToGo.postValue(calculatedMetersToGo);

@@ -266,8 +266,11 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
             case R.id.nav_home:
                 navController.navigate(R.id.productPickerFragment);
                 break;
-            case R.id.nav_privacy:
-                navController.navigate(R.id.privacyPolicyFragment);
+//            case R.id.nav_privacy:
+//                navController.navigate(R.id.privacyPolicyFragment);
+//                break;
+            case R.id.nav_settings:
+                navController.navigate(R.id.settingsFragment);
                 break;
             case R.id.nav_logout:
                 navController.navigate(R.id.logoutFragment);

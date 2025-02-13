@@ -4,6 +4,7 @@ import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -379,6 +380,25 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             };
             handler.postDelayed(runnable, 0);
         }
+
+        int preferredDefaultVolume = getSharedPreferences("app", Context.MODE_PRIVATE).getInt("defaultVolume", 50);
+        videoPlayerViewModel.setVolumeLevel(preferredDefaultVolume);
+
+        // Workaround: if this is not here, the preferred sound will not take effect
+        // the status bar (bottom) will show the correct volume, however the actual
+        // volume is different FIXME
+        new Handler().postDelayed(() -> {
+            if (videoPlayerViewModel.getVolumeLevel().getValue() != null &&
+                    videoPlayerViewModel.getVolumeLevel().getValue() <= 90) {
+                videoPlayerViewModel.changeVolumeLevelBy(10);
+                videoPlayerViewModel.changeVolumeLevelBy(-10);
+            }
+            if (videoPlayerViewModel.getVolumeLevel().getValue() != null &&
+                    videoPlayerViewModel.getVolumeLevel().getValue() >= 10) {
+                videoPlayerViewModel.changeVolumeLevelBy(-10);
+                videoPlayerViewModel.changeVolumeLevelBy(10);
+            }
+        }, 200);
     }
 
     public static VideoplayerExoActivity getInstance() {

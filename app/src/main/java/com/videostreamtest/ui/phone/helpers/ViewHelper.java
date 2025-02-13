@@ -3,12 +3,22 @@ package com.videostreamtest.ui.phone.helpers;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
+import com.videostreamtest.config.application.PraxtourApplication;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import java.io.File;
@@ -67,4 +77,38 @@ public class ViewHelper {
 
     }
 
+    /**
+     * Sets the color of ALL texts under (and including) {@param view} to {@param color}.
+     * For EditTexts, it sets to hint color to a more opaque color.
+     *
+     * @param colorId must be given in hexadecimal
+     */
+    public static void setTextColorToWhiteInViewAndChildren(@NonNull View view, int colorId) {
+        int color = ContextCompat.getColor(PraxtourApplication.getAppContext(), colorId);
+        if (view instanceof TextView) {
+            ((TextView) view).setTextColor(color);
+        }
+        if (view instanceof Button) {
+            ((Button) view).setTextColor(color);
+        }
+
+        /* Explanation: #AARRGGBB is the representation in hexadecimal
+         * of the color with Alpha value AA, RGB values RR, GG, BB.
+         * So by appending CA in the beginning, we can make whatever color
+         * we were given semi-transparent.
+         */
+        if (view instanceof EditText) {
+            String hexColorOpaque = String.format("#CA%06X", 0xFFFFFF & color);
+            ((EditText) view).setHintTextColor(Color.parseColor(hexColorOpaque));
+            ((EditText) view).setTextColor(color);
+        }
+
+        if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                setTextColorToWhiteInViewAndChildren(viewGroup.getChildAt(i), colorId);
+            }
+        }
+    }
 }

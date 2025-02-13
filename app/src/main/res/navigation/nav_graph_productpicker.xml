@@ -5,6 +5,10 @@
     app:startDestination="@id/productPickerFragment">
 
     <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.videostreamtest.ui.phone.productpicker.fragments.settings.SettingsFragment"
+        android:label="SettingsFragment" />
+    <fragment
         android:id="@+id/productPickerFragment"
         android:name="com.videostreamtest.ui.phone.productpicker.fragments.productpicker.ProductPickerFragment"
         android:label="ProductPickerFragment" />

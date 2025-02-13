@@ -15,6 +15,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.location.LocationManagerCompat;
 
+import com.videostreamtest.config.application.PraxtourApplication;
 import com.videostreamtest.config.entity.Configuration;
 
 import java.util.ArrayList;
@@ -23,6 +24,18 @@ import java.util.List;
 public class PermissionHelper {
     private final static String TAG = PermissionHelper.class.getSimpleName();
     private static final int PERMISSION_REQUEST_CODE = 2323;
+
+    public static void requestPermissions(ArrayList<String> permissions, Activity activity ) {
+        Log.d(TAG, "Checking specific permissions");
+
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(PraxtourApplication.getAppContext(), permission)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, String.format("Permission not GRANTED: "+permission));
+                ActivityCompat.requestPermissions(activity, new String[]{permission}, PERMISSION_REQUEST_CODE);
+            }
+        }
+    }
 
     public static void requestPermission(Context context, Activity activity) {
         List<String> permissions = new ArrayList<>();
