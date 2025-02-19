@@ -60,8 +60,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:text="Wifi"
-                        android:alpha="0.5"
-                        android:enabled="false"
                         android:background="@color/light_blue_600"
                         android:layout_marginStart="5dp"
                         android:layout_marginEnd="5dp"
