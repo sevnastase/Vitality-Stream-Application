@@ -22,7 +22,21 @@ public class ApplicationSettings {
     //INTERNAL (BUS) COMMUNICATION
     public final static String COMMUNICATION_INTENT_FILTER = "com.fitstream.sensor.DATA";
 
-    public static final String PRAXCLOUD_API_URL = "https://api.praxcloud.eu";
+    /** The URL for the production REST API. */
+    public static final String PRAXCLOUD_API_URL_PROD = "https://api.praxcloud.eu";
+    /**
+     * The URL for the test REST API.
+     * <p>
+     *     IMPORTANT: {@code localhost} would point to the device actually running the app.
+     *     Here are the correct IPs for development/testing:
+     *     Running a VM on your PC/laptop: {@code 10.0.2.2}.
+     *     Physical device: find the IPv4 address of your PC/laptop: {@code 192.168.x.x}.
+     *     You can set the {@code port} to whichever you exposed for your test/dev backend.
+     * </p>
+     */
+    public static final String PRAXCLOUD_API_URL_TEST = "http://10.0.2.2:8081";
+
+    public static final String PRAXCLOUD_API_URL = PRAXCLOUD_API_URL_TEST;
     public static final String PRAXCLOUD_MEDIA_URL = "https://media.praxcloud.eu";
 
     //STANDALONE

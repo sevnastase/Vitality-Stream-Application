@@ -16,6 +16,11 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 
+/**
+ * If you need to get data from the database, you can do it with a HTTP request via the API
+ * endpoints through here. Since there are already existing methods, you have
+ * examples to see how this goes.
+ */
 public class DatabaseRestService {
     public static final String TAG = "DatabaseRestService";
     public static final MediaType JSON

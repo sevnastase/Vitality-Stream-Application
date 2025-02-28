@@ -40,6 +40,7 @@ public class ActiveProductsServiceWorker extends Worker {
         //Pre-define output
         Data output = new Data.Builder().build();
 
+        Log.d(TAG, "Getting products:: \n \t" + apikey + ", from " + PRAXCLOUD_API_URL);
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(PRAXCLOUD_API_URL)
                 .addConverterFactory(GsonConverterFactory.create())
