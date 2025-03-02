@@ -1,67 +1,36 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
-import android.content.Context;
+import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.SystemClock;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Chronometer;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
-import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.login.LoginActivity;
-import com.videostreamtest.ui.phone.splash.SplashActivity;
-import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
-import com.videostreamtest.utils.DistanceLookupTable;
 
-public class PraxFitStatusBarFragment extends Fragment {
+public class PraxFitStatusBarFragment extends AbstractPraxStatusBarFragment {
     private static final String TAG = PraxFitStatusBarFragment.class.getSimpleName();
-    private VideoPlayerViewModel videoPlayerViewModel;
-    private RoutePartsAdapter routePartsAdapter;
 
     //Elements of the fragment to fill
-    private TextView statusbarMovieTitle;
     private TextView statusbarMovieRpm;
     private TextView statusbarDistance;
     private TextView statusbarTotalDistance;
-    private Chronometer stopwatchCurrentRide;
-    private RecyclerView statusbarRouteparts;
-
-    private ConstraintLayout titlelayout;
+//    private Chronometer stopwatchCurrentRide;
 
     //MOVIE PARTS
-    private LinearLayout moviePartsLayout;
-    private ImageButton toggleSwitchRoutepart;
-    private Handler loadTimer;
-
-    //VOLUME
-    private TextView statusbarVolumeIndicator;
-    private ImageButton volumeUp;
-    private ImageButton volumeDown;
+    private ImageButton toggleRoutePartsButton;
 
     //SEEK BAR
     private ImageButton seekBarT1;
@@ -78,44 +47,29 @@ public class PraxFitStatusBarFragment extends Fragment {
     private float position;
 
     //ROUTE PROGRESS
-    private SeekBar progressBar;
-    private boolean isLocalPlay = false;
     private int distanceOffset;
 
+    private AlertDialog resumeOrStopDialog;
 
-    @Nullable
+
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_praxfit_statusbar, container, false);
+    protected void initializeLayout(View view) {
+        super.initializeLayout(view);
 
-        //Link items to lay-out
-        titlelayout = view.findViewById(R.id.statusbar_title_box);
-        statusbarMovieTitle = view.findViewById(R.id.statusbar_title_box_title);
-        statusbarMovieRpm = view.findViewById(R.id.statusbar_speed_box_value);
+        statusbarMovieRpm = view.findViewById(R.id.statusbar_rpm_value);
         statusbarDistance = view.findViewById(R.id.statusbar_distance_box_value);
         statusbarTotalDistance = view.findViewById(R.id.statusbar_distance_finish_box_value);
-        stopwatchCurrentRide = view.findViewById(R.id.statusbar_time_box_value);
-        statusbarRouteparts = view.findViewById(R.id.statusbar_praxfit_recyclerview_movieparts);
-        statusbarVolumeIndicator = view.findViewById(R.id.statusbar_praxfit_volume_indicator);
-        volumeUp = view.findViewById(R.id.statusbar_praxfit_volume_button_up);
-        volumeDown = view.findViewById(R.id.statusbar_praxfit_volume_button_down);
-        progressBar = view.findViewById(R.id.statusbar_praxfit_progress_indicator);
-        moviePartsLayout = view.findViewById(R.id.statusbar_praxfit_movieparts);
-        toggleSwitchRoutepart = view.findViewById(R.id.statusbar_switch_part_button);
 
-        //INIT VALUES
-        stopwatchCurrentRide.setFormat(getString(R.string.videoplayer_chronometer_message));
-        stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
+        toggleRoutePartsButton = view.findViewById(R.id.statusbar_toggle_movieparts_button);
 
         //SEEKBAR BUTTONS
-        seekBarT1 = view.findViewById(R.id.statusbar_praxfit_seekbar_t1);
-        seekBarT2 = view.findViewById(R.id.statusbar_praxfit_seekbar_t2);
-        seekBarT3 = view.findViewById(R.id.statusbar_praxfit_seekbar_t3);
-        seekBarT4 = view.findViewById(R.id.statusbar_praxfit_seekbar_t4);
-        seekBarT5 = view.findViewById(R.id.statusbar_praxfit_seekbar_t5);
-        seekBarT6 = view.findViewById(R.id.statusbar_praxfit_seekbar_t6);
+        seekBarT1 = view.findViewById(R.id.statusbar_seekbar_t1);
+        seekBarT2 = view.findViewById(R.id.statusbar_seekbar_t2);
+        seekBarT3 = view.findViewById(R.id.statusbar_seekbar_t3);
+        seekBarT4 = view.findViewById(R.id.statusbar_seekbar_t4);
+        seekBarT5 = view.findViewById(R.id.statusbar_seekbar_t5);
+        seekBarT6 = view.findViewById(R.id.statusbar_seekbar_t6);
 
-        //FILL SEEKBARBUTTONS ARRAY
         seekBarButtons = new ImageButton[6];
         seekBarButtons[0] = seekBarT1;
         seekBarButtons[1] = seekBarT2;
@@ -124,94 +78,108 @@ public class PraxFitStatusBarFragment extends Fragment {
         seekBarButtons[4] = seekBarT5;
         seekBarButtons[5] = seekBarT6;
 
-        Bundle arguments = getArguments();
-        if (arguments != null) {
-            isLocalPlay = arguments.getBoolean("localPlay");
+        addUsedViews(new View[]{
+                view.findViewById(R.id.statusbar_time_box),
+                view.findViewById(R.id.statusbar_rpm_box),
+                view.findViewById(R.id.statusbar_distance_box),
+                view.findViewById(R.id.statusbar_distance_finish_box),
+                view.findViewById(R.id.statusbar_toggle_movieparts_box),
+                view.findViewById(R.id.statusbar_volume_buttons_box)
+        });
+
+        if (startedFromMotolife) {
+            addUsedViews(new View[]{
+                    view.findViewById(R.id.statusbar_motolife_power_box),
+                    view.findViewById(R.id.chinesport_logo_imageview),
+                    view.findViewById(R.id.motolife_info_layout)
+            });
         }
-
-        LinearLayoutManager layoutManager
-                = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
-        statusbarRouteparts.setLayoutManager(layoutManager);
-
-        toggleSwitchRoutepart.setOnClickListener(clickedView -> {
-            toggleMoviePartsVisibility();
-        });
-
-        //SET FOCUS LISTENERS
-        toggleSwitchRoutepart.setOnFocusChangeListener((itemView, hasFocus)->{
-            if (hasFocus) {
-                final Drawable border = view.getContext().getDrawable(R.drawable.imagebutton_red_border);
-                toggleSwitchRoutepart.setBackground(border);
-            } else {
-                toggleSwitchRoutepart.setBackground(null);
-            }
-        });
-
-        volumeUp.setOnFocusChangeListener((itemView,hasFocus) ->{
-            if (hasFocus) {
-                final Drawable border = view.getContext().getDrawable(R.drawable.imagebutton_red_border);
-                volumeUp.setBackground(border);
-
-            } else {
-                volumeUp.setBackground(null);
-            }
-        });
-
-        volumeDown.setOnFocusChangeListener((itemView,hasFocus) ->{
-            if (hasFocus) {
-                final Drawable border = view.getContext().getDrawable(R.drawable.imagebutton_red_border);
-                volumeDown.setBackground(border);
-            } else {
-                volumeDown.setBackground(null);
-            }
-        });
-
-        //SET BUTTONS FOCUSABLE
-        toggleSwitchRoutepart.setFocusable(true);
-        volumeUp.setFocusable(true);
-        volumeDown.setFocusable(true);
-
-        return view;
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        videoPlayerViewModel = new ViewModelProvider(requireActivity()).get(VideoPlayerViewModel.class);
+    protected void setupFunctionality(View view) {
+        super.setupFunctionality(view);
+
+        routePartsLayout.setOnClickListener(v -> routePartsLayout.setVisibility(View.GONE));
+
+        LinearLayoutManager layoutManager
+                = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
+        statusbarRoutePartsView.setLayoutManager(layoutManager);
+
+        toggleRoutePartsButton.setOnClickListener(clickedView -> {
+            toggleMoviePartsVisibility();
+        });
+
+        addRedBorderOnFocus(new View[]{toggleRoutePartsButton});
+    }
+
+    @Override
+    protected void onMqttMessageReceived(Intent intent) {
+        super.onMqttMessageReceived(intent);
+
+        if ("com.videostreamtest.ACTION_JUMP".equals(intent.getAction())) {
+            String jumpCommand = intent.getStringExtra("routepartNr");
+            Log.d(TAG, "MQTT broadcast was jump: " + jumpCommand);
+            if (jumpCommand == null || jumpCommand.length() != 1) {
+                return;
+            }
+
+            int routepartNr = Integer.parseInt(jumpCommand);
+            if (routepartNr >= 1 && routepartNr <= 6) {
+                jumpToRoutepart(--routepartNr);
+            }
+        } else if ("com.videostreamtest.ACTION_TOGGLE_ROUTEPARTS".equals(intent.getAction())) {
+            // Explanation: if the MQTT command was "ToggleRouteparts1", value is true
+            // See MQTTService#handleDataUpdate for clarification
+            boolean value = intent.getBooleanExtra("toggleValue", false);
+            Log.d(TAG, "show? " + value);
+            toggleMoviePartsVisibility(value);
+        }
+    }
+
+    @Override
+    protected void setupVisibilities(View view) {
+        super.setupVisibilities(view);
+
+        for (ImageButton tButton : seekBarButtons) {
+            tButton.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    protected void useVideoPlayerViewModel(View view) {
+        super.useVideoPlayerViewModel(view);
 
         //STATUSBAR VISIBILITY
         videoPlayerViewModel.getStatusbarVisible().observe(getViewLifecycleOwner(), statusBarVisible -> {
             if (statusBarVisible) {
                 view.setVisibility(View.VISIBLE);
-                stopwatchCurrentRide.start();
+//                stopwatchCurrentRide.start();
 
                 if (!isTouchScreen()) {
                     //SET FOCUS ON BUTTON
-                    toggleSwitchRoutepart.requestFocus();
-                    toggleSwitchRoutepart.requestFocusFromTouch();
+                    toggleRoutePartsButton.requestFocus();
+                    toggleRoutePartsButton.requestFocusFromTouch();
                 }
             } else {
                 view.setVisibility(View.GONE);
-                stopwatchCurrentRide.stop();
+//                stopwatchCurrentRide.stop();
             }
         });
 
         //ROUTE IS PAUSED STATUS BUT VIEW IS STILL VISIBLE
         videoPlayerViewModel.getPlayerPaused().observe(getViewLifecycleOwner(), isPaused -> {
             if (isPaused) {
-                stopwatchCurrentRide.stop();
-                if (toggleSwitchRoutepart.getVisibility() == View.VISIBLE) {
-                    toggleMoviePartsVisibility();
-                }
+//                stopwatchCurrentRide.stop();
             } else {
-                stopwatchCurrentRide.start();
+//                stopwatchCurrentRide.start();
             }
         });
 
         //RESET STOPWATCH TO ZERO
         videoPlayerViewModel.getResetChronometer().observe(getViewLifecycleOwner(), resetChronometer -> {
             if (resetChronometer) {
-                stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
+//                stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
                 videoPlayerViewModel.setResetChronometer(false);
             }
         });
@@ -219,75 +187,8 @@ public class PraxFitStatusBarFragment extends Fragment {
         //Movie object related
         videoPlayerViewModel.getSelectedMovie().observe(getViewLifecycleOwner(), selectedMovie -> {
             if (selectedMovie!= null) {
-                //Set movie title
-                statusbarMovieTitle.setText(selectedMovie.getMovieTitle());
 
-                seekBarT1.setOnClickListener(v -> {
-                    seekBarT1.requestFocus();
-                    if (AccountHelper.getAccountType(v.getContext()).equalsIgnoreCase("standalone")) {
-                        VideoplayerActivity.getInstance().goToFrameNumber(movieParts[0].getFrameNumber().intValue());
-                    } else {
-                        VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[0].getFrameNumber().intValue());
-                    }
-                    Log.d(TAG, "movieParts[0] frame as int = " + movieParts[0].getFrameNumber().intValue());
-                    toggleMoviePartsVisibility();
-                    videoPlayerViewModel.resetDistance(movieParts[0], selectedMovie);
-                });
-                seekBarT2.setOnClickListener(v -> {
-                    seekBarT2.requestFocus();
-                    if (AccountHelper.getAccountType(v.getContext()).equalsIgnoreCase("standalone")) {
-                        VideoplayerActivity.getInstance().goToFrameNumber(movieParts[1].getFrameNumber().intValue());
-                    } else {
-                        VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[1].getFrameNumber().intValue());
-                    }
-                    Log.d(TAG, "movieParts[1] frame as int = " + movieParts[1].getFrameNumber().intValue());
-                    toggleMoviePartsVisibility();
-                    videoPlayerViewModel.resetDistance(movieParts[1], selectedMovie);
-                });
-                seekBarT3.setOnClickListener(v -> {
-                    seekBarT3.requestFocus();
-                    if (AccountHelper.getAccountType(v.getContext()).equalsIgnoreCase("standalone")) {
-                        VideoplayerActivity.getInstance().goToFrameNumber(movieParts[2].getFrameNumber().intValue());
-                    } else {
-                        VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[2].getFrameNumber().intValue());
-                    }
-                    Log.d(TAG, "movieParts[2] frame as int = " + movieParts[2].getFrameNumber().intValue());
-                    toggleMoviePartsVisibility();
-                    videoPlayerViewModel.resetDistance(movieParts[2], selectedMovie);
-                });
-                seekBarT4.setOnClickListener(v -> {
-                    seekBarT4.requestFocus();
-                    if (AccountHelper.getAccountType(v.getContext()).equalsIgnoreCase("standalone")) {
-                        VideoplayerActivity.getInstance().goToFrameNumber(movieParts[3].getFrameNumber().intValue());
-                    } else {
-                        VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[3].getFrameNumber().intValue());
-                    }
-                    Log.d(TAG, "movieParts[3] frame as int = " + movieParts[3].getFrameNumber().intValue());
-                    toggleMoviePartsVisibility();
-                    videoPlayerViewModel.resetDistance(movieParts[3], selectedMovie);
-                });
-                seekBarT5.setOnClickListener(v -> {
-                    seekBarT5.requestFocus();
-                    if (AccountHelper.getAccountType(v.getContext()).equalsIgnoreCase("standalone")) {
-                        VideoplayerActivity.getInstance().goToFrameNumber(movieParts[4].getFrameNumber().intValue());
-                    } else {
-                        VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[4].getFrameNumber().intValue());
-                    }
-                    Log.d(TAG, "movieParts[4] frame as int = " + movieParts[4].getFrameNumber().intValue());
-                    toggleMoviePartsVisibility();
-                    videoPlayerViewModel.resetDistance(movieParts[4], selectedMovie);
-                });
-                seekBarT6.setOnClickListener(v -> {
-                    seekBarT6.requestFocus();
-                    if (AccountHelper.getAccountType(v.getContext()).equalsIgnoreCase("standalone")) {
-                        VideoplayerActivity.getInstance().goToFrameNumber(movieParts[5].getFrameNumber().intValue());
-                    } else {
-                        VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[5].getFrameNumber().intValue());
-                    }
-                    Log.d(TAG, "movieParts[5] frame as int = " + movieParts[5].getFrameNumber().intValue());
-                    toggleMoviePartsVisibility();
-                    videoPlayerViewModel.resetDistance(movieParts[5], selectedMovie);
-                });
+                setupSeekbarButtonsFunctionality();
 
                 //set distance text values
                 //PLAYER TIME AND DISTANCE related
@@ -295,38 +196,16 @@ public class PraxFitStatusBarFragment extends Fragment {
                     if (movieTotalDurationSeconds!=null) {
                         videoPlayerViewModel.getMovieSpendDurationSeconds().observe(getViewLifecycleOwner(), movieSpendDurationSeconds -> {
                             if (movieSpendDurationSeconds!=null) {
-//                                final float mps = DistanceLookupTable.getMeterPerSecond(selectedMovie.getMovieLength(), movieTotalDurationSeconds / 1000);
-//                                int currentMetersDone = (int) (mps * (movieSpendDurationSeconds / 1000)) - distanceOffset;
-//                                if (currentMetersDone < 0) currentMetersDone = 0;
-//
-//                                videoPlayerViewModel.setCurrentMetersDone(currentMetersDone);
-//                                videoPlayerViewModel.getCurrentMetersDone().observe(getViewLifecycleOwner(), updatedCurrentMetersDone -> {
-//                                    if (updatedCurrentMetersDone != null) {
-//                                        statusbarDistance.setText(String.format(getString(R.string.video_screen_distance), updatedCurrentMetersDone));
-//                                    }
-//                                });
-//
-//                                final int metersToGo = selectedMovie.getMovieLength() - currentMetersDone - distanceOffset;
-//
-//                                videoPlayerViewModel.setMetersToGo(metersToGo);
-//                                videoPlayerViewModel.getMetersToGo().observe(getViewLifecycleOwner(), updatedMetersToGo -> {
-//                                    if (updatedMetersToGo != null) {
-//                                        statusbarTotalDistance.setText(String.format(getString(R.string.video_screen_total_distance), updatedMetersToGo));
-//                                    }
-//                                });
-
-                                progressBar.setMax(movieTotalDurationSeconds.intValue());
-                                progressBar.setProgress(movieSpendDurationSeconds.intValue());
 
                                 new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
                                         Log.d(TAG, "finalFrame = " + finalFrame);
                                         Log.d(TAG, "seekBarWidth = " + seekBarWidth);
-                                        Log.d(TAG,"progressBar.getWidth() = " + progressBar.getWidth());
-                                        Log.d(TAG, "progressBar.getPaddingStart()" + progressBar.getPaddingStart());
-                                        Log.d(TAG, "progressBar.getPaddingEnd()" + progressBar.getPaddingEnd());
-                                        seekBarWidth = progressBar.getWidth() - progressBar.getPaddingStart() - progressBar.getPaddingEnd();
+                                        Log.d(TAG,"progressBar.getWidth() = " + movieProgressBar.getWidth());
+                                        Log.d(TAG, "progressBar.getPaddingStart()" + movieProgressBar.getPaddingStart());
+                                        Log.d(TAG, "progressBar.getPaddingEnd()" + movieProgressBar.getPaddingEnd());
+                                        seekBarWidth = movieProgressBar.getWidth() - movieProgressBar.getPaddingStart() - movieProgressBar.getPaddingEnd();
                                         if (movieParts != null) {
                                             for (int i = 0; i < movieParts.length; i++) {
                                                 frameNumber = movieParts[i].getFrameNumber().intValue();
@@ -334,9 +213,9 @@ public class PraxFitStatusBarFragment extends Fragment {
                                                 position = ((float) frameNumber / finalFrame) * seekBarWidth;
                                                 Log.d(TAG, "position of movieParts[" + i + "] = " + position);
                                                 if (seekBarButtons[i] != null) {
-                                                    seekBarButtons[i].setX(progressBar.getX() + progressBar.getPaddingStart() + position);
+                                                    seekBarButtons[i].setX(movieProgressBar.getX() + movieProgressBar.getPaddingStart() + position);
                                                     Log.d(TAG, "seekBarButtons[" + i + "] position = " +
-                                                            progressBar.getX() + progressBar.getPaddingStart() + position);
+                                                            movieProgressBar.getX() + movieProgressBar.getPaddingStart() + position);
                                                 }
                                             }
                                         }
@@ -351,7 +230,7 @@ public class PraxFitStatusBarFragment extends Fragment {
                 videoPlayerViewModel.getRoutePartsOfMovieId(selectedMovie.getId()).observe(getViewLifecycleOwner(), routeparts -> {
                     if (routeparts != null && routeparts.size()>0) {
                         routePartsAdapter = new RoutePartsAdapter(routeparts, isLocalPlay, videoPlayerViewModel, getViewLifecycleOwner());
-                        statusbarRouteparts.setAdapter(routePartsAdapter);
+                        statusbarRoutePartsView.setAdapter(routePartsAdapter);
                     }
                 });
             }
@@ -360,18 +239,6 @@ public class PraxFitStatusBarFragment extends Fragment {
         //RPM data related
         videoPlayerViewModel.getRpmData().observe(getViewLifecycleOwner(), rpmData ->{
             statusbarMovieRpm.setText(toString().format(getString(R.string.video_screen_rpm), rpmData));
-        });
-
-        videoPlayerViewModel.getVolumeLevel().observe(getViewLifecycleOwner(), volumeLevel -> {
-            if (volumeLevel!= null) {
-                statusbarVolumeIndicator.setText(""+(int) (volumeLevel));
-                volumeUp.setOnClickListener(clickedView -> {
-                    videoPlayerViewModel.setVolumeLevel(volumeLevel + 10);
-                });
-                volumeDown.setOnClickListener(clickedView -> {
-                    videoPlayerViewModel.setVolumeLevel(volumeLevel - 10);
-                });
-            }
         });
 
         videoPlayerViewModel.getCurrentMetersDone().observe(getViewLifecycleOwner(), updatedCurrentMetersDone -> {
@@ -390,37 +257,33 @@ public class PraxFitStatusBarFragment extends Fragment {
         getFinalFrame(videoPlayerViewModel);
     }
 
-    public float convertDpToPx(Context context, float dp) {
-        return dp * context.getResources().getDisplayMetrics().density;
+    @Override
+    public void onResume() {
+        mqttMessageFilter.addAction("com.videostreamtest.ACTION_JUMP");
+        mqttMessageFilter.addAction("com.videostreamtest.ACTION_TOGGLE_ROUTEPARTS");
+        super.onResume();
     }
 
-    private void toggleMoviePartsVisibility() {
-        if (moviePartsLayout.getVisibility() == View.GONE) {
-            loadTimer = new Handler(Looper.getMainLooper());
+    @Override
+    public void onPause() {
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(mqttMessageReceiver);
+        super.onPause();
+    }
 
-            Runnable closeMoviePartsLayout = new Runnable() {
-                public void run() {
-                    toggleMoviePartsVisibility();
-                }
-            };
-            //Redirect to login activity if timer exceeds 5 seconds
-            loadTimer.postDelayed( closeMoviePartsLayout, 20*1000 );
+    private void setupSeekbarButtonsFunctionality() {
+        int h = 0;
+        for (ImageButton tButton : seekBarButtons) {
+            final int i = h; // variable used in lambda expressions needs to be final
+            tButton.setOnClickListener(v -> {
+                tButton.requestFocus();
+                jumpToRoutepart(i);
+            });
 
-            moviePartsLayout.setVisibility(View.VISIBLE);
-            if (moviePartsLayout.getChildCount()>0) {
-                moviePartsLayout.getChildAt(0).requestFocus();
-            }
-        } else {
-            loadTimer.removeCallbacksAndMessages(null);
-            moviePartsLayout.setVisibility(View.GONE);
+            h++;
         }
     }
 
-    private boolean isTouchScreen() {
-        return getView().getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
-    }
-
-    public MoviePart[] getMovieParts(VideoPlayerViewModel videoPlayerViewModel) {
+    private MoviePart[] getMovieParts(VideoPlayerViewModel videoPlayerViewModel) {
         videoPlayerViewModel.getSelectedMovie().observe(getViewLifecycleOwner(), selectedMovie -> {
             if (selectedMovie!= null) {
                 videoPlayerViewModel.getRoutePartsOfMovieId(selectedMovie.getId()).observe(getViewLifecycleOwner(), routeparts -> {
@@ -436,13 +299,83 @@ public class PraxFitStatusBarFragment extends Fragment {
         return movieParts;
     }
 
-    public int getFinalFrame(VideoPlayerViewModel videoPlayerViewModel) {
+    private int getFinalFrame(VideoPlayerViewModel videoPlayerViewModel) {
         videoPlayerViewModel.getSelectedMovie().observe(getViewLifecycleOwner(), selectedMovie -> {
             videoPlayerViewModel.getMovieTotalDurationSeconds().observe(getViewLifecycleOwner(), movieTotalDurationSeconds -> {
                 finalFrame = (int) ((movieTotalDurationSeconds / 1000) * selectedMovie.getRecordedFps().intValue());
             });
         });
         return finalFrame;
+    }
+
+    private void jumpToRoutepart(int routepartNr) {
+        videoPlayerViewModel.getSelectedMovie().observe(getViewLifecycleOwner(), selectedMovie -> {
+            if (AccountHelper.getAccountType(getContext()).equalsIgnoreCase("standalone")) {
+                // WAS VIDEOPLAYERACTIVITY.GETINSTANCE IN ALL 6 OF THEM
+                VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[routepartNr].getFrameNumber().intValue());
+            } else {
+                VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[routepartNr].getFrameNumber().intValue());
+            }
+            Log.d(TAG, "movieParts[0] frame as int = " + movieParts[routepartNr].getFrameNumber().intValue());
+            if (routePartsLayout.getVisibility() == View.VISIBLE) {
+                routePartsLayout.setVisibility(View.GONE);
+            }
+            try {
+                toggleRoutePartsLayoutTimer.removeCallbacksAndMessages(null);
+            } catch (NullPointerException ignored) {
+            }
+
+            videoPlayerViewModel.resetDistance(movieParts[routepartNr], selectedMovie);
+        });
+    }
+
+
+    private void pauseFilm() {
+        videoPlayerViewModel = new ViewModelProvider(requireActivity()).get(VideoPlayerViewModel.class);
+        Log.d(TAG, "Fragment Activity: " + requireActivity());
+        Boolean currentState = videoPlayerViewModel.getPlayerPaused().getValue();
+        Log.d(TAG, "Current state: " + currentState);
+        videoPlayerViewModel.setPlayerPaused(true);
+        Log.d(TAG, "Updated state: " + videoPlayerViewModel.getPlayerPaused().getValue());
+        Log.d(TAG, "Pausing Film");
+    }
+
+    private void showResumeOrStopDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Film Paused");
+        builder.setMessage("Use Motolife interface to resume or stop the film");
+
+        //builder.setPositiveButton("Resume", new DialogInterface.OnClickListener() {
+        //    @Override
+        //    public void onClick(DialogInterface dialogInterface, int i) {
+        //        // Handle Resume action
+        //        // TODO: Implement your resume logic here
+        //        resumeOrStopDialog.dismiss();
+        //        videoPlayerViewModel = new ViewModelProvider(requireActivity()).get(VideoPlayerViewModel.class);
+        //        videoPlayerViewModel.setPlayerPaused(false);
+        //        Log.d(TAG, "Resume selected.");
+        //    }
+        //});
+
+        //builder.setNegativeButton("Stop", new DialogInterface.OnClickListener() {
+        //    @Override
+        //    public void onClick(DialogInterface dialogInterface, int i) {
+        //        // Handle Stop action
+        //        // TODO: Implement your stop logic here
+        //        resumeOrStopDialog.dismiss();
+        //        ((Activity) Objects.requireNonNull(getView()).getContext()).finish();
+        //        Log.d(TAG, "Stop selected.");
+        //    }
+        //});
+
+        // Show the alert dialog
+        resumeOrStopDialog = builder.create();
+        resumeOrStopDialog.show();
+        resumeOrStopDialog.setCancelable(false);
+
+        if (routePartsLayout.getVisibility() == View.VISIBLE) {
+            routePartsLayout.setVisibility(View.GONE);
+        }
     }
 
 //    public int resetDistance(MoviePart moviePart, Movie selectedMovie, float mps) {

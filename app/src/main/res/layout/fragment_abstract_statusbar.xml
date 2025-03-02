@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/route_content_overview"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom|center_horizontal"
+    android:gravity="center_horizontal"
+    android:layout_centerVertical="true"
+    android:orientation="vertical" >
+
+    <ImageButton
+        android:id="@+id/toggle_statusbar_button"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/double_arrow_down_rounded_rectangle"
+        android:background="@null"
+        android:layout_marginLeft="3dp"
+        android:layout_marginBottom="3dp"
+        app:layout_constraintBottom_toTopOf="@id/statusbar"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+
+    <LinearLayout
+        android:id="@+id/statusbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        style="@style/Widget.AppTheme.ButtonBar.Fullscreen"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:id="@+id/statusbar_routeparts_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_centerHorizontal="true"
+            android:visibility="gone">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/statusbar_routeparts_recyclerview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:orientation="horizontal"/>
+        </LinearLayout>
+
+        <!--  Layout for labels and routeparts    -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+            <LinearLayout
+                android:layout_width="match_parent"
+                style="@style/Widget.AppTheme.ButtonBar.Fullscreen"
+                android:layout_alignParentBottom="true"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <LinearLayout
+                    android:id="@+id/statusbar_buttons_dashboard"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/statusbar_time_box"
+                        android:background="@drawable/imagebutton_blue_border"
+                        android:layout_width="100dp"
+                        android:layout_height="90dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginRight="30dp"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal">
+                        <TextView
+                            android:id="@+id/statusbar_time_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#FFFFEE"
+                            android:focusable="false"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:text="@string/statusbar_time_title" />
+                        <TextView
+                            android:id="@+id/statusbar_motolife_time_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#FFFFEE"
+                            android:focusable="false"
+                            android:text="00:00/00:00"
+                            android:visibility="visible"/>
+                        <Chronometer
+                            android:id="@+id/statusbar_time_value_chrono"
+                            android:focusable="false"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#FFFFEE"
+                            android:visibility="gone"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/statusbar_rpm_box"
+                        android:layout_width="95dp"
+                        android:layout_height="90dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginRight="30dp"
+                        android:background="@drawable/imagebutton_blue_border"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:visibility="gone">
+                        <TextView
+                            android:id="@+id/statusbar_rpm_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#FFFFEE"
+                            android:focusable="false"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:text="@string/statusbar_rpm_title" />
+                        <TextView
+                            android:id="@+id/statusbar_rpm_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#FFFFEE"
+                            android:focusable="false"
+                            android:textSize="20sp"
+                            android:text="60" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/statusbar_distance_box"
+                        android:layout_width="95dp"
+                        android:layout_height="90dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginRight="30dp"
+                        android:layout_marginBottom="5dp"
+                        android:background="@drawable/imagebutton_blue_border"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/statusbar_distance_box_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:focusable="false"
+                            android:text="@string/statusbar_distance_title"
+                            android:textColor="#FFFFEE"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/statusbar_distance_box_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:focusable="false"
+                            android:text="16384"
+                            android:textColor="#FFFFEE"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/statusbar_distance_finish_box"
+                        android:layout_width="95dp"
+                        android:layout_height="90dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginRight="30dp"
+                        android:layout_marginBottom="5dp"
+                        android:background="@drawable/imagebutton_blue_border"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/statusbar_distance_finish_box_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:focusable="false"
+                            android:text="@string/statusbar_finish_distance_title"
+                            android:textColor="#FFFFEE"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/statusbar_distance_finish_box_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:focusable="false"
+                            android:text="46384"
+                            android:textColor="#FFFFEE"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/statusbar_toggle_movieparts_box"
+                        android:layout_width="95dp"
+                        android:layout_height="90dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginRight="30dp"
+                        android:layout_marginBottom="5dp"
+                        android:background="@drawable/imagebutton_blue_border"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <ImageButton
+                            android:id="@+id/statusbar_toggle_movieparts_button"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:background="@null"
+                            android:nextFocusLeft="@id/motolife_toggle_button"
+                            android:nextFocusRight="@id/statusbar_volume_up_button"
+                            android:src="@drawable/routeparts_button" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/statusbar_volume_buttons_box"
+                        android:background="@drawable/imagebutton_blue_border"
+                        android:layout_width="95dp"
+                        android:layout_height="90dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginRight="30dp"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <ImageButton
+                            android:id="@+id/statusbar_volume_up_button"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:scaleType="fitCenter"
+                            android:background="@null"
+                            android:src="@drawable/volume_raise_level_symbol"
+                            android:nextFocusLeft="@id/statusbar_toggle_movieparts_button"
+                            android:nextFocusRight="@id/statusbar_volume_down_button"/>
+                        <TextView
+                            android:id="@+id/statusbar_volume_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:focusable="false"
+                            android:textColor="@android:color/white"
+                            android:text="--"
+                            android:layout_margin="3dp"
+                            android:textStyle="bold"
+                            android:textSize="12sp"/>
+                        <ImageButton
+                            android:id="@+id/statusbar_volume_down_button"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:scaleType="fitCenter"
+                            android:background="@null"
+                            android:src="@drawable/volume_lower_level_symbol"
+                            android:nextFocusLeft="@id/statusbar_volume_up_button"
+                            android:nextFocusRight="@id/statusbar_speed_up_button"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/statusbar_speed_box"
+                        android:layout_width="100dp"
+                        android:layout_height="90dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginRight="30dp"
+                        android:background="@drawable/imagebutton_blue_border"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <ImageButton
+                            android:id="@+id/statusbar_speed_up_button"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:background="@null"
+                            android:nextFocusLeft="@id/statusbar_volume_down_button"
+                            android:nextFocusRight="@id/statusbar_speed_down_button"
+                            android:src="@drawable/plus_small" />
+
+                        <TextView
+                            android:id="@+id/statusbar_speed_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:focusable="false"
+                            android:textColor="@android:color/white"
+                            android:textSize="16sp" />
+
+                        <ImageButton
+                            android:id="@+id/statusbar_speed_down_button"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:background="@null"
+                            android:nextFocusLeft="@id/statusbar_speed_up_button"
+                            android:nextFocusRight="@id/statusbar_stop_button"
+                            android:src="@drawable/minus_small" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/statusbar_motolife_power_box"
+                        android:layout_width="95dp"
+                        android:layout_height="90dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginRight="30dp"
+                        android:background="@drawable/imagebutton_blue_border"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:visibility="gone">
+                        <TextView
+                            android:id="@+id/statusbar_motolife_power_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#FFFFEE"
+                            android:focusable="false"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:text="Power" />
+                        <TextView
+                            android:id="@+id/statusbar_motolife_power_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#FFFFEE"
+                            android:focusable="false"
+                            android:textSize="20sp"
+                            android:text="60" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/statusbar_stop_box"
+                        android:layout_width="100dp"
+                        android:layout_height="90dp"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/imagebutton_blue_border"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <ImageButton
+                            android:id="@+id/statusbar_stop_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:nextFocusLeft="@id/statusbar_speed_down_button"
+                            android:nextFocusRight="@id/motolife_toggle_button"
+                            android:padding="8dp"
+                            android:src="@drawable/stop_sign_small" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_centerHorizontal="true">
+
+                    <SeekBar
+                        android:id="@+id/statusbar_seekbar"
+                        android:layout_width="700dp"
+                        android:focusable="false"
+                        android:layout_height="wrap_content"
+                        android:progressDrawable="@drawable/praxfilm_progress_drawable"
+                        android:thumb="@drawable/bicycle_thumb_praxfilm"
+                        android:thumbOffset="0dp"
+                        android:splitTrack="false" />
+
+                    <ImageButton
+                        android:id="@+id/statusbar_seekbar_t1"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_centerVertical="true"
+                        android:background="@android:color/transparent"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/nummer_1_wit"
+                        android:visibility="gone"/>
+
+                    <ImageButton
+                        android:id="@+id/statusbar_seekbar_t2"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_centerVertical="true"
+                        android:background="@android:color/transparent"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/nummer_2_wit"
+                        android:visibility="gone"/>
+
+                    <ImageButton
+                        android:id="@+id/statusbar_seekbar_t3"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="213.33dp"
+                        android:background="@android:color/transparent"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/nummer_3_wit"
+                        android:visibility="gone"/>
+
+                    <ImageButton
+                        android:id="@+id/statusbar_seekbar_t4"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="330dp"
+                        android:background="@android:color/transparent"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/nummer_4_wit"
+                        android:visibility="gone"/>
+
+                    <ImageButton
+                        android:id="@+id/statusbar_seekbar_t5"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="446.67dp"
+                        android:background="@android:color/transparent"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/nummer_5_wit"
+                        android:visibility="gone"/>
+
+                    <ImageButton
+                        android:id="@+id/statusbar_seekbar_t6"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="543.34dp"
+                        android:background="@android:color/transparent"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/nummer_6_wit"
+                        android:visibility="gone"/>
+
+                </RelativeLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/statusbar_movie_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFEE"
+                android:textSize="14sp"
+                android:focusable="false"
+                android:textStyle="bold"
+                android:text="movie_title"
+                android:layout_marginLeft="8dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/motolife_info_layout"/>
+
+            <LinearLayout
+                android:id="@+id/motolife_info_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginLeft="13dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/statusbar_motolife_mode_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:text="Mode: --"
+                    android:textColor="#BEBEBE"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/statusbar_motolife_direction_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:text="Direction: --"
+                    android:textColor="#BEBEBE"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/chinesport_logo_imageview"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/chinesport_white_logo"
+                android:layout_marginBottom="-10dp"
+                android:scaleType="fitCenter"
+                android:visibility="gone"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
