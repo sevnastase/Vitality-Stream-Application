@@ -32,4 +32,8 @@
         android:id="@+id/permissionErrorMessage"
         android:name="com.videostreamtest.ui.phone.productpicker.fragments.ble.NoPermissionsMessageFragment"
         android:label="NoPermissionsFragment" />
+    <fragment
+        android:id="@+id/motoLifeLoginFragment"
+        android:name="com.videostreamtest.ui.phone.productpicker.fragments.mqtt.MQTTConnectionFragment"
+        android:label="MQTTConnectionFragment" />
 </navigation>

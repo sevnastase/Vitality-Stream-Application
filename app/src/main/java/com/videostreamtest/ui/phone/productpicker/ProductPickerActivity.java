@@ -275,6 +275,9 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
             case R.id.nav_logout:
                 navController.navigate(R.id.logoutFragment);
                 break;
+            case R.id.nav_motolife:
+                navController.navigate(R.id.motoLifeLoginFragment);
+                break;
         }
         drawerLayout.closeDrawer(GravityCompat.START);
         return false;

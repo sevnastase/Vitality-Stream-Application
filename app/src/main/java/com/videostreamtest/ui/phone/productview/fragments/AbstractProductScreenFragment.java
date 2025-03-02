@@ -229,6 +229,7 @@ public class AbstractProductScreenFragment extends Fragment {
         arguments.putString("communication_device", selectedProduct.getCommunicationType());
         arguments.putString("accountToken", apikey);
         arguments.putBoolean("localPlay", selectedProduct.getSupportStreaming() == 0);
+        arguments.putBoolean("startedFromMotolife", true);
         return arguments;
     }
 

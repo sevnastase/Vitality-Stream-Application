@@ -4,6 +4,7 @@ import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -40,6 +41,7 @@ import androidx.lifecycle.ViewModelProvider;
 //import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 //import com.google.android.exoplayer2.ui.PlayerView;
 
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
@@ -137,6 +139,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     //CHROMECAST
 //    List<RendererDiscoverer> rendererDiscovererList = new ArrayList<>();
 //    List<RendererItem> rendererItemList = new ArrayList<>();
+    private BroadcastReceiver finishFilmReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -338,6 +341,17 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                 //HANDLED FURTHER in #setTimeLineEventVideoPlayer()
             }
         });
+
+        finishFilmReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (videoPlayerViewModel != null) {
+                    videoPlayerViewModel.setVolumeLevel(0);
+                }
+                showFinishScreen();
+            }
+        };
+        LocalBroadcastManager.getInstance(this).registerReceiver(finishFilmReceiver, new IntentFilter("videoplayer_finish_film"));
     }
 
     @Override

@@ -184,6 +184,9 @@
             android:label="BleService"
             android:foregroundServiceType="location" />
 
+        <!-- FOR CHINESPORT MOTOLIFE    -->
+        <service android:name="com.videostreamtest.service.mqtt.MQTTService" />
+
         <receiver android:name=".receiver.OnBootCompletedBroadcastReceiver"
             android:enabled="true"
             android:exported="true"

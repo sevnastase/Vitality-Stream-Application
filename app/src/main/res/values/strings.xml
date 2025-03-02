@@ -155,4 +155,13 @@
     <string name="menu_nav_privacy_policy_title">Privacy Policy</string>
     <string name="show_privacy_policy_description">Click on the button below to open the Privacy policy in your browser.</string>
     <string name="open_privacy_policy_button_text">Open privacy policy</string>
+    <string name="menu_nav_motolife_settings_title">MOTOlife Login</string>
+    <string name="settings_motolife_overview_header">Selected Bike</string>
+    <string name="settings_motolife_select_bike">Enter bike credentials</string>
+    <string name="settings_motolife_ip_title">IP:PORT</string>
+    <string name="settings_motolife_port_title"></string>
+    <string name="settings_motolife_tcp_base">tcp://</string>
+    <string name="settings_motolife_connect">Connect</string>
+    <string name="settings_motolife_disconnect">Disconnect</string>
+
 </resources>
