@@ -1,14 +1,16 @@
 package com.videostreamtest.ui.phone.productpicker.fragments.settings.wifi;
 
+import static com.videostreamtest.constants.NetworkConstants.MQTT_BROKER_IP;
 import static com.videostreamtest.constants.SharedPreferencesConstants.NO_WIFI_PERMISSION;
 import static com.videostreamtest.constants.SharedPreferencesConstants.WIFI_NOT_CONNECTED;
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.wifi.ScanResult;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,8 +28,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -37,6 +37,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
 import com.videostreamtest.config.application.PraxtourApplication;
+import com.videostreamtest.constants.BroadcastConstants;
 import com.videostreamtest.service.wifi.WifiCallback;
 import com.videostreamtest.service.wifi.WifiManager;
 import com.videostreamtest.service.wifi.WifiService;
@@ -45,14 +46,10 @@ import com.videostreamtest.service.wifi.WifiStrength;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
-import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
-import com.videostreamtest.ui.phone.productpicker.fragments.settings.SettingsFragment;
 
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 public class WifiSettingsFragment extends Fragment {
 
@@ -109,7 +106,7 @@ public class WifiSettingsFragment extends Fragment {
                 String action = intent.getAction();
                 if (action != null) {
                     switch (action) {
-                        case "com.videostreamtest.DOWNLOAD_STARTED":
+                        case BroadcastConstants.network.EVENT_DOWNLOAD_STARTED:
                             networkSelectionLayout.setVisibility(View.GONE);
                             refreshConnectedNetworkStats(2*DEFAULT_REFRESH_INTERVAL_MILLIS);
                     }
@@ -130,12 +127,12 @@ public class WifiSettingsFragment extends Fragment {
         startWifiService();
 
         IntentFilter broadcastFilter = new IntentFilter();
-        broadcastFilter.addAction("com.videostreamtest.wifi.ACTION_SHOW_NETWORKS");
-        broadcastFilter.addAction("com.videostreamtest.EVENT_CONNECTION_RESULT");
-        broadcastFilter.addAction("com.videostreamtest.wifi.ACTION_CONNECT");
+        broadcastFilter.addAction(BroadcastConstants.network.ACTION_SHOW_NETWORKS);
+        broadcastFilter.addAction(BroadcastConstants.network.EVENT_CONNECTION_RESULT);
+        broadcastFilter.addAction(BroadcastConstants.network.ACTION_CONNECT);
         LocalBroadcastManager.getInstance(requireContext()).registerReceiver(networkBroadcastReceiver, broadcastFilter);
         broadcastFilter = new IntentFilter();
-        broadcastFilter.addAction("com.videostreamtest.DOWNLOAD_STARTED");
+        broadcastFilter.addAction(BroadcastConstants.network.EVENT_DOWNLOAD_STARTED);
         LocalBroadcastManager.getInstance(requireContext()).registerReceiver(downloadBroadcastReceiver, broadcastFilter);
 
         wifiAdapter = new WifiAdapter(availableNetworks, getActivity());
@@ -156,8 +153,18 @@ public class WifiSettingsFragment extends Fragment {
 
     @Override
     public void onDestroy() {
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(networkBroadcastReceiver);
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(downloadBroadcastReceiver);
         signalStrengthHandler.removeCallbacksAndMessages(null);
         super.onDestroy();
+    }
+
+    @Override
+    public void onPause() {
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(networkBroadcastReceiver);
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(downloadBroadcastReceiver);
+        signalStrengthHandler.removeCallbacksAndMessages(null);
+        super.onPause();
     }
 
     private void startWifiService() {
@@ -185,32 +192,7 @@ public class WifiSettingsFragment extends Fragment {
         } catch (NullPointerException ignored) {}
 
         toggleLoadingWheel(true);
-        new Handler().postDelayed(() -> {
-            String connectedNetworkName = WifiManager.getConnectedNetworkName(PraxtourApplication.getAppContext());
-            if (connectedNetworkName.equals(NO_WIFI_PERMISSION)) {
-                noWifiPermissionLayout.setVisibility(View.VISIBLE);
-                connectedNetworkLayout.setVisibility(View.GONE);
-                networkSelectionLayout.setVisibility(View.GONE);
-            } else if (connectedNetworkName.equals(WIFI_NOT_CONNECTED)) {
-                Log.d(TAG, "Not connected");
-                connectedNetworkNameTextView.setText("Select a network below");
-                noWifiPermissionLayout.setVisibility(View.GONE);
-                connectedNetworkLayout.setVisibility(View.VISIBLE);
-                connectedTitleTextView.setVisibility(View.GONE);
-                networkSelectionLayout.setVisibility(View.VISIBLE);
-                refreshNetworks();
-            } else { // Connected to some network
-                Log.d(TAG, "Was connected to " + connectedNetworkName);
-                refreshConnectedNetworkStats(DEFAULT_REFRESH_INTERVAL_MILLIS);
-                connectedNetworkNameTextView.setText(connectedNetworkName);
-                noWifiPermissionLayout.setVisibility(View.GONE);
-                connectedNetworkLayout.setVisibility(View.VISIBLE);
-                connectedTitleTextView.setVisibility(View.VISIBLE);
-                networkSelectionLayout.setVisibility(View.VISIBLE);
-            }
-
-            toggleLoadingWheel(false);
-        }, 1500);
+        new Handler().postDelayed(this::toggleUiBasedOnWifiConnectivity, 1500);
     }
 
     /**
@@ -234,7 +216,7 @@ public class WifiSettingsFragment extends Fragment {
         refreshButton.setEnabled(false);
         new Handler().postDelayed(() -> refreshButton.setEnabled(true), 1500);
         wifiAdapter.updateAvailableNetworks(new ArrayList<>());
-        Intent intent = new Intent("com.videostreamtest.wifi.ACTION_SCAN");
+        Intent intent = new Intent(BroadcastConstants.network.ACTION_SCAN);
         LocalBroadcastManager.getInstance(PraxtourApplication.getAppContext()).sendBroadcast(intent);
     }
 
@@ -247,7 +229,7 @@ public class WifiSettingsFragment extends Fragment {
         Log.d(TAG, "\t action is: " + intent.getAction());
 
         switch (intent.getAction()) {
-            case "com.videostreamtest.wifi.ACTION_SHOW_NETWORKS":
+            case BroadcastConstants.network.ACTION_SHOW_NETWORKS:
                 // Fetch list of available networks
                 availableNetworks = intent.getParcelableArrayListExtra("networkNames");
                 Log.d(TAG, "Received networks in fragment:");
@@ -259,7 +241,7 @@ public class WifiSettingsFragment extends Fragment {
                 initUi(null);
                 wifiAdapter.updateAvailableNetworks(cleanScanResultList(availableNetworks));
                 break;
-            case "com.videostreamtest.EVENT_CONNECTION_RESULT":
+            case BroadcastConstants.network.EVENT_CONNECTION_RESULT:
                 boolean success = intent.getBooleanExtra("connectionSuccessful", false);
                 Log.d(TAG, "Received broadcast, did we connect? " + success);
                 new Handler().postDelayed(() -> {
@@ -268,12 +250,42 @@ public class WifiSettingsFragment extends Fragment {
                     } else {
                         Toast.makeText(PraxtourApplication.getAppContext(), "Could not connect", Toast.LENGTH_SHORT).show();
                     }
-                }, 1000);
 
-                new Handler().postDelayed(() -> initUi(null), 3500);
-            case "com.videostreamtest.wifi.ACTION_CONNECT":
+                    refreshNetworks();
+                    initUi(null);
+                }, 1000);
+            case BroadcastConstants.network.ACTION_CONNECT:
                 toggleLoadingWheel(true);
         }
+    }
+
+    private void toggleUiBasedOnWifiConnectivity() {
+        String connectedNetworkName = WifiManager.getConnectedNetworkName(PraxtourApplication.getAppContext());
+        if (connectedNetworkName.equals(NO_WIFI_PERMISSION)) {
+            Log.d(TAG, "Gregn1");
+            noWifiPermissionLayout.setVisibility(View.VISIBLE);
+            connectedNetworkLayout.setVisibility(View.GONE);
+            networkSelectionLayout.setVisibility(View.GONE);
+        } else if (connectedNetworkName.equals(WIFI_NOT_CONNECTED)) {
+            Log.d(TAG, "Gregn2");
+            Log.d(TAG, "Not connected");
+            connectedNetworkNameTextView.setText("Select a network below");
+            noWifiPermissionLayout.setVisibility(View.GONE);
+            connectedNetworkLayout.setVisibility(View.VISIBLE);
+            connectedTitleTextView.setVisibility(View.GONE);
+            networkSelectionLayout.setVisibility(View.VISIBLE);
+        } else { // Connected to some network
+            Log.d(TAG, "Gregn3");
+            Log.d(TAG, "Was connected to " + connectedNetworkName);
+            refreshConnectedNetworkStats(DEFAULT_REFRESH_INTERVAL_MILLIS);
+            connectedNetworkNameTextView.setText(connectedNetworkName);
+            noWifiPermissionLayout.setVisibility(View.GONE);
+            connectedNetworkLayout.setVisibility(View.VISIBLE);
+            connectedTitleTextView.setVisibility(View.VISIBLE);
+            networkSelectionLayout.setVisibility(View.VISIBLE);
+        }
+
+        toggleLoadingWheel(false);
     }
 
     /**
@@ -334,9 +346,9 @@ public class WifiSettingsFragment extends Fragment {
     }
 
     private void refreshConnectedNetworkStats() {
-            refreshConnectedSignalStrength();
-            refreshConnectedNetworkDownloadSpeed();
-            refreshConnectedNetworkLatency();
+        refreshConnectedSignalStrength();
+        refreshConnectedNetworkDownloadSpeed();
+        refreshConnectedNetworkLatency();
     }
 
     private void refreshConnectedNetworkStats(int repeatMillis) {

@@ -62,6 +62,8 @@ public class WifiService extends Service {
         LocalBroadcastManager.getInstance(getApplicationContext())
                 .registerReceiver(localBroadcastReceiver, connectorFilter);
 
+        Log.d(TAG, "gregdone");
+
         new Handler().postDelayed(this::retrieveNetworks, 500);
 
         return START_STICKY;

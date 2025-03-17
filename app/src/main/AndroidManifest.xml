@@ -184,6 +184,12 @@
             android:label="BleService"
             android:foregroundServiceType="location" />
 
+        <service
+            android:name=".service.wifi.WifiService"
+            android:icon="@drawable/ic_launcher_background"
+            android:label="WifiService"
+            android:foregroundServiceType="location" />
+
         <receiver android:name=".receiver.OnBootCompletedBroadcastReceiver"
             android:enabled="true"
             android:exported="true"
