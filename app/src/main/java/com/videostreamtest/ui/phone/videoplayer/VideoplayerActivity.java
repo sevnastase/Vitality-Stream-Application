@@ -66,6 +66,7 @@ import com.videostreamtest.ui.phone.result.ResultActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFilmStatusBarFragment;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFitStatusBarFragment;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxSpinStatusBarFragment;
+import com.videostreamtest.ui.phone.videoplayer.fragments.PraxViewStatusBarFragment;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.RpmVectorLookupTable;
@@ -238,6 +239,16 @@ public class VideoplayerActivity extends AppCompatActivity {
 //                };
 //                praxFilmHandler.postDelayed(runnableMovieDetails, 0);
 
+            }
+            if (selectedProduct.getProductName().contains("PraxView")) {
+                this.communicationType = ProductHelper.getCommunicationType(selectedProduct.getCommunicationType());
+                videoPlayerViewModel.setSelectedMovie(selectedMovie);
+
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .setReorderingAllowed(true)
+                        .replace(R.id.videoplayer_framelayout_statusbar, PraxViewStatusBarFragment.class, arguments)
+                        .commit();
             }
             if (selectedProduct.getProductName().contains("PraxSpin")) {
                 /*
