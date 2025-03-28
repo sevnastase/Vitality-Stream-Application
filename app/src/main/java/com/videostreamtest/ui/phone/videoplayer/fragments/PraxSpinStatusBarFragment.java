@@ -200,7 +200,7 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
             chinesportTime.setVisibility(View.VISIBLE);
             stopwatchCurrentRide.setVisibility(View.GONE);
             view.findViewById(R.id.statusbar_stop_box).setVisibility(View.GONE);
-        } else {
+        } else if (true /* TODO distinguish between PraxView-type and other products */) {
             chinesportTime.setVisibility(View.GONE);
             stopwatchCurrentRide.setVisibility(View.VISIBLE);
             view.findViewById(R.id.statusbar_stop_box).setVisibility(View.VISIBLE);
