@@ -50,8 +50,8 @@
                         android:layout_height="match_parent"
                         android:text="Audio"
                         android:background="@color/light_blue_600"
-                        android:layout_marginStart="5dp"
-                        android:layout_marginEnd="5dp"
+                        android:nextFocusRight="@id/wifi_button"
+                        android:nextFocusLeft="@id/productpicker_settings_button"
                         style="@style/AppTheme.DefaultButton"/>
 
                     <Button
@@ -61,8 +61,8 @@
                         android:layout_height="match_parent"
                         android:text="Wifi"
                         android:background="@color/light_blue_600"
-                        android:layout_marginStart="5dp"
-                        android:layout_marginEnd="5dp"
+                        android:nextFocusLeft="@id/audio_button"
+                        android:nextFocusRight="@id/privacy_policy_button"
                         style="@style/AppTheme.DefaultButton" />
 
                     <Button
@@ -71,8 +71,7 @@
                         android:layout_height="match_parent"
                         android:background="@color/light_blue_600"
                         android:text="Privacy Policy"
-                        android:layout_marginStart="5dp"
-                        android:layout_marginEnd="5dp"
+                        android:nextFocusLeft="@id/wifi_button"
                         style="@style/AppTheme.DefaultButton" />
 
                 </LinearLayout>
