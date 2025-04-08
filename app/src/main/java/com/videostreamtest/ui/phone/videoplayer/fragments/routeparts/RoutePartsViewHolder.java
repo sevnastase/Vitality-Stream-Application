@@ -256,7 +256,7 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
 
     private void drawSelectionBorder() {
         final Drawable border = itemView.getContext().getDrawable(R.drawable.imagebutton_blue_border);
-        moviePartCoverImage.setBackground(border);
+//        moviePartCoverImage.setBackground(border);
         moviePartCoverImage.setAlpha(1.0f);
     }
 

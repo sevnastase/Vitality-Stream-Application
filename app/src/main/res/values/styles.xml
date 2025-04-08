@@ -13,7 +13,7 @@
         <item name="drawableNavigationItemBackground">@drawable/menu_background_color_state</item>
     </style>
 
-    <style name="AppTheme.ProductMainButton">
+    <style name="AppTheme.ProductSideButton">
         <!-- Buttons -->
         <item name="android:background">@drawable/transparant_product_main_button</item>
         <item name="android:textColor">@color/colorWhite</item>
@@ -22,7 +22,7 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="AppTheme.ProductPickerMainButton">
+    <style name="AppTheme.ProductPickerSideButton">
         <!-- Buttons -->
         <item name="android:background">@drawable/transparant_productpicker_main_button</item>
         <item name="android:textColor">@color/colorWhite</item>
@@ -39,6 +39,18 @@
         <item name="android:textSize">14sp</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+    </style>
+
+    <style name="AppTheme.DefaultImageButton">
+        <!-- Buttons -->
+        <item name="android:foreground">@drawable/transparant_productpicker_main_button</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+    </style>
+
+    <style name="AppTheme.DefaultInputField">
         <item name="android:focusable">true</item>
         <item name="android:focusableInTouchMode">true</item>
     </style>

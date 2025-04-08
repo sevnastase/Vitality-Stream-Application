@@ -52,7 +52,7 @@
 
     <Button
         android:id="@+id/product_menu_button"
-        style="@style/AppTheme.ProductPickerMainButton"
+        style="@style/AppTheme.ProductPickerSideButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dp"
@@ -67,7 +67,7 @@
 
     <Button
         android:id="@+id/product_logout_button"
-        style="@style/AppTheme.ProductMainButton"
+        style="@style/AppTheme.ProductSideButton"
         android:layout_gravity="start|bottom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -61,18 +61,21 @@ public class RoutefilmsAdapter extends  RecyclerView.Adapter<RoutefilmsViewHolde
 
     @Override
     public void onBindViewHolder(@NonNull @NotNull RoutefilmsViewHolder holder, int position) {
+        final ImageButton routeSceneryImage = holder.itemView.findViewById(R.id.routeImageCoverButton);
         holder.itemView.setSelected(selectedRoutefilm == position);
         if (routefilmList != null && routefilmList.size() > 0) {
             Log.d(TAG, "Binding view for "+routefilmList.get(position).getMovieTitle()+" on position: "+position);
             holder.bindProduct(routefilmList.get(position), selectedProduct, position, routeInformationBlock, this);
         }
         if (selectedRoutefilm == position) {
-            final ImageButton routeSceneryImage = holder.itemView.findViewById(R.id.routeImageCoverButton);
             if (!routeSceneryImage.hasFocus()) {
                 routeSceneryImage.setFocusableInTouchMode(true);
                 routeSceneryImage.setFocusable(true);
                 routeSceneryImage.requestFocus();
             }
+        }
+        if (position % 4 == 0) {
+            routeSceneryImage.setNextFocusLeftId(R.id.product_logout_button);
         }
     }
 

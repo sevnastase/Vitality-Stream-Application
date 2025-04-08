@@ -10,7 +10,7 @@
 
     <Button
         android:id="@+id/productpicker_settings_button"
-        style="@style/AppTheme.ProductPickerMainButton"
+        style="@style/AppTheme.ProductPickerSideButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dp"

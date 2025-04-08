@@ -26,6 +26,7 @@
             android:paddingBottom="15dp"
             android:paddingTop="15dp"
             android:background="@null"
-            android:src="@drawable/cast_album_art_placeholder" />
+            android:src="@drawable/cast_album_art_placeholder"
+            style="@style/AppTheme.DefaultImageButton"/>
     </RelativeLayout>
 </RelativeLayout>

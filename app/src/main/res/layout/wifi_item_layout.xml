@@ -90,7 +90,8 @@
             app:layout_constraintLeft_toRightOf="@id/enter_password_textview"
             app:layout_constraintRight_toLeftOf="@id/connect_to_network_button"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintBottom_toBottomOf="parent"
+            style="@style/AppTheme.DefaultInputField"/>
 
         <Button
             android:id="@+id/connect_to_network_button"

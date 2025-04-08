@@ -57,6 +57,11 @@ public class RoutePartsAdapter extends RecyclerView.Adapter<RoutePartsViewHolder
         }
     }
 
+//    @Override
+//    public void setSelected(boolean v) {
+//
+//    }
+
     public void setSelectedMoviePart(final int frameNumber) {
         int position = 0;
         //movieparts array moet er zijn en gevuld
@@ -86,13 +91,10 @@ public class RoutePartsAdapter extends RecyclerView.Adapter<RoutePartsViewHolder
     @Override
     public void onBindViewHolder(@NonNull RoutePartsViewHolder holder, int position) {
         Log.d(TAG, "Binding routeparts");
-        if (selectedMoviePart == position) {
-            ImageButton routePartCover = holder.itemView.findViewById(R.id.routepart_cover_button);
-            routePartCover.setFocusableInTouchMode(true);
-            routePartCover.setFocusable(true);
-            routePartCover.requestFocus();
-        }
-        holder.itemView.setSelected(selectedMoviePart==position);
+//        if (selectedMoviePart == position) {
+//            ImageButton routePartCover = holder.itemView.findViewById(R.id.routepart_cover_button);
+//        }
+//        holder.itemView.setSelected(selectedMoviePart==position);
         if (movieParts.length > 0) {
             holder.bind(movieParts[position], isLocalPlay, position);
         }

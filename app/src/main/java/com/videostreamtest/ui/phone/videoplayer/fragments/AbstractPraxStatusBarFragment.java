@@ -160,6 +160,8 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         statusbar = view.findViewById(R.id.statusbar);
         toggleStatusbarButton = view.findViewById(R.id.toggle_statusbar_button);
 
+        toggleStatusbarButton.setOnFocusChangeListener((view2, hasFocus) -> repaintToggleStatusbarButton(hasFocus));
+
         routePartsLayout = view.findViewById(R.id.statusbar_routeparts_layout);
         statusbarRoutePartsView = view.findViewById(R.id.statusbar_routeparts_recyclerview);
 
@@ -221,6 +223,8 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         });
 
         toggleRoutePartsLayoutTimer = new Handler(Looper.getMainLooper());
+
+        toggleStatusbarButton.requestFocus();
     }
 
     protected void setupVisibilities(View view) {
@@ -275,7 +279,7 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
                         }
                         routeParts.add(routepart);
                     }
-                    routePartsAdapter.setRouteparts(routeParts);
+//                    routePartsAdapter.setRouteparts(routeParts);
                     routePartsAdapter.notifyDataSetChanged();
                     statusbarRoutePartsView.setAdapter(routePartsAdapter);
                 }
@@ -482,10 +486,28 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
     private void toggleStatusbarVisibility() {
         if (statusbar.getVisibility() == View.VISIBLE) {
             statusbar.setVisibility(View.GONE);
-            toggleStatusbarButton.setImageResource(R.drawable.double_arrow_up_rounded_rectangle);
         } else {
             statusbar.setVisibility(View.VISIBLE);
-            toggleStatusbarButton.setImageResource(R.drawable.double_arrow_down_rounded_rectangle);
         }
+
+//        new Handler().postDelayed(() -> repaintToggleStatusbarButton(true), 200);
+        repaintToggleStatusbarButton(true);
+    }
+
+    private void repaintToggleStatusbarButton(boolean hasFocus) {
+        if (hasFocus) {
+            if (statusbar.getVisibility() == View.VISIBLE) {
+                toggleStatusbarButton.setImageResource(R.drawable.double_arrow_down_rounded_rectangle_focused);
+            } else {
+                toggleStatusbarButton.setImageResource(R.drawable.double_arrow_up_rounded_rectangle_focused);
+            }
+        } else {
+            if (statusbar.getVisibility() == View.VISIBLE) {
+                toggleStatusbarButton.setImageResource(R.drawable.double_arrow_down_rounded_rectangle);
+            } else {
+                toggleStatusbarButton.setImageResource(R.drawable.double_arrow_up_rounded_rectangle);
+            }
+        }
+
     }
 }
