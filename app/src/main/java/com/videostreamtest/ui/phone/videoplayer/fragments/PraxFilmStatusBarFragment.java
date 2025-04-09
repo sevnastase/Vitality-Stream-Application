@@ -6,6 +6,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.videostreamtest.R;
+import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 
 public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
@@ -74,6 +75,10 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
         int framesPerSecond = 30;
         int frameNumber = (newProgress/1000) * framesPerSecond;
         Log.d(TAG, "framenumber: "+frameNumber);
-        VideoplayerExoActivity.getInstance().goToFrameNumber(frameNumber);
+        try {
+            VideoplayerExoActivity.getInstance().goToFrameNumber(frameNumber);
+        } catch (NullPointerException e) {
+            VideoplayerActivity.getInstance().goToFrameNumber(frameNumber);
+        }
     }
 }
