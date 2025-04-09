@@ -10,11 +10,13 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
@@ -62,6 +64,8 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
 
     private ImageButton toggleStatusbarButton;
     private View statusbar;
+
+    protected Chronometer stopwatchCurrentRide;
 
     //VOLUME
     private TextView volumeIndicator;
@@ -171,6 +175,9 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         statusbarMovieTitle = view.findViewById(R.id.statusbar_movie_title);
         movieProgressBar = view.findViewById(R.id.statusbar_seekbar);
 
+        //TIME
+        stopwatchCurrentRide = view.findViewById(R.id.statusbar_time_value_chrono);
+
         // VOLUME
         volumeIndicator = view.findViewById(R.id.statusbar_volume_value);
         volumeUp = view.findViewById(R.id.statusbar_volume_up_button);
@@ -211,6 +218,9 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
     protected void setupFunctionality(View view) {
         addRedBorderOnFocus(new View[]{volumeUp, volumeDown});
 
+        stopwatchCurrentRide.setFormat(getString(R.string.videoplayer_chronometer_message));
+        stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
+
         volumeUp.setOnClickListener(clickedView -> {
             videoPlayerViewModel.changeVolumeLevelBy(10);
         });
@@ -230,6 +240,15 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
     protected void setupVisibilities(View view) {
         for (View box : usedStatusBarBoxes) {
             box.setVisibility(View.VISIBLE);
+        }
+
+        Log.d(TAG, "startedFromMotoLife: " + startedFromMotolife);
+        if (startedFromMotolife) {
+            chinesportTime.setVisibility(View.VISIBLE);
+            stopwatchCurrentRide.setVisibility(View.GONE);
+        } else {
+            chinesportTime.setVisibility(View.GONE);
+            stopwatchCurrentRide.setVisibility(View.VISIBLE);
         }
     }
 
@@ -290,6 +309,27 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         videoPlayerViewModel.getVolumeLevel().observe(getViewLifecycleOwner(), volumeLevel -> {
             if (volumeLevel != null) {
                 volumeIndicator.setText(String.valueOf(volumeLevel));
+            }
+        });
+
+        //ROUTE IS PAUSED STATUS BUT VIEW IS STILL VISIBLE
+        videoPlayerViewModel.getPlayerPaused().observe(getViewLifecycleOwner(), isPaused -> {
+            if (!startedFromMotolife) {
+                if (isPaused) {
+                    stopwatchCurrentRide.stop();
+                } else {
+                    stopwatchCurrentRide.start();
+                }
+            }
+        });
+
+        //RESET STOPWATCH TO ZERO
+        videoPlayerViewModel.getResetChronometer().observe(getViewLifecycleOwner(), resetChronometer -> {
+            if (!startedFromMotolife) {
+                if (resetChronometer) {
+                    stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
+                    videoPlayerViewModel.setResetChronometer(false);
+                }
             }
         });
     }
