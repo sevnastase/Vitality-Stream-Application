@@ -110,7 +110,7 @@
             android:visibility="gone"/>
         <Button
             android:id="@+id/status_dialog_return_home_button"
-            style="@style/AppTheme.DefaultButton"
+            style="@style/AppTheme.DefaultTrainingButton"
             android:textSize="10sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
