@@ -52,7 +52,7 @@
                         android:background="@color/light_blue_600"
                         android:nextFocusRight="@id/wifi_button"
                         android:nextFocusLeft="@id/productpicker_settings_button"
-                        style="@style/AppTheme.DefaultButton"/>
+                        style="@style/AppTheme.DefaultMenuButton"/>
 
                     <Button
                         android:visibility="visible"
@@ -63,7 +63,7 @@
                         android:background="@color/light_blue_600"
                         android:nextFocusLeft="@id/audio_button"
                         android:nextFocusRight="@id/privacy_policy_button"
-                        style="@style/AppTheme.DefaultButton" />
+                        style="@style/AppTheme.DefaultMenuButton" />
 
                     <Button
                         android:id="@+id/privacy_policy_button"
@@ -72,7 +72,7 @@
                         android:background="@color/light_blue_600"
                         android:text="Privacy Policy"
                         android:nextFocusLeft="@id/wifi_button"
-                        style="@style/AppTheme.DefaultButton" />
+                        style="@style/AppTheme.DefaultMenuButton" />
 
                 </LinearLayout>
 

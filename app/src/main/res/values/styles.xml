@@ -31,7 +31,19 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="AppTheme.DefaultButton">
+    <style name="AppTheme.DefaultTrainingButton">
+        <!-- Buttons -->
+        <item name="android:background">@null</item>
+        <item name="android:foreground">@drawable/foreground_selectable_hoverable_blue_borders</item>
+        <item name="android:textColor">#FFFFF0</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+    </style>
+
+    <style name="AppTheme.DefaultMenuButton">
         <!-- Buttons -->
         <item name="android:background">@null</item>
         <item name="android:foreground">@drawable/foreground_selectable_hoverable</item>
