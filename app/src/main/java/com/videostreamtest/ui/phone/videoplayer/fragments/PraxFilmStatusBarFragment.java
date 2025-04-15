@@ -1,6 +1,7 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -32,6 +33,10 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
                     view.findViewById(R.id.motolife_info_layout)
             });
         }
+
+        movieProgressBar.setFocusable(true);
+        view.findViewById(R.id.statusbar_volume_down_button).setNextFocusDownId(movieProgressBar.getId());
+        movieProgressBar.setNextFocusUpId(R.id.statusbar_volume_down_button);
     }
 
     @Override
@@ -55,8 +60,31 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 onDragProgressbar = false;
-                goToSecond(newProgress);
+                seek(newProgress);
             }
+        });
+
+        movieProgressBar.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() == KeyEvent.ACTION_DOWN && movieProgressBar.hasFocus()) {
+                int progress = movieProgressBar.getProgress();
+                int max = movieProgressBar.getMax();
+                int step = max / 15;
+
+                switch (keyCode) {
+                    case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        progress = Math.min(progress + step, max);
+                        movieProgressBar.setProgress(progress);
+                        seek(progress);
+                        return true;
+
+                    case KeyEvent.KEYCODE_DPAD_LEFT:
+                        progress = Math.max(progress - step, 0);
+                        movieProgressBar.setProgress(progress);
+                        seek(progress);
+                        return true;
+                }
+            }
+            return false;
         });
     }
 
@@ -70,7 +98,7 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
         });
     }
 
-    private void goToSecond(final int newProgress) {
+    private void seek(final int newProgress) {
         Log.d(TAG, "newProgress: "+newProgress);
         int framesPerSecond = 30;
         int frameNumber = (newProgress/1000) * framesPerSecond;
