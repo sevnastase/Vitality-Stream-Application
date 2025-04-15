@@ -78,6 +78,21 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
 
     //MOVIE PARTS
     protected RecyclerView statusbarRoutePartsView;
+    protected IntentFilter localBroadcastIntentFilter = new IntentFilter();
+    protected BroadcastReceiver localBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction() == null) {
+                return;
+            }
+
+            switch(intent.getAction()) {
+                case "hideRoutepartsLayout":
+                    toggleMoviePartsVisibility(false);
+                    break;
+            }
+        }
+    };
     protected LinearLayout routePartsLayout; // TODO: WHEN ABSTRACTING SPIN AND FIT TOGETHER, MOVE THIS TO THEIR MUTUAL CLASS
     protected RoutePartsAdapter routePartsAdapter;
     protected List<Routepart> routeParts;
@@ -440,6 +455,9 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         mqttMessageFilter.addAction("com.videostreamtest.ACTION_FINISH_FILM");
 
         LocalBroadcastManager.getInstance(requireContext()).registerReceiver(mqttMessageReceiver, mqttMessageFilter);
+
+        localBroadcastIntentFilter.addAction("hideRoutepartsLayout");
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(localBroadcastReceiver, localBroadcastIntentFilter);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments.routeparts;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -13,6 +14,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.cast.framework.media.zzbv;
@@ -195,6 +197,8 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
                     } else {
                         VideoplayerExoActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
                     }
+                    LocalBroadcastManager.getInstance(itemView.getContext())
+                            .sendBroadcast(new Intent("hideRoutepartsLayout"));
                     Log.d(TAG, "moviePart frame as int = " + moviePart.getFrameNumber().intValue());
                     videoPlayerViewModel.resetDistance(moviePart, selectedMovie);
                 }
