@@ -379,7 +379,8 @@
                         android:progressDrawable="@drawable/praxfilm_progress_drawable"
                         android:thumb="@drawable/bicycle_thumb_praxfilm"
                         android:thumbOffset="0dp"
-                        android:splitTrack="false" />
+                        android:splitTrack="false"
+                        style="@style/AppTheme.DefaultTrainingImageButtonRedBorders"/>
 
                     <ImageButton
                         android:id="@+id/statusbar_seekbar_t1"
