@@ -26,7 +26,7 @@
     <Button
         android:id="@+id/login_goto_location_permission_button"
         android:text="@string/profile_add_form_next_button_text"
-        style="@style/AppTheme.DefaultTrainingButton"
+        style="@style/AppTheme.DefaultTrainingButtonBlueBorders"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dp"

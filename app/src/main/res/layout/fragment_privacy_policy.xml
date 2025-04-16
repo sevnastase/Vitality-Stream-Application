@@ -67,7 +67,7 @@
                     android:id="@+id/open_privacy_policy_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/AppTheme.DefaultTrainingButton"
+                    style="@style/AppTheme.DefaultTrainingButtonBlueBorders"
                     android:textSize="10sp"
                     android:text="@string/open_privacy_policy_button_text"
                     android:nextFocusDown="@id/productpicker_settings_button"
