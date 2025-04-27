@@ -24,15 +24,15 @@
         android:imeOptions="actionSend|flagNoExtractUi"
         android:imeActionLabel="@string/profile_add_form_next_button_text"
         android:background="#FFFFFF"
-        android:nextFocusUp="@id/login_goto_password_button"
-        android:nextFocusDown="@id/login_goto_password_button" />
+        android:nextFocusDown="@id/login_goto_password_button"
+        style="@style/AppTheme.DefaultInputField"/>
     <Button
         android:id="@+id/login_goto_password_button"
         android:text="@string/profile_add_form_next_button_text"
-        style="@style/AppTheme.DefaultButton"
+        style="@style/AppTheme.DefaultTrainingButtonBlueBorders"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dp"
         android:layout_marginTop="15dp"
-        android:nextFocusUp="@id/login_insert_username_input" />
+        android:nextFocusUp="@id/login_insert_username_input"/>
 </LinearLayout>

@@ -8,8 +8,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -56,11 +58,21 @@ public class WifiAdapter extends RecyclerView.Adapter<WifiViewHolder> {
         holder.toggleCredentialsButton.setOnClickListener(view -> toggleCredentialsLayout(holder));
         holder.networkHeaderLayout.setOnClickListener(view -> toggleCredentialsLayout(holder));
 
-        holder.connectButton.setOnClickListener(view -> sendConnectCommand(
-                network,
-                holder.networkPasswordInputField.getText().toString(),
-                view.getContext()
-        ));
+        holder.connectButton.setOnClickListener(view -> {
+            ViewHelper.hideKeybaord(activity);
+            sendConnectCommand(network, holder.networkPasswordInputField.getText().toString(), view.getContext());
+        });
+
+        holder.networkPasswordInputField.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (b) {
+                    ViewHelper.showKeyboard(activity);
+                } else {
+                    ViewHelper.hideKeybaord(activity);
+                }
+            }
+        });
 
         if (activity.getClass() == LoginActivity.class) {
             ViewHelper.setTextColorToWhiteInViewAndChildren(holder.itemView, R.color.white);

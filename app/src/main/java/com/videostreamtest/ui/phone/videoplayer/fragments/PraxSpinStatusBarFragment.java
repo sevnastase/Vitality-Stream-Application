@@ -27,9 +27,6 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
     private TextView statusbarDistance;
     private TextView statusbarTotalDistance;
 
-    //TIME
-    private Chronometer stopwatchCurrentRide;
-
     //SPEED
     private TextView speedIndicator;
     private ImageButton speedUpButton;
@@ -61,9 +58,6 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
         statusbarDistance = view.findViewById(R.id.statusbar_distance_box_value);
         statusbarTotalDistance = view.findViewById(R.id.statusbar_distance_finish_box_value);
         toggleRoutePartsButton = view.findViewById(R.id.statusbar_toggle_movieparts_button);
-
-        //TIME
-        stopwatchCurrentRide = view.findViewById(R.id.statusbar_time_value_chrono);
 
         //STOP BUTTON
         stopButton = view.findViewById(R.id.statusbar_stop_button);
@@ -117,10 +111,6 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
     @Override
     protected void setupFunctionality(View view) {
         super.setupFunctionality(view);
-
-        //INIT VALUES
-        stopwatchCurrentRide.setFormat(getString(R.string.videoplayer_chronometer_message));
-        stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
 
         //ROUTEPARTS
         routePartsLayout.setOnClickListener(v -> routePartsLayout.setVisibility(View.GONE));
@@ -183,6 +173,13 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
     private void setupFocus() {
         addRedBorderOnFocus(new View[]{toggleRoutePartsButton, speedUpButton, speedDownButton, stopButton});
 
+        movieProgressBar.setFocusable(false);
+        movieProgressBar.setFocusableInTouchMode(false);
+        for (ImageButton tButton : seekBarButtons) {
+            tButton.setFocusable(false);
+            tButton.setFocusableInTouchMode(false);
+        }
+
         if (startedFromMotolife) {
 
         } else {
@@ -195,17 +192,6 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
     protected void setupVisibilities(View view) {
         super.setupVisibilities(view);
 
-        Log.d(TAG, "startedFromMotoLife: " + startedFromMotolife);
-        if (startedFromMotolife) {
-            chinesportTime.setVisibility(View.VISIBLE);
-            stopwatchCurrentRide.setVisibility(View.GONE);
-            view.findViewById(R.id.statusbar_stop_box).setVisibility(View.GONE);
-        } else if (true /* TODO distinguish between PraxView-type and other products */) {
-            chinesportTime.setVisibility(View.GONE);
-            stopwatchCurrentRide.setVisibility(View.VISIBLE);
-            view.findViewById(R.id.statusbar_stop_box).setVisibility(View.VISIBLE);
-        }
-
         for (ImageButton tButton : seekBarButtons) {
             tButton.setVisibility(View.VISIBLE);
         }
@@ -214,27 +200,6 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
     @Override
     protected void useVideoPlayerViewModel(View view) {
         super.useVideoPlayerViewModel(view);
-
-        //ROUTE IS PAUSED STATUS BUT VIEW IS STILL VISIBLE
-        videoPlayerViewModel.getPlayerPaused().observe(getViewLifecycleOwner(), isPaused -> {
-            if (!startedFromMotolife) {
-                if (isPaused) {
-                    stopwatchCurrentRide.stop();
-                } else {
-                    stopwatchCurrentRide.start();
-                }
-            }
-        });
-
-        //RESET STOPWATCH TO ZERO
-        videoPlayerViewModel.getResetChronometer().observe(getViewLifecycleOwner(), resetChronometer -> {
-            if (!startedFromMotolife) {
-                if (resetChronometer) {
-                    stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
-                    videoPlayerViewModel.setResetChronometer(false);
-                }
-            }
-        });
 
         //Movie object related
         videoPlayerViewModel.getSelectedMovie().observe(getViewLifecycleOwner(), selectedMovie -> {

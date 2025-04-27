@@ -19,4 +19,6 @@
     <color name="buttonWhite">#FFFFF0</color>
     <color name="layoutBackgroundLightBlue">#00BFFF</color>
     <color name="gray">#808080</color>
+
+    <color name="red">#FF0000</color>
 </resources>

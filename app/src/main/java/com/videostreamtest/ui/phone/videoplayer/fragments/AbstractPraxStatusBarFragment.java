@@ -10,11 +10,13 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
@@ -63,6 +65,8 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
     private ImageButton toggleStatusbarButton;
     private View statusbar;
 
+    protected Chronometer stopwatchCurrentRide;
+
     //VOLUME
     private TextView volumeIndicator;
     private ImageButton volumeUp;
@@ -74,6 +78,21 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
 
     //MOVIE PARTS
     protected RecyclerView statusbarRoutePartsView;
+    protected IntentFilter localBroadcastIntentFilter = new IntentFilter();
+    protected BroadcastReceiver localBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction() == null) {
+                return;
+            }
+
+            switch(intent.getAction()) {
+                case "hideRoutepartsLayout":
+                    toggleMoviePartsVisibility(false);
+                    break;
+            }
+        }
+    };
     protected LinearLayout routePartsLayout; // TODO: WHEN ABSTRACTING SPIN AND FIT TOGETHER, MOVE THIS TO THEIR MUTUAL CLASS
     protected RoutePartsAdapter routePartsAdapter;
     protected List<Routepart> routeParts;
@@ -160,6 +179,8 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         statusbar = view.findViewById(R.id.statusbar);
         toggleStatusbarButton = view.findViewById(R.id.toggle_statusbar_button);
 
+        toggleStatusbarButton.setOnFocusChangeListener((view2, hasFocus) -> repaintToggleStatusbarButton(hasFocus));
+
         routePartsLayout = view.findViewById(R.id.statusbar_routeparts_layout);
         statusbarRoutePartsView = view.findViewById(R.id.statusbar_routeparts_recyclerview);
 
@@ -168,6 +189,9 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
 
         statusbarMovieTitle = view.findViewById(R.id.statusbar_movie_title);
         movieProgressBar = view.findViewById(R.id.statusbar_seekbar);
+
+        //TIME
+        stopwatchCurrentRide = view.findViewById(R.id.statusbar_time_value_chrono);
 
         // VOLUME
         volumeIndicator = view.findViewById(R.id.statusbar_volume_value);
@@ -209,6 +233,9 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
     protected void setupFunctionality(View view) {
         addRedBorderOnFocus(new View[]{volumeUp, volumeDown});
 
+        stopwatchCurrentRide.setFormat(getString(R.string.videoplayer_chronometer_message));
+        stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
+
         volumeUp.setOnClickListener(clickedView -> {
             videoPlayerViewModel.changeVolumeLevelBy(10);
         });
@@ -221,11 +248,22 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         });
 
         toggleRoutePartsLayoutTimer = new Handler(Looper.getMainLooper());
+
+        toggleStatusbarButton.requestFocus();
     }
 
     protected void setupVisibilities(View view) {
         for (View box : usedStatusBarBoxes) {
             box.setVisibility(View.VISIBLE);
+        }
+
+        Log.d(TAG, "startedFromMotoLife: " + startedFromMotolife);
+        if (startedFromMotolife) {
+            chinesportTime.setVisibility(View.VISIBLE);
+            stopwatchCurrentRide.setVisibility(View.GONE);
+        } else {
+            chinesportTime.setVisibility(View.GONE);
+            stopwatchCurrentRide.setVisibility(View.VISIBLE);
         }
     }
 
@@ -275,7 +313,7 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
                         }
                         routeParts.add(routepart);
                     }
-                    routePartsAdapter.setRouteparts(routeParts);
+//                    routePartsAdapter.setRouteparts(routeParts);
                     routePartsAdapter.notifyDataSetChanged();
                     statusbarRoutePartsView.setAdapter(routePartsAdapter);
                 }
@@ -286,6 +324,27 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         videoPlayerViewModel.getVolumeLevel().observe(getViewLifecycleOwner(), volumeLevel -> {
             if (volumeLevel != null) {
                 volumeIndicator.setText(String.valueOf(volumeLevel));
+            }
+        });
+
+        //ROUTE IS PAUSED STATUS BUT VIEW IS STILL VISIBLE
+        videoPlayerViewModel.getPlayerPaused().observe(getViewLifecycleOwner(), isPaused -> {
+            if (!startedFromMotolife) {
+                if (isPaused) {
+                    stopwatchCurrentRide.stop();
+                } else {
+                    stopwatchCurrentRide.start();
+                }
+            }
+        });
+
+        //RESET STOPWATCH TO ZERO
+        videoPlayerViewModel.getResetChronometer().observe(getViewLifecycleOwner(), resetChronometer -> {
+            if (!startedFromMotolife) {
+                if (resetChronometer) {
+                    stopwatchCurrentRide.setBase(SystemClock.elapsedRealtime());
+                    videoPlayerViewModel.setResetChronometer(false);
+                }
             }
         });
     }
@@ -396,6 +455,9 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         mqttMessageFilter.addAction("com.videostreamtest.ACTION_FINISH_FILM");
 
         LocalBroadcastManager.getInstance(requireContext()).registerReceiver(mqttMessageReceiver, mqttMessageFilter);
+
+        localBroadcastIntentFilter.addAction("hideRoutepartsLayout");
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(localBroadcastReceiver, localBroadcastIntentFilter);
     }
 
     @Override
@@ -482,10 +544,28 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
     private void toggleStatusbarVisibility() {
         if (statusbar.getVisibility() == View.VISIBLE) {
             statusbar.setVisibility(View.GONE);
-            toggleStatusbarButton.setImageResource(R.drawable.double_arrow_up_rounded_rectangle);
         } else {
             statusbar.setVisibility(View.VISIBLE);
-            toggleStatusbarButton.setImageResource(R.drawable.double_arrow_down_rounded_rectangle);
         }
+
+//        new Handler().postDelayed(() -> repaintToggleStatusbarButton(true), 200);
+        repaintToggleStatusbarButton(true);
+    }
+
+    private void repaintToggleStatusbarButton(boolean hasFocus) {
+        if (hasFocus) {
+            if (statusbar.getVisibility() == View.VISIBLE) {
+                toggleStatusbarButton.setImageResource(R.drawable.double_arrow_down_rounded_rectangle_focused);
+            } else {
+                toggleStatusbarButton.setImageResource(R.drawable.double_arrow_up_rounded_rectangle_focused);
+            }
+        } else {
+            if (statusbar.getVisibility() == View.VISIBLE) {
+                toggleStatusbarButton.setImageResource(R.drawable.double_arrow_down_rounded_rectangle);
+            } else {
+                toggleStatusbarButton.setImageResource(R.drawable.double_arrow_up_rounded_rectangle);
+            }
+        }
+
     }
 }

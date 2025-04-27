@@ -64,12 +64,11 @@ public class SettingsFragment extends Fragment {
     }
 
     private void focus(Button button) {
-        button.setBackgroundResource(R.color.light_blue_600_focused);
+        button.requestFocus();
         button.setPaintFlags(button.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
     }
 
     private void unfocus(Button button) {
-        button.setBackgroundResource(R.color.light_blue_600);
         button.setPaintFlags(button.getPaintFlags() & ~Paint.UNDERLINE_TEXT_FLAG);
     }
 

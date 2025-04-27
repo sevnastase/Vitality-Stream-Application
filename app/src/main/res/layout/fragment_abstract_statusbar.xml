@@ -19,6 +19,10 @@
         android:background="@null"
         android:layout_marginLeft="3dp"
         android:layout_marginBottom="3dp"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:nextFocusRight="@id/statusbar_toggle_movieparts_button"
+        android:nextFocusDown="@id/statusbar_toggle_movieparts_button"
         app:layout_constraintBottom_toTopOf="@id/statusbar"
         app:layout_constraintLeft_toLeftOf="parent"/>
 
@@ -218,7 +222,8 @@
                             android:layout_width="60dp"
                             android:layout_height="60dp"
                             android:background="@null"
-                            android:nextFocusLeft="@id/motolife_toggle_button"
+                            android:nextFocusLeft="@id/toggle_statusbar_button"
+                            android:nextFocusUp="@id/toggle_statusbar_button"
                             android:nextFocusRight="@id/statusbar_volume_up_button"
                             android:src="@drawable/routeparts_button" />
                     </LinearLayout>
@@ -242,7 +247,8 @@
                             android:background="@null"
                             android:src="@drawable/volume_raise_level_symbol"
                             android:nextFocusLeft="@id/statusbar_toggle_movieparts_button"
-                            android:nextFocusRight="@id/statusbar_volume_down_button"/>
+                            android:nextFocusRight="@id/statusbar_speed_up_button"
+                            android:nextFocusDown="@id/statusbar_volume_down_button"/>
                         <TextView
                             android:id="@+id/statusbar_volume_value"
                             android:layout_width="wrap_content"
@@ -260,8 +266,9 @@
                             android:scaleType="fitCenter"
                             android:background="@null"
                             android:src="@drawable/volume_lower_level_symbol"
-                            android:nextFocusLeft="@id/statusbar_volume_up_button"
-                            android:nextFocusRight="@id/statusbar_speed_up_button"/>
+                            android:nextFocusLeft="@id/statusbar_toggle_movieparts_button"
+                            android:nextFocusRight="@id/statusbar_speed_down_button"
+                            android:nextFocusUp="@id/statusbar_volume_up_button"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -280,8 +287,9 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:background="@null"
-                            android:nextFocusLeft="@id/statusbar_volume_down_button"
-                            android:nextFocusRight="@id/statusbar_speed_down_button"
+                            android:nextFocusLeft="@id/statusbar_volume_up_button"
+                            android:nextFocusRight="@id/statusbar_stop_button"
+                            android:nextFocusDown="@id/statusbar_speed_down_button"
                             android:src="@drawable/plus_small" />
 
                         <TextView
@@ -297,8 +305,9 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:background="@null"
-                            android:nextFocusLeft="@id/statusbar_speed_up_button"
+                            android:nextFocusLeft="@id/statusbar_volume_down_button"
                             android:nextFocusRight="@id/statusbar_stop_button"
+                            android:nextFocusUp="@id/statusbar_speed_up_button"
                             android:src="@drawable/minus_small" />
                     </LinearLayout>
 
@@ -347,7 +356,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:background="@null"
-                            android:nextFocusLeft="@id/statusbar_speed_down_button"
+                            android:nextFocusLeft="@id/statusbar_speed_up_button"
                             android:nextFocusRight="@id/motolife_toggle_button"
                             android:padding="8dp"
                             android:src="@drawable/stop_sign_small" />
@@ -366,11 +375,13 @@
                         android:id="@+id/statusbar_seekbar"
                         android:layout_width="700dp"
                         android:focusable="false"
+                        android:focusableInTouchMode="false"
                         android:layout_height="wrap_content"
                         android:progressDrawable="@drawable/praxfilm_progress_drawable"
                         android:thumb="@drawable/bicycle_thumb_praxfilm"
                         android:thumbOffset="0dp"
-                        android:splitTrack="false" />
+                        android:splitTrack="false"
+                        style="@style/AppTheme.DefaultTrainingImageButtonRedBorders"/>
 
                     <ImageButton
                         android:id="@+id/statusbar_seekbar_t1"
@@ -380,7 +391,10 @@
                         android:background="@android:color/transparent"
                         android:scaleType="fitCenter"
                         android:src="@drawable/nummer_1_wit"
-                        android:visibility="gone"/>
+                        android:visibility="gone"
+                        android:nextFocusRight="@id/statusbar_seekbar_t2"
+                        android:nextFocusLeft="@id/statusbar_seekbar_t1" />
+<!--                        style="@style/AppTheme.DefaultTrainingImageButtonRedBorders"/>-->
 
                     <ImageButton
                         android:id="@+id/statusbar_seekbar_t2"
@@ -390,7 +404,10 @@
                         android:background="@android:color/transparent"
                         android:scaleType="fitCenter"
                         android:src="@drawable/nummer_2_wit"
-                        android:visibility="gone"/>
+                        android:visibility="gone"
+                        android:nextFocusRight="@id/statusbar_seekbar_t3"
+                        android:nextFocusLeft="@id/statusbar_seekbar_t1"/>
+<!--                        style="@style/AppTheme.DefaultTrainingImageButtonRedBorders"/>-->
 
                     <ImageButton
                         android:id="@+id/statusbar_seekbar_t3"
@@ -401,7 +418,9 @@
                         android:background="@android:color/transparent"
                         android:scaleType="fitCenter"
                         android:src="@drawable/nummer_3_wit"
-                        android:visibility="gone"/>
+                        android:visibility="gone"
+                        android:nextFocusLeft="@id/statusbar_seekbar_t2"/>
+<!--                        style="@style/AppTheme.DefaultTrainingImageButtonRedBorders"/>-->
 
                     <ImageButton
                         android:id="@+id/statusbar_seekbar_t4"
@@ -413,6 +432,7 @@
                         android:scaleType="fitCenter"
                         android:src="@drawable/nummer_4_wit"
                         android:visibility="gone"/>
+<!--                        style="@style/AppTheme.DefaultTrainingImageButtonRedBorders"/>-->
 
                     <ImageButton
                         android:id="@+id/statusbar_seekbar_t5"
@@ -424,6 +444,7 @@
                         android:scaleType="fitCenter"
                         android:src="@drawable/nummer_5_wit"
                         android:visibility="gone"/>
+<!--                        style="@style/AppTheme.DefaultTrainingImageButtonRedBorders"/>-->
 
                     <ImageButton
                         android:id="@+id/statusbar_seekbar_t6"
@@ -434,7 +455,9 @@
                         android:background="@android:color/transparent"
                         android:scaleType="fitCenter"
                         android:src="@drawable/nummer_6_wit"
-                        android:visibility="gone"/>
+                        android:visibility="gone"
+                        android:nextFocusRight="@id/statusbar_seekbar_t6"/>
+<!--                        style="@style/AppTheme.DefaultTrainingImageButtonRedBorders"/>-->
 
                 </RelativeLayout>
             </LinearLayout>

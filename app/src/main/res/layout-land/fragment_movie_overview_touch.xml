@@ -155,6 +155,8 @@
         android:background="@null"
         android:layout_width="50dp"
         android:layout_height="50dp"
+        android:focusableInTouchMode="false"
+        android:focusable="false"
         />
         <LinearLayout
             android:id="@+id/horizontal_navigation_arrows"
@@ -166,6 +168,8 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_marginRight="15dp"
+                android:focusableInTouchMode="false"
+                android:focusable="false"
                 />
             <ImageButton
             android:id="@+id/right_navigation_arrow"
@@ -173,13 +177,17 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_marginLeft="15dp"
+            android:focusableInTouchMode="false"
+            android:focusable="false"
             />
         </LinearLayout>
     <ImageButton
         android:id="@+id/down_navigation_arrow"
         android:background="@null"
         android:layout_width="50dp"
-        android:layout_height="50dp"/>
+        android:layout_height="50dp"
+        android:focusableInTouchMode="false"
+        android:focusable="false"/>
     </LinearLayout>
 
 <!--    <androidx.fragment.app.FragmentContainerView-->

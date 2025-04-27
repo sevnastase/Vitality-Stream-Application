@@ -1,5 +1,6 @@
 package com.videostreamtest.ui.phone.helpers;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
@@ -8,6 +9,7 @@ import android.net.Uri;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -110,5 +112,19 @@ public class ViewHelper {
                 setTextColorToWhiteInViewAndChildren(viewGroup.getChildAt(i), colorId);
             }
         }
+    }
+
+    public static void showKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(activity.getCurrentFocus(), 0);
+    }
+
+    public static void hideKeybaord(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        View view = activity.getCurrentFocus();
+        if (view == null) {
+            view = new View(activity); // dummy object for focus
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 }
