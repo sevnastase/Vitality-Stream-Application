@@ -173,6 +173,13 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
     private void setupFocus() {
         addRedBorderOnFocus(new View[]{toggleRoutePartsButton, speedUpButton, speedDownButton, stopButton});
 
+        movieProgressBar.setFocusable(false);
+        movieProgressBar.setFocusableInTouchMode(false);
+        for (ImageButton tButton : seekBarButtons) {
+            tButton.setFocusable(false);
+            tButton.setFocusableInTouchMode(false);
+        }
+
         if (startedFromMotolife) {
 
         } else {

@@ -1,5 +1,7 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
+import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -7,6 +9,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.videostreamtest.R;
+import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 
@@ -14,6 +17,7 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
     private static final String TAG = PraxFilmStatusBarFragment.class.getSimpleName();
 
     private TextView statusbarRpmValue;
+    private Handler progressBarHandler = new Handler();
 
     @Override
     protected void initializeLayout(View view) {
@@ -35,6 +39,7 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
         }
 
         movieProgressBar.setFocusable(true);
+        movieProgressBar.setFocusableInTouchMode(true);
         view.findViewById(R.id.statusbar_volume_down_button).setNextFocusDownId(movieProgressBar.getId());
         movieProgressBar.setNextFocusUpId(R.id.statusbar_volume_down_button);
     }
@@ -69,12 +74,21 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
                 int progress = movieProgressBar.getProgress();
                 int max = movieProgressBar.getMax();
                 int step = max / 15;
+                progressBarHandler.postDelayed(() -> {
+                    movieProgressBar.requestFocus();
+                }, 1000);
 
                 switch (keyCode) {
                     case KeyEvent.KEYCODE_DPAD_RIGHT:
-                        progress = Math.min(progress + step, max);
-                        movieProgressBar.setProgress(progress);
-                        seek(progress);
+                        progress = progress + step;
+                        if (progress >= max) {
+                            try {
+                                getActivity().finish();
+                            } catch (NullPointerException ignored) {}
+                        } else {
+                            movieProgressBar.setProgress(progress);
+                            seek(progress);
+                        }
                         return true;
 
                     case KeyEvent.KEYCODE_DPAD_LEFT:

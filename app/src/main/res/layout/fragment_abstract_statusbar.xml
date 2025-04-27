@@ -375,6 +375,7 @@
                         android:id="@+id/statusbar_seekbar"
                         android:layout_width="700dp"
                         android:focusable="false"
+                        android:focusableInTouchMode="false"
                         android:layout_height="wrap_content"
                         android:progressDrawable="@drawable/praxfilm_progress_drawable"
                         android:thumb="@drawable/bicycle_thumb_praxfilm"
@@ -390,7 +391,10 @@
                         android:background="@android:color/transparent"
                         android:scaleType="fitCenter"
                         android:src="@drawable/nummer_1_wit"
-                        android:visibility="gone"/>
+                        android:visibility="gone"
+                        android:nextFocusRight="@id/statusbar_seekbar_t2"
+                        android:nextFocusLeft="@id/statusbar_seekbar_t1" />
+<!--                        style="@style/AppTheme.DefaultTrainingImageButtonRedBorders"/>-->
 
                     <ImageButton
                         android:id="@+id/statusbar_seekbar_t2"
@@ -400,7 +404,10 @@
                         android:background="@android:color/transparent"
                         android:scaleType="fitCenter"
                         android:src="@drawable/nummer_2_wit"
-                        android:visibility="gone"/>
+                        android:visibility="gone"
+                        android:nextFocusRight="@id/statusbar_seekbar_t3"
+                        android:nextFocusLeft="@id/statusbar_seekbar_t1"/>
+<!--                        style="@style/AppTheme.DefaultTrainingImageButtonRedBorders"/>-->
 
                     <ImageButton
                         android:id="@+id/statusbar_seekbar_t3"
@@ -411,7 +418,9 @@
                         android:background="@android:color/transparent"
                         android:scaleType="fitCenter"
                         android:src="@drawable/nummer_3_wit"
-                        android:visibility="gone"/>
+                        android:visibility="gone"
+                        android:nextFocusLeft="@id/statusbar_seekbar_t2"/>
+<!--                        style="@style/AppTheme.DefaultTrainingImageButtonRedBorders"/>-->
 
                     <ImageButton
                         android:id="@+id/statusbar_seekbar_t4"
@@ -423,6 +432,7 @@
                         android:scaleType="fitCenter"
                         android:src="@drawable/nummer_4_wit"
                         android:visibility="gone"/>
+<!--                        style="@style/AppTheme.DefaultTrainingImageButtonRedBorders"/>-->
 
                     <ImageButton
                         android:id="@+id/statusbar_seekbar_t5"
@@ -434,6 +444,7 @@
                         android:scaleType="fitCenter"
                         android:src="@drawable/nummer_5_wit"
                         android:visibility="gone"/>
+<!--                        style="@style/AppTheme.DefaultTrainingImageButtonRedBorders"/>-->
 
                     <ImageButton
                         android:id="@+id/statusbar_seekbar_t6"
@@ -444,7 +455,9 @@
                         android:background="@android:color/transparent"
                         android:scaleType="fitCenter"
                         android:src="@drawable/nummer_6_wit"
-                        android:visibility="gone"/>
+                        android:visibility="gone"
+                        android:nextFocusRight="@id/statusbar_seekbar_t6"/>
+<!--                        style="@style/AppTheme.DefaultTrainingImageButtonRedBorders"/>-->
 
                 </RelativeLayout>
             </LinearLayout>

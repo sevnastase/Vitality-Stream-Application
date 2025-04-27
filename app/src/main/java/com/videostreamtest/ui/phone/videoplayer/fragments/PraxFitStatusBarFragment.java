@@ -111,6 +111,17 @@ public class PraxFitStatusBarFragment extends AbstractPraxStatusBarFragment {
         });
 
         addRedBorderOnFocus(new View[]{toggleRoutePartsButton});
+
+        setupFocus();
+    }
+
+    private void setupFocus() {
+        movieProgressBar.setFocusable(false);
+        movieProgressBar.setFocusableInTouchMode(false);
+        for (ImageButton tButton : seekBarButtons) {
+            tButton.setFocusable(false);
+            tButton.setFocusableInTouchMode(false);
+        }
     }
 
     @Override
