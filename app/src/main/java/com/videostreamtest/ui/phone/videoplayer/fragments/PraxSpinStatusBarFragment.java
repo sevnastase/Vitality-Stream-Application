@@ -32,9 +32,6 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
     private ImageButton speedUpButton;
     private ImageButton speedDownButton;
 
-    //STOP BUTTON
-    private ImageButton stopButton;
-
     //TOGGLE SWITCH FOR ROUTEPARTS
     private ImageButton toggleRoutePartsButton;
 
@@ -58,9 +55,6 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
         statusbarDistance = view.findViewById(R.id.statusbar_distance_box_value);
         statusbarTotalDistance = view.findViewById(R.id.statusbar_distance_finish_box_value);
         toggleRoutePartsButton = view.findViewById(R.id.statusbar_toggle_movieparts_button);
-
-        //STOP BUTTON
-        stopButton = view.findViewById(R.id.statusbar_stop_button);
 
         //SPEED BUTTONS
         speedIndicator = view.findViewById(R.id.statusbar_speed_value);
@@ -121,11 +115,6 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
 
         toggleRoutePartsButton.setOnClickListener(clickedView -> {
             toggleMoviePartsVisibility();
-        });
-
-        //STOP
-        stopButton.setOnClickListener(clickedView -> {
-            ((Activity) view.getContext()).finish();
         });
 
         //SPEED

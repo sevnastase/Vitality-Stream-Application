@@ -69,8 +69,8 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
 
     //VOLUME
     private TextView volumeIndicator;
-    private ImageButton volumeUp;
-    private ImageButton volumeDown;
+    protected ImageButton volumeUp;
+    protected ImageButton volumeDown;
     private int volumeLevelWhenPaused;
 
     // RPM (TODO: REWORK SO PRAXFIT/FILM HAS MOTOLIFE CONDITIONAL INTEGRATION)
@@ -99,6 +99,8 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
     protected Handler toggleRoutePartsLayoutTimer;
 
     private ArrayList<View> usedStatusBarBoxes;
+
+    protected ImageButton stopButton;
 
     //FOR CHINESPORT
     protected TextView chinesportPower;
@@ -190,6 +192,8 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         statusbarMovieTitle = view.findViewById(R.id.statusbar_movie_title);
         movieProgressBar = view.findViewById(R.id.statusbar_seekbar);
 
+        stopButton = view.findViewById(R.id.statusbar_stop_button);
+
         //TIME
         stopwatchCurrentRide = view.findViewById(R.id.statusbar_time_value_chrono);
 
@@ -241,6 +245,10 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         });
         volumeDown.setOnClickListener(clickedView -> {
             videoPlayerViewModel.changeVolumeLevelBy(-10);
+        });
+
+        stopButton.setOnClickListener(clickedView -> {
+            ((Activity) view.getContext()).finish();
         });
 
         toggleStatusbarButton.setOnClickListener(clickedView -> {
