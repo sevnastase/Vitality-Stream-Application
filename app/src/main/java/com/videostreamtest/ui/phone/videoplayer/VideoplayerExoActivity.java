@@ -295,15 +295,35 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                     }
                 });
             }
-        } else if (selectedProduct.getProductName().contains("PraxView")) {
-            this.communicationType = ProductHelper.getCommunicationType(selectedProduct.getCommunicationType());
-            videoPlayerViewModel.setSelectedMovie(selectedMovie);
+            if (selectedProduct.getProductName().contains("PraxView")) {
+                this.communicationType = ProductHelper.getCommunicationType(selectedProduct.getCommunicationType());
+                Log.d(TAG, "Greg comm type: " + communicationType);
+                videoPlayerViewModel.setSelectedMovie(selectedMovie);
 
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .setReorderingAllowed(true)
-                    .replace(R.id.videoplayer_framelayout_statusbar, PraxViewStatusBarFragment.class, arguments)
-                    .commit();
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .setReorderingAllowed(true)
+                        .replace(R.id.videoplayer_framelayout_statusbar, PraxViewStatusBarFragment.class, arguments)
+                        .commit();
+                Handler praxViewHandler = new Handler();
+                praxViewHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mediaPlayer != null && !routeFinished) {
+                            Log.d(TAG, "TIME >> "+mediaPlayer.getDuration());
+                            Log.d(TAG, "CONTENT TIME >> "+mediaPlayer.getContentDuration());
+                            Log.d(TAG, "CURRENT POSITION >> "+mediaPlayer.getCurrentPosition());
+                            Log.d(TAG, "CONTENT POSITION >> "+mediaPlayer.getContentPosition());
+                            videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getCurrentPosition());
+                            videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getDuration());
+
+                        }
+                        if (!routeFinished) {
+                            praxViewHandler.postDelayed(this, 1000);
+                        }
+                    }
+                });
+            }
         } else {
             //INCOMING FROM CatalogActivity
             SharedPreferences myPreferences = getSharedPreferences("app", 0);

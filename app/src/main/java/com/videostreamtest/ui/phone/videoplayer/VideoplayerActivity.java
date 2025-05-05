@@ -249,6 +249,8 @@ public class VideoplayerActivity extends AppCompatActivity {
                         .setReorderingAllowed(true)
                         .replace(R.id.videoplayer_framelayout_statusbar, PraxViewStatusBarFragment.class, arguments)
                         .commit();
+
+                videoPlayerViewModel.setMovieTotalDurationSeconds(selectedMovie.getMovieLength());
             }
             if (selectedProduct.getProductName().contains("PraxSpin")) {
                 /*

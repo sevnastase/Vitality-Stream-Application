@@ -153,7 +153,7 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
         titleView.setText(movie.getMovieTitle());
 
         //Set Distance/Duration of movie
-        if (selectedProduct.getProductName().toLowerCase().contains("praxfilm")) {
+        if (!isProductDistanceBased(selectedProduct.getProductName())) {
             distanceView.setText(String.format("Duration: %d minutes", ((movie.getMovieLength()/movie.getRecordedFps())/60)));
         } else {
             float meters = movie.getMovieLength();
@@ -179,6 +179,11 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
                     .into(routeInformationMap);
         }
 
+    }
+
+    private boolean isProductDistanceBased(String productName) {
+        productName = productName.toLowerCase();
+        return productName.contains("praxspin") || productName.contains("praxfilm");
     }
 
     private void initOnFocusChangeListener(final Product selectedProduct) {
