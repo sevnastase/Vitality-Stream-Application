@@ -1,6 +1,8 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
+import android.os.Handler;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -12,16 +14,13 @@ import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 public class PraxViewStatusBarFragment extends AbstractPraxStatusBarFragment {
     private static final String TAG = PraxViewStatusBarFragment.class.getSimpleName();
 
-    private TextView statusbarRpmValue;
+    private Handler progressBarHandler = new Handler();
 
     @Override
     protected void initializeLayout(View view) {
         super.initializeLayout(view);
 
-        statusbarRpmValue = view.findViewById(R.id.statusbar_rpm_value);
-
         addUsedViews(new View[]{
-                view.findViewById(R.id.statusbar_rpm_box),
                 view.findViewById(R.id.statusbar_volume_buttons_box)
         });
 
@@ -29,12 +28,30 @@ public class PraxViewStatusBarFragment extends AbstractPraxStatusBarFragment {
             addUsedViews(new View[]{
                     view.findViewById(R.id.statusbar_motolife_power_box),
                     view.findViewById(R.id.chinesport_logo_imageview),
-                    view.findViewById(R.id.motolife_info_layout)
+                    view.findViewById(R.id.motolife_info_layout),
+                    view.findViewById(R.id.statusbar_rpm_box)
             });
         } else {
             addUsedViews(new View[]{
-                    view.findViewById(R.id.statusbar_stop_button)
+                    view.findViewById(R.id.statusbar_stop_box)
             });
+        }
+
+        movieProgressBar.setFocusable(true);
+        movieProgressBar.setFocusableInTouchMode(true);
+        view.findViewById(R.id.statusbar_volume_down_button).setNextFocusDownId(movieProgressBar.getId());
+        movieProgressBar.setNextFocusUpId(R.id.statusbar_volume_down_button);
+    }
+
+    private void setupFocus() {
+        addRedBorderOnFocus(new View[]{stopButton});
+        if (startedFromMotolife) {
+
+        } else {
+            stopButton.setNextFocusRightId(stopButton.getId());
+            stopButton.setNextFocusLeftId(volumeUp.getId());
+            volumeUp.setNextFocusRightId(stopButton.getId());
+            volumeDown.setNextFocusRightId(stopButton.getId());
         }
     }
 
@@ -59,32 +76,65 @@ public class PraxViewStatusBarFragment extends AbstractPraxStatusBarFragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 onDragProgressbar = false;
-                goToSecond(newProgress);
+                seek(newProgress);
             }
         });
+
+        movieProgressBar.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() == KeyEvent.ACTION_DOWN && movieProgressBar.hasFocus()) {
+                int progress = movieProgressBar.getProgress();
+                int max = movieProgressBar.getMax();
+                int step = max / 15;
+
+                switch (keyCode) {
+                    case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        Log.d(TAG, "Greg right");
+                        progress = progress + step;
+                        Log.d(TAG, "Step: " + step + "Progress: " + progress + " max: " + max);
+                        if (progress >= max) {
+                            try {
+                                getActivity().finish();
+                            } catch (NullPointerException ignored) {}
+                        } else {
+                            movieProgressBar.setProgress(progress);
+                            seek(progress);
+                        }
+                        progressBarHandler.postDelayed(() -> {
+                            movieProgressBar.requestFocus();
+                        }, 500);
+                        return true;
+
+                    case KeyEvent.KEYCODE_DPAD_LEFT:
+                        Log.d(TAG, "Greg left");
+                        progress = Math.max(progress - step, 0);
+                        movieProgressBar.setProgress(progress);
+                        seek(progress);
+                        progressBarHandler.postDelayed(() -> {
+                            movieProgressBar.requestFocus();
+                        }, 500);
+                        return true;
+                }
+            }
+            return false;
+        });
+
+        setupFocus();
     }
 
     @Override
     protected void useVideoPlayerViewModel(View view) {
         super.useVideoPlayerViewModel(view);
-
-        //RPM data related
-        videoPlayerViewModel.getRpmData().observe(getViewLifecycleOwner(), rpmData ->{
-            statusbarRpmValue.setText(String.format(getString(R.string.video_screen_rpm), rpmData));
-        });
     }
 
-    private void goToSecond(final int newProgress) {
+    private void seek(final int newProgress) {
         Log.d(TAG, "newProgress: "+newProgress);
         int framesPerSecond = 30;
         int frameNumber = (newProgress/1000) * framesPerSecond;
         Log.d(TAG, "framenumber: "+frameNumber);
-        if (VideoplayerExoActivity.getInstance() != null) {
+        try {
             VideoplayerExoActivity.getInstance().goToFrameNumber(frameNumber);
-        } else if (VideoplayerActivity.getInstance() != null) {
+        } catch (NullPointerException e) {
             VideoplayerActivity.getInstance().goToFrameNumber(frameNumber);
-        } else {
-            Log.d(TAG, "No instances of videoplayers found");
         }
     }
 }
