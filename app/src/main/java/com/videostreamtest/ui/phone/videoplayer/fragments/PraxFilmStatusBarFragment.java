@@ -74,18 +74,12 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
                 int progress = movieProgressBar.getProgress();
                 int max = movieProgressBar.getMax();
                 int step = max / 15;
-                progressBarHandler.postDelayed(() -> {
-                    movieProgressBar.requestFocus();
-                }, 1000);
 
                 switch (keyCode) {
                     case KeyEvent.KEYCODE_DPAD_RIGHT:
                         progress = progress + step;
-                        if (progress >= max) {
-                            try {
-                                getActivity().finish();
-                            } catch (NullPointerException ignored) {}
-                        } else {
+                        Log.d(TAG, "Step: " + step + "Progress: " + progress + " max: " + max);
+                        if (progress < max) {
                             movieProgressBar.setProgress(progress);
                             seek(progress);
                         }

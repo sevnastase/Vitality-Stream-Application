@@ -91,17 +91,10 @@ public class PraxViewStatusBarFragment extends AbstractPraxStatusBarFragment {
                         Log.d(TAG, "Greg right");
                         progress = progress + step;
                         Log.d(TAG, "Step: " + step + "Progress: " + progress + " max: " + max);
-                        if (progress >= max) {
-                            try {
-                                getActivity().finish();
-                            } catch (NullPointerException ignored) {}
-                        } else {
+                        if (progress < max) {
                             movieProgressBar.setProgress(progress);
                             seek(progress);
                         }
-                        progressBarHandler.postDelayed(() -> {
-                            movieProgressBar.requestFocus();
-                        }, 500);
                         return true;
 
                     case KeyEvent.KEYCODE_DPAD_LEFT:
@@ -109,9 +102,6 @@ public class PraxViewStatusBarFragment extends AbstractPraxStatusBarFragment {
                         progress = Math.max(progress - step, 0);
                         movieProgressBar.setProgress(progress);
                         seek(progress);
-                        progressBarHandler.postDelayed(() -> {
-                            movieProgressBar.requestFocus();
-                        }, 500);
                         return true;
                 }
             }
