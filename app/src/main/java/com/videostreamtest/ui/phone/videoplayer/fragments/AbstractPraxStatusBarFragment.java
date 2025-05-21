@@ -71,7 +71,7 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
     private TextView volumeIndicator;
     protected ImageButton volumeUp;
     protected ImageButton volumeDown;
-    private int volumeLevelWhenPaused;
+    private int volumeLevelBeforePause;
 
     // RPM (TODO: REWORK SO PRAXFIT/FILM HAS MOTOLIFE CONDITIONAL INTEGRATION)
     protected TextView rpmIndicator;
@@ -334,9 +334,18 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
                 volumeIndicator.setText(String.valueOf(volumeLevel));
             }
         });
-
+        final Boolean[] lastPausedState = {null};
         //ROUTE IS PAUSED STATUS BUT VIEW IS STILL VISIBLE
         videoPlayerViewModel.getPlayerPaused().observe(getViewLifecycleOwner(), isPaused -> {
+            if (lastPausedState[0] == null || !lastPausedState[0].equals(isPaused)) {
+                lastPausedState[0] = isPaused;
+                if (isPaused) {
+                    pauseFilm();
+                } else {
+                    resumeFilm();
+                }
+            }
+
             if (!startedFromMotolife) {
                 if (isPaused) {
                     stopwatchCurrentRide.stop();
@@ -488,9 +497,9 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
             toggleMoviePartsVisibility();
         }
         try {
-            volumeLevelWhenPaused = videoPlayerViewModel.getVolumeLevel().getValue();
+            volumeLevelBeforePause = videoPlayerViewModel.getVolumeLevel().getValue();
         } catch (NullPointerException e) {
-            volumeLevelWhenPaused = 10;
+            volumeLevelBeforePause = 10;
         }
         videoPlayerViewModel.setVolumeLevel(0);
 
@@ -514,7 +523,7 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
             }
         }
 
-        videoPlayerViewModel.setVolumeLevel(volumeLevelWhenPaused);
+        videoPlayerViewModel.setVolumeLevel(volumeLevelBeforePause);
     }
 
     private void showPausedDialog() {
