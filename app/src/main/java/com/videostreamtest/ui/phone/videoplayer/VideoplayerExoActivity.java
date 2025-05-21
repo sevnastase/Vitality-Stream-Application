@@ -679,7 +679,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                     long positionSecond = 0;
 
                     videoPlayerViewModel.setStatusbarVisible(false);
-                    videoPlayerViewModel.setPlayerPaused(true);
+//                    videoPlayerViewModel.setPlayerPaused(true);
                     bgSoundPlayerView.setVisibility(View.GONE);
                     videoLayout.setVisibility(View.GONE);
 

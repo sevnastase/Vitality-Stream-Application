@@ -131,6 +131,8 @@ public class VideoplayerActivity extends AppCompatActivity {
     private boolean routePaused = false;
     private int pauseTimer = 0;
     private boolean routeFinished = false;
+//    Handler handler; // AUTO RUNNER
+//    Handler handler2;
 
     //BLE
     private boolean backToOverviewWaitForSensor = false;
@@ -251,6 +253,26 @@ public class VideoplayerActivity extends AppCompatActivity {
                         .commit();
 
                 videoPlayerViewModel.setMovieTotalDurationSeconds(selectedMovie.getMovieLength());
+                //Pass movie details with a second based timer TODO:move to setTimeLineEvent method in this class
+                Handler praxViewHandler = new Handler();
+                Runnable runnableMovieDetails = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mediaPlayer != null && !routeFinished) {
+                            Log.d(TAG, "TIME "+mediaPlayer.getTime());
+                            videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getTime());
+                            if (mediaPlayer.getMedia()!= null && mediaPlayer.getMedia().getDuration() != -1) {
+                                Log.d(TAG, "DURATION "+mediaPlayer.getMedia().getDuration());
+                                videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getMedia().getDuration());
+                            }
+
+                        }
+                        if (!routeFinished) {
+                            praxViewHandler.postDelayed(this::run, 1000);
+                        }
+                    }
+                };
+                praxViewHandler.postDelayed(runnableMovieDetails, 0);
             }
             if (selectedProduct.getProductName().contains("PraxSpin")) {
                 /*
@@ -336,6 +358,34 @@ public class VideoplayerActivity extends AppCompatActivity {
         updateLastCadenceMeasurement(66);
 
         updateVideoPlayerScreen(0);
+
+//        // AUTO RUNNER
+//        handler = new Handler();
+//        Runnable r = new Runnable() {
+//            @Override
+//            public void run() {
+//                sensorConnected = true;
+//                updateVideoPlayerParams(60);
+//                updateVideoPlayerScreen(60);
+//                handler.postDelayed(this, 1000);
+//            }
+//        };
+//        handler.post(r);
+//
+//        handler2 = new Handler();
+//        handler2.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                handler.removeCallbacksAndMessages(null);
+//                updateVideoPlayerParams(0);
+//                updateVideoPlayerScreen(0);
+//                handler2.postDelayed(this, 1000);
+//                new Handler().postDelayed(() -> {
+//                    handler.post(r);
+//                    handler2.removeCallbacksAndMessages(null);
+//                }, 9500);
+//            }
+//        }, 1000*15);
 
         setUp();
 
@@ -644,7 +694,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                     long positionSecond = 0;
 
                     videoPlayerViewModel.setStatusbarVisible(false);
-                    videoPlayerViewModel.setPlayerPaused(true);
+//                    videoPlayerViewModel.setPlayerPaused(true);
                     playerView.setVisibility(View.GONE);
                     videoLayout.setVisibility(View.GONE);
 
@@ -730,6 +780,8 @@ public class VideoplayerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+//        handler.removeCallbacksAndMessages(null); // AUTO RUNNER
+//        handler2.removeCallbacksAndMessages(null);
         stopSensorService();
         try {
             this.unregisterReceiver(cadenceSensorBroadcastReceiver);
