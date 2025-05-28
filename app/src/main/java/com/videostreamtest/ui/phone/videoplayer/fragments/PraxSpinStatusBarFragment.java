@@ -32,9 +32,6 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
     private ImageButton speedUpButton;
     private ImageButton speedDownButton;
 
-    //TOGGLE SWITCH FOR ROUTEPARTS
-    private ImageButton toggleRoutePartsButton;
-
 
     //SEEK BAR
     private ImageButton seekBarT1;
@@ -54,7 +51,6 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
 
         statusbarDistance = view.findViewById(R.id.statusbar_distance_box_value);
         statusbarTotalDistance = view.findViewById(R.id.statusbar_distance_finish_box_value);
-        toggleRoutePartsButton = view.findViewById(R.id.statusbar_toggle_movieparts_button);
 
         //SPEED BUTTONS
         speedIndicator = view.findViewById(R.id.statusbar_speed_value);
@@ -112,10 +108,6 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
         LinearLayoutManager layoutManager
                 = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         statusbarRoutePartsView.setLayoutManager(layoutManager);
-
-        toggleRoutePartsButton.setOnClickListener(clickedView -> {
-            toggleMoviePartsVisibility();
-        });
 
         //SPEED
         speedUpButton.setOnClickListener(clickedView ->{

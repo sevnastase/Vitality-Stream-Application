@@ -67,6 +67,8 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
 
     protected Chronometer stopwatchCurrentRide;
 
+    protected ImageButton toggleRoutePartsButton;
+
     //VOLUME
     private TextView volumeIndicator;
     protected ImageButton volumeUp;
@@ -183,6 +185,8 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
 
         toggleStatusbarButton.setOnFocusChangeListener((view2, hasFocus) -> repaintToggleStatusbarButton(hasFocus));
 
+        toggleRoutePartsButton = view.findViewById(R.id.statusbar_toggle_movieparts_button);
+
         routePartsLayout = view.findViewById(R.id.statusbar_routeparts_layout);
         statusbarRoutePartsView = view.findViewById(R.id.statusbar_routeparts_recyclerview);
 
@@ -255,9 +259,11 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
             toggleStatusbarVisibility();
         });
 
-        toggleRoutePartsLayoutTimer = new Handler(Looper.getMainLooper());
+        toggleRoutePartsButton.setOnClickListener(clickedView -> {
+            toggleMoviePartsVisibility();
+        });
 
-        toggleStatusbarButton.requestFocus();
+        toggleRoutePartsLayoutTimer = new Handler(Looper.getMainLooper());
     }
 
     protected void setupVisibilities(View view) {
@@ -415,10 +421,12 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
             routePartsLayout.setVisibility(View.VISIBLE);
             if (routePartsLayout.getChildCount()>0) {
                 routePartsLayout.getChildAt(0).requestFocus();
+                toggleRoutePartsButton.setNextFocusUpId(routePartsLayout.getId());
             }
         } else {
             toggleRoutePartsLayoutTimer.removeCallbacksAndMessages(null);
             routePartsLayout.setVisibility(View.GONE);
+            toggleRoutePartsButton.setNextFocusUpId(toggleStatusbarButton.getId());
         }
     }
 

@@ -155,6 +155,10 @@ public class PraxFitStatusBarFragment extends AbstractPraxStatusBarFragment {
         for (ImageButton tButton : seekBarButtons) {
             tButton.setVisibility(View.VISIBLE);
         }
+
+        if (routePartsLayout.getChildCount() > 0) {
+            routePartsLayout.getChildAt(0).requestFocus();
+        }
     }
 
     @Override
@@ -166,24 +170,9 @@ public class PraxFitStatusBarFragment extends AbstractPraxStatusBarFragment {
             if (statusBarVisible) {
                 view.setVisibility(View.VISIBLE);
 //                stopwatchCurrentRide.start();
-
-                if (!isTouchScreen()) {
-                    //SET FOCUS ON BUTTON
-                    toggleRoutePartsButton.requestFocus();
-                    toggleRoutePartsButton.requestFocusFromTouch();
-                }
             } else {
                 view.setVisibility(View.GONE);
 //                stopwatchCurrentRide.stop();
-            }
-        });
-
-        //ROUTE IS PAUSED STATUS BUT VIEW IS STILL VISIBLE
-        videoPlayerViewModel.getPlayerPaused().observe(getViewLifecycleOwner(), isPaused -> {
-            if (isPaused) {
-//                stopwatchCurrentRide.stop();
-            } else {
-//                stopwatchCurrentRide.start();
             }
         });
 
