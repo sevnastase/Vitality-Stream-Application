@@ -504,6 +504,10 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 //        });
     }
 
+    public boolean isRouteFinished() {
+        return this.routeFinished;
+    }
+
     private void setMediaPlayer() {
         mediaPlayer = new ExoPlayer.Builder(getApplicationContext())
                 .build();

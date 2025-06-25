@@ -517,6 +517,10 @@ public class VideoplayerActivity extends AppCompatActivity {
         });
     }
 
+    public boolean isRouteFinished() {
+        return this.routeFinished;
+    }
+
     private void setMediaPlayer() {
         mediaPlayer = new MediaPlayer(VideoLanLib.getLibVLC(getApplicationContext()));
         mediaPlayer.attachViews(videoLayout, null, false, false);
