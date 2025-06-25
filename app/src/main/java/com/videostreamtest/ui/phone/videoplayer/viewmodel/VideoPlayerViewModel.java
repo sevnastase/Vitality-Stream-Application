@@ -121,7 +121,7 @@ public class VideoPlayerViewModel extends AndroidViewModel {
     }
 
     public void setVolumeLevel(Integer volumeLevel) {
-        if(volumeLevel >= 0 && volumeLevel <= 100) {
+        if (volumeLevel >= 0 && volumeLevel <= 100) {
             this.volumeLevel.setValue(volumeLevel);
         }
     }

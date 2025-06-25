@@ -35,6 +35,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Routepart;
 import com.videostreamtest.data.model.Movie;
+import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
+import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.alerts.PauseFragment;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
@@ -62,7 +64,7 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
     protected SeekBar movieProgressBar;
     private TextView statusbarMovieTitle;
 
-    private ImageButton toggleStatusbarButton;
+    protected ImageButton toggleStatusbarButton;
     private View statusbar;
 
     protected Chronometer stopwatchCurrentRide;
@@ -493,6 +495,12 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
 
 
     private void pauseFilm() {
+        if (VideoplayerActivity.getInstance() != null && VideoplayerActivity.getInstance().isRouteFinished()) {
+            return;
+        }
+        if (VideoplayerExoActivity.getInstance() != null && VideoplayerExoActivity.getInstance().isRouteFinished()) {
+            return;
+        }
         videoPlayerViewModel = new ViewModelProvider(requireActivity()).get(VideoPlayerViewModel.class);
         Log.d(TAG, "Fragment Activity: " + requireActivity());
         Boolean currentState = videoPlayerViewModel.getPlayerPaused().getValue();
@@ -566,7 +574,7 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         }
     }
 
-    private void toggleStatusbarVisibility() {
+    protected void toggleStatusbarVisibility() {
         if (statusbar.getVisibility() == View.VISIBLE) {
             statusbar.setVisibility(View.GONE);
         } else {
