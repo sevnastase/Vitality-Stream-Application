@@ -17,7 +17,9 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
     private static final String TAG = PraxFilmStatusBarFragment.class.getSimpleName();
 
     private TextView statusbarRpmValue;
-    private Handler progressBarHandler = new Handler();
+    private boolean blockJump = false;
+    private final int DEFAULT_JUMP_COOLDOWN = 1000; // milliseconds
+    private Handler blockJumpHandler = new Handler();
 
     @Override
     protected void initializeLayout(View view) {
@@ -71,6 +73,22 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
 
         movieProgressBar.setOnKeyListener((v, keyCode, event) -> {
             if (event.getAction() == KeyEvent.ACTION_DOWN && movieProgressBar.hasFocus()) {
+                if (blockJump) {
+                    return false;
+                }
+
+                blockJump = true;
+                toggleStatusbarVisibility();
+                toggleStatusbarButton.requestFocus();
+                toggleStatusbarButton.setVisibility(View.GONE);
+
+                blockJumpHandler.postDelayed(() -> {
+                    blockJump = false;
+                    toggleStatusbarVisibility();
+                    movieProgressBar.requestFocus();
+                    toggleStatusbarButton.setVisibility(View.VISIBLE);
+                }, DEFAULT_JUMP_COOLDOWN);
+
                 int progress = movieProgressBar.getProgress();
                 int max = movieProgressBar.getMax();
                 int step = max / 15;
@@ -116,5 +134,12 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
         } catch (NullPointerException e) {
             VideoplayerActivity.getInstance().goToFrameNumber(frameNumber);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        blockJumpHandler.removeCallbacksAndMessages(null);
     }
 }
