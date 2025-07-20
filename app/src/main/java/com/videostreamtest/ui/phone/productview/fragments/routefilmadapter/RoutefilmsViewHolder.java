@@ -183,7 +183,7 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
 
     private boolean isProductDistanceBased(String productName) {
         productName = productName.toLowerCase();
-        return productName.contains("praxspin") || productName.contains("praxfilm");
+        return productName.contains("praxspin") || productName.contains("praxfit");
     }
 
     private void initOnFocusChangeListener(final Product selectedProduct) {
