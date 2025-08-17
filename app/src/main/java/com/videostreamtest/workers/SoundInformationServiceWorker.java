@@ -103,7 +103,7 @@ public class SoundInformationServiceWorker extends Worker {
                     backgroundSound.setSoundNumber(backgroundSound.getSoundId());
                 }
                 if (backgroundSound.getBgSoundId() == null) {
-                    backgroundSound.setBgSoundId(backgroundSound.getFramenumber());
+                    backgroundSound.setBgSoundId(movieId + backgroundSound.getFramenumber());
                 }
 
                 backgroundSound.setMovieId(movieId);
