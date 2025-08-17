@@ -83,6 +83,11 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
     private NavigationView navView;
 
     private Button settingsButton;
+    private Button testButton;
+    Constraints constraint = new Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build();
+    Data.Builder syncData = new Data.Builder();
 
     private Handler screensaverhandler;
     private Looper screensaverLooper;
@@ -125,6 +130,8 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         navView = drawerLayout.findViewById(R.id.nav_view);
 
         apikey = getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
+        testButton = findViewById(R.id.test_button);
+        syncData.putString("apikey",  apikey);
     }
 
     @Override
@@ -186,6 +193,21 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                 } else {
                     navView.requestFocus();
                 }
+            }
+        });
+
+        testButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OneTimeWorkRequest productMovieSoundsRequest = new OneTimeWorkRequest.Builder(SoundInformationServiceWorker.class)
+                        .setConstraints(constraint)
+                        .setInputData(syncData.build())
+                        .addTag("moviesounds-sync")
+                        .build();
+
+                WorkManager.getInstance(getApplicationContext())
+                        .beginWith(productMovieSoundsRequest)
+                        .enqueue();
             }
         });
 
