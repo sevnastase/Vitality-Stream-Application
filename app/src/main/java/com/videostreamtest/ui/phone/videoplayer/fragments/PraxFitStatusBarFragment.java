@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
+import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
@@ -312,7 +313,7 @@ public class PraxFitStatusBarFragment extends AbstractPraxStatusBarFragment {
         videoPlayerViewModel.getSelectedMovie().observe(getViewLifecycleOwner(), selectedMovie -> {
             if (AccountHelper.getAccountType(getContext()).equalsIgnoreCase("standalone")) {
                 // WAS VIDEOPLAYERACTIVITY.GETINSTANCE IN ALL 6 OF THEM
-                VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[routepartNr].getFrameNumber().intValue());
+                VideoplayerActivity.getInstance().goToFrameNumber(movieParts[routepartNr].getFrameNumber().intValue());
             } else {
                 VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[routepartNr].getFrameNumber().intValue());
             }
