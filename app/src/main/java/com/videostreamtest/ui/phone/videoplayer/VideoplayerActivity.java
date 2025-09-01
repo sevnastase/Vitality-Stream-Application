@@ -345,7 +345,7 @@ public class VideoplayerActivity extends AppCompatActivity {
             if (mediaPlayer!=null) {
                 mediaPlayer.setVolume(volumeLevel);
                 if (backgroundSoundTriggers!= null && backgroundSoundTriggers.size()>0) {
-                    final Float bgVolumeLevel = Float.valueOf(""+volumeLevel) / 100;
+                    final float bgVolumeLevel = Float.valueOf(""+volumeLevel) / 100;
                     backgroundSoundPlayer.setVolume(bgVolumeLevel);
                 }
             }

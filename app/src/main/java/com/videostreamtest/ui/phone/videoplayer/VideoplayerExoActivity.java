@@ -132,7 +132,6 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     private int pauseTimer = 0;
     private boolean routeFinished = false;
 //    Handler handler; // AUTO RUNNER
-//    Handler handler2;
 
     //BLE
     private boolean backToOverviewWaitForSensor = false;
@@ -342,7 +341,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
         videoPlayerViewModel.getVolumeLevel().observe(this, volumeLevel -> {
             if (mediaPlayer!=null && volumeLevel != null) {
-                final Float bgVolumeLevel = Float.valueOf(""+volumeLevel) / 100;
+                final float bgVolumeLevel = Float.valueOf(""+volumeLevel) / 100;
                 mediaPlayer.setVolume(bgVolumeLevel);
                 if (backgroundSoundTriggers!= null && backgroundSoundTriggers.size()>0) {
                     backgroundSoundPlayer.setVolume(bgVolumeLevel);
@@ -370,21 +369,6 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 //            }
 //        };
 //        handler.post(r);
-//
-//        handler2 = new Handler();
-//        handler2.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                handler.removeCallbacksAndMessages(null);
-//                updateVideoPlayerParams(0);
-//                updateVideoPlayerScreen(0);
-//                handler2.postDelayed(this, 1000);
-//                new Handler().postDelayed(() -> {
-//                    handler.post(r);
-//                    handler2.removeCallbacksAndMessages(null);
-//                }, 9500);
-//            }
-//        }, 1000*15);
 
         setUp();
 
@@ -770,7 +754,6 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 //        handler.removeCallbacksAndMessages(null); // AUTO RUNNER
-//        handler2.removeCallbacksAndMessages(null);
         stopSensorService();
         try {
             this.unregisterReceiver(cadenceSensorBroadcastReceiver);
@@ -1038,13 +1021,16 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                     if (!backgroundSoundPlayer.isPlaying()) {
                         backgroundSoundPlayer.play();
                     }
-                    return;
                 } else {
                     Uri localItem = DownloadHelper.getLocalSound(getApplicationContext(), Uri.parse(backgroundSoundurl));
                     backgroundSoundPlayer.pause();
                     backgroundSoundPlayer.setMediaItem(MediaItem.fromUri(localItem.toString()));
                     backgroundSoundPlayer.play();
                 }
+
+//                if (backgroundSoundurl.toLowerCase().contains("berg")) {
+//                    backgroundSoundPlayer.setVolume(backgroundSoundPlayer.getVolume()*2);
+//                }
             }
         }
     }
