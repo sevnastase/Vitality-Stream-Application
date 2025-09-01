@@ -1,11 +1,9 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
 import android.os.Handler;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.SeekBar;
-import android.widget.TextView;
 
 import com.videostreamtest.R;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
@@ -14,7 +12,7 @@ import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 public class PraxViewStatusBarFragment extends AbstractPraxStatusBarFragment {
     private static final String TAG = PraxViewStatusBarFragment.class.getSimpleName();
 
-    private boolean blockJump = false;
+    private boolean jumpBlocked = false;
     private final int DEFAULT_JUMP_COOLDOWN = 1000; // milliseconds
     private Handler blockJumpHandler = new Handler();
 
@@ -83,47 +81,35 @@ public class PraxViewStatusBarFragment extends AbstractPraxStatusBarFragment {
         });
 
         movieProgressBar.setOnKeyListener((v, keyCode, event) -> {
-            if (event.getAction() == KeyEvent.ACTION_DOWN && movieProgressBar.hasFocus()) {
-                int progress;
-                int max;
-                int step;
-                try {
-                    progress = videoPlayerViewModel.getMovieSpendDurationSeconds().getValue().intValue();
-                    max = videoPlayerViewModel.getMovieTotalDurationSeconds().getValue().intValue();
-                    step = max / 15;
-                } catch (NullPointerException e) {
-                    return false;
-                }
+            if (movieProgressBar.hasFocus() && event.getAction() == KeyEvent.ACTION_DOWN) {
+                int currentProgressMovie = movieProgressBar.getProgress();
+                int movieLength = movieProgressBar.getMax();
+                int stepSize = movieProgressBar.getKeyProgressIncrement();
+                int newProgressMovie;
 
                 switch (keyCode) {
                     case KeyEvent.KEYCODE_DPAD_RIGHT:
-                        Log.d(TAG, "Greg right");
-                        progress = progress + step;
-                        Log.d(TAG, "Step: " + step + "Progress: " + progress + " max: " + max);
-
-                        // have separately so the statusbar does not disappear in this case
-                        if (progress >= max - step) {
+                        if (jumpBlocked || currentProgressMovie + stepSize >= movieLength - stepSize) {
                             return false;
                         }
+                        blockJump();
 
-                        if (isJumpBlocked()) {
-                            return false;
-                        }
-
-                        movieProgressBar.setProgress(movieProgressBar.getProgress() + movieProgressBar.getMax() / 15);
-                        seek(movieProgressBar.getProgress() + movieProgressBar.getMax() / 15);
+                        newProgressMovie = currentProgressMovie + stepSize;
+                        movieProgressBar.setProgress(newProgressMovie);
+                        seek(newProgressMovie);
 
                         return true;
 
                     case KeyEvent.KEYCODE_DPAD_LEFT:
-                        if (isJumpBlocked()) {
+                        if (jumpBlocked) {
                             return false;
                         }
+                        blockJump();
 
-                        Log.d(TAG, "Greg left");
-                        progress = Math.max(progress - step, 0);
-                        movieProgressBar.setProgress(progress);
-                        seek(progress);
+                        newProgressMovie = Math.max(currentProgressMovie - stepSize, 0);
+                        movieProgressBar.setProgress(newProgressMovie);
+                        seek(newProgressMovie);
+
                         return true;
                 }
             }
@@ -133,24 +119,18 @@ public class PraxViewStatusBarFragment extends AbstractPraxStatusBarFragment {
         setupFocus();
     }
 
-    private boolean isJumpBlocked() {
-        if (blockJump) {
-            return true;
-        }
-
-        blockJump = true;
+    private void blockJump() {
+        jumpBlocked = true;
         toggleStatusbarVisibility();
         toggleStatusbarButton.requestFocus();
         toggleStatusbarButton.setVisibility(View.GONE);
 
         blockJumpHandler.postDelayed(() -> {
-            blockJump = false;
             toggleStatusbarVisibility();
             movieProgressBar.requestFocus();
             toggleStatusbarButton.setVisibility(View.VISIBLE);
+            jumpBlocked = false;
         }, DEFAULT_JUMP_COOLDOWN);
-
-        return false;
     }
 
     @Override
@@ -159,7 +139,7 @@ public class PraxViewStatusBarFragment extends AbstractPraxStatusBarFragment {
     }
 
     private void seek(final int newProgress) {
-        int framesPerSecond = 30;
+        int framesPerSecond = selectedMovie.getRecordedFps();
         int frameNumber = (newProgress/1000) * framesPerSecond;
         try {
             VideoplayerExoActivity.getInstance().goToFrameNumber(frameNumber);
