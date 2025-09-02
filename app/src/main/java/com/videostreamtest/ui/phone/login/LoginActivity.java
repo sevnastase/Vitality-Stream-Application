@@ -156,6 +156,7 @@ public class LoginActivity extends AppCompatActivity {
                             newConfig.setUpdatePraxCloud(config.isUpdatePraxCloud());
                             newConfig.setPraxCloudMediaServerLocalUrl(config.getPraxCloudMediaServerLocalUrl());
                             newConfig.setPraxCloudMediaServerUrl(config.getPraxCloudMediaServerUrl());
+                            newConfig.setAccountType(config.getAccountType());
                             loginViewModel.insert(newConfig);
                             Intent splashScreenActivity = new Intent(getApplicationContext(), SplashActivity.class);
                             startActivity(splashScreenActivity);

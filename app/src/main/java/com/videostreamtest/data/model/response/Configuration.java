@@ -1,5 +1,7 @@
 package com.videostreamtest.data.model.response;
 
+import androidx.room.ColumnInfo;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -10,6 +12,8 @@ public class Configuration {
     private boolean updatePraxCloud = false;
     private String praxCloudMediaServerUrl;
     private String praxCloudMediaServerLocalUrl;
+    @ColumnInfo(name = "account_type")
+    private String accountType;
 
     public boolean isLocalPlay() {
         return localPlay;
@@ -59,6 +63,14 @@ public class Configuration {
         this.praxCloudMediaServerLocalUrl = praxCloudMediaServerLocalUrl;
     }
 
+    public String getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
+    }
+
     public static com.videostreamtest.config.entity.Configuration toDatabaseEntity(final Configuration configuration) {
         com.videostreamtest.config.entity.Configuration dbConfig = new com.videostreamtest.config.entity.Configuration();
         dbConfig.setPraxCloudMediaServerUrl(configuration.getPraxCloudMediaServerUrl());
@@ -67,6 +79,7 @@ public class Configuration {
         dbConfig.setLocalPlay(configuration.isLocalPlay());
         dbConfig.setBootOnStart(configuration.isBootOnStart());
         dbConfig.setCommunicationDevice(configuration.getCommunicationDevice());
+        dbConfig.setAccountType(configuration.getAccountType());
         return dbConfig;
     }
 }

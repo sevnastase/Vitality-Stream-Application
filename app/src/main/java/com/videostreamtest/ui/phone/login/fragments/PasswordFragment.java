@@ -167,6 +167,7 @@ public class PasswordFragment extends Fragment {
                             newConfig.setUpdatePraxCloud(config.isUpdatePraxCloud());
                             newConfig.setPraxCloudMediaServerLocalUrl(config.getPraxCloudMediaServerLocalUrl());
                             newConfig.setPraxCloudMediaServerUrl(config.getPraxCloudMediaServerUrl());
+                            newConfig.setAccountType(config.getAccountType());
                             loginViewModel.insert(newConfig);
                             loginViewModel.insertUsageTracker(accounttoken);
 
