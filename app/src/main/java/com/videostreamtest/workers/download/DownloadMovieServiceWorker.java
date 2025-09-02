@@ -1,7 +1,5 @@
 package com.videostreamtest.workers.download;
 
-import static com.videostreamtest.utils.ApplicationSettings.NUMBER_OF_DOWNLOAD_RUNNERS;
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
 import static com.videostreamtest.utils.ApplicationSettings.THREAD_POOL_EXECUTOR;
 
 import android.app.Notification;
@@ -11,10 +9,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
-import android.os.Process;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -26,12 +20,10 @@ import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import com.google.gson.Gson;
 import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 import com.videostreamtest.data.model.Movie;
-import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -138,13 +130,13 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
     }
 
     private void startDownloadRunner() {
-        List <StandAloneDownloadStatus> pendingDownloads = retrieveCurrentPendingDownloads();
+        List <LocalMoviesDownloadTable> pendingDownloads = retrieveCurrentPendingDownloads();
         if (pendingDownloads!= null && pendingDownloads.size()>0){
             Log.d(TAG, "Number of pending downloads: "+pendingDownloads.size());
             new DatabaseRestService().writeLog(accountToken, "Number of pending downloads: "+pendingDownloads.size(), "DEBUG", "");
             this.routefilm = null;
             this.currentDownloadProgress = 0;
-            final StandAloneDownloadStatus nextDownload = searchNextDownload(pendingDownloads);
+            final LocalMoviesDownloadTable nextDownload = searchNextDownload(pendingDownloads);
             if (nextDownload != null) {
                 startDownload(nextDownload.getMovieId());
                 startDownloadRunner(); //RECURSION UNTIL PENDING DOWNLOADS = 0;
@@ -220,14 +212,14 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
             if (downloadProgress > 0) {
                 Log.d(TAG, String.format("Movie %s is for %d percent ready.", routefilm.getMovieTitle(), downloadProgress));
             }
-            final StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
-            standAloneDownloadStatus.setDownloadMovieId(movieId);
-            standAloneDownloadStatus.setMovieId(movieId);
-            standAloneDownloadStatus.setDownloadStatus(downloadProgress);
+            final LocalMoviesDownloadTable localMoviesDownloadTable = new LocalMoviesDownloadTable();
+            localMoviesDownloadTable.setDownloadMovieId(movieId);
+            localMoviesDownloadTable.setMovieId(movieId);
+            localMoviesDownloadTable.setDownloadStatus(downloadProgress);
 
             if (downloadProgress%5 ==0) {
                 PraxtourDatabase.databaseWriterExecutor.execute(() -> {
-                    PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(standAloneDownloadStatus);
+                    PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(localMoviesDownloadTable);
                 });
             }
 
@@ -321,17 +313,17 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
         notificationManager.createNotificationChannel(channel);
     }
 
-    private List<StandAloneDownloadStatus> retrieveCurrentPendingDownloads() {
-        List<StandAloneDownloadStatus> pendingDownloads = PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().getPendingDownloadStatus();
+    private List<LocalMoviesDownloadTable> retrieveCurrentPendingDownloads() {
+        List<LocalMoviesDownloadTable> pendingDownloads = PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().getPendingDownloadStatus();
         if (pendingDownloads != null && pendingDownloads.size()>0) {
             return pendingDownloads;
         }
         return new ArrayList<>();
     }
 
-    private StandAloneDownloadStatus searchNextDownload(final List<StandAloneDownloadStatus> pendingDownloads) {
+    private LocalMoviesDownloadTable searchNextDownload(final List<LocalMoviesDownloadTable> pendingDownloads) {
         if (pendingDownloads != null && pendingDownloads.size()>0) {
-            for (final StandAloneDownloadStatus downloadStatus: pendingDownloads) {
+            for (final LocalMoviesDownloadTable downloadStatus: pendingDownloads) {
                 if (downloadStatus.getMovieId() % ApplicationSettings.NUMBER_OF_DOWNLOAD_RUNNERS == downloadRunnerId) {
                     return downloadStatus;
                 }

@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Routefilm;
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class RoutefilmDownloadsAdapter extends RecyclerView.Adapter<RoutefilmDownloadsViewHolder> {
 
-    private List<StandAloneDownloadStatus> standAloneDownloadStatusList = new ArrayList<>();
+    private List<LocalMoviesDownloadTable> localMoviesDownloadTableList = new ArrayList<>();
     private List<Routefilm> routefilmList = new ArrayList<>();
     private int selectedDownloadStatus = 0;
 
@@ -39,11 +39,11 @@ public class RoutefilmDownloadsAdapter extends RecyclerView.Adapter<RoutefilmDow
     public void onBindViewHolder(@NonNull RoutefilmDownloadsViewHolder holder, int position) {
         holder.itemView.setSelected(selectedDownloadStatus == position);
 
-        if (standAloneDownloadStatusList != null && standAloneDownloadStatusList.size() > 0 ) {
-            final Routefilm routefilm = getRoutefilm(standAloneDownloadStatusList.get(position).getMovieId().intValue());
+        if (localMoviesDownloadTableList != null && localMoviesDownloadTableList.size() > 0 ) {
+            final Routefilm routefilm = getRoutefilm(localMoviesDownloadTableList.get(position).getMovieId().intValue());
             SeekBar itemProgressbar = holder.itemView.findViewById(R.id.routefilm_download_item_progressbar);
             itemProgressbar.setTag(routefilm.getMovieId());
-            holder.bindRoutefilm(routefilm, standAloneDownloadStatusList.get(position), this, position);
+            holder.bindRoutefilm(routefilm, localMoviesDownloadTableList.get(position), this, position);
         }
         if (selectedDownloadStatus == position) {
             final ImageButton routeSceneryImage = holder.itemView.findViewById(R.id.routefilm_download_item_scenery);
@@ -55,10 +55,10 @@ public class RoutefilmDownloadsAdapter extends RecyclerView.Adapter<RoutefilmDow
 
     @Override
     public int getItemCount() {
-        if (standAloneDownloadStatusList== null) {
+        if (localMoviesDownloadTableList == null) {
             return 0;
         } else {
-            return standAloneDownloadStatusList.size();
+            return localMoviesDownloadTableList.size();
         }
     }
 
@@ -86,23 +86,23 @@ public class RoutefilmDownloadsAdapter extends RecyclerView.Adapter<RoutefilmDow
         }
     }
 
-    public void updateStandaloneDownloadStatusList(final List<StandAloneDownloadStatus> newDownloadStatusList) {
+    public void updateStandaloneDownloadStatusList(final List<LocalMoviesDownloadTable> newDownloadStatusList) {
         if (newDownloadStatusList!=null && newDownloadStatusList.size()>0) {
-            for (final StandAloneDownloadStatus downloadStatus: newDownloadStatusList) {
+            for (final LocalMoviesDownloadTable downloadStatus: newDownloadStatusList) {
                 if (downloadStatus.getDownloadStatus() == 100) {
-                    StandAloneDownloadStatus existingDownloadStatus = getDownloadStatus(downloadStatus.getMovieId());
+                    LocalMoviesDownloadTable existingDownloadStatus = getDownloadStatus(downloadStatus.getMovieId());
                     if (existingDownloadStatus!=null) {
                         int downloadStatusIndex = getDownloadStatusPosition(existingDownloadStatus.getMovieId().intValue());
                         if (downloadStatusIndex >=0) {
-                            standAloneDownloadStatusList.remove(downloadStatusIndex);
+                            localMoviesDownloadTableList.remove(downloadStatusIndex);
                         }
                     }
                     continue;
                 }
-                StandAloneDownloadStatus existingDownloadStatus = getDownloadStatus(downloadStatus.getMovieId());
+                LocalMoviesDownloadTable existingDownloadStatus = getDownloadStatus(downloadStatus.getMovieId());
                 if (isRoutefilmPresent(downloadStatus.getDownloadMovieId())) {
                     if (existingDownloadStatus == null) {
-                        standAloneDownloadStatusList.add(downloadStatus);
+                        localMoviesDownloadTableList.add(downloadStatus);
                     } else {
                         existingDownloadStatus.setDownloadStatus(downloadStatus.getDownloadStatus());
                     }
@@ -110,14 +110,14 @@ public class RoutefilmDownloadsAdapter extends RecyclerView.Adapter<RoutefilmDow
                     if (existingDownloadStatus != null) {
                         int downloadStatusIndex = getDownloadStatusPosition(existingDownloadStatus.getMovieId().intValue());
                         if (downloadStatusIndex >=0) {
-                            standAloneDownloadStatusList.remove(downloadStatusIndex);
+                            localMoviesDownloadTableList.remove(downloadStatusIndex);
                         }
                     }
                 }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    this.standAloneDownloadStatusList = standAloneDownloadStatusList.stream()
-                            .sorted(Comparator.comparingInt(StandAloneDownloadStatus::getDownloadStatus).reversed())
+                    this.localMoviesDownloadTableList = localMoviesDownloadTableList.stream()
+                            .sorted(Comparator.comparingInt(LocalMoviesDownloadTable::getDownloadStatus).reversed())
                             .collect(Collectors.toList());
                 }
                 notifyDataSetChanged();
@@ -163,9 +163,9 @@ public class RoutefilmDownloadsAdapter extends RecyclerView.Adapter<RoutefilmDow
         }
     }
 
-    private StandAloneDownloadStatus getDownloadStatus(final int routefilmId) {
-        if (this.standAloneDownloadStatusList != null && this.standAloneDownloadStatusList.size()>0) {
-            for (final StandAloneDownloadStatus downloadStatus: this.standAloneDownloadStatusList) {
+    private LocalMoviesDownloadTable getDownloadStatus(final int routefilmId) {
+        if (this.localMoviesDownloadTableList != null && this.localMoviesDownloadTableList.size()>0) {
+            for (final LocalMoviesDownloadTable downloadStatus: this.localMoviesDownloadTableList) {
                 if (routefilmId == downloadStatus.getMovieId().intValue()) {
                     return downloadStatus;
                 }
@@ -175,9 +175,9 @@ public class RoutefilmDownloadsAdapter extends RecyclerView.Adapter<RoutefilmDow
     }
 
     private int getDownloadStatusPosition(final int routefilmId) {
-        if (this.standAloneDownloadStatusList != null && this.standAloneDownloadStatusList.size()>0) {
-            for (int sadsIndex = 0; sadsIndex < this.standAloneDownloadStatusList.size();sadsIndex++) {
-                if (standAloneDownloadStatusList.get(sadsIndex).getMovieId().intValue() == routefilmId) {
+        if (this.localMoviesDownloadTableList != null && this.localMoviesDownloadTableList.size()>0) {
+            for (int sadsIndex = 0; sadsIndex < this.localMoviesDownloadTableList.size(); sadsIndex++) {
+                if (localMoviesDownloadTableList.get(sadsIndex).getMovieId().intValue() == routefilmId) {
                     return sadsIndex;
                 }
             }

@@ -7,7 +7,6 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Configuration;
@@ -17,7 +16,7 @@ import com.videostreamtest.config.entity.MovieFlag;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.config.entity.Routefilm;
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 import com.videostreamtest.config.repository.BackgroundSoundRepository;
 import com.videostreamtest.config.repository.BluetoothDefaultDeviceRepository;
 import com.videostreamtest.config.repository.ConfigurationRepository;
@@ -96,15 +95,15 @@ public class ProductViewModel extends AndroidViewModel {
         configurationRepository.saveCurrentConfiguration(configuration);
     }
 
-    public LiveData<StandAloneDownloadStatus> getDownloadStatus(final Integer movieId) {
+    public LiveData<LocalMoviesDownloadTable> getDownloadStatus(final Integer movieId) {
         return downloadStatusRepository.getDownloadStatus(movieId);
     }
 
-    public LiveData<List<StandAloneDownloadStatus>> getAllDownloadStatus() {
+    public LiveData<List<LocalMoviesDownloadTable>> getAllDownloadStatus() {
         return downloadStatusRepository.getAllDownloadStatus();
     }
 
-    public LiveData<List<StandAloneDownloadStatus>> getAllActiveDownloadStatus() {
+    public LiveData<List<LocalMoviesDownloadTable>> getAllActiveDownloadStatus() {
         return downloadStatusRepository.getAllActiveDownloadStatus();
     }
 

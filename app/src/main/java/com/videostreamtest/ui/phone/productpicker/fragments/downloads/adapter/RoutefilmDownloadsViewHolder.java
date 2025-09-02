@@ -15,7 +15,7 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Routefilm;
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 
 import java.io.File;
@@ -27,7 +27,7 @@ public class RoutefilmDownloadsViewHolder extends RecyclerView.ViewHolder{
         super(itemView);
     }
 
-    public void bindRoutefilm(final Routefilm routefilm, final StandAloneDownloadStatus downloadStatus,
+    public void bindRoutefilm(final Routefilm routefilm, final LocalMoviesDownloadTable downloadStatus,
                               final RoutefilmDownloadsAdapter routefilmDownloadsAdapter, final int position) {
 
         this.position = position;

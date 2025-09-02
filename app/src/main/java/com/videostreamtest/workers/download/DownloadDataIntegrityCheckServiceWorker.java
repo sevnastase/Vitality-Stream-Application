@@ -8,7 +8,7 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.config.db.PraxtourDatabase;
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
@@ -69,13 +69,13 @@ public class DownloadDataIntegrityCheckServiceWorker extends Worker {
      * @param downloadProgress
      */
     private void insertDownloadStatus(int movieId, int downloadProgress) {
-        final StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
-        standAloneDownloadStatus.setDownloadMovieId(movieId);
-        standAloneDownloadStatus.setMovieId(movieId);
-        standAloneDownloadStatus.setDownloadStatus(downloadProgress);
+        final LocalMoviesDownloadTable localMoviesDownloadTable = new LocalMoviesDownloadTable();
+        localMoviesDownloadTable.setDownloadMovieId(movieId);
+        localMoviesDownloadTable.setMovieId(movieId);
+        localMoviesDownloadTable.setDownloadStatus(downloadProgress);
 
         PraxtourDatabase.databaseWriterExecutor.execute(() -> {
-            PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(standAloneDownloadStatus);
+            PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(localMoviesDownloadTable);
         });
     }
 

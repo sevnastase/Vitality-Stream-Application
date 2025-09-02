@@ -9,7 +9,7 @@ import androidx.work.WorkerParameters;
 
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Routefilm;
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 
@@ -24,9 +24,9 @@ public class DownloadStatusVerificationServiceWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        final List<StandAloneDownloadStatus> downloadStatusList = PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().getAllRawDownloadStatus();
+        final List<LocalMoviesDownloadTable> downloadStatusList = PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().getAllRawDownloadStatus();
         if (downloadStatusList != null && downloadStatusList.size()>0) {
-            for (final StandAloneDownloadStatus downloadStatus: downloadStatusList) {
+            for (final LocalMoviesDownloadTable downloadStatus: downloadStatusList) {
                 if (downloadStatus.getDownloadStatus() == 100 &&
                         !DownloadHelper.isMoviePresent(getApplicationContext(), getRoutefilm(downloadStatus.getMovieId().intValue()))) {
                     Log.d(getClass().getSimpleName(), String.format("Movie %s registered as downloaded but not present on disk.", getRoutefilm(downloadStatus.getMovieId().intValue()).getMovieTitle()));

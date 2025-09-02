@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData;
 
 import com.videostreamtest.config.dao.DownloadStatusDao;
 import com.videostreamtest.config.db.PraxtourDatabase;
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 
 import java.util.List;
 
@@ -17,15 +17,15 @@ public class DownloadStatusRepository {
         downloadStatusDao = PraxtourDatabase.getDatabase(application).downloadStatusDao();
     }
 
-    public LiveData<StandAloneDownloadStatus> getDownloadStatus(final Integer movieId) {
+    public LiveData<LocalMoviesDownloadTable> getDownloadStatus(final Integer movieId) {
         return downloadStatusDao.getDownloadStatus(movieId);
     }
 
-    public LiveData<List<StandAloneDownloadStatus>> getAllDownloadStatus() {
+    public LiveData<List<LocalMoviesDownloadTable>> getAllDownloadStatus() {
         return downloadStatusDao.getAllDownloadStatus();
     }
 
-    public LiveData<List<StandAloneDownloadStatus>> getAllActiveDownloadStatus() {
+    public LiveData<List<LocalMoviesDownloadTable>> getAllActiveDownloadStatus() {
         return downloadStatusDao.getAllActiveDownloadStatus();
     }
 

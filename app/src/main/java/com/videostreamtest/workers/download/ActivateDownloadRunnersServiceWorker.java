@@ -1,7 +1,5 @@
 package com.videostreamtest.workers.download;
 
-import static com.videostreamtest.utils.ApplicationSettings.NUMBER_OF_DOWNLOAD_RUNNERS;
-
 import android.content.Context;
 import android.util.Log;
 
@@ -16,8 +14,7 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.config.db.PraxtourDatabase;
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
-import com.videostreamtest.ui.phone.helpers.LogHelper;
+import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,11 +39,11 @@ public class ActivateDownloadRunnersServiceWorker extends Worker {
         mediaDownloadInputData.putString("apikey", apikey);
 
         List<OneTimeWorkRequest> downloadMovieRunners = new ArrayList<>();
-        List<StandAloneDownloadStatus> retrievedCurrentPendingDownloads = retrieveCurrentPendingDownloads();
+        List<LocalMoviesDownloadTable> retrievedCurrentPendingDownloads = retrieveCurrentPendingDownloads();
 
         if (retrievedCurrentPendingDownloads!= null && retrievedCurrentPendingDownloads.size()>0) {
             Log.d(getClass().getSimpleName(), "Number of pending downloads: " + retrievedCurrentPendingDownloads.size());
-            for (final StandAloneDownloadStatus downloadStatus:retrievedCurrentPendingDownloads) {
+            for (final LocalMoviesDownloadTable downloadStatus:retrievedCurrentPendingDownloads) {
 
                 mediaDownloadInputData.putInt("movie-id", downloadStatus.getMovieId());
 
@@ -83,8 +80,8 @@ public class ActivateDownloadRunnersServiceWorker extends Worker {
         return Result.success();
     }
 
-    private List<StandAloneDownloadStatus> retrieveCurrentPendingDownloads() {
-        List<StandAloneDownloadStatus> pendingDownloads = PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().getPendingDownloadStatus();
+    private List<LocalMoviesDownloadTable> retrieveCurrentPendingDownloads() {
+        List<LocalMoviesDownloadTable> pendingDownloads = PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().getPendingDownloadStatus();
         if (pendingDownloads != null && pendingDownloads.size()>0) {
             return pendingDownloads;
         }

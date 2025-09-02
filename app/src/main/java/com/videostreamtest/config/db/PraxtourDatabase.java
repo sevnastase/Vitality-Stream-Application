@@ -3,7 +3,6 @@ package com.videostreamtest.config.db;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.room.AutoMigration;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
@@ -38,7 +37,7 @@ import com.videostreamtest.config.entity.Profile;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.entity.Routepart;
 import com.videostreamtest.config.entity.ServerStatus;
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 import com.videostreamtest.config.entity.tracker.GeneralDownloadTracker;
 import com.videostreamtest.config.entity.tracker.UsageTracker;
 import com.videostreamtest.config.entity.typeconverter.Converters;
@@ -51,7 +50,7 @@ import java.util.concurrent.Executors;
         Product.class,
         Profile.class,
         Routefilm.class,
-        StandAloneDownloadStatus.class,
+        LocalMoviesDownloadTable.class,
         Routepart.class,
         BackgroundSound.class,
         EffectSound.class,

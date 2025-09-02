@@ -1,7 +1,6 @@
 package com.videostreamtest.workers;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -14,7 +13,7 @@ import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.MovieFlag;
 import com.videostreamtest.config.entity.Routefilm;
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
@@ -29,7 +28,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.Route;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -133,12 +131,12 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
                     Log.d(TAG, "localRoutefilms marked for insertion: "+markedForInsertion.size());
                     for (final Routefilm routefilm:markedForInsertion) {
                         insertRoutefilm(routefilm);
-                        final StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
-                        standAloneDownloadStatus.setMovieId(routefilm.getMovieId());
-                        standAloneDownloadStatus.setDownloadMovieId(routefilm.getMovieId());
-                        standAloneDownloadStatus.setDownloadStatus(-1);
+                        final LocalMoviesDownloadTable localMoviesDownloadTable = new LocalMoviesDownloadTable();
+                        localMoviesDownloadTable.setMovieId(routefilm.getMovieId());
+                        localMoviesDownloadTable.setDownloadMovieId(routefilm.getMovieId());
+                        localMoviesDownloadTable.setDownloadStatus(-1);
                         PraxtourDatabase.databaseWriterExecutor.execute(()->{
-                            downloadStatusDao.insert(standAloneDownloadStatus);
+                            downloadStatusDao.insert(localMoviesDownloadTable);
                         });
                     }
                 }
@@ -152,12 +150,12 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
             } else {
                 for (final Routefilm routefilm:externalRoutefilmListWithDetails) {
                     insertRoutefilm(routefilm);
-                    final StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
-                    standAloneDownloadStatus.setMovieId(routefilm.getMovieId().intValue());
-                    standAloneDownloadStatus.setDownloadMovieId(routefilm.getMovieId().intValue());
-                    standAloneDownloadStatus.setDownloadStatus(-1);
+                    final LocalMoviesDownloadTable localMoviesDownloadTable = new LocalMoviesDownloadTable();
+                    localMoviesDownloadTable.setMovieId(routefilm.getMovieId().intValue());
+                    localMoviesDownloadTable.setDownloadMovieId(routefilm.getMovieId().intValue());
+                    localMoviesDownloadTable.setDownloadStatus(-1);
                     PraxtourDatabase.databaseWriterExecutor.execute(()->{
-                        downloadStatusDao.insert(standAloneDownloadStatus);
+                        downloadStatusDao.insert(localMoviesDownloadTable);
                     });
                 }
             }

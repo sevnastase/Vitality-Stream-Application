@@ -9,7 +9,7 @@ import androidx.room.Query;
 import androidx.room.Transaction;
 import androidx.room.Update;
 
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 
 import java.util.List;
 
@@ -17,33 +17,33 @@ import java.util.List;
 public interface DownloadStatusDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(StandAloneDownloadStatus standAloneDownloadStatus);
+    void insert(LocalMoviesDownloadTable localMoviesDownloadTable);
 
     @Update
-    void update(StandAloneDownloadStatus standAloneDownloadStatus);
+    void update(LocalMoviesDownloadTable localMoviesDownloadTable);
 
     @Delete
-    void delete(StandAloneDownloadStatus standAloneDownloadStatus);
+    void delete(LocalMoviesDownloadTable localMoviesDownloadTable);
 
     @Query("DELETE FROM download_table WHERE download_movie_id = :movieId")
     void deleteDownloadStatus(final Integer movieId);
 
     @Query("SELECT * FROM download_table WHERE download_movie_id = :movieId")
-    LiveData<StandAloneDownloadStatus> getDownloadStatus(final Integer movieId);
+    LiveData<LocalMoviesDownloadTable> getDownloadStatus(final Integer movieId);
 
     @Query("SELECT * FROM download_table WHERE download_status < 0")
-    List<StandAloneDownloadStatus> getPendingDownloadStatus();
+    List<LocalMoviesDownloadTable> getPendingDownloadStatus();
 
     @Query("UPDATE download_table SET download_status = -1 WHERE download_status < 100")
     void resetInterruptedDownloads();
 
     @Query("SELECT * FROM download_table")
-    LiveData<List<StandAloneDownloadStatus>> getAllDownloadStatus();
+    LiveData<List<LocalMoviesDownloadTable>> getAllDownloadStatus();
 
     @Query("SELECT * FROM download_table")
-    List<StandAloneDownloadStatus> getAllRawDownloadStatus();
+    List<LocalMoviesDownloadTable> getAllRawDownloadStatus();
 
     @Transaction
     @Query("SELECT * FROM download_table dt ORDER BY dt.download_status DESC")
-    LiveData<List<StandAloneDownloadStatus>> getAllActiveDownloadStatus();
+    LiveData<List<LocalMoviesDownloadTable>> getAllActiveDownloadStatus();
 }

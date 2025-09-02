@@ -6,7 +6,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "download_table")
-public class StandAloneDownloadStatus {
+public class LocalMoviesDownloadTable {
     @PrimaryKey
     @ColumnInfo(name = "download_id")
     @NonNull

@@ -22,7 +22,7 @@ import androidx.work.WorkerParameters;
 import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Flag;
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 import com.videostreamtest.config.entity.tracker.GeneralDownloadTracker;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
@@ -170,12 +170,12 @@ public class DownloadFlagsServiceWorker extends Worker implements ProgressCallBa
      * @param downloadProgress
      */
     private void insertDownloadStatus(int movieId, int downloadProgress) {
-        StandAloneDownloadStatus standAloneDownloadStatus = new StandAloneDownloadStatus();
-        standAloneDownloadStatus.setDownloadMovieId(movieId);
-        standAloneDownloadStatus.setMovieId(movieId);
-        standAloneDownloadStatus.setDownloadStatus(downloadProgress);
+        LocalMoviesDownloadTable localMoviesDownloadTable = new LocalMoviesDownloadTable();
+        localMoviesDownloadTable.setDownloadMovieId(movieId);
+        localMoviesDownloadTable.setMovieId(movieId);
+        localMoviesDownloadTable.setDownloadStatus(downloadProgress);
 
-        PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(standAloneDownloadStatus);
+        PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(localMoviesDownloadTable);
     }
 
     @Override

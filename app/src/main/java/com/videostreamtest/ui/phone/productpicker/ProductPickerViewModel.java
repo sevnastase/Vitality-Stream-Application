@@ -9,7 +9,7 @@ import androidx.lifecycle.LiveData;
 import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.config.entity.Routefilm;
-import com.videostreamtest.config.entity.StandAloneDownloadStatus;
+import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 import com.videostreamtest.config.repository.ConfigurationRepository;
 import com.videostreamtest.config.repository.DownloadStatusRepository;
 import com.videostreamtest.config.repository.ProductRepository;
@@ -63,7 +63,7 @@ public class ProductPickerViewModel extends AndroidViewModel {
         return routefilmRepository.getAllRoutefilms(accountToken);
     }
 
-    public LiveData<List<StandAloneDownloadStatus>> getDownloads() {
+    public LiveData<List<LocalMoviesDownloadTable>> getDownloads() {
         return downloadStatusRepository.getAllActiveDownloadStatus();
     }
 
