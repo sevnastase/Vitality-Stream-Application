@@ -30,6 +30,9 @@ public class Product {
     @ColumnInfo(name = "product_communication_type", defaultValue = "RPM")
     private String communicationType;
 
+    @ColumnInfo(name = "product_type")
+    private String productType;
+
     public int getUid() {
         return uid;
     }
@@ -92,5 +95,13 @@ public class Product {
 
     public void setCommunicationType(String communicationType) {
         this.communicationType = communicationType;
+    }
+
+    public String getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = productType;
     }
 }

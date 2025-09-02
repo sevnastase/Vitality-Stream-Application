@@ -74,6 +74,7 @@ public class ProductPickerFragment extends Fragment {
                     addProd.setProductName(extProd.getProductName());
                     addProd.setBlocked(extProd.getBlocked());
                     addProd.setCommunicationType(extProd.getCommunicationType());
+                    addProd.setProductType(extProd.getProductType());
                     productList.add(addProd);
                 }
             }

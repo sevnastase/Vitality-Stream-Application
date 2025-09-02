@@ -71,7 +71,7 @@ public class ActiveProductsServiceWorker extends Worker {
                 tmpProduct.setProductLogoButtonPath(externalProduct.getProductLogoButtonPath());
                 tmpProduct.setBlocked(externalProduct.getBlocked());
                 tmpProduct.setCommunicationType(externalProduct.getCommunicationType());
-
+                tmpProduct.setProductType(externalProduct.getProductType());
                 productDao.insert(tmpProduct);
             }
         }
