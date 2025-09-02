@@ -26,6 +26,8 @@ public class Configuration {
     private String praxCloudMediaServerUrl;
     @ColumnInfo(name = "praxcloud_mediaserver_local_url", defaultValue = "")
     private String praxCloudMediaServerLocalUrl;
+    @ColumnInfo(name = "account_type")
+    private String accountType;
 
     //Managed by App
     @ColumnInfo(name = "is_current", defaultValue = "false")
@@ -131,5 +133,13 @@ public class Configuration {
 
     public void setPraxCloudMediaServerLocalUrl(String praxCloudMediaServerLocalUrl) {
         this.praxCloudMediaServerLocalUrl = praxCloudMediaServerLocalUrl;
+    }
+
+    public String getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
     }
 }
