@@ -144,6 +144,7 @@
     <string name="login_message_failed_description">Username and/or password are wrong.\nPlease try again.</string>
     <string name="login_status_summary_standalone">Before first time use you need to accept the following permissions:\n\n> Storage permission: for saving movies on the harddisk.\n> Location permission: for Bluetooth sensors.\n\nPlease proceed to accept the permissions.</string>
     <string name="login_status_summary_streaming">Before first time use you need to accept the following permissions:  \n\n> Location permission: for Bluetooth sensors.  \n\nPlease proceed to accept the permissions.</string>
+    <string name="login_status_summary_hybrid">Before first time use you need to accept the following permissions:\n\n> Storage permission: for saving movies on the harddisk.\n> Location permission: for Bluetooth sensors.\n\nPlease proceed to accept the permissions.</string>
     <string name="download_speed_ok">Internet speed OK.</string>
     <string name="download_speed_connection_issues">Internet connection issues, please consult an IT-expert.</string>
     <string name="login_location_permission_summary">Click next to allow PraxCloud to access this device\'s location.\n\nPraxCloud collects location data to enable PraxFit, PraxFilm, and BLE Settings even when the app is closed or not in use.\n\nIf the location permission is denied Praxtour is not allowed to use BLE functionality, e.g. the cadence sensor, and therefore the user can\'t use all functionalities like exercising.</string>

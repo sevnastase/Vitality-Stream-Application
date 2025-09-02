@@ -98,11 +98,7 @@ public class SplashActivity extends AppCompatActivity {
                 }
                 if (AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("undefined")) {
                     SharedPreferences.Editor editor = getSharedPreferences("app", MODE_PRIVATE).edit();
-                    if (config.isLocalPlay()) {
-                        editor.putString("account-type", "standalone");
-                    } else {
-                        editor.putString("account-type",  "streaming");
-                    }
+                    editor.putString("account-type", config.getAccountType().toLowerCase());
                     editor.commit();
                 }
                 if (!AccountHelper.getAccountMediaServerUrl(getApplicationContext()).equalsIgnoreCase(ApplicationSettings.PRAXCLOUD_MEDIA_URL)) {

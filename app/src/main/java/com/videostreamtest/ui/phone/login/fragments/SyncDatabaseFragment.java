@@ -23,6 +23,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.videostreamtest.R;
+import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.login.LoginViewModel;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.workers.SoundInformationServiceWorker;
@@ -162,7 +163,7 @@ public class SyncDatabaseFragment extends Fragment {
 
     private void determineNextStep() {
         try {
-            if (arguments!=null && arguments.getString("account-type", "").equals("standalone")) {
+            if (arguments != null && AccountHelper.isLocalPlay(getContext())) {
                 gotoNextFragment();
             } else {
                 startMainActivity();

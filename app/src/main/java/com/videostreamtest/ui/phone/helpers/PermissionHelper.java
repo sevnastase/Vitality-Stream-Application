@@ -54,7 +54,7 @@ public class PermissionHelper {
                 permissions.add(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
             }
 
-            if (AccountHelper.getAccountType(context).equalsIgnoreCase("standalone")) {
+            if (AccountHelper.isLocalPlay(context)) {
                 permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
             }

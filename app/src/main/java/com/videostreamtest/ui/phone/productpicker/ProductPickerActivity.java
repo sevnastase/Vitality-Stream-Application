@@ -157,7 +157,8 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
 
         //START BLE SERVICE IF PRODUCT NEEDS SENSOR
         productPickerViewModel
-                .getAccountProducts(AccountHelper.getAccountToken(getApplicationContext()), !AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone"))
+                .getAccountProducts(AccountHelper.getAccountToken(getApplicationContext()),
+                                    !AccountHelper.isLocalPlay(getApplicationContext()))
                 .observe(this, products -> {
             if (products!=null && products.size()>0) {
                 boolean sensorNeeded = false;
@@ -173,7 +174,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         });
 
         //HIDE UI MENU ITEMS BASED ON ACCOUNT TYPE
-        if (AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone")) {
+        if (AccountHelper.isLocalPlay(getApplicationContext())) {
             hideMenuItem(R.id.nav_logout);
             downloadLocalMovies();
             downloadStatusVerificationCheck();
@@ -342,7 +343,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
     }
 
     private void downloadLocalMovies() {
-            if (isStoragePermissionGranted(AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone"))) {
+            if (isStoragePermissionGranted(AccountHelper.isLocalPlay(getApplicationContext()))) {
                 productPickerViewModel.getRoutefilms(AccountHelper.getAccountToken(getApplicationContext())).observe(this, routefilms -> {
                     if (routefilms.size()>0) {
                         //CHECK IF ALL MOVIES FIT TO DISK
@@ -418,21 +419,6 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
             }
         }
         return false;
-    }
-
-    private void isValidAccount() {
-        //TODO: Create ServiceWorker for periodic background process
-        productPickerViewModel.getAccountProducts(AccountHelper.getAccountToken(this), !AccountHelper.getAccountType(this).equalsIgnoreCase("standalone"))
-            .observe(this, products ->{
-                if (products != null) {
-                    if (products.size() > 0) {
-                        //NOTHING
-                    } else {
-                        //ALERT USER FOR EXPIRED PRODUCT(S)
-                        //LOGOUT
-                    }
-                }
-            });
     }
 
     private void syncMovieDatabasePeriodically() {

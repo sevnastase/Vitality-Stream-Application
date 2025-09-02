@@ -192,7 +192,7 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
                 @Override
                 public void onClick(View v) {
                     moviePartCoverImage.requestFocus();
-                    if (AccountHelper.getAccountType(itemView.getContext()).equalsIgnoreCase("standalone")) {
+                    if (AccountHelper.isLocalPlay(itemView.getContext())) {
                         VideoplayerActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
                     } else {
                         VideoplayerExoActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
@@ -225,7 +225,7 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
 //                                    @Override
 //                                    public void onClick(View v) {
 //                                        moviePartCoverImage.requestFocus();
-//                                        if (AccountHelper.getAccountType(itemView.getContext()).equalsIgnoreCase("standalone")) {
+//                                        if (AccountHelper.isLocalPlay(getApplicationContext()) {
 //                                            VideoplayerActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
 //                                        } else {
 //                                            VideoplayerExoActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
