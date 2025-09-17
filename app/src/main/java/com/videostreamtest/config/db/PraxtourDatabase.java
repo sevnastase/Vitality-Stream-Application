@@ -61,7 +61,7 @@ import java.util.concurrent.Executors;
         MovieFlag.class,
         UsageTracker.class,
         GeneralDownloadTracker.class
-}, version = 10, exportSchema = true)
+}, version = 12, exportSchema = true)
 @TypeConverters({Converters.class})
 public abstract class PraxtourDatabase extends RoomDatabase {
     private final static String TAG = PraxtourDatabase.class.getSimpleName();
@@ -184,6 +184,24 @@ public abstract class PraxtourDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_10_11 = new Migration(10, 11) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE `configuration_table`" +
+                    "ADD COLUMN `account_type` TEXT DEFAULT ''; ");
+            database.execSQL("ALTER TABLE `product_table`" +
+                    "ADD COLUMN `product_type` TEXT DEFAULT ''");
+        }
+    };
+
+    static final Migration MIGRATION_11_12 = new Migration(11, 12) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE `product_table`" +
+                    "ADD COLUMN `product_raw_id` INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
 
     public static PraxtourDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
@@ -202,7 +220,9 @@ public abstract class PraxtourDatabase extends RoomDatabase {
                                     MIGRATION_6_7,
                                     MIGRATION_7_8,
                                     MIGRATION_8_9,
-                                    MIGRATION_9_10)
+                                    MIGRATION_9_10,
+                                    MIGRATION_10_11,
+                                    MIGRATION_11_12)
                             
                             .build();
                 }

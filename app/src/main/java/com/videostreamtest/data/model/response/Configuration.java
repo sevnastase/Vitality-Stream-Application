@@ -12,7 +12,6 @@ public class Configuration {
     private boolean updatePraxCloud = false;
     private String praxCloudMediaServerUrl;
     private String praxCloudMediaServerLocalUrl;
-    @ColumnInfo(name = "account_type")
     private String accountType;
 
     public boolean isLocalPlay() {

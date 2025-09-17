@@ -17,11 +17,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.Constraints;
-import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
-import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import com.google.android.play.core.appupdate.AppUpdateInfo;
@@ -40,6 +38,7 @@ import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.VideoLanLib;
+import com.videostreamtest.workers.AccountServiceWorker;
 import com.videostreamtest.workers.InstallPackageServiceWorker;
 import com.videostreamtest.workers.UpdatePackageServiceWorker;
 import com.videostreamtest.workers.download.DownloadStatusVerificationServiceWorker;
@@ -77,6 +76,7 @@ public class SplashActivity extends AppCompatActivity {
 
         checkForUpdates();
         checkDownloadStatusVerification();
+        refreshAccountInformation();
 
         //New way
         splashViewModel.getCurrentConfig().observe(this, config -> {
@@ -288,6 +288,21 @@ public class SplashActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    private void refreshAccountInformation() {
+        Constraints constraint = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        OneTimeWorkRequest accountServiceWorker = new OneTimeWorkRequest.Builder(AccountServiceWorker.class)
+                .setConstraints(constraint)
+                .addTag("account-information-checker")
+                .build();
+
+        WorkManager.getInstance(this)
+                .beginWith(accountServiceWorker)
+                .enqueue();
     }
 
     private void requestDrawOverlayPermission() {

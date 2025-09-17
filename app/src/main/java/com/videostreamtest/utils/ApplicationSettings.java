@@ -38,7 +38,7 @@ public class ApplicationSettings {
      */
     public static final String PRAXCLOUD_API_URL_TEST = "http://10.0.2.2:8081";
 
-    public static final String PRAXCLOUD_API_URL = PRAXCLOUD_API_URL_PROD;
+    public static final String PRAXCLOUD_API_URL = PRAXCLOUD_API_URL_TEST;
     public static final String PRAXCLOUD_MEDIA_URL = "https://media.praxcloud.eu";
 
     //STANDALONE
