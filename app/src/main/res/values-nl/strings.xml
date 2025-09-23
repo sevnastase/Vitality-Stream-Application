@@ -54,7 +54,7 @@
     <string name="login_action_password_forgotten">Wachtwoord vergeten?</string>
     <string name="catalog_download_status_message">Download status: %,.2f procent</string>
     <string name="catalog_already_downloading_message">Film is nog bezig met downloaden.</string>
-    <string name="productpicker_close_button_text">Sluiten</string>
+    <string name="routefilmpicker_back_button_text">Terug</string>
     <string name="statusbar_time_title">Tijd</string>
     <string name="statusbar_distance_title">Afstand</string>
     <string name="statusbar_finish_distance_title">Einde</string>

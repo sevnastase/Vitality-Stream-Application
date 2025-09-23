@@ -66,7 +66,7 @@
     <string name="login_action_password_forgotten">Password forgotten?</string>
     <string name="catalog_download_status_message">Download status: %,.2f percent</string>
     <string name="catalog_already_downloading_message">Movie is still downloading.</string>
-    <string name="productpicker_close_button_text">Close</string>
+    <string name="routefilmpicker_back_button_text">Back</string>
     <string name="statusbar_time_title">Time</string>
     <string name="statusbar_distance_title">Distance</string>
     <string name="statusbar_finish_distance_title">Finish</string>
@@ -163,4 +163,5 @@
     <string name="settings_motolife_tcp_base">tcp://</string>
     <string name="settings_motolife_connect">Connect</string>
     <string name="settings_motolife_disconnect">Disconnect</string>
+    <string name="placeholder_default">Lorem Ipsum</string>
 </resources>
