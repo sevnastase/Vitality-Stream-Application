@@ -73,7 +73,7 @@
         android:layout_height="wrap_content"
         android:textSize="40sp"
         android:textColor="#FFFFFF"
-        android:text="@string/productpicker_close_button_text"
+        android:text="@string/routefilmpicker_back_button_text"
         android:padding="10dp"
         android:layout_marginLeft="20dp"
         android:layout_marginBottom="20dp"

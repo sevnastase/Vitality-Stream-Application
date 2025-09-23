@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:keepScreenOn="true"
+    android:background="@drawable/profile_overview_background"
+    tools:context=".ui.phone.routefilmpicker.RoutefilmPickerActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/selected_routefilm_information_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/imagebutton_blue_border"
+        android:backgroundTint="@color/black_overlay">
+
+        <ImageView
+            android:id="@+id/selected_routefilm_flag_imageview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/flag_placeholder"
+            android:layout_marginHorizontal="10dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/selected_routefilm_info_textlayout"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/selected_routefilm_info_textlayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/selected_routefilm_flag_imageview">
+
+            <TextView
+                android:id="@+id/selected_routefilm_title_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp"
+                android:layout_marginLeft="10dp"
+                android:text="@string/placeholder_default"/>
+
+            <TextView
+                android:id="@+id/selected_routefilm_info_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:text="@string/placeholder_default"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="10dp"/>
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/selected_routefilm_map_imageview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/placeholder_map"
+            app:layout_constraintLeft_toRightOf="@id/selected_routefilm_info_textlayout"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginLeft="80dp"
+            android:layout_marginRight="10dp"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/routefilms_recyclerview"
+        android:layout_width="wrap_content"
+        android:layout_height="500dp"
+        android:layout_marginHorizontal="250dp"
+        android:layout_marginVertical="50dp"
+        android:layout_gravity="center"
+        android:scrollbars="vertical"
+        android:scrollbarThumbVertical="@drawable/scrollbar_shape"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/selected_routefilm_information_layout">
+    </androidx.recyclerview.widget.RecyclerView>
+
+    <ImageView
+        android:id="@+id/product_logo_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="40dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/back_to_productpicker_button"
+        style="@style/AppTheme.ProductSideButton"
+        android:layout_gravity="start|bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="40sp"
+        android:textColor="#FFFFFF"
+        android:text="@string/routefilmpicker_back_button_text"
+        android:padding="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/app_account_info_textview"/>
+
+    <TextView
+        android:id="@+id/app_account_info_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:textColor="#D3D3D3"
+        android:textSize="10sp"
+        android:layout_marginBottom="5dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/navigation_pad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginLeft="80dp">
+
+        <ImageButton
+            android:id="@+id/navigation_up_arrow"
+            style="@style/AppTheme.DefaultImageButton.NavigationArrow"
+            android:src="@drawable/arrow_up_blue"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+        <ImageButton
+            android:id="@+id/navigation_left_arrow"
+            style="@style/AppTheme.DefaultImageButton.NavigationArrow"
+            android:src="@drawable/arrow_left_blue"
+            android:layout_marginRight="30dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/navigation_up_arrow"/>
+
+        <ImageButton
+            android:id="@+id/navigation_right_arrow"
+            style="@style/AppTheme.DefaultImageButton.NavigationArrow"
+            android:src="@drawable/arrow_right_blue"
+            android:layout_marginLeft="30dp"
+            app:layout_constraintLeft_toRightOf="@id/navigation_left_arrow"
+            app:layout_constraintTop_toBottomOf="@id/navigation_up_arrow"/>
+
+        <ImageButton
+            android:id="@+id/navigation_down_arrow"
+            style="@style/AppTheme.DefaultImageButton.NavigationArrow"
+            android:src="@drawable/arrow_down_blue"
+            app:layout_constraintTop_toBottomOf="@id/navigation_left_arrow"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

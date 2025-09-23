@@ -22,6 +22,7 @@ import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.ProductActivity;
+import com.videostreamtest.ui.phone.routefilmpicker.RoutefilmPickerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 
 public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
@@ -99,7 +100,7 @@ public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
                 Bundle arguments = new Bundle();
                 arguments.putString("product_object", new GsonBuilder().create().toJson(product, Product.class));
 
-                Intent productView = new Intent(view.getContext(), ProductActivity.class);
+                Intent productView = new Intent(view.getContext(), RoutefilmPickerActivity.class);
                 productView.putExtras(arguments);
 
                 SharedPreferences sharedPreferences = view.getContext().getSharedPreferences("app", Context.MODE_PRIVATE);

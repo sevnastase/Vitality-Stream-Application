@@ -3,11 +3,10 @@ package com.videostreamtest.config.entity;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import com.videostreamtest.data.model.Movie;
-
-import java.util.List;
 
 @Entity(tableName = "routefilm_table")
 public class Routefilm {
@@ -77,16 +76,9 @@ public class Routefilm {
     @ColumnInfo(name = "movie_flag_url")
     @NonNull
     private String movieFlagUrl;
-//    private List<String> movieFlagUrl;
 
-//    @NonNull
-//    public Integer getMovieUuid() {
-//        return movieUuid;
-//    }
-//
-//    public void setMovieUuid(@NonNull Integer movieUuid) {
-//        this.movieUuid = movieUuid;
-//    }
+    @Ignore
+    private boolean favorite;
 
     @NonNull
     public Integer getMovieId() {
@@ -218,6 +210,14 @@ public class Routefilm {
 
     public void setMovieFlagUrl(@NonNull String movieFlagUrl) {
         this.movieFlagUrl = movieFlagUrl;
+    }
+
+    public boolean isFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
     }
 
     public static Routefilm fromMovie(final Movie movie, final String apikey) {
