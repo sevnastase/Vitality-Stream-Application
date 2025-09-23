@@ -4,12 +4,17 @@ import android.content.Context;
 
 import com.videostreamtest.utils.ApplicationSettings;
 
+import javax.annotation.Nullable;
+
 public class AccountHelper {
-    public static String getAccountToken(final Context context) {
+    public static String getAccountToken(@Nullable final Context context) {
+        if (context == null) return null;
         return context.getApplicationContext().getSharedPreferences("app",0).getString("apikey", "unauthorized");
     }
 
-    public static String getAccountType(final Context context) {
+    @Nullable
+    public static String getAccountType(@Nullable final Context context) {
+        if (context == null) return null;
         return context.getApplicationContext().getSharedPreferences("app",0).getString("account-type", "undefined");
     }
 
