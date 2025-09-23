@@ -115,6 +115,9 @@
         <activity android:name=".ui.phone.productview.ProductActivity"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar"/>
+        <activity android:name=".ui.phone.routefilmpicker.RoutefilmPickerActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".ui.phone.profiles.AddProfileActivity"
             android:label="@string/app_name"
