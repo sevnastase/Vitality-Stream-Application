@@ -33,7 +33,8 @@ public class Product {
     @ColumnInfo(name = "product_type")
     private String productType;
 
-    @ColumnInfo(name= "product_raw_id")
+    @ColumnInfo(name= "product_raw_id", defaultValue = "0")
+    @NonNull
     private Integer productRawId;
 
     public int getUid() {
