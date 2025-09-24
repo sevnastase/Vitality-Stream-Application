@@ -1,7 +1,9 @@
 package com.videostreamtest.ui.phone.routefilmpicker;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -16,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,6 +32,7 @@ import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 
 import java.io.File;
@@ -56,6 +60,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     private Button backToProductPickerButton;
     private RecyclerView routefilmsRecyclerView;
     private RoutefilmAdapter routefilmAdapter;
+    private ConstraintLayout navigationPadLayout;
     private ImageButton navigationUpArrow;
     private ImageButton navigationLeftArrow;
     private ImageButton navigationRightArrow;
@@ -71,6 +76,25 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     private ImageView selectedRoutefilmMapImageView;
     private ImageView selectedRoutefilmCountryFlagImageView;
 
+    /**
+     * Interface signalling to start the current film when the mqtt message is received.
+     */
+    // FOR CHINESPORT
+    BroadcastReceiver mqttMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (routefilmAdapter != null) {
+                routefilmAdapter.startVideoPlayer();
+            }
+        }
+    };
+
+    // FOR CHINESPORT
+    @Override
+    public void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mqttMessageReceiver);
+        super.onDestroy();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +111,10 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
         }
 
         initViews();
+
+        // FOR CHINESPORT
+        LocalBroadcastManager.getInstance(this).registerReceiver(mqttMessageReceiver,
+                new IntentFilter("com.videostreamtest.ACTION_START_FILM"));
     }
 
     private void initViews() {
@@ -106,15 +134,20 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
         String appAndAccountInfo = String.format("%s:%s", appVersionNumber, apikey);
         appAndAccountInfoTextView.setText(appAndAccountInfo);
 
+        navigationPadLayout = findViewById(R.id.navigation_pad);
         navigationUpArrow = findViewById(R.id.navigation_up_arrow);
         navigationLeftArrow = findViewById(R.id.navigation_left_arrow);
         navigationRightArrow = findViewById(R.id.navigation_right_arrow);
         navigationDownArrow = findViewById(R.id.navigation_down_arrow);
 
-        initNavigationArrow(navigationUpArrow, -1 * ITEMS_PER_ROW);
-        initNavigationArrow(navigationLeftArrow, -1);
-        initNavigationArrow(navigationRightArrow, 1);
-        initNavigationArrow(navigationDownArrow, ITEMS_PER_ROW);
+        if (ViewHelper.isTouchScreen(this)) {
+            initNavigationArrow(navigationUpArrow, -1 * ITEMS_PER_ROW);
+            initNavigationArrow(navigationLeftArrow, -1);
+            initNavigationArrow(navigationRightArrow, 1);
+            initNavigationArrow(navigationDownArrow, ITEMS_PER_ROW);
+        } else {
+            navigationPadLayout.setVisibility(View.GONE);
+        }
 
         selectedRoutefilmInformationBoxLayout = findViewById(R.id.selected_routefilm_information_layout);
         selectedRoutefilmInformationBoxLayout.setVisibility(View.GONE);

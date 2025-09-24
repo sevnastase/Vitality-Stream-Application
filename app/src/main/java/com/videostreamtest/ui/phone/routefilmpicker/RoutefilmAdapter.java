@@ -1,5 +1,6 @@
 package com.videostreamtest.ui.phone.routefilmpicker;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -111,7 +114,7 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
         holder.routefilmCoverPhotoImageButton.setOnClickListener(view -> {
             // Re-initialize the video player intent
             if (selectedRoutefilmPosition == position) {
-                startVideoPlayer(view);
+                startVideoPlayer();
             } else {
                 final int prevPosition = selectedRoutefilmPosition;
                 setSelectedRoutefilmPosition(position);
@@ -168,12 +171,13 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
         initVideoPlayer(generateBundleParameters());
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void sortByFavorites() {
         Collections.sort(routefilms, (a, b) -> Boolean.compare(b.isFavorite(), a.isFavorite()));
         notifyDataSetChanged(); // we have reordered the entire dataset
     }
 
-    private void initVideoPlayer(final Bundle arguments) {
+    public void initVideoPlayer(final Bundle arguments) {
         if (selectedProduct.getSupportStreaming() == 0) {
             videoPlayerActivityIntent = new Intent(hostActivity, VideoplayerActivity.class);
         } else {
@@ -183,8 +187,12 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
         videoPlayerActivityIntent.putExtras(arguments);
     }
 
-    private void startVideoPlayer(View view) {
-        view.getContext().startActivity(videoPlayerActivityIntent);
+    public void startVideoPlayer() {
+        if (videoPlayerActivityIntent == null) {
+            Toast.makeText(hostActivity, "Could not start movie, try again", Toast.LENGTH_LONG).show();
+            return;
+        }
+        hostActivity.startActivity(videoPlayerActivityIntent);
     }
 
     private Bundle generateBundleParameters() {
