@@ -239,7 +239,7 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
 
         if (AccountHelper.isLocalPlay(getContext())) {
             // WAS VIDEOPLAYERACTIVITY.GETINSTANCE IN ALL 6 OF THEM
-            VideoplayerActivity.getInstance().goToFrameNumber(movieParts[routepartNr].getFrameNumber().intValue());
+            VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[routepartNr].getFrameNumber().intValue());
         } else {
             VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[routepartNr].getFrameNumber().intValue());
         }

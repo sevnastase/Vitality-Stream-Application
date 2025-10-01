@@ -313,7 +313,7 @@ public class PraxFitStatusBarFragment extends AbstractPraxStatusBarFragment {
         videoPlayerViewModel.getSelectedMovie().observe(getViewLifecycleOwner(), selectedMovie -> {
             if (AccountHelper.isLocalPlay(getContext())) {
                 // WAS VIDEOPLAYERACTIVITY.GETINSTANCE IN ALL 6 OF THEM
-                VideoplayerActivity.getInstance().goToFrameNumber(movieParts[routepartNr].getFrameNumber().intValue());
+                VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[routepartNr].getFrameNumber().intValue());
             } else {
                 VideoplayerExoActivity.getInstance().goToFrameNumber(movieParts[routepartNr].getFrameNumber().intValue());
             }
