@@ -21,4 +21,6 @@
     <color name="gray">#808080</color>
 
     <color name="red">#FF0000</color>
+
+    <color name="success_green">#00BA00</color>
 </resources>

@@ -67,6 +67,19 @@
         <item name="android:focusableInTouchMode">true</item>
     </style>
 
+    <style name="AppTheme.Focusable">
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+    </style>
+
+    <style name="AppTheme.Focusable.ButtonGreenOnFocus">
+        <item name="android:background">@drawable/focusable_green_background</item>
+    </style>
+
+    <style name="AppTheme.Focusable.ButtonRedOnFocus">
+        <item name="android:background">@drawable/focusable_red_background</item>
+    </style>
+
     <style name="AppTheme.DefaultInputField">
         <item name="android:focusable">true</item>
         <item name="android:focusableInTouchMode">true</item>
