@@ -329,7 +329,11 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
             }
         } else {
             Intent bleService = new Intent(getApplicationContext(), BleService.class);
-            startService(bleService);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(bleService);
+            } else {
+                startService(bleService);
+            }
         }
     }
 

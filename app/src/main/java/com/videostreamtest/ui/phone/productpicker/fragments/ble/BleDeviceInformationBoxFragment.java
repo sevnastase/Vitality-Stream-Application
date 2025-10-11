@@ -337,7 +337,11 @@ public class BleDeviceInformationBoxFragment extends Fragment {
             productViewModel.insertBluetoothDefaultDevice(bluetoothDefaultDevice);
 
             Intent bleService = new Intent(getActivity().getApplicationContext(), BleService.class);
-            getActivity().startService(bleService);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                getActivity().startForegroundService(bleService);
+            } else {
+                getActivity().startService(bleService);
+            }
             startScanForDevices(bluetoothManager.getAdapter());
         });
     }
