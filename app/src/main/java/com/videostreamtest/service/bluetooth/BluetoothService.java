@@ -1,9 +1,6 @@
 package com.videostreamtest.service.bluetooth;
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -15,16 +12,14 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
 
-import com.videostreamtest.R;
+import com.videostreamtest.config.application.PraxtourApplication;
 import com.videostreamtest.constants.CadenceSensorConstants;
 import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 
@@ -35,8 +30,6 @@ import java.util.UUID;
 
 public class BluetoothService extends Service {
     private static final String TAG = BluetoothService.class.getSimpleName();
-    private static final int NOTIFICATION_ID = 101;
-    private static final String CHANNEL_ID = "bluetooth_service_channel";
 
     public final static int CONNECTION_DELAY_MS = 4000;
     public final static int CLOSE_DELAY_AFTER_DISCONNECT_MS = 3000;
@@ -97,13 +90,14 @@ public class BluetoothService extends Service {
         @SuppressLint("MissingPermission")
         @Override
         public void run() {
-            Log.d(TAG, "Connecting after short delay...");
-            bluetoothGatt = bluetoothDevice.connectGatt(getApplicationContext(), false, bluetoothGattCallback);
+            if (!PermissionHelper.hasBluetoothPermissions(PraxtourApplication.getAppContext())) return;
+            Log.d(TAG, "Trying to connect to " + bluetoothDevice.getAddress());
+            bluetoothGatt = bluetoothDevice.connectGatt(getApplicationContext(), false, bluetoothGattCallback, BluetoothDevice.TRANSPORT_LE);
             broadcastUpdate(ACTION_GATT_STARTED_CONNECTING);
         }
     }
 
-    private Runnable connectRunnable;
+    private ConnectRunnable connectRunnable;
 
     // BLUETOOTH
     private int connectionState;
@@ -125,14 +119,12 @@ public class BluetoothService extends Service {
             String message = "";
             BluetoothDevice bluetoothDevice = gatt.getDevice();
             isConnecting = false;
-            if (status != BluetoothGatt.GATT_SUCCESS && newState != BluetoothProfile.STATE_CONNECTED) {
-                connectionState = STATE_DISCONNECTED;
-            }
 
             if (bluetoothDevice != null && bluetoothDevice.getName() != null) {
                 if (newState == BluetoothProfile.STATE_CONNECTED && status == BluetoothGatt.GATT_SUCCESS) {
                     Log.d(TAG, "\t connection to" + bluetoothDevice.getName() + "successful");
                     connectionState = STATE_CONNECTED;
+                    bluetoothGatt = gatt;
                     broadcastUpdate(ACTION_GATT_CONNECTED);
                     ArrayList<String> info = new ArrayList<>(Arrays.asList(bluetoothDevice.getAddress(), bluetoothDevice.getName()));
                     broadcastStringListDataWithAction(EXTRA_DATA, info, ACTION_SAVE_DEVICE);
@@ -148,8 +140,6 @@ public class BluetoothService extends Service {
                     gattOperationHandler.postDelayed(() -> {
                         try { close(); } catch (Exception ignored) {}
                     }, CLOSE_DELAY_AFTER_DISCONNECT_MS);
-                } else {
-                    message = "";
                 }
             }
 
@@ -162,6 +152,7 @@ public class BluetoothService extends Service {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (!PermissionHelper.hasBluetoothPermissions(BluetoothService.this)) return;
+
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 List<BluetoothGattService> gattServices = getSupportedGattServices();
                 if (gattServices == null) return;
@@ -173,15 +164,6 @@ public class BluetoothService extends Service {
                         BluetoothGattCharacteristic cyclingCharacteristic = gattService.getCharacteristic(CSCProfile.CSC_MEASUREMENT);
                         if (cyclingCharacteristic != null) {
                             setCharacteristicNotification(cyclingCharacteristic, true);
-                            Log.d(TAG, "Getting descriptor");
-                            BluetoothGattDescriptor descriptor = cyclingCharacteristic.getDescriptor(CSCProfile.CLIENT_CONFIG);
-                            if (descriptor != null) {
-                                Log.d(TAG, "Writing descriptor");
-                                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                                bluetoothGatt.writeDescriptor(descriptor);
-                            }
-                        } else {
-                            Log.w(TAG, "CSC_MEASUREMENT characteristic not found in CSC service");
                         }
                     } else if (CSCProfile.BATTERY_SERVICE.equals(serviceUuid)) {
                         Log.d(TAG, "Battery service found!");
@@ -191,8 +173,8 @@ public class BluetoothService extends Service {
                         continue;
                     }
                 }
-            } else {
-                Log.d(TAG, "onServicesDiscovered received: " + status);
+
+                gattOperationHandler.postDelayed(rssiUpdateRunnable, CONNECTION_DELAY_MS);
             }
         }
 
@@ -207,25 +189,12 @@ public class BluetoothService extends Service {
             }
         }
 
-        @Override
-        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
-            if (BluetoothGatt.GATT_SUCCESS == status) {
-                Log.d(TAG, "Descriptor written successfully");
-                BluetoothGattService batt = gatt.getService(CSCProfile.BATTERY_SERVICE);
-                if (batt != null) {
-                    BluetoothGattCharacteristic lvl = batt.getCharacteristic(CSCProfile.BATTERY_MEASUREMENT);
-                    if (lvl != null) readCharacteristic(lvl);
-                }
-                gattOperationHandler.postDelayed(rssiUpdateRunnable, CONNECTION_DELAY_MS);
-            }
-        }
-
-            /** Triggers for characteristics for which notifications were enabled using
-             * {@link BluetoothService#setCharacteristicNotification(BluetoothGattCharacteristic, boolean)} */
+        /** Triggers for characteristics for which notifications were enabled using
+         * {@link BluetoothService#setCharacteristicNotification(BluetoothGattCharacteristic, boolean)} */
         @Override
         @SuppressLint("MissingPermission")
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            Log.d(TAG, "onCharacteristicChanged");
+            Log.d(TAG, "onCharacteristicChanged()");
             if (!PermissionHelper.hasBluetoothPermissions(BluetoothService.this)) return;
 
             BluetoothDevice device = gatt.getDevice();
@@ -254,7 +223,6 @@ public class BluetoothService extends Service {
                 if (wheelDataPresent) {
                     offset += 6;
                 }
-
 
                 if (crankDataPresent) {
                     int cumulativeCrankRevs = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT16, offset);
@@ -310,9 +278,16 @@ public class BluetoothService extends Service {
     };
 
     @Override
+    public int onStartCommand (Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand()");
+        selectedDeviceAddress = intent.getStringExtra("selected_device_address");
+
+        return START_STICKY;
+    }
+
+    @Override
     public void onCreate() {
         super.onCreate();
-        startForegroundNotification();
     }
 
     private Binder binder = new LocalBinder();
@@ -321,7 +296,6 @@ public class BluetoothService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind()");
-        selectedDeviceAddress = intent.getStringExtra("selected_device_address");
         return binder;
     }
 
@@ -339,7 +313,6 @@ public class BluetoothService extends Service {
         try { disconnect(); } catch (Exception ignored) {}
         // close() will be called upon successful disconnect
 
-        stopForeground(true);
         stopSelf();
         super.onDestroy();
     }
@@ -415,8 +388,24 @@ public class BluetoothService extends Service {
         if (!PermissionHelper.hasBluetoothPermissions(this) || bluetoothGatt == null) {
             return;
         }
-        Log.d(TAG, String.format("%s notifications for characteristic %s", enabled ? "Enabling" : "Disabling", characteristic.getUuid().toString()));
-        bluetoothGatt.setCharacteristicNotification(characteristic, enabled);
+
+        if (bluetoothGatt.setCharacteristicNotification(characteristic, enabled)) {
+            Log.d(TAG, String.format("REQUEST SENT TO %s notifications for characteristic %s"
+                    , enabled ? "<ENABLE>" : "<DISABLE>", characteristic.getUuid().toString()));
+        } else {
+            Log.d(TAG, String.format("FAILED TO SEND REQUEST TO %s notifications for characteristic %s"
+                    , enabled ? "<ENABLE>" : "<DISABLE>", characteristic.getUuid().toString()));
+        }
+
+        if (CSCProfile.CSC_MEASUREMENT.equals(characteristic.getUuid())) {
+            Log.d(TAG, "Getting descriptor for cycling");
+            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(CSCProfile.CLIENT_CONFIG);
+            if (descriptor != null) {
+                Log.d(TAG, "Writing descriptor");
+                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                bluetoothGatt.writeDescriptor(descriptor);
+            }
+        }
     }
 
     private void broadcastUpdate(final String action) {
@@ -504,29 +493,5 @@ public class BluetoothService extends Service {
             try { bluetoothGatt.close(); } catch (Exception ignored) {}
             bluetoothGatt = null;
         }
-    }
-
-    private void startForegroundNotification() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Bluetooth Connection",
-                    NotificationManager.IMPORTANCE_LOW
-            );
-            channel.setDescription("Keeps your Cadence sensor connected.");
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(channel);
-            }
-        }
-
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Connected to sensor")
-                .setContentText("Maintaining Bluetooth connection...")
-                .setSmallIcon(R.drawable.bluetooth_small)
-                .setOngoing(true)
-                .build();
-
-        startForeground(NOTIFICATION_ID, notification);
     }
 }
