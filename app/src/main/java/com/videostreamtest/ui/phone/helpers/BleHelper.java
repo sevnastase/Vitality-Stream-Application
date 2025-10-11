@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGatt;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 
 import com.videostreamtest.R;
 import com.videostreamtest.service.ble.BleService;
@@ -42,7 +43,11 @@ public class BleHelper {
         final String deviceAddress = sharedPreferences.getString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, "NONE");
         if (deviceAddress != null && !deviceAddress.equals("NONE")) {
             Intent bleService = new Intent(context, BleService.class);
-            context.startService(bleService);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(bleService);
+            } else {
+                context.startService(bleService);
+            }
         }
     }
 

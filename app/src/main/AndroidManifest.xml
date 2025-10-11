@@ -2,44 +2,45 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- REQUIRED FOR CONSTRAINT OF INTERNET -->
+    <!-- REQUIRED FOR CONSTRAINT OF INTERNET   -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" /> <!-- FOR CHINESPORT MOTOLIFE -->
-    <uses-permission android:name="android.permission.INTERNET" /> <!-- REQUIRED FOR STREAMING VARIANT -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
-    <!-- START OLDER DEVICES -->
-    <!-- <= Android 11 -->
-    <uses-permission
-        android:name="android.permission.BLUETOOTH"
-        android:maxSdkVersion="30" />
-    <uses-permission
-        android:name="android.permission.BLUETOOTH_ADMIN"
-        android:maxSdkVersion="30" />
-    <uses-permission
-        android:name="android.permission.ACCESS_FINE_LOCATION"
-        android:maxSdkVersion="30"/> <!-- Since we are not actually deriving location -->
+    <!-- FOR CHINESPORT MOTOLIFE    -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- REQUIRED FOR SENSORS    -->
+    <!--    OLDER DEVICES -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
-    <!-- Android 10-11 -->
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <!-- END OLDER DEVICES -->
-
-    <!-- For communication between device and sensor -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <!-- For discovering sensor -->
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
-        android:usesPermissionFlags="neverForLocation"
-        tools:targetApi="s"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> <!-- REQUIRED FOR STANDALONE VARIANT -->
-    <!-- REQUIRED FOR ANDROID 14+ BLUETOOTH -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" android:minSdkVersion="34"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" android:minSdkVersion="31"/>
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+    <!-- REQUIRED FOR STREAMING VARIANT   -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- REQUIRED FOR STANDALONE VARIANT   -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- REQUIRED FOR ON_BOOT_COMPLETED RECEIVER -->
-    <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" /> <!-- REQUIRED FOR KEEP SCREEN ON -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <!-- REQUIRED FOR ON_BOOT_COMPLETED RECEIVER   -->
+    <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION"  />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- REQUIRED FOR KEEP SCREEN ON -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" /> <!-- Android Features -->
+
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!-- Android Features -->
     <uses-feature
         android:name="android.software.leanback"
         android:required="false" />
@@ -47,9 +48,7 @@
         android:name="android.hardware.touchscreen"
         android:required="false" />
     <uses-feature android:name="android.hardware.usb.host" />
-    <uses-feature
-        android:name="android.hardware.bluetooth_le"
-        android:required="false" />
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
 
     <application
         android:name=".config.application.PraxtourApplication"
@@ -57,21 +56,23 @@
         android:banner="@drawable/praxcloud_banner"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:largeHeap="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:largeHeap="true">
         <!-- if memory issues then > android:largeHeap="true" -->
         <!-- METADATA -->
         <meta-data
             android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
-            android:value="com.google.android.exoplayer2.ext.cast.DefaultCastOptionsProvider" /> <!-- END METADATA -->
-        <!-- PROVIDERS -->
+            android:value="com.google.android.exoplayer2.ext.cast.DefaultCastOptionsProvider" />
+        <!-- END METADATA -->
+
+        <!-- PROVIDERS    -->
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
-            tools:node="remove" />
+            tools:node="remove"/>
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -80,12 +81,14 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_provider_paths" />
-        </provider> <!-- START ACTIVITIES -->
+        </provider>
+
+        <!-- START ACTIVITIES -->
         <!-- PLATFORM -->
         <activity
             android:name=".ui.phone.splash.SplashActivity"
-            android:exported="true"
             android:label="@string/app_name"
+            android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/SplashScreenTheme">
             <intent-filter>
@@ -112,14 +115,12 @@
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".ui.phone.productview.ProductActivity"
+        <activity android:name=".ui.phone.productview.ProductActivity"
             android:screenOrientation="landscape"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".ui.phone.routefilmpicker.RoutefilmPickerActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity android:name=".ui.phone.routefilmpicker.RoutefilmPickerActivity"
             android:screenOrientation="landscape"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity
             android:name=".ui.phone.profiles.AddProfileActivity"
             android:label="@string/app_name"
@@ -127,59 +128,50 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ui.phone.profiles.ProfilesActivity"
-            android:exported="true"
             android:label="@string/title_activity_fullscreen"
             android:screenOrientation="landscape"
+            android:exported="true"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
+<!--                <action android:name="android.intent.action.MAIN" />-->
 
-                <!-- <action android:name="android.intent.action.MAIN" /> -->
-
-
-                <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-                <!-- <category android:name="android.intent.category.LEANBACK_LAUNCHER" /> -->
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />-->
 
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
-
-            <meta-data
-                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-                android:resource="@xml/usb_device_filter" />
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_device_filter" />
         </activity>
         <activity
             android:name=".ui.phone.videoplayer.VideoplayerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:exported="true"
             android:label="@string/title_activity_videoplayer"
+            android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
-
-            <meta-data
-                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-                android:resource="@xml/usb_device_filter" />
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_device_filter" />
         </activity>
         <activity
             android:name=".ui.phone.videoplayer.VideoplayerExoActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:exported="true"
             android:label="@string/title_activity_videoplayer"
+            android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
-
-            <meta-data
-                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-                android:resource="@xml/usb_device_filter" />
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/usb_device_filter" />
         </activity>
-        <activity
-            android:name=".ui.phone.result.ResultActivity"
+
+        <activity android:name=".ui.phone.result.ResultActivity"
             android:screenOrientation="landscape"
-            android:theme="@style/AppTheme.NoActionBar" /> <!-- TV  //TODO becomes TV User Interfaces -->
+            android:theme="@style/AppTheme.NoActionBar"/>
+
+        <!-- TV  //TODO becomes TV User Interfaces -->
         <activity
             android:name=".ui.tv.login.LoginActivityTv"
             android:label="@string/title_activity_login_tv"
@@ -193,35 +185,27 @@
         </activity> <!-- END ACTIVITIES -->
         <!-- SERVICES -->
         <service
-            android:name=".service.bluetooth.BluetoothService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="connectedDevice|dataSync|location"
-            android:label="BluetoothService"/>
-        <service
             android:name=".service.ble.BleService"
-            android:foregroundServiceType="location"
             android:icon="@drawable/ic_launcher_background"
-            android:label="BleService" />
+            android:label="BleService"
+            android:foregroundServiceType="location|connectedDevice" />
+
         <service
             android:name=".service.wifi.WifiService"
-            android:foregroundServiceType="location"
             android:icon="@drawable/ic_launcher_background"
-            android:label="WifiService" />
+            android:label="WifiService"
+            android:foregroundServiceType="location" />
 
-        <receiver
-            android:name=".receiver.OnBootCompletedBroadcastReceiver"
-            android:directBootAware="true"
+        <receiver android:name=".receiver.OnBootCompletedBroadcastReceiver"
             android:enabled="true"
             android:exported="true"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED"
+            android:directBootAware="true">
             <intent-filter>
-
                 <!-- REGISTER TO RECEIVE BOOT_COMPLETED EVENTS -->
                 <category android:name="android.intent.category.DEFAULT" />
-
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.REBOOT" />
+                <action android:name="android.intent.action.REBOOT"/>
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
