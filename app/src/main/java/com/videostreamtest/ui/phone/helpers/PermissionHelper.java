@@ -1,5 +1,7 @@
 package com.videostreamtest.ui.phone.helpers;
 
+import static com.videostreamtest.constants.PermissionRequestConstants.BLUETOOTH_REQUEST_CODE;
+
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
@@ -10,13 +12,14 @@ import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.location.LocationManagerCompat;
 
 import com.videostreamtest.config.application.PraxtourApplication;
-import com.videostreamtest.config.entity.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +90,29 @@ public class PermissionHelper {
                             PERMISSION_REQUEST_CODE);
                 }
             }
+        }
+    }
+
+    public static void checkBluetoothPermissions(@NonNull Activity activity) {
+        if (!hasBluetoothPermissions(activity)) requestBluetoothPermissions(activity);
+    }
+
+    public static boolean hasBluetoothPermissions(@NonNull Context context) {
+        // Other permissions (for older devices) don't need runtime approval
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true;
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public static void requestBluetoothPermissions(@NonNull Activity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            ActivityCompat.requestPermissions(
+                activity,
+                new String[]{
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.BLUETOOTH_SCAN
+                },
+                BLUETOOTH_REQUEST_CODE);
         }
     }
 
