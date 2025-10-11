@@ -260,7 +260,10 @@ public class BluetoothConnectionFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        if (hostActivity == null || !BluetoothUtil.isBluetoothAvailableOnDevice(hostActivity)) return;
+        if (hostActivity == null || !BluetoothUtil.isBluetoothAvailableOnDevice(hostActivity)) {
+            Toast.makeText(PraxtourApplication.getAppContext(), "Bluetooth not available on device", Toast.LENGTH_LONG).show();
+            return;
+        }
         if (!setupBluetooth()) return;
         Log.d(TAG, "BT is available");
 
@@ -322,11 +325,7 @@ public class BluetoothConnectionFragment extends Fragment {
         intent.putExtra("selected_device_address", device.getAddress());
 
         // call first to keep alive after leaving fragment/activity
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            hostActivity.startForegroundService(intent);
-        } else {
-            hostActivity.startService(intent);
-        }
+        hostActivity.startService(intent);
         // bind after
         hostActivity.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
 
@@ -359,21 +358,13 @@ public class BluetoothConnectionFragment extends Fragment {
      */
     @SuppressLint("MissingPermission") // suppress because it is actually being checked, lint is just bad
     private void startBluetoothScan() {
-        if (hostActivity == null) return;
+        if (hostActivity == null || !PermissionHelper.hasBluetoothPermissions(hostActivity)) return;
 
         if (bluetoothLeScanner != null) {
             bluetoothLeScanner.stopScan(bluetoothScanCallback);
         }
         if (bluetoothAdapter == null) return;
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
-        PermissionHelper.checkBluetoothPermissions(hostActivity);
-
-//        BluetoothDeviceInfo savedDevice = getSavedDevice();
-//        if (savedDevice != null) {
-//            Log.d(TAG, String.format("Found saved device: %s", savedDevice.getName()));
-//            initiateConnectionToDevice(savedDevice);
-//            return;
-//        }
 
         Log.d(TAG, "Beginning bluetooth scan");
         bluetoothLeScanner.startScan(bluetoothScanCallback);
@@ -406,7 +397,7 @@ public class BluetoothConnectionFragment extends Fragment {
         editor.apply();
     }
 
-    private static IntentFilter makeGattUpdateIntentFilter() {
+    private IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothService.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BluetoothService.ACTION_GATT_DISCONNECTED);
@@ -429,7 +420,9 @@ public class BluetoothConnectionFragment extends Fragment {
         } else if (!connected) {
             connectionStatus = "Setting up Bluetooth";
             connectedDeviceInfoHandler.postDelayed(() -> {
-                deviceConnectionStatusTextView.setText("Beginning to pair");
+                try {
+                    deviceConnectionStatusTextView.setText("Beginning to pair");
+                } catch (Exception ignored) {}
             }, BluetoothService.CONNECTION_DELAY_MS / 2);
         }
         deviceNameTextView.setText(selectedDevice.getName());
