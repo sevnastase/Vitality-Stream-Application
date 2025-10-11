@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -71,6 +72,7 @@ import java.util.concurrent.TimeUnit;
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+import static com.videostreamtest.constants.PermissionRequestConstants.BLUETOOTH_REQUEST_CODE;
 import static com.videostreamtest.utils.ApplicationSettings.THREAD_POOL_EXECUTOR;
 
 public class ProductPickerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -226,6 +228,29 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         VideoLanLib.getLibVLC(getApplicationContext()).release();
         VideoLanLib.setLibVlc(null);
         THREAD_POOL_EXECUTOR.getQueue().drainTo(new ArrayList<>());
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (BLUETOOTH_REQUEST_CODE == requestCode) {
+            boolean granted = true;
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    granted = false;
+                    break;
+                }
+            }
+
+            if (!granted) {
+                Toast.makeText(this, "Disabled PraxFit and PraxFilm", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, "Thank you!", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     private boolean isTouchScreen() {
