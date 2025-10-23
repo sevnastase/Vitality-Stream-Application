@@ -132,7 +132,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     private boolean routePaused = false;
     private int pauseTimer = 0;
     private boolean routeFinished = false;
-//    Handler handler; // AUTO RUNNER
+    Handler handler = new Handler(Looper.getMainLooper()); // AUTO RUNNER
 
     //BLE
     private boolean backToOverviewWaitForSensor = false;
@@ -358,18 +358,38 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
         updateVideoPlayerScreen(0);
 
-//        // AUTO RUNNER
-//        handler = new Handler();
-//        Runnable r = new Runnable() {
+        // AUTO RUNNER
+//        Runnable r1 = new Runnable() {
 //            @Override
 //            public void run() {
 //                sensorConnected = true;
 //                updateVideoPlayerParams(60);
 //                updateVideoPlayerScreen(60);
+//            }
+//        };
+//        Runnable r2 = new Runnable() {
+//            @Override
+//            public void run() {
+//                sensorConnected = true;
+//                updateVideoPlayerParams(42);
+//                updateVideoPlayerScreen(42);
+//            }
+//        };
+//        Runnable controller = new Runnable() {
+//            int secondsPassed = 0;
+//            @Override
+//            public void run() {
+//                if (secondsPassed > 20) secondsPassed = 0;
+//                if (secondsPassed < 10) {
+//                    handler.post(r1);
+//                } else {
+//                    handler.post(r2);
+//                }
+//                secondsPassed++;
 //                handler.postDelayed(this, 1000);
 //            }
 //        };
-//        handler.post(r);
+//        handler.post(controller);
 
         setUp();
 
