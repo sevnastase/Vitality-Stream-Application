@@ -133,6 +133,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     private int pauseTimer = 0;
     private boolean routeFinished = false;
     Handler handler = new Handler(Looper.getMainLooper()); // AUTO RUNNER
+    private final Handler autoRunnerHandler = new Handler(Looper.getMainLooper()); // AUTO RUNNER
 
     //BLE
     private boolean backToOverviewWaitForSensor = false;
@@ -389,7 +390,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 //                handler.postDelayed(this, 1000);
 //            }
 //        };
-//        handler.post(controller);
+//        autoRunnerHandler.post(controller);
 
         setUp();
 
@@ -775,6 +776,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 //        handler.removeCallbacksAndMessages(null); // AUTO RUNNER
+//        autoRunnerHandler.removeCallbacksAndMessages(null); // AUTO RUNNER
         stopSensorService();
         try {
             this.unregisterReceiver(cadenceSensorBroadcastReceiver);
