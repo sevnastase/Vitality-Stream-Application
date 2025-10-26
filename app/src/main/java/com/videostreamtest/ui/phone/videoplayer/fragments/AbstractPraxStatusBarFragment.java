@@ -490,6 +490,7 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
     @Override
     public void onPause() {
         LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(mqttMessageReceiver);
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(localBroadcastReceiver);
         super.onPause();
     }
 

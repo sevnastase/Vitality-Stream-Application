@@ -27,6 +27,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -71,11 +72,6 @@ import com.videostreamtest.ui.phone.videoplayer.fragments.PraxViewStatusBarFragm
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.RpmVectorLookupTable;
-import com.videostreamtest.utils.VideoLanLib;
-
-import org.videolan.libvlc.Media;
-import org.videolan.libvlc.MediaPlayer;
-import org.videolan.libvlc.util.VLCVideoLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,8 +128,9 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     private boolean routePaused = false;
     private int pauseTimer = 0;
     private boolean routeFinished = false;
-    Handler handler = new Handler(Looper.getMainLooper()); // AUTO RUNNER
-    private final Handler autoRunnerHandler = new Handler(Looper.getMainLooper()); // AUTO RUNNER
+    private final Handler autoRunnerHandler = new Handler(Looper.getMainLooper());
+    private final Handler praxHandler = new Handler();
+    private final Handler timelineHandler = new Handler(Looper.getMainLooper());
 
     //BLE
     private boolean backToOverviewWaitForSensor = false;
@@ -221,7 +218,6 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                         .commit();
 
 //                //Pass movie details with a second based timer TODO:move to setTimeLineEvent method in this class
-//                Handler praxFilmHandler = new Handler();
 //                Runnable runnableMovieDetails = new Runnable() {
 //                    @Override
 //                    public void run() {
@@ -235,11 +231,11 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 //
 //                        }
 //                        if (!routeFinished) {
-//                            praxFilmHandler.postDelayed(this::run, 1000);
+//                            praxHandler.postDelayed(this::run, 1000);
 //                        }
 //                    }
 //                };
-//                praxFilmHandler.postDelayed(runnableMovieDetails, 0);
+//                praxHandler.postDelayed(runnableMovieDetails, 0);
 
             }
             if (selectedProduct.getProductName().contains("PraxSpin")) {
@@ -264,7 +260,6 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                         .commit();
 
                 //Pass movie details with a second based timer TODO:move to setTimeLineEvent method in this class
-                Handler praxSpinHandler = new Handler();
                 Runnable runnableMovieDetails = new Runnable() {
                     @Override
                     public void run() {
@@ -281,11 +276,11 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
                         }
                         if (!routeFinished) {
-                            praxSpinHandler.postDelayed(this::run, 1000);
+                            praxHandler.postDelayed(this::run, 1000);
                         }
                     }
                 };
-                praxSpinHandler.postDelayed(runnableMovieDetails, 0);
+                praxHandler.postDelayed(runnableMovieDetails, 0);
 
                 videoPlayerViewModel.getKmhData().observe(this, kmhData ->{
                     if (kmhData != null && mediaPlayer != null) {
@@ -306,8 +301,8 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                         .setReorderingAllowed(true)
                         .replace(R.id.videoplayer_framelayout_statusbar, PraxViewStatusBarFragment.class, arguments)
                         .commit();
-                Handler praxViewHandler = new Handler();
-                praxViewHandler.post(new Runnable() {
+
+                praxHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         if (mediaPlayer != null && !routeFinished) {
@@ -320,7 +315,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
                         }
                         if (!routeFinished) {
-                            praxViewHandler.postDelayed(this, 1000);
+                            praxHandler.postDelayed(this, 1000);
                         }
                     }
                 });
@@ -359,39 +354,6 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
         updateVideoPlayerScreen(0);
 
-        // AUTO RUNNER
-//        Runnable r1 = new Runnable() {
-//            @Override
-//            public void run() {
-//                sensorConnected = true;
-//                updateVideoPlayerParams(60);
-//                updateVideoPlayerScreen(60);
-//            }
-//        };
-//        Runnable r2 = new Runnable() {
-//            @Override
-//            public void run() {
-//                sensorConnected = true;
-//                updateVideoPlayerParams(42);
-//                updateVideoPlayerScreen(42);
-//            }
-//        };
-//        Runnable controller = new Runnable() {
-//            int secondsPassed = 0;
-//            @Override
-//            public void run() {
-//                if (secondsPassed > 20) secondsPassed = 0;
-//                if (secondsPassed < 10) {
-//                    handler.post(r1);
-//                } else {
-//                    handler.post(r2);
-//                }
-//                secondsPassed++;
-//                handler.postDelayed(this, 1000);
-//            }
-//        };
-//        autoRunnerHandler.post(controller);
-
         setUp();
 
         //Pause screen init
@@ -420,31 +382,8 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 //        discoverChromecasts();
 
         if (ApplicationSettings.DEVELOPER_MODE) {
-            Handler handler = new Handler();
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    if (mediaPlayer != null) {
-                        //progressbar.setProgress((int) ((exoPlayer.getCurrentPosition()*100)/exoPlayer.getDuration()));
-                        videoPlayerViewModel.setRpmData(60);//new Random().nextInt(80));
-
-                        if (mediaPlayer!=null) {
-                            Log.d(TAG, "TIME " + mediaPlayer.getDuration());
-                            videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getDuration());
-                            if (mediaPlayer.getDuration() != -1) {
-                                Log.d(TAG, "DURATION " + mediaPlayer.getDuration());
-                                videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getDuration());
-                            }
-                        }
-
-//                        videoPlayerViewModel.setMovieSpendDurationSeconds(videoPlayer.getCurrentPosition());
-//                        videoPlayerViewModel.setMovieTotalDurationSeconds(videoPlayer.getDuration());
-
-                        handler.postDelayed(this::run, 1000);
-                    }
-                }
-            };
-            handler.postDelayed(runnable, 0);
+            Runnable controller = autoRunner();
+            autoRunnerHandler.post(controller);
         }
 
         int preferredDefaultVolume = getSharedPreferences("app", Context.MODE_PRIVATE).getInt("defaultVolume", 50);
@@ -465,6 +404,41 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                 videoPlayerViewModel.changeVolumeLevelBy(10);
             }
         }, 200);
+    }
+
+    @NonNull
+    private Runnable autoRunner() {
+        Runnable r1 = new Runnable() {
+            @Override
+            public void run() {
+                sensorConnected = true;
+                updateVideoPlayerParams(60);
+                updateVideoPlayerScreen(60);
+            }
+        };
+        Runnable r2 = new Runnable() {
+            @Override
+            public void run() {
+                sensorConnected = true;
+                updateVideoPlayerParams(42);
+                updateVideoPlayerScreen(42);
+            }
+        };
+
+        return new Runnable() {
+            int secondsPassed = 0;
+            @Override
+            public void run() {
+                if (secondsPassed > 20) secondsPassed = 0;
+                if (secondsPassed < 10) {
+                    autoRunnerHandler.post(r1);
+                } else {
+                    autoRunnerHandler.post(r2);
+                }
+                secondsPassed++;
+                autoRunnerHandler.postDelayed(this, 1000);
+            }
+        };
     }
 
     public static VideoplayerExoActivity getInstance() {
@@ -775,8 +749,10 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        handler.removeCallbacksAndMessages(null); // AUTO RUNNER
-//        autoRunnerHandler.removeCallbacksAndMessages(null); // AUTO RUNNER
+        praxHandler.removeCallbacksAndMessages(null);
+        timelineHandler.removeCallbacksAndMessages(null);
+        autoRunnerHandler.removeCallbacksAndMessages(null);
+        thisInstance = null;
         stopSensorService();
         try {
             this.unregisterReceiver(cadenceSensorBroadcastReceiver);
@@ -909,7 +885,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
     private void waitUntilVideoIsReady(final int minSecondsLoadingView) {
         this.pauseTimer = 0;
-        Handler handler = new Handler();
+
         Runnable runnable = new Runnable() {
             int currentSecond = 0;
             @Override
@@ -940,24 +916,18 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                             Toast.makeText(VideoplayerExoActivity.this, getString(R.string.videoplayer_sensor_wait_error_message), Toast.LENGTH_LONG).show();
                             VideoplayerExoActivity.this.finish();
                         } else {
-                            handler.postDelayed(this::run, 1000);
+                            praxHandler.postDelayed(this, 1000);
                         }
                     }
                 }
             }
         };
-        handler.postDelayed(runnable, 0);
+        praxHandler.postDelayed(runnable, 0);
     }
 
     private void setTimeLineEventVideoPlayer() {
         Log.d(TAG, "TimeLineEventHandler started!");
 
-        HandlerThread thread = new HandlerThread("TimeLineEventHandlerStart",
-                Process.THREAD_PRIORITY_URGENT_DISPLAY);
-        thread.start();
-
-        Handler timelineHandler = new Handler(Looper.getMainLooper());
-//        Handler timelineHandler = new Handler(thread.getLooper());
         Runnable runnableMovieDetails = new Runnable() {
             @Override
             public void run() {

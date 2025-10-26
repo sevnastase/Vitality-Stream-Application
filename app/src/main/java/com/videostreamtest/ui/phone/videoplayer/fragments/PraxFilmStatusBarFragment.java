@@ -1,6 +1,7 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.SeekBar;
@@ -16,7 +17,18 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
     private TextView statusbarRpmValue;
     private boolean jumpBlocked = false;
     private final int DEFAULT_JUMP_COOLDOWN = 1000; // milliseconds
-    private Handler blockJumpHandler = new Handler();
+    private final Handler blockJumpHandler = new Handler(Looper.getMainLooper());
+    private final Runnable unblockJumpRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isAdded() && getView() != null) {
+                toggleStatusbarVisibility();
+                movieProgressBar.requestFocus();
+                toggleStatusbarButton.setVisibility(View.VISIBLE);
+            }
+            jumpBlocked = false;
+        }
+    };
 
     @Override
     protected void initializeLayout(View view) {
@@ -111,12 +123,7 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
         toggleStatusbarButton.requestFocus();
         toggleStatusbarButton.setVisibility(View.GONE);
 
-        blockJumpHandler.postDelayed(() -> {
-            toggleStatusbarVisibility();
-            movieProgressBar.requestFocus();
-            toggleStatusbarButton.setVisibility(View.VISIBLE);
-            jumpBlocked = false;
-        }, DEFAULT_JUMP_COOLDOWN);
+        blockJumpHandler.postDelayed(unblockJumpRunnable, DEFAULT_JUMP_COOLDOWN);
     }
 
     @Override
@@ -140,8 +147,8 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onDestroyView() {
+        super.onDestroyView();
 
         blockJumpHandler.removeCallbacksAndMessages(null);
     }

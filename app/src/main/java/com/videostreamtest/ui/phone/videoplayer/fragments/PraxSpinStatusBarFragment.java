@@ -45,6 +45,7 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
     private MoviePart[] movieParts;
     private int finalFrame;
     private float position;
+    private final Handler setupHandler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void initializeLayout(View view) {
@@ -152,6 +153,12 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
         super.onResume();
     }
 
+    @Override
+    public void onDestroy() {
+        setupHandler.removeCallbacksAndMessages(null);
+        super.onDestroy();
+    }
+
     private void setupFocus() {
         addRedBorderOnFocus(new View[]{toggleRoutePartsButton, speedUpButton, speedDownButton, stopButton});
 
@@ -255,7 +262,7 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
     }
 
     private void setupSeekbarButtonsLayout() {
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+        setupHandler.postDelayed(() -> {
                     /*Log.d(TAG, "finalFrame = " + finalFrame);
                     Log.d(TAG, "seekBarWidth = " + seekBarWidth);
                     Log.d(TAG,"progressBar.getWidth() = " + movieProgressBar.getWidth());
