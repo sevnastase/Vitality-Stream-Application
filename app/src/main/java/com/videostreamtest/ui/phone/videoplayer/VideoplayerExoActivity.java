@@ -131,7 +131,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     private boolean routePaused = false;
     private int pauseTimer = 0;
     private boolean routeFinished = false;
-//    Handler handler; // AUTO RUNNER
+    private final Handler autoRunnerHandler = new Handler(Looper.getMainLooper());
 
     //BLE
     private boolean backToOverviewWaitForSensor = false;
@@ -357,19 +357,6 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
         updateVideoPlayerScreen(0);
 
-//        // AUTO RUNNER
-//        handler = new Handler();
-//        Runnable r = new Runnable() {
-//            @Override
-//            public void run() {
-//                sensorConnected = true;
-//                updateVideoPlayerParams(60);
-//                updateVideoPlayerScreen(60);
-//                handler.postDelayed(this, 1000);
-//            }
-//        };
-//        handler.post(r);
-
         setUp();
 
         //Pause screen init
@@ -398,31 +385,8 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 //        discoverChromecasts();
 
         if (ApplicationSettings.DEVELOPER_MODE) {
-            Handler handler = new Handler();
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    if (mediaPlayer != null) {
-                        //progressbar.setProgress((int) ((exoPlayer.getCurrentPosition()*100)/exoPlayer.getDuration()));
-                        videoPlayerViewModel.setRpmData(60);//new Random().nextInt(80));
-
-                        if (mediaPlayer!=null) {
-                            Log.d(TAG, "TIME " + mediaPlayer.getDuration());
-                            videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getDuration());
-                            if (mediaPlayer.getDuration() != -1) {
-                                Log.d(TAG, "DURATION " + mediaPlayer.getDuration());
-                                videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getDuration());
-                            }
-                        }
-
-//                        videoPlayerViewModel.setMovieSpendDurationSeconds(videoPlayer.getCurrentPosition());
-//                        videoPlayerViewModel.setMovieTotalDurationSeconds(videoPlayer.getDuration());
-
-                        handler.postDelayed(this::run, 1000);
-                    }
-                }
-            };
-            handler.postDelayed(runnable, 0);
+            Runnable controller = autoRunner();
+            autoRunnerHandler.post(controller);
         }
 
         int preferredDefaultVolume = getSharedPreferences("app", Context.MODE_PRIVATE).getInt("defaultVolume", 50);
@@ -443,6 +407,41 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                 videoPlayerViewModel.changeVolumeLevelBy(10);
             }
         }, 200);
+    }
+
+    @NonNull
+    private Runnable autoRunner() {
+        Runnable r1 = new Runnable() {
+            @Override
+            public void run() {
+                sensorConnected = true;
+                updateVideoPlayerParams(60);
+                updateVideoPlayerScreen(60);
+            }
+        };
+        Runnable r2 = new Runnable() {
+            @Override
+            public void run() {
+                sensorConnected = true;
+                updateVideoPlayerParams(42);
+                updateVideoPlayerScreen(42);
+            }
+        };
+
+        return new Runnable() {
+            int secondsPassed = 0;
+            @Override
+            public void run() {
+                if (secondsPassed > 20) secondsPassed = 0;
+                if (secondsPassed < 10) {
+                    autoRunnerHandler.post(r1);
+                } else {
+                    autoRunnerHandler.post(r2);
+                }
+                secondsPassed++;
+                autoRunnerHandler.postDelayed(this, 1000);
+            }
+        };
     }
 
     public static VideoplayerExoActivity getInstance() {
@@ -753,7 +752,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        handler.removeCallbacksAndMessages(null); // AUTO RUNNER
+        autoRunnerHandler.removeCallbacksAndMessages(null);
         stopSensorService();
         try {
             this.unregisterReceiver(cadenceSensorBroadcastReceiver);
