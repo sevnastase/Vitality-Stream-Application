@@ -1,10 +1,15 @@
 package com.videostreamtest.ui.phone.routefilmpicker;
 
+import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
+import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -29,6 +34,7 @@ import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 
 import java.io.File;
@@ -56,6 +62,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     private Button backToProductPickerButton;
     private RecyclerView routefilmsRecyclerView;
     private RoutefilmAdapter routefilmAdapter;
+    private ConstraintLayout navigationPad;
     private ImageButton navigationUpArrow;
     private ImageButton navigationLeftArrow;
     private ImageButton navigationRightArrow;
@@ -76,6 +83,11 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_routefilm_picker);
+        getWindow().getDecorView().setSystemUiVisibility(
+                SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                SYSTEM_UI_FLAG_FULLSCREEN |
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
         selectedProduct = new GsonBuilder().create().fromJson(getIntent().getExtras().getString("product_object", "{}"), Product.class);
         apikey = AccountHelper.getAccountToken(this);
@@ -106,15 +118,21 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
         String appAndAccountInfo = String.format("%s:%s", appVersionNumber, apikey);
         appAndAccountInfoTextView.setText(appAndAccountInfo);
 
+        navigationPad = findViewById(R.id.navigation_pad);
         navigationUpArrow = findViewById(R.id.navigation_up_arrow);
         navigationLeftArrow = findViewById(R.id.navigation_left_arrow);
         navigationRightArrow = findViewById(R.id.navigation_right_arrow);
         navigationDownArrow = findViewById(R.id.navigation_down_arrow);
 
-        initNavigationArrow(navigationUpArrow, -1 * ITEMS_PER_ROW);
-        initNavigationArrow(navigationLeftArrow, -1);
-        initNavigationArrow(navigationRightArrow, 1);
-        initNavigationArrow(navigationDownArrow, ITEMS_PER_ROW);
+        if (ViewHelper.isTouchScreen(this)) {
+            initNavigationArrow(navigationUpArrow, -1 * ITEMS_PER_ROW);
+            initNavigationArrow(navigationLeftArrow, -1);
+            initNavigationArrow(navigationRightArrow, 1);
+            initNavigationArrow(navigationDownArrow, ITEMS_PER_ROW);
+            navigationPad.setVisibility(View.VISIBLE);
+        } else {
+            navigationPad.setVisibility(View.GONE);
+        }
 
         selectedRoutefilmInformationBoxLayout = findViewById(R.id.selected_routefilm_information_layout);
         selectedRoutefilmInformationBoxLayout.setVisibility(View.GONE);
@@ -127,6 +145,25 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
         selectedRoutefilmMapImageView = findViewById(R.id.selected_routefilm_map_imageview);
 
         loadProductMovies();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                jump(-1);
+                return true;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                jump(1);
+                return true;
+            case KeyEvent.KEYCODE_DPAD_UP:
+                jump(-4);
+                return true;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                jump(4);
+                return true;
+        }
+        return false;
     }
 
     private void loadProductMovies() {
@@ -175,9 +212,26 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
         routefilmsRecyclerView = findViewById(R.id.routefilms_recyclerview);
         routefilmsRecyclerView.setLayoutManager(new GridLayoutManager(this, ITEMS_PER_ROW));
 
-        /* Listens to changes in selection and updates the information box at the top
-           of the screen. */
-        RoutefilmAdapter.SelectedRoutefilmListener listener = routefilm -> {
+        RoutefilmAdapter.SelectedRoutefilmListener listener = createListener();
+
+        routefilmAdapter = new RoutefilmAdapter(availableRoutefilms, selectedProduct, listener, this);
+        routefilmAdapter.sortByFavorites();
+        routefilmsRecyclerView.setAdapter(routefilmAdapter);
+
+        new Handler().postDelayed(() -> {
+            routefilmsRecyclerView.scrollToPosition(DEFAULT_SELECTED_POSITION);
+            routefilmAdapter.setSelectedRoutefilmPosition(DEFAULT_SELECTED_POSITION);
+            if (availableRoutefilms != null && availableRoutefilms.length > 0) {
+                selectedRoutefilmInformationBoxLayout.setVisibility(View.VISIBLE);
+            }
+        }, 200);
+    }
+
+    /** Returns an interface implementation {@link RoutefilmAdapter.SelectedRoutefilmListener}
+     * that listens to changes in selection and updates the information box
+     * at the top of the screen. */
+    private RoutefilmAdapter.SelectedRoutefilmListener createListener() {
+        return routefilm -> {
             selectedRoutefilm = routefilm;
             Movie movie = Movie.fromRoutefilm(routefilm);
             // Flag
@@ -235,38 +289,27 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
             }
             selectedRoutefilmInfoTextView.setText(info);
         };
-
-        routefilmAdapter = new RoutefilmAdapter(availableRoutefilms, selectedProduct, listener, this);
-        routefilmAdapter.sortByFavorites();
-        routefilmsRecyclerView.setAdapter(routefilmAdapter);
-
-
-        new Handler().postDelayed(() -> {
-            routefilmsRecyclerView.scrollToPosition(DEFAULT_SELECTED_POSITION);
-            routefilmAdapter.setSelectedRoutefilmPosition(DEFAULT_SELECTED_POSITION);
-            if (availableRoutefilms != null && availableRoutefilms.length > 0) {
-                selectedRoutefilmInformationBoxLayout.setVisibility(View.VISIBLE);
-            }
-        }, 200);
     }
 
     private void initNavigationArrow(ImageButton arrowView, int jumpCount) {
-        arrowView.setOnClickListener(view -> {
-            final int prevPosition = routefilmAdapter.getSelectedRoutefilmPosition();
-            final int nextPosition;
-            if (jumpCount < 0) {
-                nextPosition = Math.max(prevPosition + jumpCount, 0);
-            } else {
-                nextPosition = Math.min(prevPosition + jumpCount, routefilmAdapter.getItemCount() - 1);
-            }
+        arrowView.setOnClickListener(view -> jump(jumpCount));
+    }
 
-            if (prevPosition != nextPosition && routefilmAdapter != null) {
-                routefilmAdapter.setSelectedRoutefilmPosition(nextPosition);
-                routefilmAdapter.notifyItemChanged(prevPosition);
-                routefilmAdapter.notifyItemChanged(nextPosition);
-                routefilmsRecyclerView.getLayoutManager().scrollToPosition(nextPosition);
-            }
-        });
+    private void jump(int jumpCount) {
+        final int prevPosition = routefilmAdapter.getSelectedRoutefilmPosition();
+        final int nextPosition;
+        if (jumpCount < 0) {
+            nextPosition = Math.max(prevPosition + jumpCount, 0);
+        } else {
+            nextPosition = Math.min(prevPosition + jumpCount, routefilmAdapter.getItemCount() - 1);
+        }
+
+        if (prevPosition != nextPosition && routefilmAdapter != null) {
+            routefilmAdapter.setSelectedRoutefilmPosition(nextPosition);
+            routefilmAdapter.notifyItemChanged(prevPosition);
+            routefilmAdapter.notifyItemChanged(nextPosition);
+            routefilmsRecyclerView.getLayoutManager().scrollToPosition(nextPosition);
+        }
     }
 
     private boolean isProductDistanceBased(Product product) {
