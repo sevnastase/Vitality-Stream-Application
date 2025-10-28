@@ -126,6 +126,7 @@
     <string name="login_no_products">"Er zijn geen actieve abonnementen. "</string>
     <string name="login_message_failed_description">Gebruikersnaam en/of wachtwoord zijn verkeerd.\nProbeer het nogmaals.</string>
     <string name="login_status_summary_standalone">Voor het eerste gebruik moeten er een aantal permissies worden geaccepteerd:\n\n> Opslag permissie: om de fillms op de harde schijf te kunnen opslaan.\n> Locatie permissie: om de Bluetooth sensoren te gebruiken.\n\nVervolg de stappen om verder te gaan.</string>
+    <string name="login_status_summary_hybrid">Voor het eerste gebruik moeten er een aantal permissies worden geaccepteerd:\n\n> Opslag permissie: om de fillms op de harde schijf te kunnen opslaan.\n> Locatie permissie: om de Bluetooth sensoren te gebruiken.\n\nVervolg de stappen om verder te gaan.</string>
     <string name="login_status_summary_streaming">Voor het eerste gebruik moeten er een aantal permissies worden geaccepteerd:\n\n> Locatie permissie: om de Bluetooth sensoren te gebruiken.\n\nVervolg de stappen om verder te gaan.</string>
     <string name="download_speed_ok">Internetsnelheid is OK.</string>
     <string name="download_speed_connection_issues">Er zijn internetproblemen, raadpleeg een IT-expert.</string>

@@ -11,6 +11,7 @@ public class Product {
     private Integer blocked =0;
     private Integer supportStreaming =0;
     private String communicationType = "RPM";
+    private String productType;
 
     public Integer getId() {
         return id;
@@ -68,6 +69,14 @@ public class Product {
         this.communicationType = communicationType;
     }
 
+    public String getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = productType;
+    }
+
     public static Product fromProductEntity(final com.videostreamtest.config.entity.Product productEntity) {
         Product product = new Product();
         product.setId(productEntity.getUid());
@@ -77,6 +86,7 @@ public class Product {
         product.setBlocked(productEntity.getBlocked());
         product.setSupportStreaming(productEntity.getSupportStreaming());
         product.setDefaultSettingsId(productEntity.getDefaultSettingsId());
+        product.setProductType(productEntity.getProductType());
         return product;
     }
 }

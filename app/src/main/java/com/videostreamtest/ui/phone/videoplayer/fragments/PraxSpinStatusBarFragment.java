@@ -237,7 +237,7 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
     private void jumpToRoutepart(int routepartNr) {
         Log.d(TAG, "Jumping to routepart " + routepartNr);
 
-        if (AccountHelper.getAccountType(getContext()).equalsIgnoreCase("standalone")) {
+        if (AccountHelper.isLocalPlay(getContext())) {
             // WAS VIDEOPLAYERACTIVITY.GETINSTANCE IN ALL 6 OF THEM
             VideoplayerActivity.getInstance().goToFrameNumber(movieParts[routepartNr].getFrameNumber().intValue());
         } else {

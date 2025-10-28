@@ -40,6 +40,7 @@ import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.VideoLanLib;
+import com.videostreamtest.workers.AccountServiceWorker;
 import com.videostreamtest.workers.InstallPackageServiceWorker;
 import com.videostreamtest.workers.UpdatePackageServiceWorker;
 import com.videostreamtest.workers.download.DownloadStatusVerificationServiceWorker;
@@ -77,6 +78,7 @@ public class SplashActivity extends AppCompatActivity {
 
         checkForUpdates();
         checkDownloadStatusVerification();
+        refreshAccountInformation();
 
         //New way
         splashViewModel.getCurrentConfig().observe(this, config -> {
@@ -98,11 +100,7 @@ public class SplashActivity extends AppCompatActivity {
                 }
                 if (AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("undefined")) {
                     SharedPreferences.Editor editor = getSharedPreferences("app", MODE_PRIVATE).edit();
-                    if (config.isLocalPlay()) {
-                        editor.putString("account-type", "standalone");
-                    } else {
-                        editor.putString("account-type",  "streaming");
-                    }
+                    editor.putString("account-type", config.getAccountType().toLowerCase());
                     editor.commit();
                 }
                 if (!AccountHelper.getAccountMediaServerUrl(getApplicationContext()).equalsIgnoreCase(ApplicationSettings.PRAXCLOUD_MEDIA_URL)) {
@@ -292,6 +290,21 @@ public class SplashActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    private void refreshAccountInformation() {
+        Constraints constraint = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        OneTimeWorkRequest accountServiceWorker = new OneTimeWorkRequest.Builder(AccountServiceWorker.class)
+                .setConstraints(constraint)
+                .addTag("account-information-checker")
+                .build();
+
+        WorkManager.getInstance(this)
+                .beginWith(accountServiceWorker)
+                .enqueue();
     }
 
     private void requestDrawOverlayPermission() {

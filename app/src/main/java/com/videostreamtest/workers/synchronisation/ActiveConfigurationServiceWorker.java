@@ -81,7 +81,8 @@ public class ActiveConfigurationServiceWorker extends Worker {
                     accountConfiguration.getCommunicationDevice(),
                     accountConfiguration.isUpdatePraxCloud(),
                     accountConfiguration.getPraxCloudMediaServerUrl(),
-                    accountConfiguration.getPraxCloudMediaServerLocalUrl());
+                    accountConfiguration.getPraxCloudMediaServerLocalUrl(),
+                    accountConfiguration.getAccountType());
 
             //Pre-define output
             output = new Data.Builder()

@@ -18,6 +18,12 @@ public class AccountHelper {
         return context.getApplicationContext().getSharedPreferences("app",0).getString("account-type", "undefined");
     }
 
+    public static boolean isLocalPlay(final Context context) {
+        String accountType = getAccountType(context);
+        return "standalone".equalsIgnoreCase(accountType)
+                || "hybrid".equalsIgnoreCase(accountType);
+    }
+
     public static String getAccountMediaServerUrl(final Context context) {
         return context.getApplicationContext().getSharedPreferences("app",0).getString("media-server-url", ApplicationSettings.PRAXCLOUD_MEDIA_URL);
     }

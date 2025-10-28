@@ -60,7 +60,7 @@ public class ProductPickerFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        productPickerViewModel.getAccountProducts(AccountHelper.getAccountToken(getActivity()), !AccountHelper.getAccountType(getActivity()).equalsIgnoreCase("standalone"))
+        productPickerViewModel.getAccountProducts(AccountHelper.getAccountToken(getActivity()), !AccountHelper.isLocalPlay(getActivity()))
                 .observe(getViewLifecycleOwner(), products ->{
 
             List<Product> productList = new ArrayList<>();
@@ -74,6 +74,7 @@ public class ProductPickerFragment extends Fragment {
                     addProd.setProductName(extProd.getProductName());
                     addProd.setBlocked(extProd.getBlocked());
                     addProd.setCommunicationType(extProd.getCommunicationType());
+                    addProd.setProductType(extProd.getProductType());
                     productList.add(addProd);
                 }
             }

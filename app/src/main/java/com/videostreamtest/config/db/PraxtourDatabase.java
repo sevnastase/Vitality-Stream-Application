@@ -62,7 +62,7 @@ import java.util.concurrent.Executors;
         MovieFlag.class,
         UsageTracker.class,
         GeneralDownloadTracker.class
-}, version = 10, exportSchema = true)
+}, version = 13, exportSchema = true)
 @TypeConverters({Converters.class})
 public abstract class PraxtourDatabase extends RoomDatabase {
     private final static String TAG = PraxtourDatabase.class.getSimpleName();
@@ -185,6 +185,59 @@ public abstract class PraxtourDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_10_11 = new Migration(10, 11) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE `configuration_table`" +
+                    "ADD COLUMN `account_type` TEXT DEFAULT ''; ");
+            database.execSQL("ALTER TABLE `product_table`" +
+                    "ADD COLUMN `product_type` TEXT DEFAULT ''");
+        }
+    };
+
+    static final Migration MIGRATION_11_12 = new Migration(11, 12) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE `product_table`" +
+                    "ADD COLUMN `product_raw_id` INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
+    static final Migration MIGRATION_13_12 = new Migration(13, 12) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // 1. Create new table with correct schema
+            database.execSQL("CREATE TABLE product_table_new (" +
+                    "uid INTEGER NOT NULL, " +
+                    "account_token TEXT NOT NULL, " +
+                    "product_name TEXT NOT NULL, " +
+                    "product_logo_path TEXT NOT NULL, " +
+                    "default_settings_id INTEGER DEFAULT 0, " +
+                    "product_blocked INTEGER DEFAULT 0, " +
+                    "product_support_streaming INTEGER DEFAULT 0, " +
+                    "product_communication_type TEXT DEFAULT 'RPM', " +
+                    "product_type TEXT, " +
+                    "product_raw_id INTEGER NOT NULL DEFAULT 0, " +  // fixed here
+                    "PRIMARY KEY(uid))");
+
+            // 2. Copy data over, set default 0 where null
+            database.execSQL("INSERT INTO product_table_new (" +
+                    "uid, account_token, product_name, product_logo_path, " +
+                    "default_settings_id, product_blocked, product_support_streaming, " +
+                    "product_communication_type, product_type, product_raw_id) " +
+                    "SELECT uid, account_token, product_name, product_logo_path, " +
+                    "default_settings_id, product_blocked, product_support_streaming, " +
+                    "product_communication_type, product_type, " +
+                    "IFNULL(product_raw_id, 0) FROM product_table");
+
+            // 3. Drop old table
+            database.execSQL("DROP TABLE product_table");
+
+            // 4. Rename new table
+            database.execSQL("ALTER TABLE product_table_new RENAME TO product_table");
+        }
+    };
+
 
     public static PraxtourDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
@@ -203,7 +256,10 @@ public abstract class PraxtourDatabase extends RoomDatabase {
                                     MIGRATION_6_7,
                                     MIGRATION_7_8,
                                     MIGRATION_8_9,
-                                    MIGRATION_9_10)
+                                    MIGRATION_9_10,
+                                    MIGRATION_10_11,
+                                    MIGRATION_11_12,
+                                    MIGRATION_13_12)
                             
                             .build();
                 }

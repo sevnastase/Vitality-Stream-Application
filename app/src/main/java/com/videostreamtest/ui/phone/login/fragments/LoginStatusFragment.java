@@ -68,62 +68,81 @@ public class LoginStatusFragment extends Fragment {
                             .navigate(R.id.action_loginStatusFragment_to_usernameFragment);
                 });
             } else {
-//                loginStatusText.setText("Before first time use you need to accept the following permissions:\n\n");
-                if (arguments.getString("account-type", "").equals("standalone")) {
-                    loginStatusText.setText(R.string.login_status_summary_standalone);
-//                    loginStatusText.setText(loginStatusText.getText() + "> Location permission: for Bluetooth sensors.\n\n");
-//                    loginStatusText.setText(loginStatusText.getText() + "Please proceed to accept the permissions.");
-                    nextButton.setOnClickListener((onClickedView) -> {
-                        if (getStoragePermissionsForRequest().size() > 0) {
-                            NavHostFragment.findNavController(LoginStatusFragment.this)
-                                    .navigate(R.id.action_loginStatusFragment_to_storagePermissionFragment, arguments);
-                        } else if (getLocationPermissionsForRequest().size() > 0) {
-                            NavHostFragment.findNavController(LoginStatusFragment.this)
-                                    .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
-                        } else {
-                            Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
-                            startActivity(splashScreenActivity);
-                            getActivity().finish();
-                        }
-                        loginViewModel.addInstallationStep();
-                    });
-                    loginViewModel.setInstallationSteps(7);
+                switch (arguments.getString("account-type", "").toLowerCase()) {
+                    case "standalone":
+                        loginStatusText.setText(R.string.login_status_summary_standalone);
+                        nextButton.setOnClickListener((onClickedView) -> {
+                            if (getStoragePermissionsForRequest().size() > 0) {
+                                NavHostFragment.findNavController(LoginStatusFragment.this)
+                                        .navigate(R.id.action_loginStatusFragment_to_storagePermissionFragment, arguments);
+                            } else if (getLocationPermissionsForRequest().size() > 0) {
+                                NavHostFragment.findNavController(LoginStatusFragment.this)
+                                        .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
+                            } else {
+                                Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
+                                startActivity(splashScreenActivity);
+                                getActivity().finish();
+                            }
+                            loginViewModel.addInstallationStep();
+                        });
+                        loginViewModel.setInstallationSteps(7);
+                        break;
+                    case "streaming":
+                        loginStatusText.setText(getString(R.string.login_status_summary_streaming));
 
-                }
-                if (arguments.getString("account-type", "").equals("streaming")) {
-                    loginStatusText.setText(getString(R.string.login_status_summary_streaming));
+                        nextButton.setOnClickListener((onClickedView) -> {
+                            if (getLocationPermissionsForRequest().size() > 0) {
+                                NavHostFragment.findNavController(LoginStatusFragment.this)
+                                        .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
+                            } else {
+                                NavHostFragment.findNavController(LoginStatusFragment.this)
+                                        .navigate(R.id.action_loginStatusFragment_to_downloadSoundFragment, arguments);
+                            }
+                            loginViewModel.addInstallationStep();
+                        });
 
-                    nextButton.setOnClickListener((onClickedView) -> {
-                        if (getLocationPermissionsForRequest().size() > 0) {
-                            NavHostFragment.findNavController(LoginStatusFragment.this)
-                                    .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
-                        } else {
-//                            Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
-//                            startActivity(splashScreenActivity);
-//                            getActivity().finish();
-                            NavHostFragment.findNavController(LoginStatusFragment.this)
-                                    .navigate(R.id.action_loginStatusFragment_to_downloadSoundFragment, arguments);
-                        }
-                        loginViewModel.addInstallationStep();
-                    });
-
-                    loginViewModel.setInstallationSteps(3);
+                        loginViewModel.setInstallationSteps(3);
+                        break;
+                    case "hybrid":
+                        loginStatusText.setText(R.string.login_status_summary_standalone);
+                        nextButton.setOnClickListener((onClickedView) -> {
+                            if (getStoragePermissionsForRequest().size() > 0) {
+                                NavHostFragment.findNavController(LoginStatusFragment.this)
+                                        .navigate(R.id.action_loginStatusFragment_to_storagePermissionFragment, arguments);
+                            } else if (getLocationPermissionsForRequest().size() > 0) {
+                                NavHostFragment.findNavController(LoginStatusFragment.this)
+                                        .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
+                            } else {
+                                Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
+                                startActivity(splashScreenActivity);
+                                getActivity().finish();
+                            }
+                            loginViewModel.addInstallationStep();
+                        });
+                        loginViewModel.setInstallationSteps(7);
+                        break;
+                    default:
+                        failedLogin("Account type error", "Contact your distributor.");
                 }
             }
         } else {
-            loginViewModel.setPassword("");
-            loginStatusTitle.setTextColor(Color.RED);
-            loginStatusTitle.setText(R.string.login_failed);
-
-            loginStatusText.setText(R.string.login_message_failed_description);
-            logout();
-            nextButton.setText(R.string.retry_permission_check_button);
-            nextButton.setOnClickListener((onClickedView) -> {
-                NavHostFragment.findNavController(LoginStatusFragment.this)
-                        .navigate(R.id.action_loginStatusFragment_to_usernameFragment);
-            });
+            failedLogin(getString(R.string.login_failed), getString(R.string.login_message_failed_description));
         }
         nextButton.requestFocus();
+    }
+
+    private void failedLogin(String title, String text) {
+        loginViewModel.setPassword("");
+        loginStatusTitle.setTextColor(Color.RED);
+        loginStatusTitle.setText(title);
+
+        loginStatusText.setText(text);
+        logout();
+        nextButton.setText(R.string.retry_permission_check_button);
+        nextButton.setOnClickListener((onClickedView) -> {
+            NavHostFragment.findNavController(LoginStatusFragment.this)
+                    .navigate(R.id.action_loginStatusFragment_to_usernameFragment);
+        });
     }
 
     private List<String> getStoragePermissionsForRequest() {

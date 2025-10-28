@@ -33,6 +33,7 @@ import com.videostreamtest.workers.LoginServiceWorker;
 import org.jetbrains.annotations.NotNull;
 
 public class PasswordFragment extends Fragment {
+    private static final String TAG = PasswordFragment.class.getSimpleName();
     private LoginViewModel loginViewModel;
 
     private TextView passwordTitle;
@@ -170,16 +171,14 @@ public class PasswordFragment extends Fragment {
                             loginViewModel.insert(newConfig);
                             loginViewModel.insertUsageTracker(accounttoken);
 
+                            String accountType = config.getAccountType().toLowerCase();
+
                             arguments.putBoolean("authorized", true);
                             arguments.putString("username", username);
                             arguments.putInt("active-products-count", activeProductsCount);
-                            if (config.isLocalPlay()) {
-                                arguments.putString("account-type", "standalone");
-                                editor.putString("account-type", "standalone");
-                            } else {
-                                arguments.putString("account-type", "streaming");
-                                editor.putString("account-type", "streaming");
-                            }
+                            arguments.putString("account-type", accountType);
+
+                            editor.putString("account-type", accountType);
                             editor.putBoolean("bootable", config.isBootOnStart());
                             editor.commit();
                         }

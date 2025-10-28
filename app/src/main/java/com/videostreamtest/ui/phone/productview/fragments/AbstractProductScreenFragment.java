@@ -306,7 +306,7 @@ public class AbstractProductScreenFragment extends Fragment {
 
     private void loadProductMovies() {
         if (!apikey.equals("")) {
-            if (AccountHelper.getAccountType(getActivity().getApplicationContext()).equalsIgnoreCase("standalone")) {
+            if (AccountHelper.isLocalPlay(getActivity().getApplicationContext())) {
                 productViewModel.getStandaloneProductMovies(apikey)
                         .observe(getViewLifecycleOwner(), routefilms -> {
                             if (routefilms != null) {

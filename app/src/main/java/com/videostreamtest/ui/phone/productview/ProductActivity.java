@@ -249,7 +249,7 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
     }
 
     private void downloadFlags() {
-        if (AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone")) {
+        if (AccountHelper.isLocalPlay(getApplicationContext())) {
             Constraints constraint = new Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build();
@@ -267,7 +267,7 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
 
     private void downloadMovieSupportImages() {
         productViewModel.getRoutefilms(AccountHelper.getAccountToken(getApplicationContext())).observe(this, routefilms -> {
-            if (routefilms.size() > 0 && AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("standalone")) {
+            if (routefilms.size() > 0 && AccountHelper.isLocalPlay(getApplicationContext())) {
                 for (Routefilm routefilm : routefilms) {
                     //SPECIFY INPUT
                     Data.Builder mediaDownloader = new Data.Builder();
