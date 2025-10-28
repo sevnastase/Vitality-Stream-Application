@@ -1,11 +1,10 @@
 package com.videostreamtest.service.ble;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ForegroundServiceStartNotAllowedException;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -23,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.graphics.Color;
 import android.os.Binder;
 import android.os.Build;
@@ -31,13 +31,11 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.os.ParcelUuid;
 import android.os.Process;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 import com.videostreamtest.R;
@@ -47,6 +45,7 @@ import com.videostreamtest.constants.CadenceSensorConstants;
 import com.videostreamtest.ui.phone.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.helpers.BleHelper;
 import com.videostreamtest.ui.phone.helpers.LogHelper;
+import com.videostreamtest.ui.phone.helpers.PermissionHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import java.lang.reflect.Method;
@@ -55,6 +54,10 @@ import java.util.List;
 
 public class BleService extends Service {
     private static final String TAG = BleService.class.getSimpleName();
+
+    private static final int BLE_SERVICE_NOTIFICATION_ID_INT = 64;
+    private static final String BLE_SERVICE_NOTIFICATION_ID
+            = "com.videostreamtest.BLE_SERVICE_NOTIFICATION_ID";
 
     private Binder binder = new LocalBinder();
 
@@ -149,6 +152,7 @@ public class BleService extends Service {
                 //Disconnect
                 if (bluetoothDeviceAddress.equals("NONE") || bluetoothDeviceAddress.equals("")) {
                     bluetoothGatt.close();
+                    stopForeground(true);
                     stopSelf(msg.arg1);
                 } else {
                     startScan();
@@ -410,6 +414,8 @@ public class BleService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        promoteToForegroundService();
+
         initialised = init();
 
         Log.d(TAG, "BLE Service onStartCommand");
@@ -418,6 +424,58 @@ public class BleService extends Service {
         serviceHandler.sendMessage(msg);
 
         return Service.START_STICKY;
+    }
+
+    private boolean promoteToForegroundService() {
+        if (!PermissionHelper.canBleBeUsed(this)) return false;
+
+        createNotificationChannel();
+
+        try {
+            Notification notification =
+                    new NotificationCompat.Builder(this, BLE_SERVICE_NOTIFICATION_ID)
+                            .setContentTitle("BLE Service Running")
+                            .setContentText("Scanning for devices…")
+                            .setSmallIcon(R.drawable.bluetooth_small)
+                            .setOngoing(true)
+                            .build();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                int type = ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE | ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
+
+                startForeground(BLE_SERVICE_NOTIFICATION_ID_INT, notification, type);
+            } else {
+                startForeground(BLE_SERVICE_NOTIFICATION_ID_INT, notification);
+            }
+
+            return true;
+        } catch (Exception e) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                    e instanceof ForegroundServiceStartNotAllowedException
+            ) {
+                // App not in a valid state to start foreground service
+                // (e.g started from bg)
+                Log.d(TAG, "App was in background while trying to promote BLE to foreground");
+            }
+            Log.d(TAG, "Unknown error while promoting to foreground: " + e);
+
+            return false;
+        }
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    BLE_SERVICE_NOTIFICATION_ID,
+                    "BLE Service Channel",
+                    NotificationManager.IMPORTANCE_LOW // the importance is about alerting the user
+            );
+            channel.setDescription("Notifications for BLE background service");
+
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
+        }
     }
 
     @Nullable

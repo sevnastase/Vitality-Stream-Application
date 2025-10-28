@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -1153,7 +1154,11 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                 case BLE:
                     //Start BLE to connect with sensor device
                     final Intent bleService = new Intent(getApplicationContext(), BleService.class);
-                    startService(bleService);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(bleService);
+                    } else {
+                        startService(bleService);
+                    }
                 default:
                     //NONE
             }

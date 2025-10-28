@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
@@ -183,7 +184,11 @@ public class BleDeviceInformationViewHolder extends RecyclerView.ViewHolder {
 
     private void showConnectedMessage(final BleDeviceInfo bleDeviceInfo) {
         Intent bleService = new Intent(itemView.getContext().getApplicationContext(), BleService.class);
-        itemView.getContext().startService(bleService);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            itemView.getContext().startForegroundService(bleService);
+        } else {
+            itemView.getContext().startService(bleService);
+        }
 
         Toast.makeText(itemView.getContext(), "Succesfully connected to "+bleDeviceInfo.getBluetoothDevice().getName()+"!", Toast.LENGTH_LONG).show();
     }
