@@ -3,6 +3,7 @@ package com.videostreamtest.config.db;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.room.AutoMigration;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
@@ -37,7 +38,7 @@ import com.videostreamtest.config.entity.Profile;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.entity.Routepart;
 import com.videostreamtest.config.entity.ServerStatus;
-import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
+import com.videostreamtest.config.entity.StandAloneDownloadStatus;
 import com.videostreamtest.config.entity.tracker.GeneralDownloadTracker;
 import com.videostreamtest.config.entity.tracker.UsageTracker;
 import com.videostreamtest.config.entity.typeconverter.Converters;
@@ -50,7 +51,7 @@ import java.util.concurrent.Executors;
         Product.class,
         Profile.class,
         Routefilm.class,
-        LocalMoviesDownloadTable.class,
+        StandAloneDownloadStatus.class,
         Routepart.class,
         BackgroundSound.class,
         EffectSound.class,
@@ -202,8 +203,7 @@ public abstract class PraxtourDatabase extends RoomDatabase {
         }
     };
 
-    // Forces Room to rebuild product_table
-    static final Migration MIGRATION_12_13 = new Migration(12, 13) {
+    static final Migration MIGRATION_13_12 = new Migration(13, 12) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             // 1. Create new table with correct schema
@@ -259,7 +259,7 @@ public abstract class PraxtourDatabase extends RoomDatabase {
                                     MIGRATION_9_10,
                                     MIGRATION_10_11,
                                     MIGRATION_11_12,
-                                    MIGRATION_12_13)
+                                    MIGRATION_13_12)
                             
                             .build();
                 }

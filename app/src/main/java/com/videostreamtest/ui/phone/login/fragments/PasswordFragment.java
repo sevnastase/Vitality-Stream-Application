@@ -33,6 +33,7 @@ import com.videostreamtest.workers.LoginServiceWorker;
 import org.jetbrains.annotations.NotNull;
 
 public class PasswordFragment extends Fragment {
+    private static final String TAG = PasswordFragment.class.getSimpleName();
     private LoginViewModel loginViewModel;
 
     private TextView passwordTitle;

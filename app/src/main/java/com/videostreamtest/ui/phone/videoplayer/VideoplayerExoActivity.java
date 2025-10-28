@@ -129,7 +129,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     private int pauseTimer = 0;
     private boolean routeFinished = false;
     private final Handler autoRunnerHandler = new Handler(Looper.getMainLooper());
-    private final Handler praxHandler = new Handler();
+    private final Handler praxHandler = new Handler(Looper.getMainLooper());
     private final Handler timelineHandler = new Handler(Looper.getMainLooper());
     private final Executor backgroundExecutor = Executors.newSingleThreadExecutor();
 
@@ -232,11 +232,11 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 //
 //                        }
 //                        if (!routeFinished) {
-//                            praxHandler.postDelayed(this::run, 1000);
+//                            praxHandler.postDelayed(this, 1000);
 //                        }
 //                    }
 //                };
-//                praxHandler.postDelayed(runnableMovieDetails, 0);
+//                praxHandler.post(runnableMovieDetails);
 
             }
             if (selectedProduct.getProductName().contains("PraxSpin")) {
@@ -320,7 +320,6 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                         }
                     }
                 };
-
                 praxHandler.post(runnableMovieDetails);
             }
         } else {
@@ -755,7 +754,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         praxHandler.removeCallbacksAndMessages(null);
         timelineHandler.removeCallbacksAndMessages(null);
         autoRunnerHandler.removeCallbacksAndMessages(null);
-        thisInstance = null;
+        thisInstance = null; // invalidate instance
         stopSensorService();
         try {
             this.unregisterReceiver(cadenceSensorBroadcastReceiver);
@@ -926,7 +925,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                 }
             }
         };
-        praxHandler.postDelayed(runnable, 0);
+        praxHandler.post(runnable);
     }
 
     private void setTimeLineEventVideoPlayer() {

@@ -126,6 +126,7 @@
     <string name="login_no_products">Es gibt keine aktiven Abonnements.</string>
     <string name="login_message_failed_description">Benutzername und/oder Passwort sind falsch.\nVersuchen Sie es nochmal.</string>
     <string name="login_status_summary_standalone">Bei der ersten Verwendung müssen einige Berechtigungen akzeptiert werden:\n\n> Speichererlaubnis: um die Dateien auf der Festplatte speichern zu können.\n> Standorterlaubnis: um die Bluetooth-Sensoren zu verwenden.\n\nBefolgen Sie die Schritte, um fortzufahren.</string>
+    <string name="login_status_summary_hybrid">Bei der ersten Verwendung müssen einige Berechtigungen akzeptiert werden:\n\n> Speichererlaubnis: um die Dateien auf der Festplatte speichern zu können.\n> Standorterlaubnis: um die Bluetooth-Sensoren zu verwenden.\n\nBefolgen Sie die Schritte, um fortzufahren.</string>
     <string name="login_status_summary_streaming">Bei der ersten Verwendung müssen einige Berechtigungen akzeptiert werden:\n\n> Standorterlaubnis: um die Bluetooth-Sensoren zu verwenden.\n\nBefolgen Sie die Schritte, um fortzufahren.</string>
     <string name="download_speed_ok">Internetgeschwindigkeit ist OK.</string>
     <string name="download_speed_connection_issues">Es gibt Internetprobleme, wenden Sie sich an einen IT-Experten.</string>

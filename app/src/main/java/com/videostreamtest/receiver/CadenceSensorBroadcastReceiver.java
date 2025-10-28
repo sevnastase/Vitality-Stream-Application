@@ -28,8 +28,7 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
 
         Log.d(TAG, "Cadence update: " + rpmReceived);
 
-        // Limit rpm values
-//        if (rpmReceived > 0 && rpmReceived < 50) rpmReceived = 50;
+        // Limit RPM value: too fast cycling can make the videoplayer lag
         if (rpmReceived > 100) rpmReceived = 100;
 
         VideoplayerExoActivity exoInstance = VideoplayerExoActivity.getInstance();

@@ -38,6 +38,8 @@ public class Configuration {
     private String currentLoadedProfile;
     @ColumnInfo(name = "product_count", defaultValue = "0")
     private int productCount;
+    @ColumnInfo(name = "account_type")
+    private String accountType;
 
     public int getUid() {
         return uid;

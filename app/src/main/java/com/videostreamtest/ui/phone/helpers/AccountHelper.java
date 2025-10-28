@@ -20,8 +20,8 @@ public class AccountHelper {
 
     public static boolean isLocalPlay(final Context context) {
         String accountType = getAccountType(context);
-        return accountType.equalsIgnoreCase("standalone")
-                || accountType.equalsIgnoreCase("hybrid");
+        return "standalone".equalsIgnoreCase(accountType)
+                || "hybrid".equalsIgnoreCase(accountType);
     }
 
     public static String getAccountMediaServerUrl(final Context context) {

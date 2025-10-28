@@ -5,8 +5,10 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.hardware.input.InputManager;
 import android.net.Uri;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -57,7 +59,19 @@ public class ViewHelper {
     }
 
     public static boolean isTouchScreen(final Context context) {
-        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN);
+        InputManager inputManager = (InputManager) context.getSystemService(Context.INPUT_SERVICE);
+        if (inputManager != null) {
+            int[] deviceIds = inputManager.getInputDeviceIds();
+            for (int id : deviceIds) {
+                InputDevice device = inputManager.getInputDevice(id);
+                if (device != null && !device.isVirtual()) {
+                    if ((device.getSources() & InputDevice.SOURCE_TOUCHSCREEN) == InputDevice.SOURCE_TOUCHSCREEN) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static List<Integer> getExternalImageSize(final String url) {

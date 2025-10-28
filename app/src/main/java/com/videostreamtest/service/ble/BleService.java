@@ -434,11 +434,11 @@ public class BleService extends Service {
         try {
             Notification notification =
                     new NotificationCompat.Builder(this, BLE_SERVICE_NOTIFICATION_ID)
-                    .setContentTitle("BLE Service Running")
-                    .setContentText("Scanning for devices…")
-                    .setSmallIcon(R.drawable.bluetooth_small)
-                    .setOngoing(true)
-                    .build();
+                            .setContentTitle("BLE Service Running")
+                            .setContentText("Scanning for devices…")
+                            .setSmallIcon(R.drawable.bluetooth_small)
+                            .setOngoing(true)
+                            .build();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 int type = ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE | ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
 
@@ -642,7 +642,6 @@ public class BleService extends Service {
     private int getLastMeasuredCadenceValue() {
         int cadenceValue = 0;
 
-        //Set starting point to get last value above 0
         //Set starting point to get last value above 0
         int measurementIndex = cadenceMeasurementIndex;
         if (measurementIndex == 0) {

@@ -143,6 +143,7 @@
     <string name="login_no_products">There are no active product subscriptions present.\nPlease register for any of our products.</string>
     <string name="login_message_failed_description">Username and/or password are wrong.\nPlease try again.</string>
     <string name="login_status_summary_standalone">Before first time use you need to accept the following permissions:\n\n> Storage permission: for saving movies on the harddisk.\n> Location permission: for Bluetooth sensors.\n\nPlease proceed to accept the permissions.</string>
+    <string name="login_status_summary_hybrid">Before first time use you need to accept the following permissions:\n\n> Storage permission: for saving movies on the harddisk.\n> Location permission: for Bluetooth sensors.\n\nPlease proceed to accept the permissions.</string>
     <string name="login_status_summary_streaming">Before first time use you need to accept the following permissions:  \n\n> Location permission: for Bluetooth sensors.  \n\nPlease proceed to accept the permissions.</string>
     <string name="login_status_summary_hybrid">Before first time use you need to accept the following permissions:\n\n> Storage permission: for saving movies on the harddisk.\n> Location permission: for Bluetooth sensors.\n\nPlease proceed to accept the permissions.</string>
     <string name="download_speed_ok">Internet speed OK.</string>
