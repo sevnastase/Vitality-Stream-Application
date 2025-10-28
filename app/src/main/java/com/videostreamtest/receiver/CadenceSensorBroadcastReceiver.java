@@ -13,66 +13,34 @@ import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 
 public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
     private static final String TAG = CadenceSensorBroadcastReceiver.class.getSimpleName();
+    private static long lastUpdateTime = 0L; // static so it persists across onReceive calls
+    private static final long MIN_UPDATE_INTERVAL_MS = 1000;
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        final PendingResult pendingResult = goAsync();
-        final Task asyncTask = new Task(pendingResult, intent);
-        asyncTask.execute();
-    }
+        long now = System.currentTimeMillis();
+        if (now - lastUpdateTime < MIN_UPDATE_INTERVAL_MS) {
+            return;
+        }
+        lastUpdateTime = now;
 
-    private static class Task extends AsyncTask<String, Integer, String> {
+        int rpmReceived = intent.getIntExtra(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, 0);
 
-        private final PendingResult pendingResult;
-        private final Intent intent;
+        Log.d(TAG, "Cadence update: " + rpmReceived);
 
-        private Task(PendingResult pendingResult, Intent intent) {
-            this.pendingResult = pendingResult;
-            this.intent = intent;
+        // Limit RPM value: too fast cycling can make the videoplayer lag
+        if (rpmReceived > 100) rpmReceived = 100;
+
+        VideoplayerExoActivity exoInstance = VideoplayerExoActivity.getInstance();
+        if (exoInstance != null) {
+            exoInstance.updateVideoPlayerScreen(rpmReceived);
+            exoInstance.updateVideoPlayerParams(rpmReceived);
         }
 
-        @Override
-        protected String doInBackground(String... strings) {
-            int rpmReceived = intent.getIntExtra(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, 0);
-
-            Log.d(TAG, "Action: " + intent.getAction() + "\n");
-            Log.d(TAG, "Intent cadence received: "+rpmReceived+"\n");
-
-            if (VideoplayerActivity.getInstance() != null) {
-                VideoplayerActivity.getInstance().updateVideoPlayerScreen(rpmReceived);
-            }
-            if (VideoplayerExoActivity.getInstance() != null) {
-                VideoplayerExoActivity.getInstance().updateVideoPlayerScreen(rpmReceived);
-            }
-
-            /* ONLY FOR VIDEO SPEED!
-             * When the rpm is above 0 ( there is activity) ) and
-             * when rpm is below minimum speed
-             * set rpm on static minimum speed
-             */
-            if (rpmReceived > 0 && rpmReceived < 50) {
-                rpmReceived = 50;
-            }
-            if (rpmReceived > 100) {
-                rpmReceived = 100;
-            }
-            if (VideoplayerActivity.getInstance() != null) {
-                VideoplayerActivity.getInstance().updateVideoPlayerParams(rpmReceived);
-            }
-            if (VideoplayerExoActivity.getInstance() != null) {
-                VideoplayerExoActivity.getInstance().updateVideoPlayerParams(rpmReceived);
-            }
-
-
-            return intent.getAction();
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            // Must call finish() so the BroadcastReceiver can be recycled.
-            pendingResult.finish();
+        VideoplayerActivity legacyInstance = VideoplayerActivity.getInstance();
+        if (legacyInstance != null) {
+            legacyInstance.updateVideoPlayerScreen(rpmReceived);
+            legacyInstance.updateVideoPlayerParams(rpmReceived);
         }
     }
-
 }
