@@ -12,9 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Looper;
-import android.os.Process;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
@@ -27,6 +25,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -79,6 +78,8 @@ import org.videolan.libvlc.util.VLCVideoLayout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Full-screen videoplayer activity
@@ -133,6 +134,9 @@ public class VideoplayerActivity extends AppCompatActivity {
     private int pauseTimer = 0;
     private boolean routeFinished = false;
     private final Handler autoRunnerHandler = new Handler(Looper.getMainLooper());
+    private final Handler praxHandler = new Handler(Looper.getMainLooper());
+    private final Handler timelineHandler = new Handler(Looper.getMainLooper());
+    private final Executor backgroundExecutor = Executors.newSingleThreadExecutor();
 
     //BLE
     private boolean backToOverviewWaitForSensor = false;
@@ -221,7 +225,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                         .commit();
 
 //                //Pass movie details with a second based timer TODO:move to setTimeLineEvent method in this class
-//                Handler praxFilmHandler = new Handler();
+//                Handler praxHandler = new Handler();
 //                Runnable runnableMovieDetails = new Runnable() {
 //                    @Override
 //                    public void run() {
@@ -235,11 +239,11 @@ public class VideoplayerActivity extends AppCompatActivity {
 //
 //                        }
 //                        if (!routeFinished) {
-//                            praxFilmHandler.postDelayed(this::run, 1000);
+//                            praxHandler.postDelayed(this::run, 1000);
 //                        }
 //                    }
 //                };
-//                praxFilmHandler.postDelayed(runnableMovieDetails, 0);
+//                praxHandler.post(runnableMovieDetails);
 
             }
             if (selectedProduct.getProductName().contains("PraxView")) {
@@ -254,7 +258,6 @@ public class VideoplayerActivity extends AppCompatActivity {
 
                 videoPlayerViewModel.setMovieTotalDurationSeconds(selectedMovie.getMovieLength());
                 //Pass movie details with a second based timer TODO:move to setTimeLineEvent method in this class
-                Handler praxViewHandler = new Handler();
                 Runnable runnableMovieDetails = new Runnable() {
                     @Override
                     public void run() {
@@ -268,11 +271,11 @@ public class VideoplayerActivity extends AppCompatActivity {
 
                         }
                         if (!routeFinished) {
-                            praxViewHandler.postDelayed(this::run, 1000);
+                            praxHandler.postDelayed(this, 1000);
                         }
                     }
                 };
-                praxViewHandler.postDelayed(runnableMovieDetails, 0);
+                praxHandler.post(runnableMovieDetails);
             }
             if (selectedProduct.getProductName().contains("PraxSpin")) {
                 /*
@@ -296,7 +299,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                         .commit();
 
                 //Pass movie details with a second based timer TODO:move to setTimeLineEvent method in this class
-                Handler praxSpinHandler = new Handler();
+
                 Runnable runnableMovieDetails = new Runnable() {
                     @Override
                     public void run() {
@@ -310,11 +313,11 @@ public class VideoplayerActivity extends AppCompatActivity {
 
                         }
                         if (!routeFinished) {
-                            praxSpinHandler.postDelayed(this::run, 1000);
+                            praxHandler.postDelayed(this, 1000);
                         }
                     }
                 };
-                praxSpinHandler.postDelayed(runnableMovieDetails, 0);
+                praxHandler.post(runnableMovieDetails);
 
                 videoPlayerViewModel.getKmhData().observe(this, kmhData ->{
                     if (kmhData != null && mediaPlayer != null) {
@@ -768,7 +771,10 @@ public class VideoplayerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        praxHandler.removeCallbacksAndMessages(null);
+        timelineHandler.removeCallbacksAndMessages(null);
         autoRunnerHandler.removeCallbacksAndMessages(null);
+        thisInstance = null; // invalidate instance
         stopSensorService();
         try {
             this.unregisterReceiver(cadenceSensorBroadcastReceiver);
@@ -867,14 +873,15 @@ public class VideoplayerActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("app", MODE_PRIVATE);
         String apikey = sharedPreferences.getString("apikey", "");
 
-        if (getCurrentBackgroundSoundByCurrentPostion() != null) {
-            switchToNewBackgroundMedia(getCurrentBackgroundSoundByCurrentPostion().getSoundUrl());
+        long currentSecond = mediaPlayer.getTime() / 1000L;
+        if (getCurrentBackgroundSoundByCurrentPosition(currentSecond) != null) {
+            runOnUiThread(() -> switchToNewBackgroundMedia(getCurrentBackgroundSoundByCurrentPosition(currentSecond).getSoundUrl()));
         } else {
             if (backgroundSoundTriggers != null && backgroundSoundTriggers.size()>0) {
                 Log.d(TAG, "Empty currentBackGround at Start!");
                 final String soundUrl = getFirstBackgroundSound().getSoundUrl();
                 Log.d(TAG, "Starting first background sound at Start! " + soundUrl);
-                switchToNewBackgroundMedia(soundUrl);
+                runOnUiThread(() -> switchToNewBackgroundMedia(soundUrl));
             }
         }
 
@@ -902,7 +909,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private void waitUntilVideoIsReady(final int minSecondsLoadingView) {
         this.pauseTimer = 0;
-        Handler handler = new Handler();
+
         Runnable runnable = new Runnable() {
             int currentSecond = 0;
             @Override
@@ -933,71 +940,70 @@ public class VideoplayerActivity extends AppCompatActivity {
                             Toast.makeText(VideoplayerActivity.this, getString(R.string.videoplayer_sensor_wait_error_message), Toast.LENGTH_LONG).show();
                             VideoplayerActivity.this.finish();
                         } else {
-                            handler.postDelayed(this::run, 1000);
+                            praxHandler.postDelayed(this, 1000);
                         }
                     }
                 }
             }
         };
-        handler.postDelayed(runnable, 0);
+        praxHandler.post(runnable);
     }
 
     private void setTimeLineEventVideoPlayer() {
         Log.d(TAG, "TimeLineEventHandler started!");
 
-        HandlerThread thread = new HandlerThread("TimeLineEventHandlerStart",
-                Process.THREAD_PRIORITY_URGENT_DISPLAY);
-        thread.start();
-
-        Handler timelineHandler = new Handler(Looper.getMainLooper());
-//        Handler timelineHandler = new Handler(thread.getLooper());
         Runnable runnableMovieDetails = new Runnable() {
             @Override
             public void run() {
                 if (mediaPlayer != null && !routeFinished) {
-                    if (mediaPlayer.getTime()/1000L < 2) {
+                    final long currentSecond = mediaPlayer.getTime() / 1000L;
+
+                    if (currentSecond < 2) {
                         mediaPlayer.setVolume(ApplicationSettings.DEFAULT_SOUND_VOLUME);
                     }
 
                     //check for current backgroundsound
-                    BackgroundSound backgroundSound = getCurrentBackgroundSoundByCurrentPostion();
-                    if ( backgroundSound != null) {
-                        Log.d(TAG, "EventTimeLineHandler: "+backgroundSound.getSoundId().intValue() + " on second: "+mediaPlayer.getTime()/1000L);
-                        Log.d(TAG, "BgSound with id: "+backgroundSound.getSoundId().intValue()+" state if playing: "+backgroundSoundPlayer.isPlaying());
-                        Log.d(TAG, "BgSound volume: "+backgroundSoundPlayer.getVolume());
-                        Log.d(TAG, "BgSound dev volume: "+backgroundSoundPlayer.getDeviceVolume());
-                        if (!backgroundSoundPlayer.isPlaying() && !routePaused && !routeFinished) {
-                            backgroundSoundPlayer.play();
+                    backgroundExecutor.execute(() -> {
+                        BackgroundSound backgroundSound = getCurrentBackgroundSoundByCurrentPosition(currentSecond);
+                        if (backgroundSound != null) {
+                            runOnUiThread(() -> {
+                                Log.d(TAG, "EventTimeLineHandler: " + backgroundSound.getSoundId().intValue() + " on second: " + currentSecond);
+                                Log.d(TAG, "BgSound with id: " + backgroundSound.getSoundId().intValue() + " state if playing: " + backgroundSoundPlayer.isPlaying());
+                                Log.d(TAG, "BgSound volume: " + backgroundSoundPlayer.getVolume());
+                                Log.d(TAG, "BgSound dev volume: " + backgroundSoundPlayer.getDeviceVolume());
+                                if (!backgroundSoundPlayer.isPlaying() && !routePaused && !routeFinished) {
+                                    backgroundSoundPlayer.play();
+                                }
+                            });
                         }
-//                        switchToNewBackgroundMedia(getCurrentBackgroundSoundByCurrentPostion().getSoundUrl());
-                    }
 
-                    //set to new
-                    checkBackgroundSoundMedia();
+                        //set to new
+                        checkBackgroundSoundMedia(currentSecond);
+
+                        //PAUSE TIMER
+                        if (routePaused) {
+                            if (pauseTimer > MAX_PAUSE_TIME_SEC || backToOverviewWaitForSensor) {
+                                runOnUiThread(() -> stopVideoplayer());
+                            } else {
+                                pauseTimer++;
+                            }
+                        }
+
+                        if (routeFinished) {
+                            Log.d(TAG, "backToOverviewSensorWait = "+backToOverviewWaitForSensor);
+                            if (backToOverviewWaitForSensor) {
+                                runOnUiThread(() -> stopVideoplayer());
+                            }
+                        }
+                    });
                 }
 
-                //PAUSE TIMER
-                if (routePaused) {
-                    if (pauseTimer > MAX_PAUSE_TIME_SEC || backToOverviewWaitForSensor) {
-                        stopVideoplayer();
-                    } else {
-                        pauseTimer++;
-                    }
-                }
-
-                if (routeFinished) {
-                    Log.d(TAG, "backToOverviewSensorWait = "+backToOverviewWaitForSensor);
-                    if (backToOverviewWaitForSensor) {
-                        stopVideoplayer();
-                    }
-                }
-
-                timelineHandler.postDelayed(this::run, 1000);
+                timelineHandler.postDelayed(this, 1000);
             }
         };
 
         if (!routeFinished) {
-            timelineHandler.postDelayed(runnableMovieDetails, 0);
+            timelineHandler.post(runnableMovieDetails);
         }
     }
 
@@ -1008,13 +1014,12 @@ public class VideoplayerActivity extends AppCompatActivity {
         VideoplayerActivity.this.finish();
     }
 
-    private void checkBackgroundSoundMedia() {
+    private void checkBackgroundSoundMedia(long currentSecond) {
         if (backgroundSoundTriggers.size()>0) {
-            long currentSecond = (mediaPlayer.getTime() / 1000L);
             for (final BackgroundSound backgroundSound : backgroundSoundTriggers) {
                 if ((backgroundSound.getFramenumber()/selectedMovie.getRecordedFps()) == currentSecond) {
                     Log.d(TAG, "Framenumber to switch to soundId: "+backgroundSound.getFramenumber()+", "+backgroundSound.getSoundNumber()+" > "+backgroundSound.getSoundUrl());
-                    switchToNewBackgroundMedia(backgroundSound.getSoundUrl());
+                    runOnUiThread(() -> switchToNewBackgroundMedia(backgroundSound.getSoundUrl()));
                 }
             }
         }
@@ -1049,9 +1054,9 @@ public class VideoplayerActivity extends AppCompatActivity {
      * Check which background sound should be playing at the the current position
      * @return BackgroundSound
      */
-    private BackgroundSound getCurrentBackgroundSoundByCurrentPostion() {
+    private BackgroundSound getCurrentBackgroundSoundByCurrentPosition(long currentSecond) {
         BackgroundSound selectBackgroundSound = null;
-        long currentSecond = (mediaPlayer.getTime() / 1000L);
+
         if (backgroundSoundTriggers.size()>0) {
             for (BackgroundSound backgroundSound: backgroundSoundTriggers) {
                 int backgroundsoundTriggerSecond = backgroundSound.getFramenumber()/selectedMovie.getRecordedFps();
