@@ -949,12 +949,16 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                         BackgroundSound backgroundSound = getCurrentBackgroundSoundByCurrentPosition(currentSecond);
                         if (backgroundSound != null) {
                             runOnUiThread(() -> {
-                                Log.d(TAG, "EventTimeLineHandler: " + backgroundSound.getSoundId().intValue() + " on second: " + currentSecond);
-                                Log.d(TAG, "BgSound with id: " + backgroundSound.getSoundId().intValue() + " state if playing: " + backgroundSoundPlayer.isPlaying());
-                                Log.d(TAG, "BgSound volume: " + backgroundSoundPlayer.getVolume());
-                                Log.d(TAG, "BgSound dev volume: " + backgroundSoundPlayer.getDeviceVolume());
-                                if (!backgroundSoundPlayer.isPlaying() && !routePaused && !routeFinished) {
-                                    backgroundSoundPlayer.play();
+                                try {
+                                    Log.d(TAG, "EventTimeLineHandler: " + backgroundSound.getSoundId().intValue() + " on second: " + currentSecond);
+                                    Log.d(TAG, "BgSound with id: " + backgroundSound.getSoundId().intValue() + " state if playing: " + backgroundSoundPlayer.isPlaying());
+                                    Log.d(TAG, "BgSound volume: " + backgroundSoundPlayer.getVolume());
+                                    Log.d(TAG, "BgSound dev volume: " + backgroundSoundPlayer.getDeviceVolume());
+                                    if (!backgroundSoundPlayer.isPlaying() && !routePaused && !routeFinished) {
+                                        backgroundSoundPlayer.play();
+                                    }
+                                } catch (NullPointerException e) {
+                                    Log.d(TAG, e.toString());
                                 }
                             });
                         }
