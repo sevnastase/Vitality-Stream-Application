@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 
 import com.videostreamtest.constants.CadenceSensorConstants;
@@ -14,12 +15,17 @@ import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
     private static final String TAG = CadenceSensorBroadcastReceiver.class.getSimpleName();
     private static long lastUpdateTime = 0L; // static so it persists across onReceive calls
-    private static final long MIN_UPDATE_INTERVAL_MS = 1000;
+    private static final long MIN_UPDATE_INTERVAL_MS_DEFAULT = 1000;
+    private static final long MIN_UPDATE_INTERVAL_MS_GIADA = 1500;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         long now = System.currentTimeMillis();
-        if (now - lastUpdateTime < MIN_UPDATE_INTERVAL_MS) {
+        long timePassed = now - lastUpdateTime;
+        // Giada computers that we use are weaker, so they need more time to process one request
+        if (Build.BRAND.toLowerCase().contains("giada") && timePassed < MIN_UPDATE_INTERVAL_MS_GIADA) {
+            return;
+        } else if (timePassed < MIN_UPDATE_INTERVAL_MS_DEFAULT) {
             return;
         }
         lastUpdateTime = now;
