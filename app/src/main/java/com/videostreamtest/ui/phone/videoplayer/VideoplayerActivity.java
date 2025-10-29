@@ -998,14 +998,14 @@ public class VideoplayerActivity extends AppCompatActivity {
                                 pauseTimer++;
                             }
                         }
-
-                        if (routeFinished) {
-                            Log.d(TAG, "backToOverviewSensorWait = "+backToOverviewWaitForSensor);
-                            if (backToOverviewWaitForSensor) {
-                                runOnUiThread(() -> stopVideoplayer());
-                            }
-                        }
                     });
+                }
+
+                if (routeFinished) {
+                    Log.d(TAG, "backToOverviewSensorWait = "+backToOverviewWaitForSensor);
+                    if (backToOverviewWaitForSensor) {
+                        runOnUiThread(() -> stopVideoplayer());
+                    }
                 }
 
                 timelineHandler.postDelayed(this, 1000);
