@@ -661,6 +661,20 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         toggleStatusScreen();
         bgSoundPlayerView.setUseController(false);
         bgSoundPlayerView.hideController();
+
+        timelineHandler.post(new Runnable() {
+            int counter = 0;
+
+            @Override
+            public void run() {
+                if (counter < MAX_PAUSE_TIME_SEC) {
+                    counter++;
+                    timelineHandler.postDelayed(this, 1000);
+                } else {
+                    runOnUiThread(VideoplayerExoActivity.this::stopVideoplayer);
+                }
+            }
+        });
     }
 
     public void goToFrameNumber(int frameNumber) {

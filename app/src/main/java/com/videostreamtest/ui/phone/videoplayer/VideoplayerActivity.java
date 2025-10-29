@@ -681,6 +681,20 @@ public class VideoplayerActivity extends AppCompatActivity {
         toggleStatusScreen();
         playerView.setUseController(false);
         playerView.hideController();
+
+        timelineHandler.post(new Runnable() {
+            int counter = 0;
+
+            @Override
+            public void run() {
+                if (counter < MAX_PAUSE_TIME_SEC) {
+                    counter++;
+                    timelineHandler.postDelayed(this, 1000);
+                } else {
+                    runOnUiThread(VideoplayerActivity.this::stopVideoplayer);
+                }
+            }
+        });
     }
 
     public void goToFrameNumber(int frameNumber) {
