@@ -149,12 +149,32 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (ViewHelper.isTouchScreen(this)) return false;
+
+        // NB: The OK/SELECT button has to be handled in RoutefilmAdapter. If defined here,
+        // it will not work as expected.
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_LEFT:
-                jump(-1);
+                int position = routefilmAdapter.getSelectedRoutefilmPosition();
+
+                if (position % ITEMS_PER_ROW == 0) {
+                    backToProductPickerButton.requestFocus();
+                    selectedRoutefilmPosition = position;
+                    routefilmAdapter.setSelectedRoutefilmPosition(RecyclerView.NO_POSITION);
+                    routefilmAdapter.notifyItemChanged(position);
+                } else {
+                    jump(-1);
+                }
                 return true;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
-                jump(1);
+                if (backToProductPickerButton.hasFocus()) {
+                    routefilmsRecyclerView.requestFocus();
+                    routefilmsRecyclerView.scrollToPosition(selectedRoutefilmPosition);
+                    routefilmAdapter.setSelectedRoutefilmPosition(selectedRoutefilmPosition);
+                    routefilmAdapter.notifyItemChanged(selectedRoutefilmPosition);
+                } else {
+                    jump(1);
+                }
                 return true;
             case KeyEvent.KEYCODE_DPAD_UP:
                 jump(-4);
@@ -163,7 +183,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
                 jump(4);
                 return true;
         }
-        return false;
+        return super.onKeyDown(keyCode, event);
     }
 
     private void loadProductMovies() {

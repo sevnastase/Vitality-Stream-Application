@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,8 +54,7 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
 
     //PREP VIDEOPLAYER
     private Intent videoPlayerActivityIntent;
-    private Activity hostActivity;
-    private boolean loading = false;
+    private final Activity hostActivity;
 
     public RoutefilmAdapter(Routefilm[] routefilms,
                             Product selectedProduct,
@@ -122,6 +122,15 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
                 notifyItemChanged(position);
             }
         });
+        holder.routefilmCoverPhotoImageButton.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (isSelectButton(keyCode)) {
+                    startVideoPlayer();
+                    return true;
+                }
+            }
+            return false;
+        });
 
         holder.favoriteImageButton.setOnClickListener(view -> {
             SharedPreferences sp = hostActivity.getApplicationContext().getSharedPreferences("app", Context.MODE_PRIVATE);
@@ -165,6 +174,8 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
             return;
         }
         this.selectedRoutefilmPosition = selectedRoutefilmPosition;
+        Log.d(TAG, "Greg new position: " + selectedRoutefilmPosition);
+        if (selectedRoutefilmPosition == RecyclerView.NO_POSITION) return;
         if (listener != null) {
             listener.onSelected(routefilms.get(selectedRoutefilmPosition));
         }
