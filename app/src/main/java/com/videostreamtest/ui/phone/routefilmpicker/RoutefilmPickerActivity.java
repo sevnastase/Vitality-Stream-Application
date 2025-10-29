@@ -198,6 +198,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
 
             switch (accountType.toLowerCase()) {
                 case "standalone":
+                case "hybrid":
                     routefilmsLiveData = routefilmRepository.getAllStandaloneProductRoutefilms(apikey);
                     break;
                 case "streaming":
