@@ -344,6 +344,12 @@ public class VideoplayerActivity extends AppCompatActivity {
                     .commit();
         }
 
+        if (!communicationType.equals(CommunicationType.RPM)) {
+            View statusbarContainer = findViewById(R.id.videoplayer_framelayout_statusbar);
+            statusbarContainer.setVisibility(View.INVISIBLE);
+            praxHandler.postDelayed(() -> statusbarContainer.setVisibility(View.VISIBLE), 5500);
+        }
+
         videoPlayerViewModel.getVolumeLevel().observe(this, volumeLevel -> {
             if (mediaPlayer!=null) {
                 mediaPlayer.setVolume(volumeLevel);
