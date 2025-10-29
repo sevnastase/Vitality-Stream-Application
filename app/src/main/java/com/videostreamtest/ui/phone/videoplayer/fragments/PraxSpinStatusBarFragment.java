@@ -263,21 +263,13 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
 
     private void setupSeekbarButtonsLayout() {
         setupHandler.postDelayed(() -> {
-                    /*Log.d(TAG, "finalFrame = " + finalFrame);
-                    Log.d(TAG, "seekBarWidth = " + seekBarWidth);
-                    Log.d(TAG,"progressBar.getWidth() = " + movieProgressBar.getWidth());
-                    Log.d(TAG, "progressBar.getPaddingStart()" + movieProgressBar.getPaddingStart());
-                    Log.d(TAG, "progressBar.getPaddingEnd()" + movieProgressBar.getPaddingEnd());*/
             int seekBarWidth = movieProgressBar.getWidth() - movieProgressBar.getPaddingStart() - movieProgressBar.getPaddingEnd();
             if (movieParts != null) {
                 for (int i = 0; i < movieParts.length; i++) {
                     int frameNumber = movieParts[i].getFrameNumber().intValue();
-                    // Log.d(TAG, "movieParts[" + i + "] frameNumber = " + frameNumber);
                     position = ((float) frameNumber / finalFrame) * seekBarWidth;
-                    // Log.d(TAG, "position of movieParts[" + i + "] = " + position);
                     if (seekBarButtons[i] != null) {
                         seekBarButtons[i].setX(movieProgressBar.getX() + movieProgressBar.getPaddingStart() + position);
-                        // Log.d(TAG, "seekBarButtons[" + i + "] position = " + progressBar.getX() + progressBar.getPaddingStart() + position);
                     }
                 }
             }
