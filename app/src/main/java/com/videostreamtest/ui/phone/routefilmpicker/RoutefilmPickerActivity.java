@@ -70,6 +70,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
 
     // SELECTED ROUTEFILM INFO
     private Routefilm selectedRoutefilm;
+    private int selectedRoutefilmPosition;
     private TextView selectedRoutefilmTitleTextView;
 
     /** For displaying duration/distance. */
