@@ -39,6 +39,10 @@ import java.util.Set;
 
 public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> {
     private final static String TAG = RoutefilmAdapter.class.getSimpleName();
+    final static int ITEMS_PER_ROW = 4;
+    final static int SINGLE_ITEM_WIDTH = 180;
+    final static int SINGLE_ITEM_HEIGHT = 242;
+    final static int MAX_VISIBLE_ROWS = 3;
 
     // Dataset in the RecyclerView
     private ArrayList<Routefilm> routefilms;
@@ -99,12 +103,12 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
         if(movie.getMovieImagepath().startsWith("/")) {
             Picasso.get()
                     .load(new File(movie.getMovieImagepath()))
-                    .resize(180, 242)
+                    .resize(SINGLE_ITEM_WIDTH, SINGLE_ITEM_HEIGHT)
                     .into(holder.routefilmCoverPhotoImageButton, favoriteButtonCallback);
         } else {
             Picasso.get()
                     .load(movie.getMovieImagepath())
-                    .resize(180, 242)
+                    .resize(SINGLE_ITEM_WIDTH, SINGLE_ITEM_HEIGHT)
                     .into(holder.routefilmCoverPhotoImageButton, favoriteButtonCallback);
         }
 
@@ -190,7 +194,7 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
 
     public void initVideoPlayer(final Bundle arguments) {
         if (selectedProduct.getSupportStreaming() == 0) {
-            videoPlayerActivityIntent = new Intent(hostActivity, VideoplayerExoActivity.class);
+            videoPlayerActivityIntent = new Intent(hostActivity, VideoplayerActivity.class);
         } else {
             videoPlayerActivityIntent = new Intent(hostActivity, VideoplayerExoActivity.class);
         }
@@ -230,5 +234,11 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
                 routefilm.setFavorite(true);
             }
         }
+    }
+
+    private boolean isSelectButton(int keyCode) {
+        return keyCode == KeyEvent.KEYCODE_ENTER ||
+                keyCode == KeyEvent.KEYCODE_DPAD_CENTER ||
+                keyCode == KeyEvent.KEYCODE_BUTTON_SELECT;
     }
 }

@@ -4,6 +4,10 @@ import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
 
+import static com.videostreamtest.ui.phone.routefilmpicker.RoutefilmAdapter.ITEMS_PER_ROW;
+import static com.videostreamtest.ui.phone.routefilmpicker.RoutefilmAdapter.MAX_VISIBLE_ROWS;
+import static com.videostreamtest.ui.phone.routefilmpicker.RoutefilmAdapter.SINGLE_ITEM_HEIGHT;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,12 +15,14 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LiveData;
@@ -44,7 +50,6 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     private static final String TAG = RoutefilmPickerActivity.class.getSimpleName();
 
     /** The number of routefilms displayed per row in {@code this#routefilmsRecyclerView}. */
-    private final static int ITEMS_PER_ROW = 4;
     final static int DEFAULT_SELECTED_POSITION = 0;
     private boolean pageLoading = true;
 
@@ -233,6 +238,9 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     private void initRecyclerView() {
         routefilmsRecyclerView = findViewById(R.id.routefilms_recyclerview);
         routefilmsRecyclerView.setLayoutManager(new GridLayoutManager(this, ITEMS_PER_ROW));
+        ViewGroup.LayoutParams params = routefilmsRecyclerView.getLayoutParams();
+        params.height = SINGLE_ITEM_HEIGHT * MAX_VISIBLE_ROWS;
+        routefilmsRecyclerView.setLayoutParams(params);
 
         RoutefilmAdapter.SelectedRoutefilmListener listener = createListener();
 
@@ -245,8 +253,28 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
             routefilmAdapter.setSelectedRoutefilmPosition(DEFAULT_SELECTED_POSITION);
             if (availableRoutefilms != null && availableRoutefilms.length > 0) {
                 selectedRoutefilmInformationBoxLayout.setVisibility(View.VISIBLE);
+                routefilmsRecyclerView.requestFocus();
             }
         }, 200);
+
+        routefilmsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    // rebind visible items only
+                    RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+                    if (layoutManager instanceof GridLayoutManager) {
+                        GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
+                        int firstVisible = gridLayoutManager.findFirstVisibleItemPosition();
+                        int lastVisible = gridLayoutManager.findLastVisibleItemPosition();
+                        for (int i = firstVisible; i <= lastVisible; i++) {
+                            routefilmAdapter.notifyItemChanged(i);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     /** Returns an interface implementation {@link RoutefilmAdapter.SelectedRoutefilmListener}
@@ -318,6 +346,8 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     }
 
     private void jump(int jumpCount) {
+        if (!routefilmsRecyclerView.hasFocus()) return;
+
         final int prevPosition = routefilmAdapter.getSelectedRoutefilmPosition();
         final int nextPosition;
         if (jumpCount < 0) {
@@ -331,6 +361,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
             routefilmAdapter.notifyItemChanged(prevPosition);
             routefilmAdapter.notifyItemChanged(nextPosition);
             routefilmsRecyclerView.getLayoutManager().scrollToPosition(nextPosition);
+            selectedRoutefilmPosition = nextPosition;
         }
     }
 
