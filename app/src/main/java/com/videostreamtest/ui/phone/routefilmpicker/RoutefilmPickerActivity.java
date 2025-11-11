@@ -8,8 +8,10 @@ import static com.videostreamtest.ui.phone.routefilmpicker.RoutefilmAdapter.ITEM
 import static com.videostreamtest.ui.phone.routefilmpicker.RoutefilmAdapter.MAX_VISIBLE_ROWS;
 import static com.videostreamtest.ui.phone.routefilmpicker.RoutefilmAdapter.SINGLE_ITEM_HEIGHT;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -28,6 +30,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -100,6 +103,26 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
         }
     };
 
+    private BroadcastReceiver mqttBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action == null) return;
+
+            switch (action) {
+                case "com.videostreamtest.ACTION_START_FILM":
+                    if (routefilmAdapter != null) {
+                        routefilmAdapter.startVideoPlayer();
+                    }
+                    break;
+                case "com.videostreamtest.ACTION_ARROW":
+                    String direction = intent.getStringExtra("direction");
+                    if (direction == null) return;
+                    navigate(direction);
+            }
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,6 +144,37 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
         }
 
         initViews();
+    }
+
+    private void initMotolifeReceivers() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("com.videostreamtest.ACTION_START_FILM");
+        intentFilter.addAction("com.videostreamtest.ACTION_ARROW");
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mqttBroadcastReceiver, intentFilter);
+    }
+
+    @Override
+    public void onUserInteraction() {
+        super.onUserInteraction();
+
+        counter = 0;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        initMotolifeReceivers();
+        backToProductPickerHandler.postDelayed(backToProductPickerRunnable, 1000);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mqttBroadcastReceiver);
+        backToProductPickerHandler.removeCallbacksAndMessages(null);
     }
 
     private void initViews() {
@@ -378,6 +432,23 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
             routefilmAdapter.notifyItemChanged(nextPosition);
             routefilmsRecyclerView.getLayoutManager().scrollToPosition(nextPosition);
             selectedRoutefilmPosition = nextPosition;
+        }
+    }
+
+    private void navigate(String direction) {
+        switch (direction) {
+            case "up":
+                jump(-4);
+                break;
+            case "down":
+                jump(4);
+                break;
+            case "right":
+                jump(1);
+                break;
+            case "left":
+                jump(-1);
+                break;
         }
     }
 

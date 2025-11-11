@@ -162,7 +162,18 @@ public class AbstractProductScreenFragment extends Fragment {
     BroadcastReceiver mqttMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            startSelectedMovie();
+            String action = intent.getAction();
+            if (action == null) return;
+
+            switch (action) {
+                case "com.videostreamtest.ACTION_START_FILM":
+                    startSelectedMovie();
+                    break;
+                case "com.videostreamtest.ACTION_ARROW":
+                    String direction = intent.getStringExtra("direction");
+                    if (direction == null) return;
+                    navigate(direction);
+            }
         }
     };
 
@@ -200,6 +211,23 @@ public class AbstractProductScreenFragment extends Fragment {
                 videoPlayerIntent.putExtras(arguments);
                 startActivity(videoPlayerIntent);
             }
+        }
+    }
+
+    private void navigate(String direction) {
+        switch (direction) {
+            case "up":
+                setNavigationUpArrow();
+                break;
+            case "down":
+                setNavigationDownArrow();
+                break;
+            case "right":
+                setNavigationRightArrow();
+                break;
+            case "left":
+                setNavigationLeftArrow();
+                break;
         }
     }
 
