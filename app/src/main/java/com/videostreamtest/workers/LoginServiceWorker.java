@@ -4,12 +4,11 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.service.database.DatabaseRestService;
 
-public class LoginServiceWorker extends Worker {
+public class LoginServiceWorker extends AbstractPraxtourWorker {
     private static final String TAG = LoginServiceWorker.class.getSimpleName();
 
     public LoginServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -18,7 +17,7 @@ public class LoginServiceWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         //Get Input
         final String username = getInputData().getString("username");
         final String password = getInputData().getString("password");

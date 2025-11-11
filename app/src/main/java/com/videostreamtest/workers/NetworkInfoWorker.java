@@ -7,15 +7,11 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import java.math.BigInteger;
-import java.net.HttpURLConnection;
 import java.net.InetAddress;
-import java.net.URL;
 
-public class NetworkInfoWorker extends Worker {
+public class NetworkInfoWorker extends AbstractPraxtourWorker {
 
     private static final String TAG = NetworkInfoWorker.class.getSimpleName();
 
@@ -25,7 +21,7 @@ public class NetworkInfoWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         Data output = new Data.Builder().build();
         if (isInternetAvailable()) {
             Log.d(TAG, "Internetconnection available.");

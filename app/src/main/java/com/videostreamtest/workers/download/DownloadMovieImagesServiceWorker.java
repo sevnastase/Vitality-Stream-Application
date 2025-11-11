@@ -5,15 +5,15 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.google.gson.Gson;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
-import com.videostreamtest.workers.download.callback.ProgressCallBack;
+import com.videostreamtest.workers.AbstractPraxtourWorker;
 import com.videostreamtest.workers.download.callback.CallbackByteChannel;
+import com.videostreamtest.workers.download.callback.ProgressCallBack;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +25,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
-public class DownloadMovieImagesServiceWorker extends Worker implements ProgressCallBack {
+public class DownloadMovieImagesServiceWorker extends AbstractPraxtourWorker implements ProgressCallBack {
     private final static String TAG = DownloadMovieImagesServiceWorker.class.getSimpleName();
 
     private static final String INPUT_ROUTEFILM_JSON_STRING = "INPUT_ROUTEFILM_JSON_STRING";
@@ -41,7 +41,7 @@ public class DownloadMovieImagesServiceWorker extends Worker implements Progress
     @NonNull
     @NotNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         //GET INPUT DATA
         Data inputData = getInputData();
         String inputDataString = inputData.getString(INPUT_ROUTEFILM_JSON_STRING); // Movie object json

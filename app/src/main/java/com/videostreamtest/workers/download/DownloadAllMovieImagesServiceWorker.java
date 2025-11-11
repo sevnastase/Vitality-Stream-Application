@@ -7,7 +7,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.config.db.PraxtourDatabase;
@@ -16,6 +15,7 @@ import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.workers.AbstractPraxtourWorker;
 import com.videostreamtest.workers.download.callback.CallbackByteChannel;
 import com.videostreamtest.workers.download.callback.ProgressCallBack;
 import com.videostreamtest.workers.webinterface.PraxCloud;
@@ -35,7 +35,7 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class DownloadAllMovieImagesServiceWorker extends Worker implements ProgressCallBack {
+public class DownloadAllMovieImagesServiceWorker extends AbstractPraxtourWorker implements ProgressCallBack {
     private final static String TAG = DownloadAllMovieImagesServiceWorker.class.getSimpleName();
 
     private static final String INPUT_ROUTEFILM_JSON_STRING = "INPUT_ROUTEFILM_JSON_STRING";
@@ -55,7 +55,7 @@ public class DownloadAllMovieImagesServiceWorker extends Worker implements Progr
     @NonNull
     @NotNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         //GET INPUT DATA
         apikey = getInputData().getString("apikey");
 

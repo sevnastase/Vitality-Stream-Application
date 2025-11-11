@@ -19,7 +19,7 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class AccountServiceWorker extends Worker {
+public class AccountServiceWorker extends AbstractPraxtourWorker {
     private static final String TAG = AccountServiceWorker.class.getSimpleName();
     public AccountServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -27,7 +27,7 @@ public class AccountServiceWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         SharedPreferences myPreferences = getApplicationContext().getSharedPreferences("app",0);
         final String apikey = myPreferences.getString("apikey", "");
 

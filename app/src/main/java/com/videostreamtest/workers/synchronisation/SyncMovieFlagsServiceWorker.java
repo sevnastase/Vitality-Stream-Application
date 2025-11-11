@@ -7,12 +7,12 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.config.dao.MovieFlagDao;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.MovieFlag;
+import com.videostreamtest.workers.AbstractPraxtourWorker;
 import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class SyncMovieFlagsServiceWorker extends Worker {
+public class SyncMovieFlagsServiceWorker extends AbstractPraxtourWorker {
     private static final String TAG = SyncMovieFlagsServiceWorker.class.getSimpleName();
 
     public SyncMovieFlagsServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -32,7 +32,7 @@ public class SyncMovieFlagsServiceWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         //Get Input
         final String apikey = getInputData().getString("apikey");
 

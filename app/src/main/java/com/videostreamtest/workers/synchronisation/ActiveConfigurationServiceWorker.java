@@ -1,11 +1,12 @@
 package com.videostreamtest.workers.synchronisation;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
+
 import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.google.gson.GsonBuilder;
@@ -13,6 +14,7 @@ import com.videostreamtest.config.dao.ConfigurationDao;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.data.model.response.Configuration;
 import com.videostreamtest.data.model.response.Product;
+import com.videostreamtest.workers.AbstractPraxtourWorker;
 import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import java.io.IOException;
@@ -23,9 +25,7 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
-
-public class ActiveConfigurationServiceWorker extends Worker {
+public class ActiveConfigurationServiceWorker extends AbstractPraxtourWorker {
     private static final String TAG = ActiveConfigurationServiceWorker.class.getSimpleName();
 
     public ActiveConfigurationServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -34,7 +34,7 @@ public class ActiveConfigurationServiceWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         //Get Input
         final String apikey = getInputData().getString("apikey");
         final String password = getInputData().getString("password");

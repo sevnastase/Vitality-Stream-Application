@@ -1,10 +1,11 @@
 package com.videostreamtest.workers;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
+
 import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.config.dao.DownloadStatusDao;
@@ -32,9 +33,7 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
-
-public class UpdateRegisteredMovieServiceWorker extends Worker {
+public class UpdateRegisteredMovieServiceWorker extends AbstractPraxtourWorker {
 
     private final static String TAG = UpdatePackageServiceWorker.class.getSimpleName();
     private DatabaseRestService databaseRestService;
@@ -47,7 +46,7 @@ public class UpdateRegisteredMovieServiceWorker extends Worker {
     @NonNull
     @NotNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         //Get Input
         final String apikey = getInputData().getString("apikey");
         databaseRestService = new DatabaseRestService();

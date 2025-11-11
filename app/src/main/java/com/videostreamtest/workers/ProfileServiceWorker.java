@@ -1,12 +1,12 @@
 package com.videostreamtest.workers;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
+
 import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.ListenableWorker;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.config.dao.ProfileDao;
@@ -22,9 +22,7 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
-
-public class ProfileServiceWorker extends Worker {
+public class ProfileServiceWorker extends AbstractPraxtourWorker {
     private static final String TAG = ProfileServiceWorker.class.getSimpleName();
 
     public ProfileServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -33,7 +31,7 @@ public class ProfileServiceWorker extends Worker {
 
     @NonNull
     @Override
-    public ListenableWorker.Result doWork() {
+    protected Result doActualWork() {
         //Get Input
         final String apikey = getInputData().getString("apikey");
         //Pre-define output

@@ -5,13 +5,13 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.work.Data;
 import androidx.work.ListenableWorker;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.workers.AbstractPraxtourWorker;
 
-public class WriteLogServiceWorker extends Worker {
+public class WriteLogServiceWorker extends AbstractPraxtourWorker {
 
     private String result;
 
@@ -21,7 +21,7 @@ public class WriteLogServiceWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         //Get Input from InputData
         final String apikey = getInputData().getString("apikey");
         final String logrule = getInputData().getString("logrule");

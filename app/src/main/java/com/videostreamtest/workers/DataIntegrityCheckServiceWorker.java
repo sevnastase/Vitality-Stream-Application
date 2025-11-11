@@ -1,5 +1,7 @@
 package com.videostreamtest.workers;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
@@ -9,7 +11,6 @@ import android.os.Process;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.data.model.Movie;
@@ -33,9 +34,7 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
-
-public class DataIntegrityCheckServiceWorker extends Worker {
+public class DataIntegrityCheckServiceWorker extends AbstractPraxtourWorker {
     private static final String TAG = DataIntegrityCheckServiceWorker.class.getSimpleName();
     private static final String CHECKSUM_DIGEST_MD5_FILENAME = "checksum_digest.md5";
 
@@ -46,9 +45,8 @@ public class DataIntegrityCheckServiceWorker extends Worker {
     }
 
     @NonNull
-    @NotNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         SharedPreferences myPreferences = getApplicationContext().getSharedPreferences("app",0);
         final String apikey = myPreferences.getString("apikey", "");
 

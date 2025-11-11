@@ -4,7 +4,6 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.google.gson.Gson;
@@ -16,7 +15,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class LocalMediaServerAvailableServiceWorker extends Worker {
+public class LocalMediaServerAvailableServiceWorker extends AbstractPraxtourWorker {
     private static final String INPUT_ROUTEFILM_JSON_STRING = "INPUT_ROUTEFILM_JSON_STRING";
 
     private Movie routefilm;
@@ -29,7 +28,7 @@ public class LocalMediaServerAvailableServiceWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         Data inputData = getInputData();
         String inputDataString = inputData.getString(INPUT_ROUTEFILM_JSON_STRING); // Movie object json
         localMediaServerUrl = inputData.getString("localMediaServer");

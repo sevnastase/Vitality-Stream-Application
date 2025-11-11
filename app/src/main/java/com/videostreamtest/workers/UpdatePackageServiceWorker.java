@@ -7,7 +7,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.helpers.ConfigurationHelper;
@@ -21,7 +20,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class UpdatePackageServiceWorker extends Worker {
+public class UpdatePackageServiceWorker extends AbstractPraxtourWorker {
     private static final String TAG = UpdatePackageServiceWorker.class.getSimpleName();
 
     private static final String UPDATE_INFO_FILE = "/output-metadata.json";
@@ -38,7 +37,7 @@ public class UpdatePackageServiceWorker extends Worker {
     @NonNull
     @NotNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         //Get Input
 //        final String apikey = getInputData().getString("apikey");
 //        final int[] movieIdList = getInputData().getIntArray("movie-id-list");

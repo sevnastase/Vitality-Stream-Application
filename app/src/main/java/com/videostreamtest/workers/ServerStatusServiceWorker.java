@@ -3,8 +3,6 @@ package com.videostreamtest.workers;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.work.Data;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.config.dao.ServerStatusDao;
@@ -14,10 +12,9 @@ import com.videostreamtest.service.database.DatabaseRestService;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.time.Instant;
 import java.util.Date;
 
-public class ServerStatusServiceWorker extends Worker {
+public class ServerStatusServiceWorker extends AbstractPraxtourWorker {
 
     public ServerStatusServiceWorker(@NonNull @NotNull Context context, @NonNull @NotNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -26,7 +23,7 @@ public class ServerStatusServiceWorker extends Worker {
     @NonNull
     @NotNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         final DatabaseRestService databaseRestService = new DatabaseRestService();
         boolean serverOnlineStatus = databaseRestService.isOnline();
         ServerStatusDao serverStatusDao = PraxtourDatabase.getDatabase(getApplicationContext()).serverStatusDao();

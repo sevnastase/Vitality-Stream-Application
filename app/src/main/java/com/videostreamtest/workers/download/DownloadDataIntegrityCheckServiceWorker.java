@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.config.db.PraxtourDatabase;
@@ -13,6 +12,7 @@ import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.workers.AbstractPraxtourWorker;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -22,7 +22,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class DownloadDataIntegrityCheckServiceWorker extends Worker {
+public class DownloadDataIntegrityCheckServiceWorker extends AbstractPraxtourWorker {
     private static final String TAG = DownloadDataIntegrityCheckServiceWorker.class.getSimpleName();
     private static final String CHECKSUM_DIGEST_MD5_FILENAME = "checksum_digest.md5";
 
@@ -38,7 +38,7 @@ public class DownloadDataIntegrityCheckServiceWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         localMediaServerUrl = getInputData().getString("localMediaServer");
         movieId = getInputData().getInt("movie-id", -1);
 

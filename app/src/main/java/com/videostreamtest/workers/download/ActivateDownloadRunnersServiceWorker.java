@@ -10,16 +10,16 @@ import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
+import com.videostreamtest.workers.AbstractPraxtourWorker;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ActivateDownloadRunnersServiceWorker extends Worker {
+public class ActivateDownloadRunnersServiceWorker extends AbstractPraxtourWorker {
 
     public ActivateDownloadRunnersServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -27,7 +27,7 @@ public class ActivateDownloadRunnersServiceWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         String localServerUrl = getInputData().getString("localMediaServer");
         String apikey = getApplicationContext().getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey", "");
 

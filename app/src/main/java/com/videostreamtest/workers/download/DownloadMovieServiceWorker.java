@@ -17,7 +17,6 @@ import androidx.core.app.NotificationCompat;
 import androidx.work.Data;
 import androidx.work.ForegroundInfo;
 import androidx.work.WorkManager;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.R;
@@ -27,8 +26,9 @@ import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
-import com.videostreamtest.workers.download.callback.ProgressCallBack;
+import com.videostreamtest.workers.AbstractPraxtourWorker;
 import com.videostreamtest.workers.download.callback.CallbackByteChannel;
+import com.videostreamtest.workers.download.callback.ProgressCallBack;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -43,7 +43,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DownloadMovieServiceWorker extends Worker implements ProgressCallBack {
+public class DownloadMovieServiceWorker extends AbstractPraxtourWorker implements ProgressCallBack {
     private static final String TAG = DownloadMovieServiceWorker.class.getSimpleName();
     private static final String INPUT_ROUTEFILM_JSON_STRING = "INPUT_ROUTEFILM_JSON_STRING";
     private static final String OUTPUT_FILE_NAME = "OUTPUT_FILE_NAME";
@@ -73,7 +73,7 @@ public class DownloadMovieServiceWorker extends Worker implements ProgressCallBa
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         localMediaServerUrl = getInputData().getString("localMediaServer");
         movieId = getInputData().getInt("movie-id", -1);
 

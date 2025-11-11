@@ -1,11 +1,12 @@
 package com.videostreamtest.workers;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
+
 import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.config.db.PraxtourDatabase;
@@ -23,9 +24,7 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
-
-public class SoundInformationServiceWorker extends Worker {
+public class SoundInformationServiceWorker extends AbstractPraxtourWorker {
     private static final String TAG = SoundInformationServiceWorker.class.getSimpleName();
 
     private List<SoundItem> soundItems = new ArrayList<>();
@@ -36,7 +35,7 @@ public class SoundInformationServiceWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         //Get Input
         final String apikey = getInputData().getString("apikey");
 

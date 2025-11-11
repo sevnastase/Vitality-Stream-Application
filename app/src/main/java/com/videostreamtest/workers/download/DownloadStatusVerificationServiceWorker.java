@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.config.db.PraxtourDatabase;
@@ -12,10 +11,11 @@ import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.helpers.DownloadHelper;
+import com.videostreamtest.workers.AbstractPraxtourWorker;
 
 import java.util.List;
 
-public class DownloadStatusVerificationServiceWorker extends Worker {
+public class DownloadStatusVerificationServiceWorker extends AbstractPraxtourWorker {
 
     public DownloadStatusVerificationServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -23,7 +23,7 @@ public class DownloadStatusVerificationServiceWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         final List<LocalMoviesDownloadTable> downloadStatusList = PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().getAllRawDownloadStatus();
         if (downloadStatusList != null && downloadStatusList.size()>0) {
             for (final LocalMoviesDownloadTable downloadStatus: downloadStatusList) {

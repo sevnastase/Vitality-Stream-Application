@@ -16,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.work.Data;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.BuildConfig;
@@ -36,7 +35,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
-public class InstallPackageServiceWorker extends Worker implements ProgressCallBack {
+public class InstallPackageServiceWorker extends AbstractPraxtourWorker implements ProgressCallBack {
     private final static String TAG = InstallPackageServiceWorker.class.getSimpleName();
     private static final String UPDATE_URL = PRAXCLOUD_MEDIA_URL+"/app";
 
@@ -48,9 +47,8 @@ public class InstallPackageServiceWorker extends Worker implements ProgressCallB
     }
 
     @NonNull
-    @NotNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         final boolean updateAvailable = getInputData().getBoolean("update", false);
         final String updateFileName = getInputData().getString("updatefilename");
         SharedPreferences myPreferences = getApplicationContext().getSharedPreferences("app",0);

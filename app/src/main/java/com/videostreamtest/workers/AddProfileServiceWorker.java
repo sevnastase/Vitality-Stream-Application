@@ -5,12 +5,11 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.work.Data;
 import androidx.work.ListenableWorker;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.service.database.DatabaseRestService;
 
-public class AddProfileServiceWorker extends Worker {
+public class AddProfileServiceWorker extends AbstractPraxtourWorker {
 
     public AddProfileServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -18,7 +17,7 @@ public class AddProfileServiceWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         //Get Input
         final String apikey = getInputData().getString("apikey");
         final String profilename = getInputData().getString("profilename");

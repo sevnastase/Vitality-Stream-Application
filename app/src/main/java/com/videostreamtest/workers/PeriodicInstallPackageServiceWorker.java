@@ -13,7 +13,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 import androidx.work.Data;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.BuildConfig;
@@ -36,7 +35,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
-public class PeriodicInstallPackageServiceWorker extends Worker implements ProgressCallBack {
+public class PeriodicInstallPackageServiceWorker extends AbstractPraxtourWorker implements ProgressCallBack {
     private final static String TAG = PeriodicInstallPackageServiceWorker.class.getSimpleName();
 
     private static final String UPDATE_INFO_FILE = "/output-metadata.json";
@@ -56,7 +55,7 @@ public class PeriodicInstallPackageServiceWorker extends Worker implements Progr
     @NonNull
     @NotNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
 //        final boolean updateAvailable = getInputData().getBoolean("update", false);
         final boolean updateAvailable = isUpdateAvailable();
         final String updateFileName = getInputData().getString("updatefilename");

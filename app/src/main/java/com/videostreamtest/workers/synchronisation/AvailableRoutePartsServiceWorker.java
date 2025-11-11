@@ -1,12 +1,13 @@
 package com.videostreamtest.workers.synchronisation;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
+
 import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
 import androidx.work.ListenableWorker;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.config.dao.RoutepartDao;
@@ -14,6 +15,7 @@ import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Routepart;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.service.database.DatabaseRestService;
+import com.videostreamtest.workers.AbstractPraxtourWorker;
 import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import java.io.IOException;
@@ -24,9 +26,7 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
-
-public class AvailableRoutePartsServiceWorker extends Worker {
+public class AvailableRoutePartsServiceWorker extends AbstractPraxtourWorker {
     private static final String TAG = AvailableRoutePartsServiceWorker.class.getSimpleName();
 
     public AvailableRoutePartsServiceWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -35,7 +35,7 @@ public class AvailableRoutePartsServiceWorker extends Worker {
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         //Get Input
         final String apikey = getInputData().getString("apikey");
         final Integer movieId = getInputData().getInt("movieId", 0);

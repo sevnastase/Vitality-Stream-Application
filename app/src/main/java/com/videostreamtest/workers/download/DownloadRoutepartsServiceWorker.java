@@ -1,5 +1,7 @@
 package com.videostreamtest.workers.download;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -14,7 +16,6 @@ import androidx.core.app.NotificationCompat;
 import androidx.work.Data;
 import androidx.work.ForegroundInfo;
 import androidx.work.WorkManager;
-import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.R;
@@ -25,8 +26,9 @@ import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
-import com.videostreamtest.workers.download.callback.ProgressCallBack;
+import com.videostreamtest.workers.AbstractPraxtourWorker;
 import com.videostreamtest.workers.download.callback.CallbackByteChannel;
+import com.videostreamtest.workers.download.callback.ProgressCallBack;
 import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import java.io.File;
@@ -42,9 +44,7 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
-
-public class DownloadRoutepartsServiceWorker extends Worker implements ProgressCallBack {
+public class DownloadRoutepartsServiceWorker extends AbstractPraxtourWorker implements ProgressCallBack {
     private static final String TAG = DownloadRoutepartsServiceWorker.class.getSimpleName();
     private static final String INPUT_ROUTEFILM_JSON_STRING = "INPUT_ROUTEFILM_JSON_STRING";
     private static final String SOUND_FOLDER = "sound";
@@ -63,7 +63,7 @@ public class DownloadRoutepartsServiceWorker extends Worker implements ProgressC
 
     @NonNull
     @Override
-    public Result doWork() {
+    protected Result doActualWork() {
         Data inputData = getInputData();
         //Get Input
         apikey = getInputData().getString("apikey");
