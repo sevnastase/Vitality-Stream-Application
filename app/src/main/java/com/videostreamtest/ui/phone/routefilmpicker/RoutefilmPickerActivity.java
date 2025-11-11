@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -42,6 +43,7 @@ import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
 import com.videostreamtest.ui.phone.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
+import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 
 import java.io.File;
 import java.util.List;
@@ -51,7 +53,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
 
     /** The number of routefilms displayed per row in {@code this#routefilmsRecyclerView}. */
     final static int DEFAULT_SELECTED_POSITION = 0;
-    private boolean pageLoading = true;
+    private int counter = 0;
 
     // DATA
     private Product selectedProduct;
@@ -83,6 +85,20 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     private TextView selectedRoutefilmInfoTextView;
     private ImageView selectedRoutefilmMapImageView;
     private ImageView selectedRoutefilmCountryFlagImageView;
+    private final Handler backToProductPickerHandler = new Handler(Looper.getMainLooper());
+    private final Runnable backToProductPickerRunnable = new Runnable() {
+        final int BACK_TO_PRODUCT_PICKER_SECONDS = 60 * 5; // 5 minutes
+        @Override
+        public void run() {
+            if (counter < BACK_TO_PRODUCT_PICKER_SECONDS) {
+                counter++;
+                backToProductPickerHandler.postDelayed(this, 1000);
+            } else {
+                Intent intent = new Intent(RoutefilmPickerActivity.this, ProductPickerActivity.class);
+                startActivity(intent);
+            }
+        }
+    };
 
 
     @Override
