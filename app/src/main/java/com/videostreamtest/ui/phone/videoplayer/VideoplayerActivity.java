@@ -580,11 +580,11 @@ public class VideoplayerActivity extends AppCompatActivity {
                 //Only show pause screen while the video is not in loading state
                 if (!isLoading) {
                     //If the average measurement is 0 and the route is not paused then pause and show pause screen
-                    if (getAverageCadenceMeasurements() == 0 && !routePaused && !(communicationType == CommunicationType.NONE)) {
+                    if (rpm == 0 && !routePaused && !(communicationType == CommunicationType.NONE)) {
                         togglePauseScreen();
                     } else {
                         //If the route is paused and the average measurement is higher then 0 then unpause en remove pause screen
-                        if (routePaused && getAverageCadenceMeasurements() > 0) {
+                        if (routePaused && rpm > 0) {
                             togglePauseScreen();
                         }
                     }
