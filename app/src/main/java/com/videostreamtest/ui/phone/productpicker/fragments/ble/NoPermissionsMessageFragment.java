@@ -1,12 +1,10 @@
 package com.videostreamtest.ui.phone.productpicker.fragments.ble;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,8 +21,8 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.videostreamtest.R;
-import com.videostreamtest.ui.phone.helpers.PermissionHelper;
-import com.videostreamtest.ui.phone.helpers.ViewHelper;
+import com.videostreamtest.helpers.PermissionHelper;
+import com.videostreamtest.helpers.ViewHelper;
 
 import org.jetbrains.annotations.NotNull;
 

@@ -1,41 +1,25 @@
 package com.videostreamtest.ui.phone.productpicker.fragments.productpicker;
 
-import android.app.job.JobScheduler;
-import android.app.job.JobService;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
-import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
+import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerAdapter;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerViewModel;
-import com.videostreamtest.ui.phone.productview.ProductActivity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class ProductPickerFragment extends Fragment {
     private final static String TAG = ProductPickerFragment.class.getSimpleName();

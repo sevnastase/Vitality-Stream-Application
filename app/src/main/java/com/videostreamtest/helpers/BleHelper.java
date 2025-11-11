@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.helpers;
+package com.videostreamtest.helpers;
 
 import android.bluetooth.BluetoothGatt;
 import android.content.Context;

@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.helpers;
+package com.videostreamtest.helpers;
 
 import static com.videostreamtest.constants.PermissionRequestConstants.BLUETOOTH_REQUEST_CODE;
 
@@ -13,7 +13,6 @@ import android.provider.Settings;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;

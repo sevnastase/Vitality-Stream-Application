@@ -5,17 +5,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
 import com.videostreamtest.config.application.PraxtourApplication;
-import com.videostreamtest.data.model.BleDeviceInfo;
 import com.videostreamtest.data.model.BluetoothDeviceInfo;
-import com.videostreamtest.ui.phone.helpers.BleHelper;
-import com.videostreamtest.ui.phone.helpers.PermissionHelper;
+import com.videostreamtest.helpers.BleHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 
 import org.jetbrains.annotations.NotNull;

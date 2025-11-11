@@ -42,10 +42,10 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.constants.CadenceSensorConstants;
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.helpers.BleHelper;
-import com.videostreamtest.ui.phone.helpers.LogHelper;
-import com.videostreamtest.ui.phone.helpers.PermissionHelper;
+import com.videostreamtest.helpers.AccountHelper;
+import com.videostreamtest.helpers.BleHelper;
+import com.videostreamtest.helpers.LogHelper;
+import com.videostreamtest.helpers.PermissionHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 
 import java.lang.reflect.Method;

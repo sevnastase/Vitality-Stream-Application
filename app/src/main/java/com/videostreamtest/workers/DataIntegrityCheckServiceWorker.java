@@ -14,7 +14,7 @@ import androidx.work.WorkerParameters;
 
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.service.database.DatabaseRestService;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.webinterface.PraxCloud;
 

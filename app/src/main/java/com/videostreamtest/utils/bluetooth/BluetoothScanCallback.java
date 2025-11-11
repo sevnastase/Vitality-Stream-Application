@@ -8,10 +8,9 @@ import android.bluetooth.le.ScanResult;
 import android.os.ParcelUuid;
 import android.util.Log;
 
-import com.videostreamtest.data.model.BleDeviceInfo;
 import com.videostreamtest.data.model.BluetoothDeviceInfo;
 import com.videostreamtest.service.bluetooth.CSCProfile;
-import com.videostreamtest.ui.phone.helpers.PermissionHelper;
+import com.videostreamtest.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.productpicker.fragments.bluetooth.BluetoothDeviceAdapter;
 
 import java.util.ArrayList;

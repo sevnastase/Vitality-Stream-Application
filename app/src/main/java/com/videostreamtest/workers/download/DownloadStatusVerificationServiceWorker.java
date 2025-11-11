@@ -11,7 +11,7 @@ import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 import com.videostreamtest.data.model.Movie;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.helpers.DownloadHelper;
 
 import java.util.List;
 

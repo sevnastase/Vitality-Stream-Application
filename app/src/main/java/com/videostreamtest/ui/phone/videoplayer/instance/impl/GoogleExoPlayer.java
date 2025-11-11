@@ -1,9 +1,7 @@
 package com.videostreamtest.ui.phone.videoplayer.instance.impl;
 
-import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
-import android.util.Log;
 import android.view.View;
 
 //import androidx.media3.common.MediaItem;
@@ -11,9 +9,6 @@ import android.view.View;
 //import androidx.media3.exoplayer.ExoPlayer;
 //import androidx.media3.ui.PlayerView;
 
-import com.videostreamtest.config.application.PraxtourApplication;
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.helpers.LogHelper;
 import com.videostreamtest.ui.phone.videoplayer.instance.Videoplayer;
 
 public class GoogleExoPlayer implements Videoplayer {

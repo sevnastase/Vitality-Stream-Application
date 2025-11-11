@@ -31,7 +31,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.videostreamtest.R;
 import com.videostreamtest.service.mqtt.MQTTService;
-import com.videostreamtest.ui.phone.helpers.DataHolder;
+import com.videostreamtest.helpers.DataHolder;
 
 import java.util.Objects;
 

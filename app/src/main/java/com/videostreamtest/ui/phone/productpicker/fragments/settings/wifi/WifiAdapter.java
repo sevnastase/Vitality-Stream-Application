@@ -8,17 +8,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
 import com.videostreamtest.service.wifi.WifiManager;
 import com.videostreamtest.service.wifi.WifiStrength;
-import com.videostreamtest.ui.phone.helpers.ViewHelper;
+import com.videostreamtest.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 
 import java.util.ArrayList;

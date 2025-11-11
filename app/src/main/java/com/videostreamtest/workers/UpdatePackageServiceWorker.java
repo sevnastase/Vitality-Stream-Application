@@ -3,34 +3,23 @@ package com.videostreamtest.workers;
 import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Process;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.work.Data;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import com.google.gson.GsonBuilder;
-import com.videostreamtest.data.model.Movie;
-import com.videostreamtest.data.model.appinfo.Metadata;
-import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
-import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.helpers.ConfigurationHelper;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 
 public class UpdatePackageServiceWorker extends Worker {
     private static final String TAG = UpdatePackageServiceWorker.class.getSimpleName();

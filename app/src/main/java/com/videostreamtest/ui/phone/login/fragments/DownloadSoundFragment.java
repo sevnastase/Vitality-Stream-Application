@@ -24,7 +24,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.videostreamtest.R;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.login.LoginViewModel;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.workers.download.DownloadSoundServiceWorker;

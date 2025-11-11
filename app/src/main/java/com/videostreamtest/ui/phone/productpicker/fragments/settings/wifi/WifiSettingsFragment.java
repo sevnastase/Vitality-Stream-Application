@@ -1,16 +1,13 @@
 package com.videostreamtest.ui.phone.productpicker.fragments.settings.wifi;
 
-import static com.videostreamtest.constants.NetworkConstants.MQTT_BROKER_IP;
 import static com.videostreamtest.constants.SharedPreferencesConstants.NO_WIFI_PERMISSION;
 import static com.videostreamtest.constants.SharedPreferencesConstants.WIFI_NOT_CONNECTED;
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.net.wifi.ScanResult;
 import android.os.Bundle;
 import android.os.Handler;
@@ -43,8 +40,8 @@ import com.videostreamtest.service.wifi.WifiManager;
 import com.videostreamtest.service.wifi.WifiService;
 import com.videostreamtest.service.wifi.WifiSpeedtest;
 import com.videostreamtest.service.wifi.WifiStrength;
-import com.videostreamtest.ui.phone.helpers.PermissionHelper;
-import com.videostreamtest.ui.phone.helpers.ViewHelper;
+import com.videostreamtest.helpers.PermissionHelper;
+import com.videostreamtest.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 
 import java.util.ArrayList;

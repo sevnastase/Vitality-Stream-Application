@@ -1,7 +1,5 @@
 package com.videostreamtest.ui.phone.productview.fragments;
 
-import static android.content.Context.MODE_PRIVATE;
-
 import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
 
 import android.content.BroadcastReceiver;
@@ -26,28 +24,21 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.GsonBuilder;
-import com.squareup.picasso.MemoryPolicy;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
-import com.videostreamtest.config.entity.Flag;
-import com.videostreamtest.config.entity.MovieFlag;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.constants.SharedPreferencesConstants;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
-import com.videostreamtest.ui.phone.helpers.LogHelper;
-import com.videostreamtest.ui.phone.helpers.ViewHelper;
+import com.videostreamtest.helpers.AccountHelper;
+import com.videostreamtest.helpers.DownloadHelper;
+import com.videostreamtest.helpers.LogHelper;
+import com.videostreamtest.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.fragments.routefilmadapter.RoutefilmsAdapter;
-import com.videostreamtest.ui.phone.productview.fragments.routefilmadapter.RoutefilmsViewHolder;
 import com.videostreamtest.ui.phone.productview.layoutmanager.CustomGridLayoutManager;
-import com.videostreamtest.ui.phone.productview.layoutmanager.EndlessRecyclerViewScrollListener;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
-import com.videostreamtest.utils.ApplicationSettings;
 
 import java.io.File;
 import java.util.ArrayList;

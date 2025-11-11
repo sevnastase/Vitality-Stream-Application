@@ -24,7 +24,7 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.data.model.BleDeviceInfo;
 import com.videostreamtest.service.ble.BleService;
-import com.videostreamtest.ui.phone.helpers.BleHelper;
+import com.videostreamtest.helpers.BleHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 

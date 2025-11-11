@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -28,9 +27,9 @@ import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.constants.SharedPreferencesConstants;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
-import com.videostreamtest.ui.phone.helpers.LogHelper;
+import com.videostreamtest.helpers.AccountHelper;
+import com.videostreamtest.helpers.DownloadHelper;
+import com.videostreamtest.helpers.LogHelper;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 

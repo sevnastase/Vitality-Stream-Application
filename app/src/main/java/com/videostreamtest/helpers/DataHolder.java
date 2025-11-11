@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.helpers;
+package com.videostreamtest.helpers;
 
 public class DataHolder {
     private static DataHolder instance;

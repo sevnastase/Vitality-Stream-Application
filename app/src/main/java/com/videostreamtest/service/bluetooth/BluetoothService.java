@@ -21,7 +21,7 @@ import androidx.annotation.Nullable;
 
 import com.videostreamtest.config.application.PraxtourApplication;
 import com.videostreamtest.constants.CadenceSensorConstants;
-import com.videostreamtest.ui.phone.helpers.PermissionHelper;
+import com.videostreamtest.helpers.PermissionHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;

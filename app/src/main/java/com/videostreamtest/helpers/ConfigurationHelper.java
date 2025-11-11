@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.helpers;
+package com.videostreamtest.helpers;
 
 import android.app.ActivityManager;
 import android.content.Context;

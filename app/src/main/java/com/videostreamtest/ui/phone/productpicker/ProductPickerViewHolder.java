@@ -14,16 +14,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.GsonBuilder;
-import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.ui.phone.helpers.ViewHelper;
-import com.videostreamtest.ui.phone.productview.ProductActivity;
 import com.videostreamtest.ui.phone.routefilmpicker.RoutefilmPickerActivity;
-import com.videostreamtest.utils.ApplicationSettings;
 
 public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
 

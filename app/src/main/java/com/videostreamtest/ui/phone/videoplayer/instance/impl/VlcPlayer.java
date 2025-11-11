@@ -6,19 +6,15 @@ import android.net.Uri;
 import android.util.Log;
 import android.view.View;
 
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.helpers.LogHelper;
+import com.videostreamtest.helpers.AccountHelper;
+import com.videostreamtest.helpers.LogHelper;
 import com.videostreamtest.ui.phone.videoplayer.instance.Videoplayer;
 import com.videostreamtest.utils.VideoLanLib;
 
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
-import org.videolan.libvlc.interfaces.IMedia;
 import org.videolan.libvlc.util.VLCVideoLayout;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class VlcPlayer implements Videoplayer {
     private static final String TAG = VlcPlayer.class.getSimpleName();

@@ -16,7 +16,7 @@ import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.helpers.DownloadHelper;
 
 import java.io.File;
 

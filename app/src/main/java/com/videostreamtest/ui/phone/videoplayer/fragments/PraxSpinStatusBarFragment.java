@@ -1,13 +1,10 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
-import android.widget.Chronometer;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -16,8 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.MoviePart;
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
+import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;

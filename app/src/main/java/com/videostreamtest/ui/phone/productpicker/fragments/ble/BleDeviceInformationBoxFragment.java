@@ -37,7 +37,7 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.service.ble.callback.BleScanCallback;
-import com.videostreamtest.ui.phone.helpers.ViewHelper;
+import com.videostreamtest.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 

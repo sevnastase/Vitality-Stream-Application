@@ -25,7 +25,7 @@ import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 import com.videostreamtest.config.entity.tracker.GeneralDownloadTracker;
 import com.videostreamtest.data.model.Movie;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.download.callback.CallbackByteChannel;
 import com.videostreamtest.workers.download.callback.ProgressCallBack;

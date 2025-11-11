@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.helpers;
+package com.videostreamtest.helpers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -36,8 +36,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-
-import static android.content.Context.MODE_PRIVATE;
 
 public class DownloadHelper {
     private static final String TAG = DownloadHelper.class.getSimpleName();

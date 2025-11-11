@@ -1,9 +1,6 @@
 package com.videostreamtest.ui.phone.productview;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -17,18 +14,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.ExistingPeriodicWorkPolicy;
@@ -44,40 +38,28 @@ import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
-import com.videostreamtest.data.model.log.DeviceInformation;
 import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.enums.CommunicationDevice;
-import com.videostreamtest.service.ble.BleService;
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
-import com.videostreamtest.ui.phone.helpers.LogHelper;
-import com.videostreamtest.ui.phone.helpers.PermissionHelper;
+import com.videostreamtest.helpers.AccountHelper;
+import com.videostreamtest.helpers.ConfigurationHelper;
+import com.videostreamtest.helpers.DownloadHelper;
+import com.videostreamtest.helpers.LogHelper;
+import com.videostreamtest.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.VideoLanLib;
-import com.videostreamtest.workers.synchronisation.ActiveProductMovieLinksServiceWorker;
 import com.videostreamtest.workers.DataIntegrityCheckServiceWorker;
 import com.videostreamtest.workers.download.DownloadFlagsServiceWorker;
 import com.videostreamtest.workers.download.DownloadMovieImagesServiceWorker;
-import com.videostreamtest.workers.download.DownloadMovieServiceWorker;
 import com.videostreamtest.workers.download.DownloadRoutepartsServiceWorker;
 import com.videostreamtest.workers.download.DownloadSoundServiceWorker;
-import com.videostreamtest.workers.SoundInformationServiceWorker;
-import com.videostreamtest.workers.synchronisation.SyncFlagsServiceWorker;
-import com.videostreamtest.workers.synchronisation.SyncMovieFlagsServiceWorker;
-import com.videostreamtest.workers.UpdateRegisteredMovieServiceWorker;
-import com.videostreamtest.workers.UpdateRoutePartsServiceWorker;
 
 import java.util.concurrent.TimeUnit;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-
-import static com.videostreamtest.utils.ApplicationSettings.NUMBER_OF_DOWNLOAD_RUNNERS;
 
 import org.jetbrains.annotations.NotNull;
 

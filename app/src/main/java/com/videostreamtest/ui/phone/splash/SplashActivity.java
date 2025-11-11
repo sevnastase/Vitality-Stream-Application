@@ -31,9 +31,9 @@ import com.google.android.play.core.tasks.Task;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Product;
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
-import com.videostreamtest.ui.phone.helpers.LogHelper;
+import com.videostreamtest.helpers.AccountHelper;
+import com.videostreamtest.helpers.ConfigurationHelper;
+import com.videostreamtest.helpers.LogHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -42,10 +42,6 @@ import com.videostreamtest.workers.AccountServiceWorker;
 import com.videostreamtest.workers.InstallPackageServiceWorker;
 import com.videostreamtest.workers.UpdatePackageServiceWorker;
 import com.videostreamtest.workers.download.DownloadStatusVerificationServiceWorker;
-
-import org.videolan.libvlc.LibVLC;
-
-import java.util.concurrent.TimeUnit;
 
 
 public class SplashActivity extends AppCompatActivity {

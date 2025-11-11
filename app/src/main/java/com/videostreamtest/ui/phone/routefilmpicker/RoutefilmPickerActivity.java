@@ -38,10 +38,10 @@ import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.repository.RoutefilmRepository;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
-import com.videostreamtest.ui.phone.helpers.ViewHelper;
+import com.videostreamtest.helpers.AccountHelper;
+import com.videostreamtest.helpers.ConfigurationHelper;
+import com.videostreamtest.helpers.DownloadHelper;
+import com.videostreamtest.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 

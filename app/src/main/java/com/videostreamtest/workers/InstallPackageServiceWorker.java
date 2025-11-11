@@ -21,8 +21,8 @@ import androidx.work.WorkerParameters;
 
 import com.videostreamtest.BuildConfig;
 import com.videostreamtest.service.database.DatabaseRestService;
-import com.videostreamtest.ui.phone.helpers.ConfigurationHelper;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.helpers.ConfigurationHelper;
+import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.download.callback.CallbackByteChannel;
 import com.videostreamtest.workers.download.callback.ProgressCallBack;

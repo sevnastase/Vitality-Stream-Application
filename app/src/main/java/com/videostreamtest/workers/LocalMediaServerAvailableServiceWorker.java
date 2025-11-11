@@ -10,7 +10,7 @@ import androidx.work.WorkerParameters;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.data.model.Movie;
-import com.videostreamtest.ui.phone.helpers.LogHelper;
+import com.videostreamtest.helpers.LogHelper;
 
 import java.net.InetAddress;
 import java.net.MalformedURLException;

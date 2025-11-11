@@ -23,7 +23,7 @@ import com.videostreamtest.config.entity.tracker.GeneralDownloadTracker;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.service.database.DatabaseRestService;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.download.callback.ProgressCallBack;
 import com.videostreamtest.workers.download.callback.CallbackByteChannel;

@@ -3,12 +3,9 @@ package com.videostreamtest.ui.phone.videoplayer.fragments.routeparts;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,21 +14,15 @@ import androidx.lifecycle.Observer;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.cast.framework.media.zzbv;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
-import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.helpers.DownloadHelper;
+import com.videostreamtest.helpers.AccountHelper;
+import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
-import com.videostreamtest.utils.DistanceLookupTable;
-
-import java.io.File;
-import java.util.Objects;
 
 public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
 

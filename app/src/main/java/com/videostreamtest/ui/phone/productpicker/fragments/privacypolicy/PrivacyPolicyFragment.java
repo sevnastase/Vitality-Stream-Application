@@ -15,8 +15,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.videostreamtest.R;
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.helpers.LogHelper;
+import com.videostreamtest.helpers.AccountHelper;
+import com.videostreamtest.helpers.LogHelper;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerViewModel;
 
 public class PrivacyPolicyFragment extends Fragment {

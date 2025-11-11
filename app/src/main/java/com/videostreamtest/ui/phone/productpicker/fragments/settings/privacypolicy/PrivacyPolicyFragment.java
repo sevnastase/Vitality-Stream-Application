@@ -14,8 +14,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.videostreamtest.R;
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.helpers.LogHelper;
+import com.videostreamtest.helpers.AccountHelper;
+import com.videostreamtest.helpers.LogHelper;
 
 public class PrivacyPolicyFragment extends Fragment {
     private final static String TAG = PrivacyPolicyFragment.class.getSimpleName();

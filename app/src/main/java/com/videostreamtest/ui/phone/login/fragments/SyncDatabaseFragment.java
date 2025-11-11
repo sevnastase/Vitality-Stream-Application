@@ -23,10 +23,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.videostreamtest.R;
-import com.videostreamtest.config.db.PraxtourDatabase;
-import com.videostreamtest.config.entity.Routefilm;
-import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
+import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.login.LoginViewModel;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.workers.SoundInformationServiceWorker;
@@ -38,9 +35,6 @@ import com.videostreamtest.workers.synchronisation.SyncFlagsServiceWorker;
 import com.videostreamtest.workers.synchronisation.SyncMovieFlagsServiceWorker;
 
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SyncDatabaseFragment extends Fragment {
     private LoginViewModel loginViewModel;

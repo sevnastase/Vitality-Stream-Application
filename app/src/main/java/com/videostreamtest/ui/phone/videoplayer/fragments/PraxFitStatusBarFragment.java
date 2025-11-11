@@ -15,8 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.MoviePart;
-import com.videostreamtest.ui.phone.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
+import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
