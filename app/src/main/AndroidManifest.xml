@@ -35,6 +35,7 @@
     <!-- REQUIRED FOR ON_BOOT_COMPLETED RECEIVER   -->
     <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION"  />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- REQUIRED FOR KEEP SCREEN ON -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -196,6 +197,11 @@
             android:icon="@drawable/ic_launcher_background"
             android:label="WifiService"
             android:foregroundServiceType="location" />
+
+        <service
+            android:name=".service.boot_on_start.BootStartupService"
+            android:foregroundServiceType="dataSync|connectedDevice"
+            android:exported="false" />
 
         <receiver android:name=".receiver.OnBootCompletedBroadcastReceiver"
             android:enabled="true"
