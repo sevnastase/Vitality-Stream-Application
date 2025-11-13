@@ -203,7 +203,7 @@ public abstract class PraxtourDatabase extends RoomDatabase {
         }
     };
 
-    static final Migration MIGRATION_13_12 = new Migration(13, 12) {
+    static final Migration MIGRATION_12_13 = new Migration(12, 13) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             // 1. Create new table with correct schema
@@ -259,7 +259,7 @@ public abstract class PraxtourDatabase extends RoomDatabase {
                                     MIGRATION_9_10,
                                     MIGRATION_10_11,
                                     MIGRATION_11_12,
-                                    MIGRATION_13_12)
+                                    MIGRATION_12_13)
                             
                             .build();
                 }
