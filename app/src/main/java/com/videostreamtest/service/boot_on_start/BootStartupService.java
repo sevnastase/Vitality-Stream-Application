@@ -33,7 +33,7 @@ public class BootStartupService extends Service {
             splash.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(splash);
             stopSelf();
-        }, 5000);
+        }, 10000);
 
         return START_NOT_STICKY;
     }

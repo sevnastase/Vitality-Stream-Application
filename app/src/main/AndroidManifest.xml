@@ -96,6 +96,8 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
 
@@ -191,6 +193,11 @@
             android:icon="@drawable/ic_launcher_background"
             android:label="BleService"
             android:foregroundServiceType="location|connectedDevice" />
+
+        <service
+            android:name="com.videostreamtest.service.mqtt.MQTTService"
+            android:icon="@drawable/ic_launcher_background"
+            android:label="MQTTService" />
 
         <service
             android:name=".service.wifi.WifiService"
