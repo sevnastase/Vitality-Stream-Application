@@ -56,20 +56,21 @@ public class AccountServiceWorker extends AbstractPraxtourWorker {
 
         String oldAccountType = myPreferences.getString("account-type", "");
         String newAccountType = accountConfiguration.getAccountType();
-        if (newAccountType.equalsIgnoreCase(oldAccountType)) {
-            Data output = new Data.Builder()
+        Data output;
+
+        if (oldAccountType.equalsIgnoreCase(newAccountType)) {
+            output = new Data.Builder()
                     .putBoolean("accountTypeChanged", false)
                     .build();
-            Result.success(output);
         } else {
             SharedPreferences.Editor editor = myPreferences.edit();
             editor.putString("account-type", newAccountType);
-            Data output = new Data.Builder()
+            editor.apply();
+            output = new Data.Builder()
                     .putBoolean("accountTypeChanged", true)
                     .build();
-            Result.success(output);
         }
 
-        return Result.failure();
+        return Result.success(output);
     }
 }
