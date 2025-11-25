@@ -8,6 +8,16 @@
     android:keepScreenOn="true"
     android:background="@drawable/profile_overview_background">
 
+    <ImageView
+        android:id="@+id/chinesport_logo_imageview"
+        android:layout_width="190dp"
+        android:layout_height="190dp"
+        android:layout_marginStart="25dp"
+        android:src="@drawable/chinesport_white_logo_cropped"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <Button
         android:id="@+id/productpicker_settings_button"
         style="@style/AppTheme.ProductPickerSideButton"

@@ -16,10 +16,10 @@
             android:id="@+id/nav_ble"
             android:icon="@drawable/ic_baseline_settings_bluetooth_white_24"
             android:title="@string/menu_nav_ble_settings_title" />
-<!--        <item-->
-<!--            android:id="@+id/nav_privacy"-->
-<!--            android:icon="@drawable/ic_privacy"-->
-<!--            android:title="@string/menu_nav_privacy_policy_title" />-->
+        <item
+            android:id="@+id/nav_motolife"
+            android:icon="@drawable/motolife_login"
+            android:title="@string/menu_nav_motolife_settings_title" />
         <item
             android:id="@+id/nav_settings"
             android:icon="@drawable/settings_cogwheel"

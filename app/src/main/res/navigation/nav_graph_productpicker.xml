@@ -25,6 +25,10 @@
         android:name="com.videostreamtest.ui.phone.productpicker.fragments.ble.BleDeviceInformationBoxFragment"
         android:label="BleDeviceInformationBoxFragment" />
     <fragment
+        android:id="@+id/motoLifeLoginFragment"
+        android:name="com.videostreamtest.ui.phone.productpicker.fragments.mqtt.MQTTConnectionFragment"
+        android:label="MQTTConnectionFragment" />
+    <fragment
         android:id="@+id/logoutFragment"
         android:name="com.videostreamtest.ui.phone.productpicker.fragments.logout.LogoutFragment"
         android:label="LogoutFragment" />
