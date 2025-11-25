@@ -29,7 +29,7 @@ public abstract class AbstractPraxtourWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        if (!NetworkHelper.isInternetReachable(PraxtourApplication.getAppContext())) return Result.failure();
+        if (NetworkHelper.isNetworkPraxtourLAN(PraxtourApplication.getAppContext())) return Result.failure();
 
         return doActualWork();
     }
