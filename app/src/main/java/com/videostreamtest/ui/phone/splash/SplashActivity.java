@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -34,6 +35,7 @@ import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.helpers.ConfigurationHelper;
 import com.videostreamtest.helpers.LogHelper;
+import com.videostreamtest.helpers.NetworkHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -70,9 +72,15 @@ public class SplashActivity extends AppCompatActivity {
 
         loadTimer = new Handler(Looper.getMainLooper());
 
-        checkForUpdates();
-        checkDownloadStatusVerification();
-        refreshAccountInformation();
+        if (!NetworkHelper.isNetworkPraxtourLAN(this)) {
+            checkForUpdates();
+            checkDownloadStatusVerification();
+            refreshAccountInformation();
+        }
+
+        getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         //New way
         splashViewModel.getCurrentConfig().observe(this, config -> {
@@ -82,7 +90,9 @@ public class SplashActivity extends AppCompatActivity {
             if (config != null) {
                 Log.d(TAG, "Token :: " + config.getAccountToken() + " > Current =  " + config.isCurrent());
                 //If there's internet, retrieve account info and/or synchronize data
-                ConfigurationHelper.loadExternalData(this, config.getAccountToken());
+                if (!NetworkHelper.isNetworkPraxtourLAN(this)) {
+                    ConfigurationHelper.loadExternalData(this, config.getAccountToken());
+                }
 
                 splashViewModel.resetUsageTracker(config.getAccountToken());
                 splashViewModel.resetInterruptedDownloads();
@@ -109,6 +119,12 @@ public class SplashActivity extends AppCompatActivity {
                 SharedPreferences.Editor editor = getSharedPreferences("app", MODE_PRIVATE).edit();
                 editor.putBoolean("bootable", config.isBootOnStart());
                 editor.commit();
+
+                if (NetworkHelper.isNetworkPraxtourLAN(this)) {
+                    startActivity(new Intent(this, ProductPickerActivity.class));
+                    finish();
+                    return;
+                }
 
                 /**
                  * TODO  if accounttoken is valid (create worker)
