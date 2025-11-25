@@ -21,7 +21,8 @@ public class AccountHelper {
     public static boolean isLocalPlay(final Context context) {
         String accountType = getAccountType(context);
         return "standalone".equalsIgnoreCase(accountType)
-                || "hybrid".equalsIgnoreCase(accountType);
+                || "hybrid".equalsIgnoreCase(accountType)
+                || "motolife".equalsIgnoreCase(accountType);
     }
 
     public static String getAccountMediaServerUrl(final Context context) {
@@ -30,5 +31,9 @@ public class AccountHelper {
 
     public static Boolean isAccountBootable(final Context context) {
         return context.getApplicationContext().getSharedPreferences("app",0).getBoolean("bootable", false);
+    }
+
+    public static boolean isChinesportAccount(final Context context) {
+        return "motolife".equalsIgnoreCase(getAccountType(context));
     }
 }

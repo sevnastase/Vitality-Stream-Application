@@ -79,10 +79,11 @@ public class MQTTManager {
     public void connect() throws MqttException {
         MqttConnectOptions options = new MqttConnectOptions();
         options.setCleanSession(true);
-        options.setUserName(username);
-        options.setPassword(password.toCharArray());
+        if (!username.isEmpty()) options.setUserName(username);
+        if (!password.isEmpty()) options.setPassword(password.toCharArray());
         options.setAutomaticReconnect(automaticReconnect);
         options.setConnectionTimeout(TIMEOUT_SECONDS);
+        options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1_1);
 
         client = new MqttClient(brokerUrl, clientId, new MemoryPersistence());
 

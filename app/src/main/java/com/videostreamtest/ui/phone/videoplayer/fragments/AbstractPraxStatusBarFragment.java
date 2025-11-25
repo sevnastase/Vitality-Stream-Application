@@ -48,7 +48,7 @@ import java.util.Objects;
 /**
  * This class is the template for classes that are responsible for the proper functioning
  * of the bottom, black, semi-transparent bars that contain information and buttons.
- *
+ * <p>
  * This class contains (or aims to contain) all mutual behaviour between all current and future
  * products from Praxtour.
  */
@@ -107,10 +107,10 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
     protected ImageButton stopButton;
 
     //FOR CHINESPORT
-    protected TextView chinesportPower;
-    protected TextView chinesportMode;
-    protected TextView chinesportDirection;
-    protected TextView chinesportTime;
+    protected TextView motolifePower;
+    protected TextView motolifeMode;
+    protected TextView motolifeDirection;
+    protected TextView motolifeTime;
     protected boolean startedFromMotolife;
     protected IntentFilter mqttMessageFilter = new IntentFilter();
 
@@ -133,9 +133,6 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
                 pauseFilm();
                 Log.d(TAG, "Film Paused");
                 showPausedDialog();
-                break;
-            case "com.videostreamtest.ACTION_STOP_FILM":
-                ((Activity) Objects.requireNonNull(getView()).getContext()).finish();
                 break;
             case "com.videostreamtest.ACTION_RESUME_FILM":
                 Log.d(TAG, "Resume selected.");
@@ -211,10 +208,10 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         rpmIndicator = view.findViewById(R.id.statusbar_rpm_value);
 
         // CHINESPORT
-        chinesportPower = view.findViewById(R.id.statusbar_motolife_power_value);
-        chinesportMode = view.findViewById(R.id.statusbar_motolife_mode_value);
-        chinesportDirection = view.findViewById(R.id.statusbar_motolife_direction_value);
-        chinesportTime = view.findViewById(R.id.statusbar_motolife_time_value);
+        motolifePower = view.findViewById(R.id.statusbar_motolife_power_value);
+        motolifeMode = view.findViewById(R.id.statusbar_motolife_mode_value);
+        motolifeDirection = view.findViewById(R.id.statusbar_motolife_direction_value);
+        motolifeTime = view.findViewById(R.id.statusbar_motolife_time_value);
 
         usedStatusBarBoxes = new ArrayList<>();
     }
@@ -275,10 +272,10 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
 
         Log.d(TAG, "startedFromMotoLife: " + startedFromMotolife);
         if (startedFromMotolife) {
-            chinesportTime.setVisibility(View.VISIBLE);
+            motolifeTime.setVisibility(View.VISIBLE);
             stopwatchCurrentRide.setVisibility(View.GONE);
         } else {
-            chinesportTime.setVisibility(View.GONE);
+            motolifeTime.setVisibility(View.GONE);
             stopwatchCurrentRide.setVisibility(View.VISIBLE);
         }
     }
@@ -461,10 +458,10 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
             String time = motoLifeData.get(4);
 
             rpmIndicator.setText(speed);
-            chinesportPower.setText(power);
-            chinesportMode.setText(mode);
-            chinesportDirection.setText(direction);
-            chinesportTime.setText(time);
+            motolifePower.setText(power);
+            motolifeMode.setText(mode);
+            motolifeDirection.setText(direction);
+            motolifeTime.setText(time);
         } catch (IndexOutOfBoundsException ignored) {}
     }
 
@@ -476,7 +473,6 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
     public void onResume() {
         super.onResume();
         mqttMessageFilter.addAction("com.videostreamtest.ACTION_PAUSE_FILM");
-        mqttMessageFilter.addAction("com.videostreamtest.ACTION_STOP_FILM");
         mqttMessageFilter.addAction("com.videostreamtest.ACTION_RESUME_FILM");
         mqttMessageFilter.addAction("com.videostreamtest.MQTT_DATA_UPDATE");
         mqttMessageFilter.addAction("com.videostreamtest.ACTION_FINISH_FILM");

@@ -70,6 +70,7 @@ public class LoginStatusFragment extends Fragment {
             } else {
                 switch (arguments.getString("account-type", "").toLowerCase()) {
                     case "standalone":
+                    case "motolife":
                         loginStatusText.setText(R.string.login_status_summary_standalone);
                         nextButton.setOnClickListener((onClickedView) -> {
                             if (getStoragePermissionsForRequest().size() > 0) {

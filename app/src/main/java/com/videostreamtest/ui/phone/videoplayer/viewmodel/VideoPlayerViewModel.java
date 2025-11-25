@@ -3,13 +3,12 @@ package com.videostreamtest.ui.phone.videoplayer.viewmodel;
 import static com.videostreamtest.service.database.DatabaseRestService.TAG;
 
 import android.app.Application;
-import android.util.Log;
+import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Transformations;
 
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.EffectSound;
@@ -55,6 +54,7 @@ public class VideoPlayerViewModel extends AndroidViewModel {
 
     public VideoPlayerViewModel(@NonNull Application application) {
         super(application);
+        int preferredDefaultVolume = application.getSharedPreferences("app", Context.MODE_PRIVATE).getInt("defaultVolume", 50);
         //INITIALIZE REPOSITORIES
         routepartRepository         = new RoutepartRepository(application);
         backgroundSoundRepository   = new BackgroundSoundRepository(application);
@@ -63,7 +63,7 @@ public class VideoPlayerViewModel extends AndroidViewModel {
         //Set Start values on creation of viewmodel
         rpmData.setValue(startRpmValue);
         kmhData.setValue(startKmhValue);
-        volumeLevel.setValue(startVolumeLevel);
+        volumeLevel.setValue(preferredDefaultVolume);
         statusbarVisible.setValue(statusbarVisibility);
         movieTotalDurationSeconds.setValue(totalDurationSeconds);
         movieSpendDurationSeconds.setValue(spendDurationSeconds);

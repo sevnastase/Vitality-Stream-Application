@@ -4,6 +4,8 @@ import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
 
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -40,6 +42,7 @@ import androidx.lifecycle.ViewModelProvider;
 //import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 //import com.google.android.exoplayer2.ui.PlayerView;
 
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackParameters;
 import androidx.media3.common.Player;
@@ -55,6 +58,7 @@ import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.enums.CommunicationType;
+import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.receiver.CadenceSensorBroadcastReceiver;
 import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.helpers.ConfigurationHelper;
@@ -83,6 +87,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     private static final String TAG = VideoplayerExoActivity.class.getSimpleName();
 
     private static final int MAX_PAUSE_TIME_SEC = 55;
+    private static final int AUTO_BACK_TO_OVERVIEW_SECONDS = 10;
     private VideoPlayerViewModel videoPlayerViewModel;
 
     private static VideoplayerExoActivity thisInstance;
@@ -135,6 +140,32 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
     //BLE
     private boolean backToOverviewWaitForSensor = false;
+
+    //MQTT
+    private int rpmMqtt;
+    private final BroadcastReceiver mqttBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action == null) return;
+
+            switch (action) {
+                case "com.videostreamtest.MQTT_DATA_UPDATE":
+                    processIncomingData(intent);
+                    break;
+                case "videoplayer_finish_film":
+                    if (videoPlayerViewModel != null) {
+                        videoPlayerViewModel.setVolumeLevel(0);
+                    }
+                    showFinishScreen();
+                    break;
+                case "com.videostreamtest.ACTION_STOP_FILM":
+                    stopVideoplayer();
+                    break;
+            }
+
+        }
+    };
 
     //CHROMECAST
 //    List<RendererDiscoverer> rendererDiscovererList = new ArrayList<>();
@@ -344,6 +375,14 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             praxHandler.postDelayed(() -> statusbarContainer.setVisibility(View.VISIBLE), 5500);
         }
 
+        if (AccountHelper.isChinesportAccount(this)) {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction("com.videostreamtest.MQTT_DATA_UPDATE");
+            filter.addAction("videoplayer_finish_film");
+            filter.addAction("com.videostreamtest.ACTION_STOP_FILM");
+            LocalBroadcastManager.getInstance(this).registerReceiver(mqttBroadcastReceiver, filter);
+        }
+
         videoPlayerViewModel.getVolumeLevel().observe(this, volumeLevel -> {
             if (mediaPlayer!=null && volumeLevel != null) {
                 final float bgVolumeLevel = Float.valueOf(""+volumeLevel) / 100;
@@ -393,25 +432,6 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             Runnable controller = autoRunner();
             autoRunnerHandler.post(controller);
         }
-
-        int preferredDefaultVolume = getSharedPreferences("app", Context.MODE_PRIVATE).getInt("defaultVolume", 50);
-        videoPlayerViewModel.setVolumeLevel(preferredDefaultVolume);
-
-        // Workaround: if this is not here, the preferred sound will not take effect
-        // the status bar (bottom) will show the correct volume, however the actual
-        // volume is different FIXME
-        new Handler().postDelayed(() -> {
-            if (videoPlayerViewModel.getVolumeLevel().getValue() != null &&
-                    videoPlayerViewModel.getVolumeLevel().getValue() <= 90) {
-                videoPlayerViewModel.changeVolumeLevelBy(10);
-                videoPlayerViewModel.changeVolumeLevelBy(-10);
-            }
-            if (videoPlayerViewModel.getVolumeLevel().getValue() != null &&
-                    videoPlayerViewModel.getVolumeLevel().getValue() >= 10) {
-                videoPlayerViewModel.changeVolumeLevelBy(-10);
-                videoPlayerViewModel.changeVolumeLevelBy(10);
-            }
-        }, 200);
     }
 
     @NonNull
@@ -663,12 +683,15 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         bgSoundPlayerView.hideController();
 
         timelineHandler.post(new Runnable() {
-            int counter = 0;
+            int counter = AUTO_BACK_TO_OVERVIEW_SECONDS;
 
             @Override
+            @SuppressLint("DefaultLocale")
             public void run() {
-                if (counter < MAX_PAUSE_TIME_SEC) {
-                    counter++;
+                if (counter > 0) {
+                    String newText = String.format("%s (%d)", getString(R.string.pause_screen_button_text), counter);
+                    backToOverview.setText(newText);
+                    counter--;
                     timelineHandler.postDelayed(this, 1000);
                 } else {
                     runOnUiThread(VideoplayerExoActivity.this::stopVideoplayer);
@@ -778,6 +801,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         stopSensorService();
         try {
             this.unregisterReceiver(cadenceSensorBroadcastReceiver);
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(mqttBroadcastReceiver);
         } catch (IllegalArgumentException illegalArgumentException) {
             Log.e(TAG, illegalArgumentException.getLocalizedMessage());
         }
@@ -914,20 +938,16 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             @Override
             public void run() {
                 if (mediaPlayer != null) {
-                    if (mediaPlayer!=null) {
-                        try {
-                            Log.d(TAG, "Mediaplayer is playing: "+mediaPlayer.isPlaying());
-                            Log.d(TAG, "Seekable: " + mediaPlayer.isPlaying());
-                            Log.d(TAG, "Time available: " + mediaPlayer.getDuration());
-                            Log.d(TAG, "Length available: " + mediaPlayer.getContentDuration());
-                        } catch (Exception exception) {
-                            Log.e(TAG, exception.getLocalizedMessage());
-                        }
+                    try {
+                        Log.d(TAG, "Mediaplayer is playing: "+mediaPlayer.isPlaying());
+                        Log.d(TAG, "Seekable: " + mediaPlayer.isPlaying());
+                        Log.d(TAG, "Time available: " + mediaPlayer.getDuration());
+                        Log.d(TAG, "Length available: " + mediaPlayer.getContentDuration());
+                    } catch (Exception exception) {
+                        Log.e(TAG, exception.getLocalizedMessage());
                     }
-                    if (    (currentSecond >= minSecondsLoadingView) &&
-                            isPraxtourMediaPlayerReady() &&
-                            (sensorConnected || ApplicationSettings.DEVELOPER_MODE)
-                    ) {
+
+                    if (mediaPlayerShouldBeStarted(currentSecond)) {
                         isLoading = false;
                         playVideo();
                     } else {
@@ -946,6 +966,12 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             }
         };
         praxHandler.post(runnable);
+    }
+
+    private boolean mediaPlayerShouldBeStarted(int currentSecond) {
+        return currentSecond >= minSecondsLoadingView &&
+                isPraxtourMediaPlayerReady() &&
+                (sensorConnected || ApplicationSettings.DEVELOPER_MODE || AccountHelper.isChinesportAccount(this));
     }
 
     private void setTimeLineEventVideoPlayer() {
@@ -1143,9 +1169,29 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         }
     }
 
+    private void processIncomingData(Intent intent) {
+        ArrayList<String> motoLifeData = intent.getStringArrayListExtra("motoLifeData");
+        if (motoLifeData == null) {
+            Log.d(TAG, "motoLifeData was null, skipping");
+            return;
+        }
+
+        try {
+            rpmMqtt = Integer.parseInt(motoLifeData.get(0));
+        } catch (IndexOutOfBoundsException e) {
+            Log.d(TAG, e.toString());
+        }
+
+        Log.d(TAG, "rpmMqtt: " + rpmMqtt);
+        runOnUiThread(() -> {
+            updateVideoPlayerParams(rpmMqtt);
+            updateVideoPlayerScreen(rpmMqtt);
+        });
+    }
+
     private void setUp() {
         //START INIT SENSORS
-        if (!selectedProduct.getCommunicationType().toLowerCase().equals("none")) {
+        if (!selectedProduct.getCommunicationType().equalsIgnoreCase("none") && !AccountHelper.isChinesportAccount(this)) {
             startSensorService();
         }
 
@@ -1164,7 +1210,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         prepareBackgroundSoundPlayer();
 
         //START DATA RECEIVERS
-        if (communicationType != CommunicationType.NONE) {
+        if (communicationType != CommunicationType.NONE && !AccountHelper.isChinesportAccount(this)) {
             startSensorDataReceiver();
         }
 

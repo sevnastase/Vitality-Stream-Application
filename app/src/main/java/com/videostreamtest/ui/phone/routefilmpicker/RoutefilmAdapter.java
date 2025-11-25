@@ -11,7 +11,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -117,7 +116,7 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
         holder.routefilmCoverPhotoImageButton.setOnClickListener(view -> {
             // Re-initialize the video player intent
             if (selectedRoutefilmPosition == position) {
-                startVideoPlayer();
+                startVideoPlayer(false);
             } else {
                 final int prevPosition = selectedRoutefilmPosition;
                 setSelectedRoutefilmPosition(position);
@@ -128,7 +127,7 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
         holder.routefilmCoverPhotoImageButton.setOnKeyListener((v, keyCode, event) -> {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 if (isSelectButton(keyCode)) {
-                    startVideoPlayer();
+                    startVideoPlayer(false);
                     return true;
                 }
             }
@@ -182,7 +181,6 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
         if (listener != null) {
             listener.onSelected(routefilms.get(selectedRoutefilmPosition));
         }
-        initVideoPlayer(generateBundleParameters());
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -201,15 +199,14 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
         videoPlayerActivityIntent.putExtras(arguments);
     }
 
-    public void startVideoPlayer() {
-        if (videoPlayerActivityIntent == null) {
-            Toast.makeText(hostActivity, "Could not start movie, try again", Toast.LENGTH_LONG).show();
-            return;
+    public void startVideoPlayer(boolean startedFromMotolife) {
+        if (startedFromMotolife || shouldMovieBeStartedBasedOnAccountAndProduct()) {
+            initVideoPlayer(generateBundleParameters(startedFromMotolife));
+            hostActivity.startActivity(videoPlayerActivityIntent);
         }
-        hostActivity.startActivity(videoPlayerActivityIntent);
     }
 
-    private Bundle generateBundleParameters() {
+    private Bundle generateBundleParameters(boolean startedFromMotolife) {
         Bundle arguments = new Bundle();
         try {
             arguments.putString("movieObject", new GsonBuilder().create().toJson(Movie.fromRoutefilm(routefilms.get(selectedRoutefilmPosition)), Movie.class));
@@ -217,6 +214,7 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
             arguments.putString("communication_device", selectedProduct.getCommunicationType());
             arguments.putString("accountToken", AccountHelper.getAccountToken(PraxtourApplication.getAppContext()));
             arguments.putBoolean("localPlay", selectedProduct.getSupportStreaming() == 0);
+            arguments.putBoolean("startedFromMotolife", startedFromMotolife);
         } catch (NullPointerException ignored) {}
         return arguments;
     }
@@ -239,5 +237,12 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
         return keyCode == KeyEvent.KEYCODE_ENTER ||
                 keyCode == KeyEvent.KEYCODE_DPAD_CENTER ||
                 keyCode == KeyEvent.KEYCODE_BUTTON_SELECT;
+    }
+
+    /** This method is a guard for MOTOlife accounts being able to only start movies on click while
+     * using products that don't require a sensor.
+     */
+    private boolean shouldMovieBeStartedBasedOnAccountAndProduct() {
+        return !AccountHelper.isChinesportAccount(hostActivity) || selectedProduct.getCommunicationType().equalsIgnoreCase("NONE");
     }
 }

@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -84,9 +85,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
 
     private Button settingsButton;
     private Button testButton;
-    Constraints constraint = new Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build();
+    private ImageView chinesportLogo;
     Data.Builder syncData = new Data.Builder();
 
     private Handler screensaverhandler;
@@ -128,6 +127,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         settingsButton = findViewById(R.id.productpicker_settings_button);
         drawerLayout = findViewById(R.id.drawer_layout);
         navView = drawerLayout.findViewById(R.id.nav_view);
+        chinesportLogo = findViewById(R.id.chinesport_logo_imageview);
 
         apikey = getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
         testButton = findViewById(R.id.test_button);
@@ -166,7 +166,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                         sensorNeeded = true;
                     }
                 }
-                if (sensorNeeded) {
+                if (sensorNeeded && !AccountHelper.isChinesportAccount(this)) {
                     startBleService();
                 }
             }
@@ -179,6 +179,14 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
             downloadStatusVerificationCheck();
         } else {
             hideMenuItem(R.id.nav_downloads);
+        }
+
+        if (AccountHelper.isChinesportAccount(this)) {
+            hideMenuItem(R.id.nav_ble);
+            chinesportLogo.setVisibility(View.VISIBLE);
+        } else {
+            hideMenuItem(R.id.nav_motolife);
+            chinesportLogo.setVisibility(View.GONE);
         }
 
         //SET ONLICK BEHAVIOUR OF SETTINGS BUTTON
@@ -199,6 +207,10 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         testButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Constraints constraint = new Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build();
+
                 OneTimeWorkRequest productMovieSoundsRequest = new OneTimeWorkRequest.Builder(SoundInformationServiceWorker.class)
                         .setConstraints(constraint)
                         .setInputData(syncData.build())
@@ -288,9 +300,9 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
             case R.id.nav_home:
                 navController.navigate(R.id.productPickerFragment);
                 break;
-//            case R.id.nav_privacy:
-//                navController.navigate(R.id.privacyPolicyFragment);
-//                break;
+            case R.id.nav_motolife:
+                navController.navigate(R.id.motoLifeLoginFragment);
+                break;
             case R.id.nav_settings:
                 navController.navigate(R.id.settingsFragment);
                 break;

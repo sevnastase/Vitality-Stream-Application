@@ -93,9 +93,9 @@ public class MQTTService extends Service {
             try {
                 mqttManager = MQTTManager.getInstance(
                         brokerUrl,
-                        "AndroidClient",
-                        "praxtour",
-                        "Prax2r!",
+                        "AndroidClient-" + (System.currentTimeMillis() % 10000),
+                        "",
+                        "",
                         true
                 );
 
@@ -116,6 +116,7 @@ public class MQTTService extends Service {
     private void connectToMqttBroker() {
         if (mqttManager == null) {
             stopSelfWithError();
+            Log.d(TAG, "MQTTManager was null, aborting connection");
             return;
         }
 
@@ -130,6 +131,7 @@ public class MQTTService extends Service {
             mqttManager.subscribe("Chinesport/Motolife/" + serialNumber, MQTT_QOS);
             Log.d(TAG, "Subscribed to ../" + serialNumber);
         } catch (MqttException e) {
+            Log.d(TAG, "Problem " + e);
             stopSelfWithError();
         }
     }

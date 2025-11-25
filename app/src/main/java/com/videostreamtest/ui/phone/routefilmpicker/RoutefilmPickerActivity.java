@@ -63,6 +63,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     private Routefilm[] availableRoutefilms;
     private TextView appAndAccountInfoTextView;
     private String apikey;
+    private boolean chinesportAccount;
 
     // DATA FLOW
     private final RoutefilmRepository routefilmRepository = new RoutefilmRepository(getApplication());
@@ -77,6 +78,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     private ImageButton navigationLeftArrow;
     private ImageButton navigationRightArrow;
     private ImageButton navigationDownArrow;
+    private ImageView chinesportLogo;
 
     // SELECTED ROUTEFILM INFO
     private Routefilm selectedRoutefilm;
@@ -103,7 +105,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
         }
     };
 
-    private BroadcastReceiver mqttBroadcastReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mqttBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -112,7 +114,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
             switch (action) {
                 case "com.videostreamtest.ACTION_START_FILM":
                     if (routefilmAdapter != null) {
-                        routefilmAdapter.startVideoPlayer();
+                        routefilmAdapter.startVideoPlayer(true);
                     }
                     break;
                 case "com.videostreamtest.ACTION_ARROW":
@@ -142,16 +144,9 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
             startActivity(loginIntent);
             return;
         }
+        chinesportAccount = AccountHelper.isChinesportAccount(this);
 
         initViews();
-    }
-
-    private void initMotolifeReceivers() {
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("com.videostreamtest.ACTION_START_FILM");
-        intentFilter.addAction("com.videostreamtest.ACTION_ARROW");
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(mqttBroadcastReceiver, intentFilter);
     }
 
     @Override
@@ -165,7 +160,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
 
-        initMotolifeReceivers();
+        if (chinesportAccount) initMotolifeReceivers();
         backToProductPickerHandler.postDelayed(backToProductPickerRunnable, 1000);
     }
 
@@ -173,7 +168,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
 
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mqttBroadcastReceiver);
+        if (chinesportAccount) LocalBroadcastManager.getInstance(this).unregisterReceiver(mqttBroadcastReceiver);
         backToProductPickerHandler.removeCallbacksAndMessages(null);
     }
 
@@ -185,6 +180,13 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
                 .placeholder(R.drawable.placeholder_button)
                 .error(R.drawable.placeholder_button)
                 .into(productLogoView);
+
+        chinesportLogo = findViewById(R.id.chinesport_logo_imageview);
+        if (chinesportAccount) {
+            chinesportLogo.setVisibility(View.VISIBLE);
+        } else {
+            chinesportLogo.setVisibility(View.GONE);
+        }
 
         backToProductPickerButton = findViewById(R.id.back_to_productpicker_button);
         backToProductPickerButton.setOnClickListener(view -> finish());
@@ -262,6 +264,14 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
         return super.onKeyDown(keyCode, event);
     }
 
+    private void initMotolifeReceivers() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("com.videostreamtest.ACTION_START_FILM");
+        intentFilter.addAction("com.videostreamtest.ACTION_ARROW");
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mqttBroadcastReceiver, intentFilter);
+    }
+
     private void loadProductMovies() {
         if (!apikey.isEmpty()) {
             String accountType = AccountHelper.getAccountType(this);
@@ -274,6 +284,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
             switch (accountType.toLowerCase()) {
                 case "standalone":
                 case "hybrid":
+                case "motolife":
                     routefilmsLiveData = routefilmRepository.getAllStandaloneProductRoutefilms(apikey);
                     break;
                 case "streaming":
