@@ -393,8 +393,8 @@ public class VideoplayerActivity extends AppCompatActivity {
             Log.d(TAG, "volumeLevel: " + volumeLevel);
             if (mediaPlayer!=null) {
                 mediaPlayer.setVolume(volumeLevel);
-                if (backgroundSoundTriggers!= null && backgroundSoundTriggers.size()>0) {
-                    final float bgVolumeLevel = Float.valueOf(""+volumeLevel) / 100;
+                if (backgroundSoundTriggers!= null && !backgroundSoundTriggers.isEmpty()) {
+                    final float bgVolumeLevel = volumeLevel / 100f;
                     backgroundSoundPlayer.setVolume(bgVolumeLevel);
                 }
             }
@@ -553,6 +553,18 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
         videoLayout.setVisibility(View.INVISIBLE);
         setVideoFeatures();
+
+        mediaPlayer.setEventListener(new MediaPlayer.EventListener() {
+            @Override
+            public void onEvent(MediaPlayer.Event event) {
+                if (event.type == MediaPlayer.Event.Playing) {
+                    videoPlayerViewModel.changeVolumeLevelBy(1);
+                    new Handler().postDelayed(() -> {
+                        videoPlayerViewModel.changeVolumeLevelBy(-1);
+                    }, 50);
+                }
+            }
+        });
 
         mediaPlayer.setRate(1.0f);
         mediaPlayer.play();
