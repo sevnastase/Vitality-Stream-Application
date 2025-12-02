@@ -524,6 +524,7 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
     }
 
     private void resumeFilm() {
+        Log.d(TAG, "Resuming film");
         videoPlayerViewModel = new ViewModelProvider(requireActivity()).get(VideoPlayerViewModel.class);
         videoPlayerViewModel.setPlayerPaused(false);
         if (routePartsLayout.getVisibility() == View.GONE) {
@@ -536,7 +537,9 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
             }
         }
 
-        videoPlayerViewModel.setVolumeLevel(volumeLevelBeforePause);
+        if (volumeLevelBeforePause > 0) {
+            videoPlayerViewModel.setVolumeLevel(volumeLevelBeforePause);
+        }
     }
 
     private void showPausedDialog() {

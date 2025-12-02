@@ -75,6 +75,8 @@ import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.RpmVectorLookupTable;
 
+import org.videolan.libvlc.MediaPlayer;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -385,9 +387,9 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
         videoPlayerViewModel.getVolumeLevel().observe(this, volumeLevel -> {
             if (mediaPlayer!=null && volumeLevel != null) {
-                final float bgVolumeLevel = Float.valueOf(""+volumeLevel) / 100;
+                final float bgVolumeLevel = volumeLevel / 100f;
                 mediaPlayer.setVolume(bgVolumeLevel);
-                if (backgroundSoundTriggers!= null && backgroundSoundTriggers.size()>0) {
+                if (backgroundSoundTriggers!= null && !backgroundSoundTriggers.isEmpty()) {
                     backgroundSoundPlayer.setVolume(bgVolumeLevel);
                 }
             }
@@ -529,6 +531,19 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
         videoLayout.setVisibility(View.INVISIBLE);
         setVideoFeatures();
+
+        // Refreshes the volume upon start. If not here, the volume in the beginning
+        // can be bugged and set to an incorrect value.
+        mediaPlayer.addListener(new Player.Listener() {
+            @Override
+            public void onIsPlayingChanged(boolean isPlaying) {
+                Player.Listener.super.onIsPlayingChanged(isPlaying);
+                if (isPlaying) {
+                    videoPlayerViewModel.changeVolumeLevelBy(1);
+                    new Handler().postDelayed(() -> videoPlayerViewModel.changeVolumeLevelBy(-1), 50);
+                }
+            }
+        });
 
         mediaPlayer.setPlaybackSpeed(1.0f);
         mediaPlayer.play();
