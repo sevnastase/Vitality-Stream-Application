@@ -56,6 +56,7 @@ public class MQTTConnectionFragment extends Fragment {
     private final String SP_MQTT_PORT = "Motolife port";
     private final String SP_MQTT_SRNR = "Motolife serial number";
     private final String SP_MQTT_LAST_CONNECTED_STATUS = "Motolife connected";
+    private final String DEFAULT_MQTT_IP = "192.168.4.1";
     private final String DEFAULT_MQTT_PORT = "1883";
 
     private Runnable networkCheckerRunnable;
@@ -367,10 +368,7 @@ public class MQTTConnectionFragment extends Fragment {
 
     private void connectMQTT() {
         Intent intent = new Intent(getActivity(), MQTTService.class);
-        intent.putExtra("ip", ip);
-        // intent.putExtra("port", port);
-        // Uncomment the above and remove the line below
-        // if ports become variable again.
+        intent.putExtra("ip", DEFAULT_MQTT_IP);
         intent.putExtra("port", DEFAULT_MQTT_PORT);
         intent.putExtra("serialNumber", serialNumber);
         getActivity().startService(intent);

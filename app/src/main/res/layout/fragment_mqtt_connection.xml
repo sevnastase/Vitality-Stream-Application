@@ -105,7 +105,8 @@
                                 android:layout_height="25dp"
                                 android:text="IP address: "
                                 android:textColor="@color/exo_white"
-                                android:textSize="18sp">
+                                android:textSize="18sp"
+                                android:visibility="gone">
                             </TextView>
                             <TextView
                                 android:layout_width="wrap_content"
@@ -139,7 +140,8 @@
                                 android:imeOptions="actionDone"
                                 android:background="@null"
                                 android:backgroundTint="@android:color/holo_red_dark"
-                                android:textColor="@color/exo_white"/>
+                                android:textColor="@color/exo_white"
+                                android:visibility="gone"/>
 
                             <EditText
                                 android:id="@+id/motolife_port_input"
