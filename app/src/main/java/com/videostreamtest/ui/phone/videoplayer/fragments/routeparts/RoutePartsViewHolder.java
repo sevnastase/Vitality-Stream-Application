@@ -183,9 +183,9 @@ public class RoutePartsViewHolder extends RecyclerView.ViewHolder{
                 @Override
                 public void onClick(View v) {
                     moviePartCoverImage.requestFocus();
-                    if (AccountHelper.isLocalPlay(itemView.getContext())) {
+                    try {
                         VideoplayerActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
-                    } else {
+                    } catch (NullPointerException e) {
                         VideoplayerExoActivity.getInstance().goToFrameNumber(moviePart.getFrameNumber().intValue());
                     }
                     LocalBroadcastManager.getInstance(itemView.getContext())

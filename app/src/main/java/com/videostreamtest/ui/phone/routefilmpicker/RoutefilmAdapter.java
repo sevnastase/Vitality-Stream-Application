@@ -191,7 +191,7 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
 
     public void initVideoPlayer(final Bundle arguments) {
         if (selectedProduct.getSupportStreaming() == 0) {
-            videoPlayerActivityIntent = new Intent(hostActivity, VideoplayerActivity.class);
+            videoPlayerActivityIntent = new Intent(hostActivity, VideoplayerExoActivity.class);
         } else {
             videoPlayerActivityIntent = new Intent(hostActivity, VideoplayerExoActivity.class);
         }
@@ -200,7 +200,7 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
     }
 
     public void startVideoPlayer(boolean startedFromMotolife) {
-        if (startedFromMotolife || shouldMovieBeStartedBasedOnAccountAndProduct()) {
+        if (startedFromMotolife || shouldMovieBeStartedOnClick()) {
             initVideoPlayer(generateBundleParameters(startedFromMotolife));
             hostActivity.startActivity(videoPlayerActivityIntent);
         }
@@ -242,7 +242,8 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
     /** This method is a guard for MOTOlife accounts being able to only start movies on click while
      * using products that don't require a sensor.
      */
-    private boolean shouldMovieBeStartedBasedOnAccountAndProduct() {
+    private boolean shouldMovieBeStartedOnClick() {
+        // Logical formula: isChinesportAccount => CommunicationType.NONE
         return !AccountHelper.isChinesportAccount(hostActivity) || selectedProduct.getCommunicationType().equalsIgnoreCase("NONE");
     }
 }

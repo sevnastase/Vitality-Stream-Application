@@ -294,7 +294,7 @@ public class RoutefilmsViewHolder extends RecyclerView.ViewHolder{
 
     private void initVideoPlayer(final Bundle arguments) {
         Log.d(TAG, "Context Viewholder VideoplayerActivity class: " + itemView.getContext());
-        videoPlayer = new Intent(itemView.getContext(), VideoplayerActivity.class);
+        videoPlayer = new Intent(itemView.getContext(), VideoplayerExoActivity.class);
         videoPlayer.putExtras(arguments);
     }
 

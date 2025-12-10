@@ -200,7 +200,7 @@ public class AbstractProductScreenFragment extends Fragment {
                 Intent videoPlayerIntent;
                 if (selectedProduct.getSupportStreaming() == 0) {
                     Log.d(TAG, "Context Fragment VideoplayerActivity class: " + getContext());
-                    videoPlayerIntent = new Intent(getContext(), VideoplayerActivity.class);
+                    videoPlayerIntent = new Intent(getContext(), VideoplayerExoActivity.class);
                     videoPlayerIntent.putExtras(arguments);
                 } else {
                     Log.d(TAG, "Context Fragment VideoplayerExoActivity class: " + getContext());
