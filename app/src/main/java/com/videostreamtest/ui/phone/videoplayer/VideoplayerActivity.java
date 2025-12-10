@@ -560,10 +560,10 @@ public class VideoplayerActivity extends AppCompatActivity {
             @Override
             public void onEvent(MediaPlayer.Event event) {
                 if (event.type == MediaPlayer.Event.Playing) {
-                    videoPlayerViewModel.changeVolumeLevelBy(1);
+                    videoPlayerViewModel.changeVolumeLevelBy(10);
                     new Handler().postDelayed(() -> {
-                        videoPlayerViewModel.changeVolumeLevelBy(-1);
-                    }, 50);
+                        videoPlayerViewModel.changeVolumeLevelBy(-10);
+                    }, 150);
                 }
             }
         });
@@ -844,6 +844,10 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void toggleStatusScreen() {
+        if (AccountHelper.isChinesportAccount(this)) {
+            // Handled in AbstractPraxStatusBarFragment
+            return;
+        }
         if(statusDialog.getVisibility() == View.GONE) {
             statusDialog.setVisibility(View.VISIBLE);
         } else {

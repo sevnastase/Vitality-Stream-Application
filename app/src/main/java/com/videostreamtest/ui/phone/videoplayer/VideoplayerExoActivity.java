@@ -53,6 +53,7 @@ import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
+import com.videostreamtest.config.application.PraxtourApplication;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
@@ -74,8 +75,6 @@ import com.videostreamtest.ui.phone.videoplayer.fragments.PraxViewStatusBarFragm
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.RpmVectorLookupTable;
-
-import org.videolan.libvlc.MediaPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,7 +123,14 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
     private Button backToOverview;
 
-    private int minSecondsLoadingView = 7;
+    /**
+     * Chinesport: no BLE and always local play: can be quicker
+     * <p></p>
+     * Regular accounts: BLE and could be streaming: safer if we give it time
+     */
+    private final int MIN_LOADING_VIEW_SECONDS =
+            AccountHelper.isChinesportAccount(PraxtourApplication.getAppContext()) ?
+                    2 : 7;
     private boolean isLoading = true;
     private boolean sensorConnected = false;
 
@@ -374,7 +380,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         if (!communicationType.equals(CommunicationType.RPM)) {
             View statusbarContainer = findViewById(R.id.videoplayer_framelayout_statusbar);
             statusbarContainer.setVisibility(View.INVISIBLE);
-            praxHandler.postDelayed(() -> statusbarContainer.setVisibility(View.VISIBLE), 5500);
+            praxHandler.postDelayed(() -> statusbarContainer.setVisibility(View.VISIBLE), MIN_LOADING_VIEW_SECONDS);
         }
 
         if (AccountHelper.isChinesportAccount(this)) {
@@ -539,8 +545,8 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             public void onIsPlayingChanged(boolean isPlaying) {
                 Player.Listener.super.onIsPlayingChanged(isPlaying);
                 if (isPlaying) {
-                    videoPlayerViewModel.changeVolumeLevelBy(1);
-                    new Handler().postDelayed(() -> videoPlayerViewModel.changeVolumeLevelBy(-1), 50);
+                    videoPlayerViewModel.changeVolumeLevelBy(10);
+                    new Handler().postDelayed(() -> videoPlayerViewModel.changeVolumeLevelBy(-10), 150);
                 }
             }
         });
@@ -752,7 +758,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                     //Set number of false positives to 0 again as the player starts again
                     numberOfFalsePositives = 0;
 
-                    waitUntilVideoIsReady(3);
+                    waitUntilVideoIsReady();
                 }
             }
         });
@@ -825,6 +831,10 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     }
 
     private void toggleStatusScreen() {
+        if (AccountHelper.isChinesportAccount(this)) {
+            // Handled in AbstractPraxStatusBarFragment
+            return;
+        }
         if(statusDialog.getVisibility() == View.GONE) {
             statusDialog.setVisibility(View.VISIBLE);
         } else {
@@ -942,10 +952,6 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     }
 
     private void waitUntilVideoIsReady() {
-        waitUntilVideoIsReady(this.minSecondsLoadingView);
-    }
-
-    private void waitUntilVideoIsReady(final int minSecondsLoadingView) {
         this.pauseTimer = 0;
 
         Runnable runnable = new Runnable() {
@@ -984,7 +990,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     }
 
     private boolean mediaPlayerShouldBeStarted(int currentSecond) {
-        return currentSecond >= minSecondsLoadingView &&
+        return currentSecond >= MIN_LOADING_VIEW_SECONDS &&
                 isPraxtourMediaPlayerReady() &&
                 (sensorConnected || ApplicationSettings.DEVELOPER_MODE || AccountHelper.isChinesportAccount(this));
     }

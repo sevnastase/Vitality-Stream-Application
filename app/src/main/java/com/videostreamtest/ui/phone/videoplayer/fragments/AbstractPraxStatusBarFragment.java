@@ -130,14 +130,14 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
 
         switch (intent.getAction()) {
             case "com.videostreamtest.ACTION_PAUSE_FILM":
-                pauseFilm();
+                videoPlayerViewModel.setPlayerPaused(true);
                 Log.d(TAG, "Film Paused");
                 showPausedDialog();
                 break;
             case "com.videostreamtest.ACTION_RESUME_FILM":
                 Log.d(TAG, "Resume selected.");
                 hidePausedDialog();
-                resumeFilm();
+                videoPlayerViewModel.setPlayerPaused(false);
                 break;
             case "com.videostreamtest.ACTION_FINISH_FILM":
                 finishFilm();
@@ -502,7 +502,6 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         Log.d(TAG, "Fragment Activity: " + requireActivity());
         Boolean currentState = videoPlayerViewModel.getPlayerPaused().getValue();
         Log.d(TAG, "Current state: " + currentState);
-        videoPlayerViewModel.setPlayerPaused(true);
         Log.d(TAG, "Updated state: " + videoPlayerViewModel.getPlayerPaused().getValue());
         Log.d(TAG, "Pausing Film");
 
@@ -526,7 +525,6 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
     private void resumeFilm() {
         Log.d(TAG, "Resuming film");
         videoPlayerViewModel = new ViewModelProvider(requireActivity()).get(VideoPlayerViewModel.class);
-        videoPlayerViewModel.setPlayerPaused(false);
         if (routePartsLayout.getVisibility() == View.GONE) {
             toggleMoviePartsVisibility();
         }
@@ -550,11 +548,25 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
                     .setReorderingAllowed(true)
                     .commit();
         } catch (NullPointerException e) {
-            Toast.makeText(getContext(), "Failed to pause film...", Toast.LENGTH_SHORT).show();
+            try {
+                getActivity().finish();
+            } catch (NullPointerException ignored) {}
+        }
+
+        try {
+            VideoplayerActivity.getInstance().togglePauseScreen();
+        } catch (NullPointerException e) {
+            VideoplayerExoActivity.getInstance().togglePauseScreen();
         }
     }
 
     private void hidePausedDialog() {
+        try {
+            VideoplayerActivity.getInstance().togglePauseScreen();
+        } catch (NullPointerException e) {
+            VideoplayerExoActivity.getInstance().togglePauseScreen();
+        }
+
         Fragment fragment;
         FragmentManager fragmentManager;
 
