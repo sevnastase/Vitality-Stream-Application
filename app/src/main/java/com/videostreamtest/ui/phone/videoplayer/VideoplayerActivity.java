@@ -53,6 +53,7 @@ import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
+import com.videostreamtest.config.application.PraxtourApplication;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
@@ -127,7 +128,14 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     private Button backToOverview;
 
-    private int minSecondsLoadingView = 7;
+    /**
+     * Chinesport: no BLE and always local play: can be quicker
+     * <p></p>
+     * Regular accounts: BLE and could be streaming: safer if we give it time
+     */
+    private final int MIN_LOADING_VIEW_SECONDS =
+            AccountHelper.isChinesportAccount(PraxtourApplication.getAppContext()) ?
+                    2 : 7;
     private boolean isLoading = true;
     private boolean sensorConnected = false;
 
@@ -998,7 +1006,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private boolean mediaPlayerShouldBeStarted(int currentSecond) {
-        return currentSecond >= minSecondsLoadingView &&
+        return currentSecond >= MIN_LOADING_VIEW_SECONDS &&
                 isPraxtourMediaPlayerReady() &&
                 (sensorConnected || ApplicationSettings.DEVELOPER_MODE || AccountHelper.isChinesportAccount(this));
     }
