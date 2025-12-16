@@ -191,7 +191,7 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
 
     public void initVideoPlayer(final Bundle arguments) {
         if (selectedProduct.getSupportStreaming() == 0) {
-            videoPlayerActivityIntent = new Intent(hostActivity, VideoplayerExoActivity.class);
+            videoPlayerActivityIntent = new Intent(hostActivity, VideoplayerActivity.class);
         } else {
             videoPlayerActivityIntent = new Intent(hostActivity, VideoplayerExoActivity.class);
         }
