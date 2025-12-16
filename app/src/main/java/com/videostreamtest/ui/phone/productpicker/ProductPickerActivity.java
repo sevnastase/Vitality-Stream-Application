@@ -106,7 +106,6 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                 .detectLeakedSqlLiteObjects()
                 .detectLeakedClosableObjects()
                 .penaltyLog()
-                .penaltyDeath()
                 .build());
 
         setContentView(R.layout.activity_productpicker);
