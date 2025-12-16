@@ -41,7 +41,7 @@ public interface RoutefilmDao {
             "ORDER BY rt.movie_title ASC")
     LiveData<List<Routefilm>> getSelectedProductRoutefilms(final String accountToken);
 
-    @Query("SELECT rt.* FROM routefilm_table rt "+
+    @Query("SELECT DISTINCT rt.* FROM routefilm_table rt "+
             "INNER JOIN productmovie_table pmt ON pmt.movie_id = rt.movie_id "+
             "INNER JOIN usage_tracker_table utt ON pmt.product_id = utt.selected_product " +
             "INNER JOIN download_table dt ON dt.download_movie_id = rt.movie_id " +
