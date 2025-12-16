@@ -489,6 +489,14 @@ public class VideoplayerActivity extends AppCompatActivity {
             public void onEvent(MediaPlayer.Event event) {
                 Log.d(TAG, "CURRENT TYPE : "+event.type);
 
+                // Refreshes the volume upon start. If not here, the volume in the beginning
+                // can be bugged and set to an incorrect value.
+                if (event.type == MediaPlayer.Event.Playing) {
+                    new Handler().postDelayed(() -> {
+                        videoPlayerViewModel.setVolumeLevel(videoPlayerViewModel.getVolumeLevel().getValue());
+                    }, 150);
+                }
+
                 // IF NOT BUFFERING AND BEST VIDEO TRACK IS LOADED
 //                if (event.type != MediaPlayer.Event.Buffering && isBestStreamLoaded) {
                 if (event.type != MediaPlayer.Event.Buffering) {
@@ -553,20 +561,6 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
         videoLayout.setVisibility(View.INVISIBLE);
         setVideoFeatures();
-
-        // Refreshes the volume upon start. If not here, the volume in the beginning
-        // can be bugged and set to an incorrect value.
-        mediaPlayer.setEventListener(new MediaPlayer.EventListener() {
-            @Override
-            public void onEvent(MediaPlayer.Event event) {
-                if (event.type == MediaPlayer.Event.Playing) {
-                    videoPlayerViewModel.changeVolumeLevelBy(10);
-                    new Handler().postDelayed(() -> {
-                        videoPlayerViewModel.changeVolumeLevelBy(-10);
-                    }, 150);
-                }
-            }
-        });
 
         mediaPlayer.setRate(1.0f);
         mediaPlayer.play();
@@ -772,7 +766,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                     //Set number of false positives to 0 again as the player starts again
                     numberOfFalsePositives = 0;
 
-                    waitUntilVideoIsReady(3);
+                    waitUntilVideoIsReady();
                 }
             }
         });
@@ -966,10 +960,6 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void waitUntilVideoIsReady() {
-        waitUntilVideoIsReady(this.minSecondsLoadingView);
-    }
-
-    private void waitUntilVideoIsReady(final int minSecondsLoadingView) {
         this.pauseTimer = 0;
 
         Runnable runnable = new Runnable() {

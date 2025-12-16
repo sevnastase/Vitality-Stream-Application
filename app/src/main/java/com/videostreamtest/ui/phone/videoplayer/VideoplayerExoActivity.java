@@ -545,8 +545,9 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             public void onIsPlayingChanged(boolean isPlaying) {
                 Player.Listener.super.onIsPlayingChanged(isPlaying);
                 if (isPlaying) {
-                    videoPlayerViewModel.changeVolumeLevelBy(10);
-                    new Handler().postDelayed(() -> videoPlayerViewModel.changeVolumeLevelBy(-10), 150);
+                    new Handler().postDelayed(() -> {
+                        videoPlayerViewModel.setVolumeLevel(videoPlayerViewModel.getVolumeLevel().getValue());
+                    }, 150);
                 }
             }
         });
