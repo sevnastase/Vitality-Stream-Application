@@ -380,7 +380,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         if (!communicationType.equals(CommunicationType.RPM)) {
             View statusbarContainer = findViewById(R.id.videoplayer_framelayout_statusbar);
             statusbarContainer.setVisibility(View.INVISIBLE);
-            praxHandler.postDelayed(() -> statusbarContainer.setVisibility(View.VISIBLE), MIN_LOADING_VIEW_SECONDS);
+            praxHandler.postDelayed(() -> statusbarContainer.setVisibility(View.VISIBLE), MIN_LOADING_VIEW_SECONDS * 1000L);
         }
 
         if (AccountHelper.isChinesportAccount(this)) {
@@ -456,6 +456,14 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             @Override
             public void run() {
                 sensorConnected = true;
+                updateVideoPlayerParams(0);
+                updateVideoPlayerScreen(0);
+            }
+        };
+        Runnable r3 = new Runnable() {
+            @Override
+            public void run() {
+                sensorConnected = true;
                 updateVideoPlayerParams(42);
                 updateVideoPlayerScreen(42);
             }
@@ -465,11 +473,13 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             int secondsPassed = 0;
             @Override
             public void run() {
-                if (secondsPassed > 20) secondsPassed = 0;
+                if (secondsPassed > 30) secondsPassed = 0;
                 if (secondsPassed < 10) {
                     autoRunnerHandler.post(r1);
-                } else {
+                } else if (secondsPassed < 20) {
                     autoRunnerHandler.post(r2);
+                } else {
+                    autoRunnerHandler.post(r3);
                 }
                 secondsPassed++;
                 autoRunnerHandler.postDelayed(this, 1000);

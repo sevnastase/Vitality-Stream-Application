@@ -386,7 +386,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         if (!communicationType.equals(CommunicationType.RPM)) {
             View statusbarContainer = findViewById(R.id.videoplayer_framelayout_statusbar);
             statusbarContainer.setVisibility(View.INVISIBLE);
-            praxHandler.postDelayed(() -> statusbarContainer.setVisibility(View.VISIBLE), 5500);
+            praxHandler.postDelayed(() -> statusbarContainer.setVisibility(View.VISIBLE), MIN_LOADING_VIEW_SECONDS * 1000L);
         }
 
         if (AccountHelper.isChinesportAccount(this)) {
