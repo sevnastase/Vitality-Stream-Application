@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -22,6 +23,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -36,7 +39,7 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.application.PraxtourApplication;
 import com.videostreamtest.constants.BroadcastConstants;
 import com.videostreamtest.service.wifi.WifiCallback;
-import com.videostreamtest.service.wifi.WifiManager;
+import com.videostreamtest.service.wifi.PraxWifiManager;
 import com.videostreamtest.service.wifi.WifiService;
 import com.videostreamtest.service.wifi.WifiSpeedtest;
 import com.videostreamtest.service.wifi.WifiStrength;
@@ -68,8 +71,26 @@ public class WifiSettingsFragment extends Fragment {
     private ProgressBar loadingWheel;
     private Handler signalStrengthHandler;
     private LinearLayout noWifiPermissionLayout;
+    private TextView noWifiPermissionsTextView;
     private Button grantWifiPermissionButton;
     private BroadcastReceiver downloadBroadcastReceiver;
+    private final ActivityResultLauncher<String> permissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+                    isGranted -> {
+                if (isGranted) {
+                    // Permission is granted. Continue the action or workflow in your
+                    // app.
+                    Toast.makeText(getContext(), "Permissions granted", Toast.LENGTH_SHORT).show();
+                    initUi(null);
+                } else {
+                    // Explain to the user that the feature is unavailable because the
+                    // features requires a permission that the user has denied. At the
+                    // same time, respect the user's decision. Don't link to system
+                    // settings in an effort to convince the user to change their
+                    // decision.
+                    noWifiPermissionsTextView.setTextColor(getResources().getColor(R.color.red, null));
+                }
+            });
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -88,6 +109,7 @@ public class WifiSettingsFragment extends Fragment {
         networkSelectionLayout = view.findViewById(R.id.network_selection_layout);
         loadingWheel = view.findViewById(R.id.network_loading_wheel);
         noWifiPermissionLayout = view.findViewById(R.id.no_wifi_permissions_layout);
+        noWifiPermissionsTextView = view.findViewById(R.id.no_wifi_permissions_textview);
         grantWifiPermissionButton = view.findViewById(R.id.grant_wifi_permission_button);
 
         networkBroadcastReceiver = new BroadcastReceiver() {
@@ -141,8 +163,10 @@ public class WifiSettingsFragment extends Fragment {
         refreshButton.setOnClickListener(v -> refreshNetworks());
 
         grantWifiPermissionButton.setOnClickListener(v -> {
-            requestWifiPermissions();
-            new Handler().postDelayed(() -> initUi(view), 1000);
+            String permissionToRequest =
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ?
+                            Manifest.permission.NEARBY_WIFI_DEVICES : Manifest.permission.ACCESS_FINE_LOCATION;
+            this.permissionLauncher.launch(permissionToRequest);
         });
 
         initUi(view);
@@ -257,14 +281,12 @@ public class WifiSettingsFragment extends Fragment {
     }
 
     private void toggleUiBasedOnWifiConnectivity() {
-        String connectedNetworkName = WifiManager.getConnectedNetworkName(PraxtourApplication.getAppContext());
-        if (connectedNetworkName.equals(NO_WIFI_PERMISSION)) {
-            Log.d(TAG, "Gregn1");
+        String connectedNetworkName = PraxWifiManager.getConnectedNetworkName(PraxtourApplication.getAppContext());
+        if (NO_WIFI_PERMISSION.equals(connectedNetworkName)) {
             noWifiPermissionLayout.setVisibility(View.VISIBLE);
             connectedNetworkLayout.setVisibility(View.GONE);
             networkSelectionLayout.setVisibility(View.GONE);
-        } else if (connectedNetworkName.equals(WIFI_NOT_CONNECTED)) {
-            Log.d(TAG, "Gregn2");
+        } else if (WIFI_NOT_CONNECTED.equals(connectedNetworkName)) {
             Log.d(TAG, "Not connected");
             connectedNetworkNameTextView.setText("Select a network below");
             noWifiPermissionLayout.setVisibility(View.GONE);
@@ -272,7 +294,6 @@ public class WifiSettingsFragment extends Fragment {
             connectedTitleTextView.setVisibility(View.GONE);
             networkSelectionLayout.setVisibility(View.VISIBLE);
         } else { // Connected to some network
-            Log.d(TAG, "Gregn3");
             Log.d(TAG, "Was connected to " + connectedNetworkName);
             refreshConnectedNetworkStats(DEFAULT_REFRESH_INTERVAL_MILLIS);
             connectedNetworkNameTextView.setText(connectedNetworkName);
@@ -319,7 +340,7 @@ public class WifiSettingsFragment extends Fragment {
      *  - The device is not connected to the network with name {@code network.SSID}.
      */
     private boolean isNetworkToBeListed(ScanResult network, ArrayList<ScanResult> alreadyAddedNetworks) {
-        String connectedNetworkName = WifiManager.getConnectedNetworkName(PraxtourApplication.getAppContext());
+        String connectedNetworkName = PraxWifiManager.getConnectedNetworkName(PraxtourApplication.getAppContext());
 
         return !existingName(network, alreadyAddedNetworks) &&
                 !network.SSID.trim().isEmpty() &&
@@ -360,7 +381,7 @@ public class WifiSettingsFragment extends Fragment {
     }
 
     private void refreshConnectedSignalStrength() {
-        WifiStrength signalStrength = WifiManager.getConnectedNetworkStrength(PraxtourApplication.getAppContext());
+        WifiStrength signalStrength = PraxWifiManager.getConnectedNetworkStrength(PraxtourApplication.getAppContext());
 
         try {
             if (getActivity().getClass() != LoginActivity.class) {
@@ -458,7 +479,7 @@ public class WifiSettingsFragment extends Fragment {
     }
 
     /**
-     * This method assumes we are using  Android 7 or higher.
+     * This method assumes we are using Android 7 or higher.
      */
     private void requestWifiPermissions() {
         ArrayList<String> permissions = new ArrayList<>();

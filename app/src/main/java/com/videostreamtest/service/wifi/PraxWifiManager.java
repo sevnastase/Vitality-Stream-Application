@@ -5,14 +5,18 @@ import static com.videostreamtest.constants.SharedPreferencesConstants.WIFI_NOT_
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiNetworkSuggestion;
 import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
@@ -22,52 +26,62 @@ import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.videostreamtest.config.application.PraxtourApplication;
+import com.videostreamtest.constants.BroadcastConstants;
 
-public class WifiManager {
+import java.util.ArrayList;
+import java.util.List;
 
-    private static final String TAG = WifiManager.class.getSimpleName();
+public class PraxWifiManager {
 
+    private static final String TAG = PraxWifiManager.class.getSimpleName();
+
+    /**
+     * From Android 10 and above the return value of this method does not correspond to successful
+     * connection to a network. True means that the suggestions has been successfully made to the
+     * system and will be processed. The actual connectivity result will come back later, asynchronously.
+     * False means that the suggestions was rejected.
+     * In the case of Android 10+, this method also sends a broadcast about connection status (once available).
+     * <p>
+     * Below Android 10, the return value corresponds to success of network connectivity.
+     */
     public static boolean connect(ScanResult network, String password) {
         Log.d(TAG, "Connecting to " + network.SSID + "with password " + password);
         Context context = PraxtourApplication.getAppContext();
-        final boolean[] result = {false}; // array because we need to assign in nested class
 
-        android.net.wifi.WifiManager wifiManager = (android.net.wifi.WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
         // Above Android 10
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            Toast.makeText(context, "Android version not supported", Toast.LENGTH_LONG).show();
-            return false;
-//            WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
-//                    .setSsid(network.SSID)
-//                    .setWpa2Passphrase(password)
-//                    .setIsAppInteractionRequired(true)
-//                    .build();
-//
-//            List<WifiNetworkSuggestion> suggestions = new ArrayList<>();
-//            suggestions.add(suggestion);
-//
-//            // Add suggestions to the system
-//            int status = wifiManager.addNetworkSuggestions(suggestions);
-//
-//            if (status == WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
-//                // Suggestion added successfully
-//                Toast.makeText(context, "Wi-Fi suggestion added", Toast.LENGTH_SHORT).show();
-//            } else {
-//                // Handle error
-//                Toast.makeText(context, "Failed to add Wi-Fi suggestion", Toast.LENGTH_SHORT).show();
-//            }
-//
-//            IntentFilter filter = new IntentFilter(WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION);
-//            BroadcastReceiver receiver = new BroadcastReceiver() {
-//                @Override
-//                public void onReceive(Context context, Intent intent) {
-//                    if (WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION.equals(intent.getAction())) {
-//                        Toast.makeText(context, "Connected to Wi-Fi", Toast.LENGTH_SHORT).show();
-//                    }
-//                }
-//            };
-//            context.registerReceiver(receiver, filter);
+            WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
+                    .setSsid(network.SSID)
+                    .setWpa2Passphrase(password)
+                    .setIsAppInteractionRequired(true)
+                    .build();
+
+            List<WifiNetworkSuggestion> suggestions = new ArrayList<>();
+            suggestions.add(suggestion);
+
+            int status = wifiManager.addNetworkSuggestions(suggestions);
+
+            if (status == WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
+                Toast.makeText(context, "Attempting to connect..", Toast.LENGTH_SHORT).show();
+            } else {
+                return false;
+            }
+
+            IntentFilter filter = new IntentFilter(WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION);
+            BroadcastReceiver receiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if (WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION.equals(intent.getAction())) {
+                        Intent broadcastIntent = new Intent("com.videostreamtest.EVENT_CONNECTION_RESULT");
+                        broadcastIntent.putExtra("connectionSuccessful", true);
+                        LocalBroadcastManager.getInstance(PraxtourApplication.getAppContext()).sendBroadcast(broadcastIntent);
+                    }
+                }
+            };
+            context.registerReceiver(receiver, filter);
+            return true;
         } else {
             // Below Android 10
             // IMPORTANT: disconnect here manually. Android 9 does not allow programmatically
@@ -97,9 +111,13 @@ public class WifiManager {
         }
     }
 
+    /**
+     * Returns {@code NO_WIFI_PERMISSION} if user has not granted WiFi permissions.
+     * If permissions are granted and there is no connected network, this returns {@code WIFI_NOT_CONNECTED}.
+     * If permissions are granted and the device is connected to a network, this returns its name (ssid).
+     */
     public static String getConnectedNetworkName(Context context) {
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED) {
+        if (!requiredPermissionsGranted(context)) {
             return NO_WIFI_PERMISSION;
         }
 
@@ -145,6 +163,16 @@ public class WifiManager {
 
     private static boolean isBetweenIncluding(int value, int lowerBound, int upperBound) {
         return lowerBound <= value && value <= upperBound;
+    }
+
+    private static boolean requiredPermissionsGranted(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return ActivityCompat.checkSelfPermission(context, Manifest.permission.NEARBY_WIFI_DEVICES) ==
+                    PackageManager.PERMISSION_GRANTED;
+        } else {
+            return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                    PackageManager.PERMISSION_GRANTED;
+        }
     }
 
     public static void disconnectFromCurrentNetwork(Activity activity) {

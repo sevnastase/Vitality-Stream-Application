@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
@@ -78,12 +79,16 @@ public class WifiService extends Service {
         switch (action) {
             case "com.videostreamtest.wifi.ACTION_CONNECT":
                 boolean success = connectToNetwork(intent);
+                // See explanation at {@link PraxWifiManager#connect}
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) break;
+
                 Intent broadcastIntent = new Intent("com.videostreamtest.EVENT_CONNECTION_RESULT");
                 broadcastIntent.putExtra("connectionSuccessful", success);
                 LocalBroadcastManager.getInstance(PraxtourApplication.getAppContext()).sendBroadcast(broadcastIntent);
                 break;
             case "com.videostreamtest.wifi.ACTION_SCAN":
                 retrieveNetworks();
+                break;
         }
     }
 
@@ -126,6 +131,6 @@ public class WifiService extends Service {
         if (network == null || password == null) {
             throw new NullPointerException("Network or password was null");
         }
-        return WifiManager.connect(network, password);
+        return PraxWifiManager.connect(network, password);
     }
 }

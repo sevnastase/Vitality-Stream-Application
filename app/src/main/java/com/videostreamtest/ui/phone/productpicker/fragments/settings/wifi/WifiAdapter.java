@@ -14,7 +14,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.videostreamtest.R;
-import com.videostreamtest.service.wifi.WifiManager;
+import com.videostreamtest.service.wifi.PraxWifiManager;
 import com.videostreamtest.service.wifi.WifiStrength;
 import com.videostreamtest.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
@@ -50,7 +50,7 @@ public class WifiAdapter extends RecyclerView.Adapter<WifiViewHolder> {
         Log.d(TAG, "Binding data for position " + position);
         ScanResult network = availableNetworks.get(position);
         holder.networkNameTextView.setText(network.SSID);
-        WifiStrength signalStrength = WifiManager.getSignalStrengthFromLevel(network.level);
+        WifiStrength signalStrength = PraxWifiManager.getSignalStrengthFromLevel(network.level);
         setWifiSignalImage(signalStrength, holder);
 
         holder.toggleCredentialsButton.setOnClickListener(view -> toggleCredentialsLayout(holder));
@@ -58,6 +58,7 @@ public class WifiAdapter extends RecyclerView.Adapter<WifiViewHolder> {
 
         holder.connectButton.setOnClickListener(view -> {
             ViewHelper.hideKeybaord(activity);
+            holder.connectButton.setEnabled(false);
             sendConnectCommand(network, holder.networkPasswordInputField.getText().toString(), view.getContext());
         });
 

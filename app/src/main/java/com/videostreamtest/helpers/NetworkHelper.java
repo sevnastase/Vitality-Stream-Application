@@ -5,11 +5,11 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 
-import com.videostreamtest.service.wifi.WifiManager;
+import com.videostreamtest.service.wifi.PraxWifiManager;
 
 public class NetworkHelper {
     public static boolean isNetworkPraxtourLAN(Context context) {
-        return "PraxAP".equals(WifiManager.getConnectedNetworkName(context));
+        return "PraxAP".equals(PraxWifiManager.getConnectedNetworkName(context));
     }
 
     public static boolean isInternetReachable(Context context) {
