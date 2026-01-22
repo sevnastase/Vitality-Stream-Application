@@ -12,6 +12,7 @@ import android.net.wifi.ScanResult;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -74,6 +75,8 @@ public class WifiSettingsFragment extends Fragment {
     private TextView noWifiPermissionsTextView;
     private Button grantWifiPermissionButton;
     private BroadcastReceiver downloadBroadcastReceiver;
+    private LinearLayout android10PlusLayout;
+    private Button toWifiSettingsButton;
     private final ActivityResultLauncher<String> permissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(),
                     isGranted -> {
@@ -111,6 +114,8 @@ public class WifiSettingsFragment extends Fragment {
         noWifiPermissionLayout = view.findViewById(R.id.no_wifi_permissions_layout);
         noWifiPermissionsTextView = view.findViewById(R.id.no_wifi_permissions_textview);
         grantWifiPermissionButton = view.findViewById(R.id.grant_wifi_permission_button);
+        android10PlusLayout = view.findViewById(R.id.android10plus_layout);
+        toWifiSettingsButton = view.findViewById(R.id.to_wifi_settings_button);
 
         networkBroadcastReceiver = new BroadcastReceiver() {
             @Override
@@ -167,6 +172,10 @@ public class WifiSettingsFragment extends Fragment {
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ?
                             Manifest.permission.NEARBY_WIFI_DEVICES : Manifest.permission.ACCESS_FINE_LOCATION;
             this.permissionLauncher.launch(permissionToRequest);
+        });
+
+        toWifiSettingsButton.setOnClickListener(v -> {
+            startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
         });
 
         initUi(view);
@@ -226,6 +235,7 @@ public class WifiSettingsFragment extends Fragment {
             noWifiPermissionLayout.setVisibility(View.GONE);
             connectedNetworkLayout.setVisibility(View.GONE);
             networkSelectionLayout.setVisibility(View.GONE);
+            android10PlusLayout.setVisibility(View.GONE);
             loadingWheel.setVisibility(View.VISIBLE);
         } else {
             loadingWheel.setVisibility(View.GONE);
@@ -282,10 +292,13 @@ public class WifiSettingsFragment extends Fragment {
 
     private void toggleUiBasedOnWifiConnectivity() {
         String connectedNetworkName = PraxWifiManager.getConnectedNetworkName(PraxtourApplication.getAppContext());
+
+        toggleLoadingWheel(false);
         if (NO_WIFI_PERMISSION.equals(connectedNetworkName)) {
             noWifiPermissionLayout.setVisibility(View.VISIBLE);
             connectedNetworkLayout.setVisibility(View.GONE);
             networkSelectionLayout.setVisibility(View.GONE);
+            return;
         } else if (WIFI_NOT_CONNECTED.equals(connectedNetworkName)) {
             Log.d(TAG, "Not connected");
             connectedNetworkNameTextView.setText("Select a network below");
@@ -303,7 +316,10 @@ public class WifiSettingsFragment extends Fragment {
             networkSelectionLayout.setVisibility(View.VISIBLE);
         }
 
-        toggleLoadingWheel(false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            networkSelectionLayout.setVisibility(View.GONE);
+            android10PlusLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     /**

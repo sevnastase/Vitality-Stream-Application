@@ -140,4 +140,32 @@
                 style="@style/AppTheme.DefaultTrainingButtonBlueBorders"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/android10plus_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/android10plus_wifi_instructions"
+            android:textAlignment="center"/>
+
+        <Button
+            android:id="@+id/to_wifi_settings_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="WiFi Settings"
+            android:background="@null"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:padding="5dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            style="@style/AppTheme.DefaultTrainingButtonBlueBorders"/>
+    </LinearLayout>
 </LinearLayout>
