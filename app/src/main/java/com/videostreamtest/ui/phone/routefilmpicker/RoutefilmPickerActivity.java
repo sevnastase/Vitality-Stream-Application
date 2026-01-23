@@ -26,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LiveData;
@@ -33,11 +34,20 @@ import androidx.lifecycle.Observer;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Constraints;
+import androidx.work.Data;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Routefilm;
+import com.videostreamtest.config.repository.ConfigurationRepository;
 import com.videostreamtest.config.repository.RoutefilmRepository;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
@@ -47,9 +57,14 @@ import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.helpers.ViewHelper;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
+import com.videostreamtest.workers.download.DownloadFlagsServiceWorker;
+import com.videostreamtest.workers.download.DownloadMovieImagesServiceWorker;
+import com.videostreamtest.workers.download.DownloadRoutepartsServiceWorker;
+import com.videostreamtest.workers.download.DownloadSoundServiceWorker;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class RoutefilmPickerActivity extends AppCompatActivity {
     private static final String TAG = RoutefilmPickerActivity.class.getSimpleName();
@@ -67,6 +82,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
 
     // DATA FLOW
     private final RoutefilmRepository routefilmRepository = new RoutefilmRepository(getApplication());
+    private final ConfigurationRepository configurationRepository = new ConfigurationRepository(getApplication());
 
     // VIEWS
     private ImageView productLogoView;
@@ -150,6 +166,18 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPostCreate(@Nullable Bundle savedInstance) {
+        super.onPostCreate(savedInstance);
+
+        configurationRepository.getCurrentConfiguration().observe(this, currentConfig -> {
+            if (currentConfig != null) {
+                periodicSyncDownloadMovieRouteParts(currentConfig.getAccountToken());
+            }
+        });
+
+    }
+
+    @Override
     public void onUserInteraction() {
         super.onUserInteraction();
 
@@ -162,6 +190,11 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
 
         if (chinesportAccount) initMotolifeReceivers();
         backToProductPickerHandler.postDelayed(backToProductPickerRunnable, 1000);
+
+        //TODO: switch to onetime only executions on startup phase or productpicker periodic updater.
+        downloadFlags();
+        downloadMovieSupportImages();
+        downloadSound();
     }
 
     @Override
@@ -510,5 +543,85 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    private void downloadSound() {
+        if (!DownloadHelper.isSoundPresent(getApplicationContext())) {
+            Constraints constraint = new Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build();
+
+            OneTimeWorkRequest downloadSoundWorker = new OneTimeWorkRequest.Builder(DownloadSoundServiceWorker.class)
+                    .setConstraints(constraint)
+                    .setInputData(new Data.Builder().putString("apikey", AccountHelper.getAccountToken(getApplicationContext())).build())
+                    .build();
+
+            WorkManager.getInstance(this)
+                    .beginUniqueWork("download-sound", ExistingWorkPolicy.KEEP, downloadSoundWorker)
+                    .enqueue();
+        }
+    }
+
+    private void downloadFlags() {
+        if (AccountHelper.isLocalPlay(getApplicationContext())) {
+            Constraints constraint = new Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build();
+
+            OneTimeWorkRequest downloadFlagsWorker = new OneTimeWorkRequest.Builder(DownloadFlagsServiceWorker.class)
+                    .setConstraints(constraint)
+                    .setInputData(new Data.Builder().putString("apikey", AccountHelper.getAccountToken(getApplicationContext())).build())
+                    .build();
+
+            WorkManager.getInstance(this)
+                    .beginUniqueWork("download-sound", ExistingWorkPolicy.KEEP, downloadFlagsWorker)
+                    .enqueue();
+        }
+    }
+
+    private void downloadMovieSupportImages() {
+        routefilmRepository.getAllRoutefilms(AccountHelper.getAccountToken(this)).observe(this, routefilms -> {
+            if (routefilms.size() > 0 && AccountHelper.isLocalPlay(getApplicationContext())) {
+                for (Routefilm routefilm : routefilms) {
+                    //SPECIFY INPUT
+                    Data.Builder mediaDownloader = new Data.Builder();
+                    mediaDownloader.putString("INPUT_ROUTEFILM_JSON_STRING", new GsonBuilder().create().toJson(Movie.fromRoutefilm(routefilm), Movie.class));
+                    mediaDownloader.putString("localMediaServer", AccountHelper.getAccountMediaServerUrl(getApplicationContext()));
+
+                    //COSNTRAINTS
+                    Constraints constraint = new Constraints.Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build();
+                    //WORKREQUEST
+                    OneTimeWorkRequest downloadMovieSupportImagesWorkRequest = new OneTimeWorkRequest.Builder(DownloadMovieImagesServiceWorker.class)
+                            .setConstraints(constraint)
+                            .setInputData(mediaDownloader.build())
+                            .addTag("support-images-routefilm-"+routefilm.getMovieId())
+                            .build();
+                    //START WORKING
+                    WorkManager.getInstance(this)
+                            .beginUniqueWork("download-support-images-"+routefilm.getMovieId(), ExistingWorkPolicy.KEEP, downloadMovieSupportImagesWorkRequest)
+                            .enqueue();
+                }
+            }
+        });
+    }
+
+    private void periodicSyncDownloadMovieRouteParts(final String apikey) {
+        Data.Builder mediaDownloader = new Data.Builder();
+        mediaDownloader.putString("apikey", apikey);
+
+        Constraints constraint = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        PeriodicWorkRequest routepartsDownloadRequest = new PeriodicWorkRequest.Builder(DownloadRoutepartsServiceWorker.class, 35, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .setInputData(mediaDownloader.build())
+                .addTag("download-movieparts")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-database-pms-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, routepartsDownloadRequest);
+
     }
 }
