@@ -192,6 +192,11 @@ public class MQTTService extends Service {
         } else {
             // Handle other data updates
             Intent intent = new Intent("com.videostreamtest.MQTT_DATA_UPDATE");
+            if (isBeginningOfTraining(motoLifeData)) {
+                Log.d(TAG, "\t RPM: " + motoLifeData.get(0));
+                enforceMinimumRpm(motoLifeData);
+                Log.d(TAG, "\t Updated: " + motoLifeData.get(0));
+            }
             intent.putStringArrayListExtra("motoLifeData", motoLifeData);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }
@@ -232,6 +237,28 @@ public class MQTTService extends Service {
     private void stopSelfWithError() {
         connectionStatus = LOST_CONNECTION;
         stopSelf();
+    }
+
+    private boolean isBeginningOfTraining(ArrayList<String> motoLifeData) {
+        String rawTime = motoLifeData.get(4);
+        String[] choppedTime = rawTime.split("/");
+        String[] timeElapsed = choppedTime[0].split(":");
+        try {
+            if (timeElapsed.length < 2) {
+                throw new NumberFormatException();
+            }
+            int minutes = Integer.parseInt(timeElapsed[0]); // time can be "00:xx" or "0:xx", this takes care of it
+            int seconds = Integer.parseInt(timeElapsed[1].substring(0, 2)); // ignores possible whitespace after
+
+            return minutes == 0 && seconds <= 20;
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Failed to parse MOTOlife timeElapsed");
+        }
+    }
+
+    private void enforceMinimumRpm(ArrayList<String> motoLifeData) {
+        int newRpm = Math.max(Integer.parseInt(motoLifeData.get(0)), 40);
+        motoLifeData.set(0, String.valueOf(newRpm));
     }
 
     public class LocalBinder extends Binder {
