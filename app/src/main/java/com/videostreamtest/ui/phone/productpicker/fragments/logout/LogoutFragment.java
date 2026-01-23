@@ -19,6 +19,7 @@ import androidx.work.WorkManager;
 
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Configuration;
+import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.ui.phone.listeners.PraxFormOnEditorActionListener;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerViewModel;
 
@@ -91,6 +92,8 @@ public class LogoutFragment extends Fragment {
         SharedPreferences.Editor editor = sp.edit();
         editor.clear();
         editor.commit();
+
+        new DatabaseRestService().clearDeviceUuid();
 
         configuration.setCurrent(false);
         productPickerViewModel.updateConfiguration(configuration);

@@ -1,11 +1,13 @@
 package com.videostreamtest.workers;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
 import androidx.work.WorkerParameters;
 
+import com.videostreamtest.constants.SharedPreferencesConstants;
 import com.videostreamtest.service.database.DatabaseRestService;
 
 public class LoginServiceWorker extends AbstractPraxtourWorker {
@@ -22,14 +24,29 @@ public class LoginServiceWorker extends AbstractPraxtourWorker {
         final String username = getInputData().getString("username");
         final String password = getInputData().getString("password");
         //Pre-define output
-        Data output = new Data.Builder().build();
+        Data output;
         //Define which services you need
         final DatabaseRestService databaseRestService = new DatabaseRestService();
         //Execute some actions
-        final String result = databaseRestService.loginUser(username, password);
+        String apikey = databaseRestService.authenticateUser(username, password);
+        if (apikey == null) {
+            output = new Data.Builder()
+                    .putString("cause", "credentials")
+                    .build();
+            return Result.failure(output);
+        }
+
+        boolean result = databaseRestService.authenticateDevice("", apikey);
+        if (!result) {
+            output = new Data.Builder()
+                    .putString("cause", "device")
+                    .build();
+            return Result.failure(output);
+        }
+
         //Store outcome in the output data model
         output = new Data.Builder()
-                .putString("apikey", result)
+                .putString("apikey", apikey)
                 .putString("password", password)
                 .build();
         //Return result with data output

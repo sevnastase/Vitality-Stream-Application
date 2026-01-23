@@ -55,79 +55,85 @@ public class LoginStatusFragment extends Fragment {
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Bundle arguments = getArguments();
-        if (arguments.getBoolean("authorized", false)) {
-            loginViewModel.setCurrentInstallationStep(0);
-            loginStatusTitle.setText(String.format(getString(R.string.login_success_summary_title), arguments.getString("username")));
-            int activeProductsCount = arguments.getInt("active-products-count", -1);
-            if (activeProductsCount == 0 || activeProductsCount == -1) {
-                loginStatusText.setText(R.string.login_no_products);
-                logout();
-                nextButton.setText(R.string.retry_permission_check_button);
-                nextButton.setOnClickListener((onClickedView) -> {
-                    NavHostFragment.findNavController(LoginStatusFragment.this)
-                            .navigate(R.id.action_loginStatusFragment_to_usernameFragment);
-                });
+        if (arguments != null) {
+            if (arguments.getBoolean("authorized", false)) {
+                loginViewModel.setCurrentInstallationStep(0);
+                loginStatusTitle.setText(String.format(getString(R.string.login_success_summary_title), arguments.getString("username")));
+                int activeProductsCount = arguments.getInt("active-products-count", -1);
+                if (activeProductsCount == 0 || activeProductsCount == -1) {
+                    loginStatusText.setText(R.string.login_no_products);
+                    logout();
+                    nextButton.setText(R.string.retry_permission_check_button);
+                    nextButton.setOnClickListener((onClickedView) -> {
+                        NavHostFragment.findNavController(LoginStatusFragment.this)
+                                .navigate(R.id.action_loginStatusFragment_to_usernameFragment);
+                    });
+                } else {
+                    switch (arguments.getString("account-type", "").toLowerCase()) {
+                        case "standalone":
+                        case "motolife":
+                            loginStatusText.setText(R.string.login_status_summary_standalone);
+                            nextButton.setOnClickListener((onClickedView) -> {
+                                if (getStoragePermissionsForRequest().size() > 0) {
+                                    NavHostFragment.findNavController(LoginStatusFragment.this)
+                                            .navigate(R.id.action_loginStatusFragment_to_storagePermissionFragment, arguments);
+                                } else if (getLocationPermissionsForRequest().size() > 0) {
+                                    NavHostFragment.findNavController(LoginStatusFragment.this)
+                                            .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
+                                } else {
+                                    Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
+                                    startActivity(splashScreenActivity);
+                                    getActivity().finish();
+                                }
+                                loginViewModel.addInstallationStep();
+                            });
+                            loginViewModel.setInstallationSteps(7);
+                            break;
+                        case "streaming":
+                            loginStatusText.setText(getString(R.string.login_status_summary_streaming));
+
+                            nextButton.setOnClickListener((onClickedView) -> {
+                                if (getLocationPermissionsForRequest().size() > 0) {
+                                    NavHostFragment.findNavController(LoginStatusFragment.this)
+                                            .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
+                                } else {
+                                    NavHostFragment.findNavController(LoginStatusFragment.this)
+                                            .navigate(R.id.action_loginStatusFragment_to_downloadSoundFragment, arguments);
+                                }
+                                loginViewModel.addInstallationStep();
+                            });
+
+                            loginViewModel.setInstallationSteps(3);
+                            break;
+                        case "hybrid":
+                            loginStatusText.setText(R.string.login_status_summary_standalone);
+                            nextButton.setOnClickListener((onClickedView) -> {
+                                if (getStoragePermissionsForRequest().size() > 0) {
+                                    NavHostFragment.findNavController(LoginStatusFragment.this)
+                                            .navigate(R.id.action_loginStatusFragment_to_storagePermissionFragment, arguments);
+                                } else if (getLocationPermissionsForRequest().size() > 0) {
+                                    NavHostFragment.findNavController(LoginStatusFragment.this)
+                                            .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
+                                } else {
+                                    Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
+                                    startActivity(splashScreenActivity);
+                                    getActivity().finish();
+                                }
+                                loginViewModel.addInstallationStep();
+                            });
+                            loginViewModel.setInstallationSteps(7);
+                            break;
+                        default:
+                            failedLogin("Account type error", "Contact your distributor.");
+                    }
+                }
             } else {
-                switch (arguments.getString("account-type", "").toLowerCase()) {
-                    case "standalone":
-                    case "motolife":
-                        loginStatusText.setText(R.string.login_status_summary_standalone);
-                        nextButton.setOnClickListener((onClickedView) -> {
-                            if (getStoragePermissionsForRequest().size() > 0) {
-                                NavHostFragment.findNavController(LoginStatusFragment.this)
-                                        .navigate(R.id.action_loginStatusFragment_to_storagePermissionFragment, arguments);
-                            } else if (getLocationPermissionsForRequest().size() > 0) {
-                                NavHostFragment.findNavController(LoginStatusFragment.this)
-                                        .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
-                            } else {
-                                Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
-                                startActivity(splashScreenActivity);
-                                getActivity().finish();
-                            }
-                            loginViewModel.addInstallationStep();
-                        });
-                        loginViewModel.setInstallationSteps(7);
-                        break;
-                    case "streaming":
-                        loginStatusText.setText(getString(R.string.login_status_summary_streaming));
-
-                        nextButton.setOnClickListener((onClickedView) -> {
-                            if (getLocationPermissionsForRequest().size() > 0) {
-                                NavHostFragment.findNavController(LoginStatusFragment.this)
-                                        .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
-                            } else {
-                                NavHostFragment.findNavController(LoginStatusFragment.this)
-                                        .navigate(R.id.action_loginStatusFragment_to_downloadSoundFragment, arguments);
-                            }
-                            loginViewModel.addInstallationStep();
-                        });
-
-                        loginViewModel.setInstallationSteps(3);
-                        break;
-                    case "hybrid":
-                        loginStatusText.setText(R.string.login_status_summary_standalone);
-                        nextButton.setOnClickListener((onClickedView) -> {
-                            if (getStoragePermissionsForRequest().size() > 0) {
-                                NavHostFragment.findNavController(LoginStatusFragment.this)
-                                        .navigate(R.id.action_loginStatusFragment_to_storagePermissionFragment, arguments);
-                            } else if (getLocationPermissionsForRequest().size() > 0) {
-                                NavHostFragment.findNavController(LoginStatusFragment.this)
-                                        .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
-                            } else {
-                                Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
-                                startActivity(splashScreenActivity);
-                                getActivity().finish();
-                            }
-                            loginViewModel.addInstallationStep();
-                        });
-                        loginViewModel.setInstallationSteps(7);
-                        break;
-                    default:
-                        failedLogin("Account type error", "Contact your distributor.");
+                if (!arguments.getBoolean("authorizedDevice", false)) {
+                    failedLogin(getString(R.string.login_failed), getString(R.string.login_message_failed_description_invalid_device));
+                } else {
+                    failedLogin(getString(R.string.login_failed), getString(R.string.login_message_failed_description));
                 }
             }
-        } else {
-            failedLogin(getString(R.string.login_failed), getString(R.string.login_message_failed_description));
         }
         nextButton.requestFocus();
     }

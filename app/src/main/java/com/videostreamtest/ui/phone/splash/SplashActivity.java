@@ -32,10 +32,12 @@ import com.google.android.play.core.tasks.Task;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Product;
+import com.videostreamtest.constants.SharedPreferencesConstants;
 import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.helpers.ConfigurationHelper;
 import com.videostreamtest.helpers.LogHelper;
 import com.videostreamtest.helpers.NetworkHelper;
+import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -97,28 +99,30 @@ public class SplashActivity extends AppCompatActivity {
                 splashViewModel.resetUsageTracker(config.getAccountToken());
                 splashViewModel.resetInterruptedDownloads();
 
+                SharedPreferences sp = getSharedPreferences("app", MODE_PRIVATE);
+                String deviceUuid = sp.getString(SharedPreferencesConstants.SAVED_DEVICE_UUID, null);
+                if (!new DatabaseRestService().authenticateDevice(deviceUuid, config.getAccountToken())) {
+                    Log.d(TAG, "Invalid device");
+                } else {
+                    Log.d(TAG, "Very valid device");
+                }
+
+                SharedPreferences.Editor editor = sp.edit();
                 if (AccountHelper.getAccountToken(getApplicationContext()).equalsIgnoreCase("unauthorized")) {
-                    SharedPreferences.Editor editor = getSharedPreferences("app", MODE_PRIVATE).edit();
                     editor.putString("apikey",  config.getAccountToken());
-                    editor.commit();
                 }
                 if (AccountHelper.getAccountType(getApplicationContext()).equalsIgnoreCase("undefined")) {
-                    SharedPreferences.Editor editor = getSharedPreferences("app", MODE_PRIVATE).edit();
                     editor.putString("account-type", config.getAccountType().toLowerCase());
-                    editor.commit();
                 }
                 if (!AccountHelper.getAccountMediaServerUrl(getApplicationContext()).equalsIgnoreCase(ApplicationSettings.PRAXCLOUD_MEDIA_URL)) {
-                    SharedPreferences.Editor editor = getSharedPreferences("app", MODE_PRIVATE).edit();
                     if (!config.getPraxCloudMediaServerLocalUrl().isEmpty()) {
                         editor.putString("media-server-url", config.getPraxCloudMediaServerLocalUrl());
                     } else {
                         editor.putString("media-server-url",  ApplicationSettings.PRAXCLOUD_MEDIA_URL);
                     }
-                    editor.commit();
                 }
-                SharedPreferences.Editor editor = getSharedPreferences("app", MODE_PRIVATE).edit();
                 editor.putBoolean("bootable", config.isBootOnStart());
-                editor.commit();
+                editor.apply();
 
                 if (NetworkHelper.isNetworkPraxtourLAN(this)) {
                     startActivity(new Intent(this, ProductPickerActivity.class));

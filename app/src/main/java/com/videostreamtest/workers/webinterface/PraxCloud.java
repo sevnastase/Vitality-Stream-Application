@@ -17,12 +17,15 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
+import retrofit2.http.POST;
 import retrofit2.http.Path;
 
 public interface PraxCloud {
     //CONFIGURATION
     @GET("/api/users/current/configuration")
     Call<Configuration> getAccountConfiguration(@Header("api-key") String accountToken);
+    @POST("api/user/authenticate-device/{device-uuid}")
+    Call<Boolean> authenticateDevice(@Header("api-key") String accountToken, @Path(value="device-uuid", encoded=true) String deviceUuid);
 
     //PRODUCTS
     @GET("/api/users/current/subscriptions")

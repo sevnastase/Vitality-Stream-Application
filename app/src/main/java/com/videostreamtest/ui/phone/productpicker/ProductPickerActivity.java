@@ -165,8 +165,12 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                         sensorNeeded = true;
                     }
                 }
-                if (sensorNeeded && !AccountHelper.isChinesportAccount(this)) {
+                if (!sensorNeeded) return;
+
+                if (!AccountHelper.isChinesportAccount(this)) {
                     startBleService();
+                } else {
+                    goToMqttConnectionFragment();
                 }
             }
         });
@@ -327,6 +331,14 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                 .build();
         WorkManager.getInstance(this)
                 .enqueueUniquePeriodicWork("sync-product-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, productUpdaterRequest);
+    }
+
+    private void goToMqttConnectionFragment() {
+        NavHostFragment navHostFragment =
+                (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+        NavController navController = navHostFragment.getNavController();
+
+        navController.navigate(R.id.motoLifeLoginFragment);
     }
 
     private void startBleService() {

@@ -131,13 +131,25 @@ public class PasswordFragment extends Fragment {
                 .enqueue();
 
         WorkManager.getInstance(requireActivity())
+                .getWorkInfoByIdLiveData(loginRequest.getId())
+                .observe(requireActivity(), workInfo -> {
+                    if (workInfo.getState() == WorkInfo.State.FAILED) {
+                        Bundle arguments = new Bundle();
+                        arguments.putBoolean("authorized", false);
+                        arguments.putBoolean("authorizedDevice", false);
+
+                        loginViewModel.setPassword("");
+                        loginViewModel.setUsername("");
+                        NavHostFragment.findNavController(PasswordFragment.this)
+                                .navigate(R.id.action_passwordFragment_to_loginStatusFragment, arguments);
+                    }
+                });
+
+        WorkManager.getInstance(requireActivity())
                 .getWorkInfoByIdLiveData(accountConfigurationRequest.getId())
                 .observe(requireActivity(), workInfo -> {
-
-                    if( workInfo.getState() != null &&
-                            workInfo.getState() == WorkInfo.State.SUCCEEDED ) {
-
-                        final String accounttoken = workInfo.getOutputData().getString("apikey");
+                    if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
+                        final String accountToken = workInfo.getOutputData().getString("apikey");
                         final String receivedPassword = workInfo.getOutputData().getString("password");
                         final int activeProductsCount = workInfo.getOutputData().getInt("active-products-count",-1);
 
@@ -145,23 +157,24 @@ public class PasswordFragment extends Fragment {
                         final com.videostreamtest.data.model.response.Configuration config = new GsonBuilder().create().fromJson(workInfo.getOutputData().getString("configurationObject"), com.videostreamtest.data.model.response.Configuration.class);
 
                         final Bundle arguments = new Bundle();
+                        arguments.putBoolean("authorizedDevice", true);
 
-                        if (accounttoken!= null &&
-                                (accounttoken.equalsIgnoreCase("unauthorized") || accounttoken.isEmpty() )) {
+                        if (accountToken!= null &&
+                                (accountToken.equalsIgnoreCase("unauthorized") || accountToken.isEmpty() )) {
                             arguments.putBoolean("authorized", false);
                         } else {
                             //performance and security wise to put data in application shared preferences
                             SharedPreferences myPreferences = requireActivity().getApplication().getSharedPreferences("app",0);
                             SharedPreferences.Editor editor = myPreferences.edit();
-                            editor.putString("apikey", accounttoken);
+                            editor.putString("apikey", accountToken);
                             editor.putString("password", receivedPassword);
 
-                            Log.d(getClass().getSimpleName(), "Login accounttoken: "+accounttoken);
+                            Log.d(getClass().getSimpleName(), "Login accountToken: "+accountToken);
                             Log.d(getClass().getSimpleName(), "Config not found, inserting new one.");
 
                             //UPDATE local database with new account configuration
                             Configuration newConfig = new Configuration();
-                            newConfig.setAccountToken(accounttoken);
+                            newConfig.setAccountToken(accountToken);
                             newConfig.setCurrent(true);
                             newConfig.setLocalPlay(config.isLocalPlay());
                             newConfig.setCommunicationDevice(config.getCommunicationDevice());
@@ -170,7 +183,7 @@ public class PasswordFragment extends Fragment {
                             newConfig.setPraxCloudMediaServerUrl(config.getPraxCloudMediaServerUrl());
                             newConfig.setAccountType(config.getAccountType());
                             loginViewModel.insert(newConfig);
-                            loginViewModel.insertUsageTracker(accounttoken);
+                            loginViewModel.insertUsageTracker(accountToken);
 
                             String accountType = config.getAccountType().toLowerCase();
 

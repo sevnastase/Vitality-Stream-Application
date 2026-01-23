@@ -1,10 +1,15 @@
 package com.videostreamtest.service.database;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
+
 import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.videostreamtest.config.application.PraxtourApplication;
 import com.videostreamtest.data.ResultApiKey;
+import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.utils.ApplicationSettings;
+import com.videostreamtest.workers.webinterface.PraxCloud;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -14,6 +19,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 /**
@@ -36,7 +44,27 @@ public class DatabaseRestService {
         client = new OkHttpClient();
     }
 
-    public String loginUser(final String username, final String password) {
+    /**
+     * @param deviceUuid the UUID assigned by the Praxtour API. Used to enforce one device per account
+     *                   restriction.
+     */
+    public boolean authenticateDevice(final String deviceUuid, final String apikey) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(PRAXCLOUD_API_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        PraxCloud praxCloud = retrofit.create(PraxCloud.class);
+        Call<Boolean> call = praxCloud.authenticateDevice(apikey, deviceUuid);
+        try {
+            return Boolean.TRUE.equals(call.execute().body());
+        } catch (IOException ioException) {
+            Log.e(TAG, ioException.toString());
+            return false;
+        }
+    }
+
+    public String authenticateUser(final String username, final String password) {
         final String loginUrl = url + "/login";
         final String json = "{\n" +
                 "    \"username\" : \""+username+"\",\n" +
@@ -53,7 +81,24 @@ public class DatabaseRestService {
             return resultApiKey.getApiKey();
         } catch (IOException ioException) {
             Log.e(TAG, ioException.getLocalizedMessage());
-            return "Failed";
+            return null;
+        }
+    }
+
+    public void clearDeviceUuid() {
+        final String clearUrl = url + "/user/clear-device";
+        final String json = "{\n" +
+                "    \"api-key\" : \""+AccountHelper.getAccountToken(PraxtourApplication.getAppContext())+"\",\n" +
+                "}";
+        RequestBody body = RequestBody.create(json, JSON);
+        Request request = new Request.Builder()
+                .url(clearUrl)
+                .post(body)
+                .build();
+        try {
+            client.newCall(request).execute();
+        } catch (IOException e) {
+            Log.d(TAG, "Failed");
         }
     }
 
