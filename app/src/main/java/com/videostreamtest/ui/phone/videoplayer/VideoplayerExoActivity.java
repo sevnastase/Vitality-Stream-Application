@@ -159,7 +159,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
             switch (action) {
                 case "com.videostreamtest.MQTT_DATA_UPDATE":
-                    processIncomingData(intent);
+//                    processIncomingData(intent);
                     break;
                 case "videoplayer_finish_film":
                     if (videoPlayerViewModel != null) {
@@ -908,6 +908,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         videoPlayerViewModel.setStatusbarVisible(true);
         videoPlayerViewModel.setPlayerPaused(false);
         videoPlayerViewModel.setResetChronometer(true);
+        videoPlayerViewModel.setMovieElapsedSeconds(0);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -1242,7 +1243,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         prepareBackgroundSoundPlayer();
 
         //START DATA RECEIVERS
-        if (communicationType != CommunicationType.NONE && !AccountHelper.isChinesportAccount(this)) {
+        if (communicationType != CommunicationType.NONE) {
             startSensorDataReceiver();
         }
 
@@ -1271,7 +1272,11 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         //Register the cadence sensor data broadcast receiver
         cadenceSensorBroadcastReceiver = new CadenceSensorBroadcastReceiver();
         IntentFilter filter = new IntentFilter(ApplicationSettings.COMMUNICATION_INTENT_FILTER);
-        this.registerReceiver(cadenceSensorBroadcastReceiver, filter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            this.registerReceiver(cadenceSensorBroadcastReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            this.registerReceiver(cadenceSensorBroadcastReceiver, filter);
+        }
     }
 
     private void initializeVlcVideoPlayer() {

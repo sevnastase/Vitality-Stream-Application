@@ -9,6 +9,9 @@ import android.util.Log;
 import com.videostreamtest.constants.CadenceSensorConstants;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
+import com.videostreamtest.utils.ApplicationSettings;
+
+import java.util.ArrayList;
 
 public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
     private static final String TAG = CadenceSensorBroadcastReceiver.class.getSimpleName();
@@ -28,12 +31,23 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
         }
         lastUpdateTime = now;
 
-        int rpmReceived = intent.getIntExtra(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, 0);
+        String action = intent.getAction();
+        if (action == null) return;
 
-        Log.d(TAG, "Cadence update: " + rpmReceived);
-
-        // Limit RPM value: too fast cycling can make the videoplayer lag
-        if (rpmReceived > 100) rpmReceived = 100;
+        int rpmReceived;
+        switch (action) {
+            case ApplicationSettings.COMMUNICATION_INTENT_FILTER:
+                rpmReceived = intent.getIntExtra(CadenceSensorConstants.BIKE_CADENCE_LAST_VALUE, 0);
+                Log.d(TAG, "Cadence update: " + rpmReceived);
+                break;
+            case "com.videostreamtest.MQTT_DATA_UPDATE":
+                ArrayList<String> motoLifeData = intent.getStringArrayListExtra("motoLifeData");
+                if (motoLifeData == null) return;
+                rpmReceived = Integer.parseInt(motoLifeData.get(0));
+                break;
+            default:
+                return;
+        }
 
         VideoplayerExoActivity exoInstance = VideoplayerExoActivity.getInstance();
         if (exoInstance != null) {

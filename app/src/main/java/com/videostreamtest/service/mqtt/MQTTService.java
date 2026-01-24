@@ -192,11 +192,6 @@ public class MQTTService extends Service {
         } else {
             // Handle other data updates
             Intent intent = new Intent("com.videostreamtest.MQTT_DATA_UPDATE");
-            if (isBeginningOfTraining(motoLifeData)) {
-                Log.d(TAG, "\t RPM: " + motoLifeData.get(0));
-                enforceMinimumRpm(motoLifeData);
-                Log.d(TAG, "\t Updated: " + motoLifeData.get(0));
-            }
             intent.putStringArrayListExtra("motoLifeData", motoLifeData);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }

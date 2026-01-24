@@ -451,13 +451,11 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         try {
             // fetch before to avoid problems when
             // concatenating strings in setText() call
-            String speed = motoLifeData.get(0);
             String power = motoLifeData.get(1) + " W";
             String mode = "Mode: " + motoLifeData.get(2);
             String direction = "Direction: " + motoLifeData.get(3);
             String time = motoLifeData.get(4);
 
-            rpmIndicator.setText(speed);
             motolifePower.setText(power);
             motolifeMode.setText(mode);
             motolifeDirection.setText(direction);
