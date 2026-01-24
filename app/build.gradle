@@ -13,7 +13,7 @@ android {
         minSdkVersion 24
         targetSdkVersion 25
         versionCode Integer.parseInt(VERSION_CODE)
-        versionName VERSION_NAME+''+versionCode
+        versionName VERSION_NAME+'.'+versionCode+'.'+VERSION_REVISION
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
