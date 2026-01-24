@@ -55,6 +55,7 @@ import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
 import com.videostreamtest.config.application.PraxtourApplication;
 import com.videostreamtest.config.entity.BackgroundSound;
+import com.videostreamtest.constants.TrainingConstants;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.enums.CommunicationDevice;
@@ -448,16 +449,16 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             @Override
             public void run() {
                 sensorConnected = true;
-                updateVideoPlayerParams(60);
-                updateVideoPlayerScreen(60);
+                updateVideoPlayerParams(20);
+                updateVideoPlayerScreen(20);
             }
         };
         Runnable r2 = new Runnable() {
             @Override
             public void run() {
                 sensorConnected = true;
-                updateVideoPlayerParams(0);
-                updateVideoPlayerScreen(0);
+                updateVideoPlayerParams(120);
+                updateVideoPlayerScreen(120);
             }
         };
         Runnable r3 = new Runnable() {
@@ -466,6 +467,14 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                 sensorConnected = true;
                 updateVideoPlayerParams(42);
                 updateVideoPlayerScreen(42);
+            }
+        };
+        Runnable r4 = new Runnable() {
+            @Override
+            public void run() {
+                sensorConnected = true;
+                updateVideoPlayerParams(0);
+                updateVideoPlayerScreen(0);
             }
         };
 
@@ -478,8 +487,10 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                     autoRunnerHandler.post(r1);
                 } else if (secondsPassed < 20) {
                     autoRunnerHandler.post(r2);
-                } else {
+                } else if (secondsPassed < 25) {
                     autoRunnerHandler.post(r3);
+                } else {
+                    autoRunnerHandler.post(r4);
                 }
                 secondsPassed++;
                 autoRunnerHandler.postDelayed(this, 1000);
@@ -570,11 +581,14 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         if (routeFinished) {
             return;
         }
+
+        final int clampedRpm = clampRpm(rpm);
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 //First update the measurements with the latest sensor data
-                updateLastCadenceMeasurement(rpm);
+                updateLastCadenceMeasurement(clampedRpm);
 
                 if (mediaPlayer!=null) {
                     Log.d(TAG, "TIME "+mediaPlayer.getDuration());
@@ -589,31 +603,31 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                 switch (communicationType) {
                     case RPM:
                         //Boolean to unlock video because sensor is connected
-                        sensorConnected = rpm>0;
+                        sensorConnected = clampedRpm>0;
                         //Update RPM
-                        videoPlayerViewModel.setRpmData(rpm);
+                        videoPlayerViewModel.setRpmData(clampedRpm);
                         break;
                     case ACTIVE:
                         //Boolean to unlock video because sensor is connected
-                        sensorConnected = rpm>0;
+                        sensorConnected = clampedRpm>0;
                         //Update RPM
-                        videoPlayerViewModel.setRpmData(rpm);
+                        videoPlayerViewModel.setRpmData(clampedRpm);
                         break;
                     case NONE:
                         sensorConnected = true;
                         break;
                     default:
                 }
-                Log.d(TAG, "RPM: "+rpm+" sensorConnected: "+sensorConnected);
+                Log.d(TAG, "RPM: "+clampedRpm+" sensorConnected: "+sensorConnected);
                 /* Pause mechanism  */
                 //Only show pause screen while the video is not in loading state
                 if (!isLoading) {
                     //If the average measurement is 0 and the route is not paused then pause and show pause screen
-                    if (getAverageCadenceMeasurements() == 0 && !routePaused && !(communicationType == CommunicationType.NONE)) {
+                    if (clampedRpm == 0 && !routePaused && !(communicationType == CommunicationType.NONE)) {
                         togglePauseScreen();
                     } else {
                         //If the route is paused and the average measurement is higher then 0 then unpause en remove pause screen
-                        if (routePaused && getAverageCadenceMeasurements() > 0) {
+                        if (routePaused && clampedRpm > 0) {
                             togglePauseScreen();
                         }
                     }
@@ -630,6 +644,9 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         if (routeFinished) {
             return;
         }
+
+        final int clampedRpm = clampRpm(rpm);
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -639,7 +656,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                     switch (communicationType) {
                         case RPM:
                             if (mediaPlayer!= null) {
-                                mediaPlayer.setPlaybackSpeed(RpmVectorLookupTable.getPlaybackspeed(rpm));
+                                mediaPlayer.setPlaybackSpeed(RpmVectorLookupTable.getPlaybackspeed(clampedRpm));
                             }
                             break;
                         case ACTIVE:
@@ -655,6 +672,38 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    /**
+     * Clamps the RPM value according to the following rules.
+     * <p>
+     * If {@code rpm} is above {@link TrainingConstants#MAX_RPM}, this method
+     * clamps it to {@link TrainingConstants#MAX_RPM}.
+     * <p>
+     * If the current training duration is less than
+     * {@link TrainingConstants.Beginning#CLAMP_MIN_RPM_UNTIL_SECONDS} and {@code rpm} is less than
+     * {@link TrainingConstants.Beginning#MIN_RPM}, this method clamps it to
+     * {@link TrainingConstants.Beginning#MIN_RPM}.
+     * <p>
+     * In any other case, the value of {@code rpm} remains unmodified.
+     */
+    private int clampRpm(int rpm) {
+        Integer seconds = videoPlayerViewModel.getMovieElapsedSeconds().getValue();
+        int secondsSpentInMovie = seconds != null ? seconds : 0;
+
+        Log.d(TAG, "Clamping RPM " + rpm + " at " + secondsSpentInMovie + "s");
+        if (rpm > TrainingConstants.MAX_RPM) {
+            Log.d(TAG, "Too big");
+            rpm = TrainingConstants.MAX_RPM;
+        }
+
+        if (secondsSpentInMovie < TrainingConstants.Beginning.CLAMP_MIN_RPM_UNTIL_SECONDS
+                && rpm < TrainingConstants.Beginning.MIN_RPM) {
+            Log.d(TAG, "Too small beginning");
+            rpm = TrainingConstants.Beginning.MIN_RPM;
+        }
+
+        return rpm;
     }
 
     public void togglePauseScreen() {

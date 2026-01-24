@@ -1,9 +1,8 @@
 package com.videostreamtest.ui.phone.videoplayer.viewmodel;
 
-import static com.videostreamtest.service.database.DatabaseRestService.TAG;
-
 import android.app.Application;
 import android.content.Context;
+import android.os.Handler;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -41,6 +40,7 @@ public class VideoPlayerViewModel extends AndroidViewModel {
     private final MutableLiveData <Integer> distanceOffset          = new MutableLiveData<>(0);
     private MutableLiveData <Integer>   currentMetersDone           = new MutableLiveData<>();
     private MutableLiveData <Integer>   metersToGo                  = new MutableLiveData<>();
+    private MutableLiveData<Integer> movieElapsedSeconds            = new MutableLiveData<>(0);
 
     //START VALUES
     private Integer     startRpmValue           = 0;
@@ -51,6 +51,17 @@ public class VideoPlayerViewModel extends AndroidViewModel {
     private Long        totalDurationSeconds    = 0L;
     private Long        spendDurationSeconds    = 0L;
     private String productName;
+    private final Handler trainingTimeHandler;
+    private final Runnable trainingTimeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Integer oldValue = getMovieElapsedSeconds().getValue();
+            int oldValueUnwrapped = oldValue == null ? 0 : oldValue;
+            oldValueUnwrapped++;
+            setMovieElapsedSeconds(oldValueUnwrapped);
+            trainingTimeHandler.postDelayed(this, 1000);
+        }
+    };
 
     public VideoPlayerViewModel(@NonNull Application application) {
         super(application);
@@ -73,6 +84,8 @@ public class VideoPlayerViewModel extends AndroidViewModel {
         this.selectedMovie.observeForever(movie -> distanceCalculationLogic());
         this.movieTotalDurationSeconds.observeForever(duration -> distanceCalculationLogic());
         this.movieSpendDurationSeconds.observeForever(duration -> distanceCalculationLogic());
+        this.trainingTimeHandler = new Handler();
+        trainingTimeHandler.postDelayed(trainingTimeRunnable, 1000);
     }
 
     public void setProductName(String productName) {
@@ -226,6 +239,14 @@ public class VideoPlayerViewModel extends AndroidViewModel {
         this.metersToGo.setValue(meters);
     }
 
+    public LiveData<Integer> getMovieElapsedSeconds() {
+        return movieElapsedSeconds;
+    }
+
+    public void setMovieElapsedSeconds(Integer seconds) {
+        this.movieElapsedSeconds.setValue(seconds);
+    }
+
     private float getMps(Movie selectedMovie) {
         Long movieTotalDurationSecondsVal = movieTotalDurationSeconds.getValue();
         if (movieTotalDurationSecondsVal != null) {
@@ -262,5 +283,11 @@ public class VideoPlayerViewModel extends AndroidViewModel {
 
         setDistanceOffset(newDistanceOffset);
         distanceCalculationLogic();
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        trainingTimeHandler.removeCallbacksAndMessages(null);
     }
 }

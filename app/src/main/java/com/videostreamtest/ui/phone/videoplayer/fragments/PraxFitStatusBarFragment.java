@@ -2,6 +2,7 @@ package com.videostreamtest.ui.phone.videoplayer.fragments;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -14,18 +15,20 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.videostreamtest.R;
+import com.videostreamtest.constants.TrainingConstants;
 import com.videostreamtest.data.model.MoviePart;
-import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 
+import java.util.Locale;
+
 public class PraxFitStatusBarFragment extends AbstractPraxStatusBarFragment {
     private static final String TAG = PraxFitStatusBarFragment.class.getSimpleName();
 
     //Elements of the fragment to fill
-    private TextView statusbarMovieRpm;
+    private TextView statusbarRpmValue;
     private TextView statusbarDistance;
     private TextView statusbarTotalDistance;
 //    private Chronometer stopwatchCurrentRide;
@@ -57,7 +60,7 @@ public class PraxFitStatusBarFragment extends AbstractPraxStatusBarFragment {
     protected void initializeLayout(View view) {
         super.initializeLayout(view);
 
-        statusbarMovieRpm = view.findViewById(R.id.statusbar_rpm_value);
+        statusbarRpmValue = view.findViewById(R.id.statusbar_rpm_value);
         statusbarDistance = view.findViewById(R.id.statusbar_distance_box_value);
         statusbarTotalDistance = view.findViewById(R.id.statusbar_distance_finish_box_value);
 
@@ -238,8 +241,24 @@ public class PraxFitStatusBarFragment extends AbstractPraxStatusBarFragment {
         });
 
         //RPM data related
-        videoPlayerViewModel.getRpmData().observe(getViewLifecycleOwner(), rpmData ->{
-            statusbarMovieRpm.setText(toString().format(getString(R.string.video_screen_rpm), rpmData));
+        videoPlayerViewModel.getRpmData().observe(getViewLifecycleOwner(), rpmData -> {
+            statusbarRpmValue.setText(String.format(Locale.GERMANY, getString(R.string.video_screen_rpm), rpmData));
+
+            if (rpmData == TrainingConstants.MAX_RPM) {
+                statusbarRpmValue.setText(String.format(Locale.GERMANY, "%d+", rpmData));
+            }
+
+            Integer seconds = videoPlayerViewModel.getMovieElapsedSeconds().getValue();
+            int secondsSpentInMovie = seconds == null ? 0 : seconds;
+            if (secondsSpentInMovie <= TrainingConstants.Beginning.CLAMP_MIN_RPM_UNTIL_SECONDS
+                    && rpmData == TrainingConstants.Beginning.MIN_RPM) {
+                statusbarRpmValue.setTextColor(Color.GRAY);
+            }
+
+            if (secondsSpentInMovie > TrainingConstants.Beginning.CLAMP_MIN_RPM_UNTIL_SECONDS
+                    || rpmData > TrainingConstants.Beginning.MIN_RPM) {
+                statusbarRpmValue.setTextColor(Color.WHITE);
+            }
         });
 
         videoPlayerViewModel.getCurrentMetersDone().observe(getViewLifecycleOwner(), updatedCurrentMetersDone -> {

@@ -1,5 +1,6 @@
 package com.videostreamtest.ui.phone.videoplayer.fragments;
 
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.KeyEvent;
@@ -8,8 +9,11 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.videostreamtest.R;
+import com.videostreamtest.constants.TrainingConstants;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
+
+import java.util.Locale;
 
 public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
     private static final String TAG = PraxFilmStatusBarFragment.class.getSimpleName();
@@ -131,8 +135,24 @@ public class PraxFilmStatusBarFragment extends AbstractPraxStatusBarFragment {
         super.useVideoPlayerViewModel(view);
 
         //RPM data related
-        videoPlayerViewModel.getRpmData().observe(getViewLifecycleOwner(), rpmData ->{
-            statusbarRpmValue.setText(String.format(getString(R.string.video_screen_rpm), rpmData));
+        videoPlayerViewModel.getRpmData().observe(getViewLifecycleOwner(), rpmData -> {
+            statusbarRpmValue.setText(String.format(Locale.GERMANY, getString(R.string.video_screen_rpm), rpmData));
+
+            if (rpmData == TrainingConstants.MAX_RPM) {
+                statusbarRpmValue.setText(String.format(Locale.GERMANY, "%d+", rpmData));
+            }
+
+            Integer seconds = videoPlayerViewModel.getMovieElapsedSeconds().getValue();
+            int secondsSpentInMovie = seconds == null ? 0 : seconds;
+            if (secondsSpentInMovie <= TrainingConstants.Beginning.CLAMP_MIN_RPM_UNTIL_SECONDS
+                    && rpmData == TrainingConstants.Beginning.MIN_RPM) {
+                statusbarRpmValue.setTextColor(Color.GRAY);
+            }
+
+            if (secondsSpentInMovie > TrainingConstants.Beginning.CLAMP_MIN_RPM_UNTIL_SECONDS
+                    || rpmData > TrainingConstants.Beginning.MIN_RPM) {
+                statusbarRpmValue.setTextColor(Color.WHITE);
+            }
         });
     }
 
