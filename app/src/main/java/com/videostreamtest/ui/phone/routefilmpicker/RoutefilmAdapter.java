@@ -27,6 +27,7 @@ import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
+import com.videostreamtest.utils.ApplicationSettings;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -116,7 +117,7 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
         holder.routefilmCoverPhotoImageButton.setOnClickListener(view -> {
             // Re-initialize the video player intent
             if (selectedRoutefilmPosition == position) {
-                startVideoPlayer(false);
+                startVideoPlayer(ApplicationSettings.DEVELOPER_MODE);
             } else {
                 final int prevPosition = selectedRoutefilmPosition;
                 setSelectedRoutefilmPosition(position);
@@ -127,7 +128,7 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
         holder.routefilmCoverPhotoImageButton.setOnKeyListener((v, keyCode, event) -> {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 if (isSelectButton(keyCode)) {
-                    startVideoPlayer(false);
+                    startVideoPlayer(ApplicationSettings.DEVELOPER_MODE);
                     return true;
                 }
             }
@@ -200,7 +201,7 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
     }
 
     public void startVideoPlayer(boolean startedFromMotolife) {
-        if (startedFromMotolife || shouldMovieBeStartedOnClick()) {
+        if (startedFromMotolife || shouldMovieBeStartedOnClick() || ApplicationSettings.DEVELOPER_MODE) {
             initVideoPlayer(generateBundleParameters(startedFromMotolife));
             hostActivity.startActivity(videoPlayerActivityIntent);
         }
