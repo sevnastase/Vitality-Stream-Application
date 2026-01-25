@@ -37,6 +37,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
@@ -700,7 +701,7 @@ public class BleService extends Service {
     private void broadcastData(final String key, final String value) {
         Intent broadcastIntent = new Intent(ApplicationSettings.COMMUNICATION_INTENT_FILTER);
         broadcastIntent.putExtra(key, value);
-        sendBroadcast(broadcastIntent);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
     }
     /**
      * Broadcast data with key/value pair of String:int
@@ -710,6 +711,6 @@ public class BleService extends Service {
     private void broadcastData(final String key, final int value) {
         Intent broadcastIntent = new Intent(ApplicationSettings.COMMUNICATION_INTENT_FILTER);
         broadcastIntent.putExtra(key, value);
-        sendBroadcast(broadcastIntent);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(broadcastIntent);
     }
 }
