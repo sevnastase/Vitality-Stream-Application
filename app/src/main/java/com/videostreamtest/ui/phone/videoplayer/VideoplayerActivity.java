@@ -55,6 +55,7 @@ import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
 import com.videostreamtest.config.application.PraxtourApplication;
 import com.videostreamtest.config.entity.BackgroundSound;
+import com.videostreamtest.constants.BroadcastConstants;
 import com.videostreamtest.constants.TrainingConstants;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
@@ -690,7 +691,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
 
        if (secondsSpentInMovie < TrainingConstants.Beginning.CLAMP_MIN_RPM_UNTIL_SECONDS
-               && rpm < TrainingConstants.Beginning.MIN_RPM) {
+               && rpm < TrainingConstants.Beginning.MIN_RPM && rpm > 0) {
            rpm = TrainingConstants.Beginning.MIN_RPM;
        }
 
@@ -732,11 +733,14 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
 
         playerView.hideController();
-        toggleStatusScreen();
+        toggleStatusScreen(false);
     }
 
     public void showFinishScreen() {
         videoPlayerViewModel.setPlayerPaused(true);
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
+        }
         final TextView message = findViewById(R.id.status_dialog_title);
         message.setText(getString(R.string.finish_screen_title));
         final TextView pauseMessage = findViewById(R.id.status_dialog_message);
@@ -749,9 +753,9 @@ public class VideoplayerActivity extends AppCompatActivity {
         FrameLayout statusbar = findViewById(R.id.videoplayer_framelayout_statusbar);
         statusbar.setVisibility(View.GONE);
 
-        finishFlag.requestFocus();
+        backToOverview.requestFocus();
 
-        toggleStatusScreen();
+        toggleStatusScreen(true);
         playerView.setUseController(false);
         playerView.hideController();
 
@@ -881,8 +885,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         playerView.setPlayer(null);
     }
 
-    private void toggleStatusScreen() {
-        if (AccountHelper.isChinesportAccount(this)) {
+    private void toggleStatusScreen(boolean finish) {
+        if (!finish && AccountHelper.isChinesportAccount(this)) {
             // Handled in AbstractPraxStatusBarFragment
             return;
         }
@@ -1306,12 +1310,11 @@ public class VideoplayerActivity extends AppCompatActivity {
     private void startSensorDataReceiver() {
         //Register the cadence sensor data broadcast receiver
         cadenceSensorBroadcastReceiver = new CadenceSensorBroadcastReceiver();
-        IntentFilter filter = new IntentFilter(ApplicationSettings.COMMUNICATION_INTENT_FILTER);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            this.registerReceiver(cadenceSensorBroadcastReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
-        } else {
-            this.registerReceiver(cadenceSensorBroadcastReceiver, filter);
-        }
+        Log.d(TAG, "Created CadenceSensorBroadcastReceiver");
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ApplicationSettings.COMMUNICATION_INTENT_FILTER);
+        filter.addAction(BroadcastConstants.mqtt.EVENT_DATA_UPDATE);
+        LocalBroadcastManager.getInstance(this).registerReceiver(cadenceSensorBroadcastReceiver, filter);
     }
 
     private void initializeVlcVideoPlayer() {
