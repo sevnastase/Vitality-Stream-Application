@@ -43,6 +43,7 @@ import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.log.DeviceInformation;
+import com.videostreamtest.helpers.DataHolder;
 import com.videostreamtest.service.ble.BleService;
 import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.helpers.ConfigurationHelper;
@@ -168,6 +169,13 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                 if (sensorNeeded && !AccountHelper.isChinesportAccount(this)) {
                     startBleService();
                 }
+                if (sensorNeeded && AccountHelper.isChinesportAccount(this) && !isMqttConnected()) {
+                    NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+                    if (navHostFragment != null) {
+                        NavController navController = navHostFragment.getNavController();
+                        navController.navigate(R.id.motoLifeLoginFragment);
+                    }
+                }
             }
         });
 
@@ -236,6 +244,10 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         VideoLanLib.getLibVLC(getApplicationContext()).release();
         VideoLanLib.setLibVlc(null);
         THREAD_POOL_EXECUTOR.getQueue().drainTo(new ArrayList<>());
+    }
+
+    private boolean isMqttConnected() {
+        return DataHolder.getInstance().isMotolifeConnected();
     }
 
     private boolean isTouchScreen() {
