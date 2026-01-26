@@ -85,10 +85,10 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
 
         if (startedFromMotolife) {
             addUsedViews(new View[]{
-                    view.findViewById(R.id.statusbar_rpm_box),
                     view.findViewById(R.id.statusbar_motolife_power_box),
                     view.findViewById(R.id.chinesport_logo_imageview),
-                    view.findViewById(R.id.motolife_info_layout)
+                    view.findViewById(R.id.motolife_info_layout),
+//                    view.findViewById(R.id.statusbar_rpm_box)
             });
         } else {
             addUsedViews(new LinearLayout[]{
