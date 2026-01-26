@@ -147,6 +147,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
     private final Handler praxHandler = new Handler(Looper.getMainLooper());
     private final Handler timelineHandler = new Handler(Looper.getMainLooper());
     private final Executor backgroundExecutor = Executors.newSingleThreadExecutor();
+    private Runnable autoRunnerDevMode;
 
     //BLE
     private boolean backToOverviewWaitForSensor = false;
@@ -439,13 +440,13 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 //        discoverChromecasts();
 
         if (ApplicationSettings.DEVELOPER_MODE) {
-            Runnable controller = autoRunner();
-            autoRunnerHandler.post(controller);
+            autoRunnerDevMode = autoRunnerDevMode();
+            autoRunnerHandler.post(autoRunnerDevMode);
         }
     }
 
     @NonNull
-    private Runnable autoRunner() {
+    private Runnable autoRunnerDevMode() {
         Runnable r1 = new Runnable() {
             @Override
             public void run() {
@@ -492,6 +493,42 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                     autoRunnerHandler.post(r3);
                 } else {
                     autoRunnerHandler.post(r4);
+                }
+                secondsPassed++;
+                autoRunnerHandler.postDelayed(this, 1000);
+            }
+        };
+    }
+
+    /**
+     * This method is used to stabilize the RPM while seeking (jumping to a new starting point).
+     * Low RPM's cause huge lag spikes when jumping. Remove this method and you will encounter
+     * these lag spikes (only when using VideoplayerActivity though). If you switch
+     * to only using VideoplayerExoActivity, the video will be jittery. Don't ask...
+     */
+    private Runnable autoRunner() {
+        Runnable r1 = new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "Gregrpm70");
+                sensorConnected = true;
+                updateVideoPlayerParams(70);
+                updateVideoPlayerScreen(70);
+            }
+        };
+
+        return new Runnable() {
+            int secondsPassed = 0;
+            @Override
+            public void run() {
+                if (secondsPassed < MIN_LOADING_VIEW_SECONDS - 3) {
+                    autoRunnerHandler.post(r1);
+                } else {
+                    autoRunnerHandler.removeCallbacksAndMessages(this);
+                    if (ApplicationSettings.DEVELOPER_MODE) {
+                        autoRunnerHandler.post(autoRunnerDevMode);
+                    }
+                    return;
                 }
                 secondsPassed++;
                 autoRunnerHandler.postDelayed(this, 1000);
@@ -791,6 +828,11 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             public void run() {
                 if (mediaPlayer.isPlaying()) {
                     long positionSecond = 0;
+
+                    if (ApplicationSettings.DEVELOPER_MODE) {
+                        autoRunnerHandler.removeCallbacks(autoRunnerDevMode);
+                    }
+                    autoRunnerHandler.post(autoRunner());
 
                     videoPlayerViewModel.setStatusbarVisible(false);
 //                    videoPlayerViewModel.setPlayerPaused(true);

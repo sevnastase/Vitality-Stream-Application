@@ -137,7 +137,7 @@ public class VideoplayerActivity extends AppCompatActivity {
      */
     private final int MIN_LOADING_VIEW_SECONDS =
             AccountHelper.isChinesportAccount(PraxtourApplication.getAppContext()) ?
-                    2 : 7;
+                    5 : 7;
     private boolean isLoading = true;
     private boolean sensorConnected = false;
 
@@ -152,6 +152,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     private final Handler praxHandler = new Handler(Looper.getMainLooper());
     private final Handler timelineHandler = new Handler(Looper.getMainLooper());
     private final Executor backgroundExecutor = Executors.newSingleThreadExecutor();
+    private Runnable autoRunnerDevMode;
 
     //BLE
     private boolean backToOverviewWaitForSensor = false;
@@ -446,27 +447,27 @@ public class VideoplayerActivity extends AppCompatActivity {
 //        discoverChromecasts();
 
         if (ApplicationSettings.DEVELOPER_MODE) {
-            Runnable controller = autoRunner();
-            autoRunnerHandler.post(controller);
+            autoRunnerDevMode = autoRunnerDevMode();
+            autoRunnerHandler.post(autoRunnerDevMode);
         }
     }
 
     @NonNull
-    private Runnable autoRunner() {
+    private Runnable autoRunnerDevMode() {
         Runnable r1 = new Runnable() {
             @Override
             public void run() {
                 sensorConnected = true;
-                updateVideoPlayerParams(20);
-                updateVideoPlayerScreen(20);
+                updateVideoPlayerParams(35);
+                updateVideoPlayerScreen(35);
             }
         };
         Runnable r2 = new Runnable() {
             @Override
             public void run() {
                 sensorConnected = true;
-                updateVideoPlayerParams(42);
-                updateVideoPlayerScreen(42);
+                updateVideoPlayerParams(25);
+                updateVideoPlayerScreen(25);
             }
         };
 
@@ -479,6 +480,41 @@ public class VideoplayerActivity extends AppCompatActivity {
                     autoRunnerHandler.post(r1);
                 } else {
                     autoRunnerHandler.post(r2);
+                }
+                secondsPassed++;
+                autoRunnerHandler.postDelayed(this, 1000);
+            }
+        };
+    }
+
+    /**
+     * This method is used to stabilize the RPM while seeking (jumping to a new starting point).
+     * Low RPM's cause huge lag spikes when jumping. Remove this method and you will encounter
+     * these lag spikes (only when using VideoplayerActivity though). If you switch
+     * to only using VideoplayerExoActivity, the video will be jittery. Don't ask...
+     */
+    private Runnable autoRunner() {
+        Runnable r1 = new Runnable() {
+            @Override
+            public void run() {
+                sensorConnected = true;
+                updateVideoPlayerParams(70);
+                updateVideoPlayerScreen(70);
+            }
+        };
+
+        return new Runnable() {
+            int secondsPassed = 0;
+            @Override
+            public void run() {
+                if (secondsPassed < MIN_LOADING_VIEW_SECONDS - 3) {
+                    autoRunnerHandler.post(r1);
+                } else {
+                    autoRunnerHandler.removeCallbacksAndMessages(this);
+                    if (ApplicationSettings.DEVELOPER_MODE) {
+                        autoRunnerHandler.post(autoRunnerDevMode);
+                    }
+                    return;
                 }
                 secondsPassed++;
                 autoRunnerHandler.postDelayed(this, 1000);
@@ -783,6 +819,11 @@ public class VideoplayerActivity extends AppCompatActivity {
             public void run() {
                 if (mediaPlayer.isSeekable()) {
                     long positionSecond = 0;
+
+                    if (ApplicationSettings.DEVELOPER_MODE) {
+                        autoRunnerHandler.removeCallbacks(autoRunnerDevMode);
+                    }
+                    autoRunnerHandler.post(autoRunner());
 
                     videoPlayerViewModel.setStatusbarVisible(false);
 //                    videoPlayerViewModel.setPlayerPaused(true);
