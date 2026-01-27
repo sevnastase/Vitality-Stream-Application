@@ -175,6 +175,12 @@ public class VideoplayerActivity extends AppCompatActivity {
                     }
                     showFinishScreen();
                     break;
+                case BroadcastConstants.mqtt.ACTION_PAUSE_FILM:
+                    pausePlayer();
+                    break;
+                case BroadcastConstants.mqtt.ACTION_RESUME_FILM:
+                    resumePlayer();
+                    break;
                 case "com.videostreamtest.ACTION_STOP_FILM":
                     stopVideoplayer();
                     break;
@@ -397,6 +403,8 @@ public class VideoplayerActivity extends AppCompatActivity {
             filter.addAction("com.videostreamtest.MQTT_DATA_UPDATE");
             filter.addAction("videoplayer_finish_film");
             filter.addAction("com.videostreamtest.ACTION_STOP_FILM");
+            filter.addAction(BroadcastConstants.mqtt.ACTION_PAUSE_FILM);
+            filter.addAction(BroadcastConstants.mqtt.ACTION_RESUME_FILM);
             LocalBroadcastManager.getInstance(this).registerReceiver(mqttBroadcastReceiver, filter);
         }
 
@@ -1531,23 +1539,12 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void pausePlayer() {
-        if (videoPlayer != null) {
-            videoPlayer.setPlayWhenReady(false);
-            videoPlayer.getPlaybackState();
-        }
-        if (mediaPlayer!=null) {
-            mediaPlayer.pause();
-        }
+        Log.d(TAG, "Pausing");
     }
 
     private void resumePlayer() {
-        if (videoPlayer != null) {
-            videoPlayer.setPlayWhenReady(true);
-            videoPlayer.getPlaybackState();
-        }
-        if (mediaPlayer!=null) {
-            mediaPlayer.play();
-        }
+        Log.d(TAG, "Resuming");
+        videoPlayerViewModel.setMovieElapsedSeconds(0);
     }
 
     private void stopSensorService() {
