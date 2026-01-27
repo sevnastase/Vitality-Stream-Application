@@ -41,6 +41,7 @@ import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.config.entity.Routefilm;
+import com.videostreamtest.config.repository.RoutefilmRepository;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.log.DeviceInformation;
 import com.videostreamtest.helpers.DataHolder;
@@ -58,7 +59,11 @@ import com.videostreamtest.workers.PeriodicInstallPackageServiceWorker;
 import com.videostreamtest.workers.SoundInformationServiceWorker;
 import com.videostreamtest.workers.UpdateRegisteredMovieServiceWorker;
 import com.videostreamtest.workers.UpdateRoutePartsServiceWorker;
+import com.videostreamtest.workers.download.DownloadFlagsServiceWorker;
+import com.videostreamtest.workers.download.DownloadMovieImagesServiceWorker;
 import com.videostreamtest.workers.download.DownloadMovieServiceWorker;
+import com.videostreamtest.workers.download.DownloadRoutepartsServiceWorker;
+import com.videostreamtest.workers.download.DownloadSoundServiceWorker;
 import com.videostreamtest.workers.download.DownloadStatusVerificationServiceWorker;
 import com.videostreamtest.workers.synchronisation.ActiveProductMovieLinksServiceWorker;
 import com.videostreamtest.workers.synchronisation.ActiveProductsServiceWorker;
@@ -380,12 +385,18 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
                                 totalDownloadableMovieFileSizeOnDisk += routefilm.getMovieFileSize();
                             }
                         }
+                        // FIXME: this does not consider the size of supporting files (T1-T6, Scenery.jpg, sounds)
                         if (DownloadHelper.canFileBeCopiedToLargestVolume(getApplicationContext(), totalDownloadableMovieFileSizeOnDisk)) {
                             for (final Routefilm routefilm: routefilms) {
                                 if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
                                     startDownloadWorker(routefilm.getMovieId(), AccountHelper.getAccountMediaServerUrl(getApplicationContext()));
                                 }
                             }
+
+                            downloadSound();
+                            downloadFlags();
+                            downloadMovieSupportImages();
+                            periodicSyncDownloadMovieRouteParts(AccountHelper.getAccountToken(this));
                         } else {
                             Log.d(TAG, "Movies do not fit on disk, DownloadRunners not started.");
                             LogHelper.WriteLogRule(getApplicationContext(), AccountHelper.getAccountToken(getApplicationContext()), "Movies do not fit on disk, DownloadRunners aborted.","DEBUG", "");
@@ -411,6 +422,86 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         WorkManager.getInstance(getApplicationContext())
                 .beginUniqueWork("download-runner-cluster-"+movieId, ExistingWorkPolicy.KEEP, downloadRunner)
                 .enqueue();
+    }
+
+    private void downloadSound() {
+        if (!DownloadHelper.isSoundPresent(getApplicationContext())) {
+            Constraints constraint = new Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build();
+
+            OneTimeWorkRequest downloadSoundWorker = new OneTimeWorkRequest.Builder(DownloadSoundServiceWorker.class)
+                    .setConstraints(constraint)
+                    .setInputData(new Data.Builder().putString("apikey", AccountHelper.getAccountToken(getApplicationContext())).build())
+                    .build();
+
+            WorkManager.getInstance(this)
+                    .beginUniqueWork("download-sound", ExistingWorkPolicy.KEEP, downloadSoundWorker)
+                    .enqueue();
+        }
+    }
+
+    private void downloadFlags() {
+        if (AccountHelper.isLocalPlay(getApplicationContext())) {
+            Constraints constraint = new Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build();
+
+            OneTimeWorkRequest downloadFlagsWorker = new OneTimeWorkRequest.Builder(DownloadFlagsServiceWorker.class)
+                    .setConstraints(constraint)
+                    .setInputData(new Data.Builder().putString("apikey", AccountHelper.getAccountToken(getApplicationContext())).build())
+                    .build();
+
+            WorkManager.getInstance(this)
+                    .beginUniqueWork("download-sound", ExistingWorkPolicy.KEEP, downloadFlagsWorker)
+                    .enqueue();
+        }
+    }
+
+    private void downloadMovieSupportImages() {
+        productPickerViewModel.getRoutefilms(AccountHelper.getAccountToken(this)).observe(this, routefilms -> {
+            if (routefilms.size() > 0 && AccountHelper.isLocalPlay(getApplicationContext())) {
+                for (Routefilm routefilm : routefilms) {
+                    //SPECIFY INPUT
+                    Data.Builder mediaDownloader = new Data.Builder();
+                    mediaDownloader.putString("INPUT_ROUTEFILM_JSON_STRING", new GsonBuilder().create().toJson(Movie.fromRoutefilm(routefilm), Movie.class));
+                    mediaDownloader.putString("localMediaServer", AccountHelper.getAccountMediaServerUrl(getApplicationContext()));
+
+                    //COSNTRAINTS
+                    Constraints constraint = new Constraints.Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build();
+                    //WORKREQUEST
+                    OneTimeWorkRequest downloadMovieSupportImagesWorkRequest = new OneTimeWorkRequest.Builder(DownloadMovieImagesServiceWorker.class)
+                            .setConstraints(constraint)
+                            .setInputData(mediaDownloader.build())
+                            .addTag("support-images-routefilm-"+routefilm.getMovieId())
+                            .build();
+                    //START WORKING
+                    WorkManager.getInstance(this)
+                            .beginUniqueWork("download-support-images-"+routefilm.getMovieId(), ExistingWorkPolicy.KEEP, downloadMovieSupportImagesWorkRequest)
+                            .enqueue();
+                }
+            }
+        });
+    }
+
+    private void periodicSyncDownloadMovieRouteParts(final String apikey) {
+        Data.Builder mediaDownloader = new Data.Builder();
+        mediaDownloader.putString("apikey", apikey);
+
+        Constraints constraint = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        PeriodicWorkRequest routepartsDownloadRequest = new PeriodicWorkRequest.Builder(DownloadRoutepartsServiceWorker.class, 35, TimeUnit.MINUTES)
+                .setConstraints(constraint)
+                .setInputData(mediaDownloader.build())
+                .addTag("download-movieparts")
+                .build();
+        WorkManager.getInstance(this)
+                .enqueueUniquePeriodicWork("sync-database-pms-"+apikey, ExistingPeriodicWorkPolicy.REPLACE, routepartsDownloadRequest);
+
     }
 
     private void downloadStatusVerificationCheck() {

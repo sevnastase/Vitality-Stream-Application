@@ -545,6 +545,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
         }
     }
 
+    // TODO: duplicate... exact same methods exist in ProductPickerActivity. Unify somewhere.
     private void downloadSound() {
         if (!DownloadHelper.isSoundPresent(getApplicationContext())) {
             Constraints constraint = new Constraints.Builder()
