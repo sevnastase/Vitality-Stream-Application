@@ -144,4 +144,9 @@
     <string name="menu_nav_privacy_policy_title">Politique de confidentialité</string>
     <string name="show_privacy_policy_description">Cliquez sur le bouton ci-dessous pour ouvrir la politique de confidentialité dans votre navigateur.</string>
     <string name="open_privacy_policy_button_text">Ouvrir la politique de confidentialité</string>
+    <string name="settings_motolife_overview_header">Vélo sélectionné</string>
+    <string name="settings_motolife_select_bike">Entrez le numéro de série de votre MOTOlife</string>
+    <string name="settings_motolife_connect">Connecter</string>
+    <string name="settings_motolife_disconnect">Déconnecter</string>
+    <string name="android10plus_wifi_instructions">Pour gérer vos connexions Wi-Fi, cliquez sur le bouton ci-dessous. Une fois terminé, appuyez sur le symbole &#9664; pour revenir à cet écran.</string>
 </resources>

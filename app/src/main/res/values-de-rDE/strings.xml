@@ -144,4 +144,9 @@
     <string name="menu_nav_privacy_policy_title">Datenschutz-Bestimmungen</string>
     <string name="show_privacy_policy_description">Klicken Sie auf die Schaltfläche unten, um die Datenschutzerklärung in Ihrem Browser zu öffnen.</string>
     <string name="open_privacy_policy_button_text">Datenschutzrichtlinie öffnen</string>
+    <string name="settings_motolife_overview_header">Ausgewähltes Fahrrad</string>
+    <string name="settings_motolife_select_bike">Geben Sie die Serienummer Ihres MOTOlife ein</string>
+    <string name="settings_motolife_connect">Verbinden</string>
+    <string name="settings_motolife_disconnect">Trennen</string>
+    <string name="android10plus_wifi_instructions">Um Ihre WiFi-Verbindungen zu verwalten, klicken Sie auf die Schaltfläche unten. Wenn Sie fertig sind, drücken Sie das &#9664;-Symbol, um zu diesem Bildschirm zurückzukehren.</string>
 </resources>

@@ -144,4 +144,9 @@
     <string name="menu_nav_privacy_policy_title">Privacybeleid</string>
     <string name="show_privacy_policy_description">Klik op de onderstaande knop om het Privacybeleid in uw browser te openen.</string>
     <string name="open_privacy_policy_button_text">" Privacybeleid openen"</string>
+    <string name="settings_motolife_overview_header">Geselecteerde fiets</string>
+    <string name="settings_motolife_select_bike">Voer uw MOTOlife Serienummer in</string>
+    <string name="settings_motolife_connect">Verbinden</string>
+    <string name="settings_motolife_disconnect">Ontkoppelen</string>
+    <string name="android10plus_wifi_instructions">Om uw wifi-verbindingen te beheren, klik op de onderstaande knop. Als u klaar bent, drukt u op het symbool &#9664; om terug te keren naar dit scherm.</string>
 </resources>
