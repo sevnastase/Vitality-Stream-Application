@@ -163,7 +163,7 @@ public class SyncDatabaseFragment extends Fragment {
 
     private void determineNextStep() {
         try {
-            if (arguments != null && AccountHelper.isLocalPlay(getContext())) {
+            if (AccountHelper.isLocalPlay(getContext())) {
                 gotoNextFragment();
             } else {
                 startMainActivity();
