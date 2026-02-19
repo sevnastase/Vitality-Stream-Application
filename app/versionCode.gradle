@@ -3,6 +3,16 @@ tasks.register('increaseVersionCode') {
         def versionCode = Integer.parseInt(VERSION_CODE) + 1
         ant.propertyfile(file: "../gradle.properties") {
             entry(key: "VERSION_CODE", value: versionCode)
+            entry(key: "VERSION_REVISION", value: 0)
+        }
+    }
+}
+
+tasks.register('increaseRevisionNumber') {
+    doLast {
+        def revisionNumber = Integer.parseInt(VERSION_REVISION) + 1
+        ant.propertyfile(file: "../gradle.properties") {
+            entry(key: "VERSION_REVISION", value: revisionNumber)
         }
     }
 }
