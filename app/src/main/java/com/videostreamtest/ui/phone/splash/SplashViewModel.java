@@ -17,7 +17,6 @@ import com.videostreamtest.config.repository.ProductRepository;
 import com.videostreamtest.config.repository.ProfileRepository;
 import com.videostreamtest.config.repository.UsageTrackerRepository;
 import com.videostreamtest.data.model.Profile;
-import com.videostreamtest.data.model.response.Product;
 
 import java.util.List;
 
@@ -123,5 +122,23 @@ public class SplashViewModel extends AndroidViewModel {
 
     public void resetInterruptedDownloads() {
         downloadStatusRepository.resetInterruptedDownloads();
+    }
+
+    public void updateConfig(final Configuration configuration) {
+        configurationRepository.update(configuration);
+    }
+
+    public void insertConfig(final Configuration configuration) {
+        configurationRepository.insert(configuration);
+    }
+
+    public void insertUsageTracker(final String accounttoken) {
+        final UsageTracker usageTracker = new UsageTracker();
+        usageTracker.setAccounttoken(accounttoken);
+        usageTracker.setSelectedProduct(0);
+        usageTracker.setSelectedProfile(0);
+        usageTracker.setSelectedMovie(0);
+        usageTracker.setSelectedBackgroundSound(0);
+        usageTrackerRepository.insertNewUsageTrackerInformationObject(usageTracker);
     }
 }
