@@ -163,7 +163,6 @@
     <string name="settings_motolife_tcp_base" translatable="false">tcp://</string>
     <string name="settings_motolife_connect">Connect</string>
     <string name="settings_motolife_disconnect">Disconnect</string>
-    <string name="placeholder_default">Lorem Ipsum</string>
-    <string name="android10plus_wifi_instructions">In order to manage your WiFi connections, click the button below.\nOnce you have finished, press the &#9664; symbol to return to this screen.</string>
     <string name="placeholder_default" translatable="false">Lorem Ipsum</string>
+    <string name="android10plus_wifi_instructions">In order to manage your WiFi connections, click the button below. Once you have finished, press the &#9664; symbol to return to this screen.</string>
 </resources>
