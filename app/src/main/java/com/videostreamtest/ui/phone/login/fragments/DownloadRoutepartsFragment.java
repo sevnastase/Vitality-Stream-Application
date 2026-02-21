@@ -1,6 +1,8 @@
 package com.videostreamtest.ui.phone.login.fragments;
 
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
+import static com.videostreamtest.constants.PraxConstants.SharedPreferences.STATE_DOWNLOADS_COMPLETED;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -114,6 +116,9 @@ public class DownloadRoutepartsFragment extends Fragment {
                 downloadProgressbar.setProgress(generalDownloadTracker.getDownloadTypeCurrent());
                 if (generalDownloadTracker.getDownloadCurrentFile().equalsIgnoreCase("done")) {
                     nextButton.setVisibility(View.VISIBLE);
+                    SharedPreferences.Editor editor = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE).edit();
+                    editor.putBoolean(STATE_DOWNLOADS_COMPLETED, true);
+                    editor.apply();
                     startMainActivity();
                 }
             }
