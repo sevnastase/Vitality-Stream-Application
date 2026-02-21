@@ -1,7 +1,10 @@
 package com.videostreamtest.ui.phone.splash;
 
-import static com.videostreamtest.constants.PraxConstants.EXTRA_ACCOUNT_TOKEN;
-import static com.videostreamtest.constants.PraxConstants.EXTRA_FIRST_LOGIN;
+import static com.videostreamtest.constants.PraxConstants.ApkUpdate.PRAXTOUR_LAUNCHER_PACKAGE_NAME;
+import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_ACCOUNT_TOKEN;
+import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
+import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_LAUNCHER;
+import static com.videostreamtest.constants.PraxConstants.SharedPreferences.STATE_DOWNLOADS_COMPLETED;
 import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
 
 import android.Manifest;
@@ -16,7 +19,6 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -44,7 +46,6 @@ import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.VideoLanLib;
 import com.videostreamtest.workers.AccountServiceWorker;
-import com.videostreamtest.workers.UpdatePackageServiceWorker;
 import com.videostreamtest.workers.download.DownloadStatusVerificationServiceWorker;
 import com.videostreamtest.workers.synchronisation.ActiveConfigurationServiceWorker;
 
@@ -56,13 +57,6 @@ public class SplashActivity extends AppCompatActivity {
     private static final int MY_REQUEST_CODE = 1337;
     public static int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE= 2323;
 
-    // For update manager
-    private static final String EXTRA_APK_FILENAME = "com.praxupdatemanager.APK_FILENAME";
-    private static final String EXTRA_UPDATE_VERSION = "com.praxupdatemanager.APK_UPDATE_VERSION";
-    private static final String EXTRA_CURRENT_VERSION = "com.praxupdatemanager.APK_CURRENT_VERSION";
-    private static final String ACTION_PRAX_REMOTE_UPDATE = "com.praxupdatemanager.ACTION_PRAX_REMOTE_UPDATE";
-    private static final String PRAXTOUR_UPDATE_MANAGER_PACKAGE_NAME = "com.praxtourupdatemanager"; // TODO put in database and fetch
-
     private SplashViewModel splashViewModel;
 
     private Handler loadTimer;
@@ -70,8 +64,6 @@ public class SplashActivity extends AppCompatActivity {
     //Mutex booleans
     private boolean profileViewLoaded = false;
     private boolean productPickerLoaded = false;
-    private boolean isWaitingForUpdateCheck = true; // FIXME set to false at some point
-    private final Handler waitingForUpdateCheckHandler = new Handler(Looper.getMainLooper());
     private String apikey;
 
     /**
@@ -144,6 +136,11 @@ public class SplashActivity extends AppCompatActivity {
                 SharedPreferences.Editor editor = getSharedPreferences("app", MODE_PRIVATE).edit();
                 editor.putBoolean("bootable", savedConfig.isBootOnStart());
                 editor.commit();
+
+                if (needToDownloadFiles()) {
+                    redirectToActivity(LoginActivity.class);
+                    return;
+                }
 
                 if (NetworkHelper.isNetworkPraxtourLAN(this)) {
                     startActivity(new Intent(this, ProductPickerActivity.class));
@@ -334,6 +331,11 @@ public class SplashActivity extends AppCompatActivity {
             startActivity(installerIntent);
             finishAffinity();
         }
+    }
+
+    private boolean needToDownloadFiles() {
+        SharedPreferences sp = getSharedPreferences("app", Context.MODE_PRIVATE);
+        return sp.getBoolean(STATE_DOWNLOADS_COMPLETED, true);
     }
 
     private void refreshAccountInformation() {
