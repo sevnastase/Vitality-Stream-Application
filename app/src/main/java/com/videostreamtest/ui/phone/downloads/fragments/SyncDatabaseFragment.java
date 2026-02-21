@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.login.fragments;
+package com.videostreamtest.ui.phone.downloads.fragments;
 
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
 
@@ -26,7 +26,7 @@ import androidx.work.WorkManager;
 
 import com.videostreamtest.R;
 import com.videostreamtest.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.login.LoginViewModel;
+import com.videostreamtest.ui.phone.downloads.DownloadsViewModel;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.workers.SoundInformationServiceWorker;
 import com.videostreamtest.workers.UpdateRegisteredMovieServiceWorker;
@@ -39,7 +39,7 @@ import com.videostreamtest.workers.synchronisation.SyncMovieFlagsServiceWorker;
 import org.jetbrains.annotations.NotNull;
 
 public class SyncDatabaseFragment extends Fragment {
-    private LoginViewModel loginViewModel;
+    private DownloadsViewModel downloadsViewModel;
     private String apikey;
     private Bundle arguments;
 
@@ -52,7 +52,7 @@ public class SyncDatabaseFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_download_sound, container, false);
-        loginViewModel = new ViewModelProvider(requireActivity()).get(LoginViewModel.class);
+        downloadsViewModel = new ViewModelProvider(requireActivity()).get(DownloadsViewModel.class);
         apikey = view.getContext().getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
 
         titleView = view.findViewById(R.id.download_sound_status_title);
@@ -77,7 +77,7 @@ public class SyncDatabaseFragment extends Fragment {
     }
 
     private void listeningLiveData() {
-        loginViewModel.getRoutefilms().observe(getViewLifecycleOwner(), routefilms -> {
+        downloadsViewModel.getRoutefilms().observe(getViewLifecycleOwner(), routefilms -> {
             if (routefilms != null && routefilms.size()>0) {
                 descriptionView.setText(String.format(getString(R.string.login_sync_db_successfull_message), routefilms.size()));
                 determineNextStep();
@@ -159,7 +159,7 @@ public class SyncDatabaseFragment extends Fragment {
     }
 
     private void gotoNextFragment() {
-        loginViewModel.addInstallationStep();
+        downloadsViewModel.addInstallationStep();
         NavHostFragment.findNavController(SyncDatabaseFragment.this)
                 .navigate(R.id.action_syncDatabaseFragment_to_downloadFlagsFragment, getArguments());
     }
@@ -178,9 +178,9 @@ public class SyncDatabaseFragment extends Fragment {
     }
 
     private void showCurrentStepInTitleView(final TextView titleView) {
-        loginViewModel.getInstallationSteps().observe(getViewLifecycleOwner(), totalInstallationSteps -> {
+        downloadsViewModel.getInstallationSteps().observe(getViewLifecycleOwner(), totalInstallationSteps -> {
             if (totalInstallationSteps != null) {
-                loginViewModel.getCurrentInstallationStep().observe(getViewLifecycleOwner(), currentInstallationStep -> {
+                downloadsViewModel.getCurrentInstallationStep().observe(getViewLifecycleOwner(), currentInstallationStep -> {
                     if (currentInstallationStep != null) {
                         titleView.setText(String.format(getString(R.string.login_proces_step_formatting), currentInstallationStep, totalInstallationSteps, titleView.getText()));
                     }

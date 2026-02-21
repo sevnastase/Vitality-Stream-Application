@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.login;
+package com.videostreamtest.ui.phone.downloads;
 
 import android.app.Application;
 import android.content.Context;
@@ -21,7 +21,7 @@ import com.videostreamtest.config.repository.UsageTrackerRepository;
 
 import java.util.List;
 
-public class LoginViewModel extends AndroidViewModel {
+public class DownloadsViewModel extends AndroidViewModel {
     private ConfigurationRepository configurationRepository;
     private ServerStatusRepository serverStatusRepository;
     private UsageTrackerRepository usageTrackerRepository;
@@ -38,7 +38,7 @@ public class LoginViewModel extends AndroidViewModel {
     private MutableLiveData<Integer> installationSteps = new MutableLiveData<>();
     private MutableLiveData<Integer> currentInstallationStep = new MutableLiveData<>();
 
-    public LoginViewModel(@NonNull Application application) {
+    public DownloadsViewModel(@NonNull Application application) {
         super(application);
         configurationRepository = new ConfigurationRepository(application);
         serverStatusRepository = new ServerStatusRepository(application);

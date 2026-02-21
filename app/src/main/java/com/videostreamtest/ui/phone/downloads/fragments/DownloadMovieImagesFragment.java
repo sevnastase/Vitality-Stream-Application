@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.login.fragments;
+package com.videostreamtest.ui.phone.downloads.fragments;
 
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
 
@@ -25,15 +25,14 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.videostreamtest.R;
-import com.videostreamtest.helpers.DownloadHelper;
-import com.videostreamtest.ui.phone.login.LoginViewModel;
+import com.videostreamtest.ui.phone.downloads.DownloadsViewModel;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
-import com.videostreamtest.workers.download.DownloadFlagsServiceWorker;
+import com.videostreamtest.workers.download.DownloadAllMovieImagesServiceWorker;
 
 import org.jetbrains.annotations.NotNull;
 
-public class DownloadFlagsFragment extends Fragment {
-    private LoginViewModel loginViewModel;
+public class DownloadMovieImagesFragment  extends Fragment {
+    private DownloadsViewModel downloadsViewModel;
     private String apikey;
 
     private TextView titleView;
@@ -45,7 +44,7 @@ public class DownloadFlagsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_download_sound, container, false);
-        loginViewModel = new ViewModelProvider(requireActivity()).get(LoginViewModel.class);
+        downloadsViewModel = new ViewModelProvider(requireActivity()).get(DownloadsViewModel.class);
         apikey = view.getContext().getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
 
         titleView = view.findViewById(R.id.download_sound_status_title);
@@ -61,14 +60,15 @@ public class DownloadFlagsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        titleView.setText(R.string.download_flags_title);
+        titleView.setText(R.string.download_movie_support_images_title);
         showCurrentStepInTitleView(titleView);
-        if (downloadFlags()) {
+        if (downloadMovieImages()) {
             downloadProgressbar.setVisibility(View.VISIBLE);
             listeningLiveData();
         } else {
             descriptionView.setText(R.string.downloaded_files_already_present);
             nextButton.setVisibility(View.VISIBLE);
+            gotoNextFragment();
         }
     }
 
@@ -86,32 +86,29 @@ public class DownloadFlagsFragment extends Fragment {
     }
 
     private void gotoNextFragment() {
-        loginViewModel.addInstallationStep();
-        NavHostFragment.findNavController(DownloadFlagsFragment.this)
-                .navigate(R.id.action_downloadFlagsFragment_to_downloadMovieSupportImagesFragment, getArguments());
+        downloadsViewModel.addInstallationStep();
+        NavHostFragment.findNavController(this)
+                .navigate(R.id.action_downloadMovieSupportImagesFragment_to_downloadMovieRoutepartImagesFragment, getArguments());
     }
 
-    private boolean downloadFlags() {
-        if (!DownloadHelper.isFlagsLocalPresent(getActivity())) {
-            Constraints constraint = new Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
-                    .build();
+    private boolean downloadMovieImages() {
+        Constraints constraint = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
 
-            OneTimeWorkRequest downloadFlagsWorker = new OneTimeWorkRequest.Builder(DownloadFlagsServiceWorker.class)
-                    .setConstraints(constraint)
-                    .setInputData(new Data.Builder().putString("apikey", apikey).build())
-                    .build();
+        OneTimeWorkRequest downloadAllMovieImagesWorker = new OneTimeWorkRequest.Builder(DownloadAllMovieImagesServiceWorker.class)
+                .setConstraints(constraint)
+                .setInputData(new Data.Builder().putString("apikey", apikey).build())
+                .build();
 
-            WorkManager.getInstance(getActivity())
-                    .beginUniqueWork("login-download-flags", ExistingWorkPolicy.KEEP, downloadFlagsWorker)
-                    .enqueue();
-            return true;
-        }
-        return false;
+        WorkManager.getInstance(getActivity())
+                .beginUniqueWork("login-download-movie-support-images", ExistingWorkPolicy.KEEP, downloadAllMovieImagesWorker)
+                .enqueue();
+        return true;
     }
 
     private void listeningLiveData() {
-        loginViewModel.getCurrentDownloadTypeInformation("flags").observe(getViewLifecycleOwner(), generalDownloadTracker -> {
+        downloadsViewModel.getCurrentDownloadTypeInformation("movie-support-images").observe(getViewLifecycleOwner(), generalDownloadTracker -> {
             if (generalDownloadTracker != null) {
                 descriptionView.setText(getString(R.string.download_general_message)+generalDownloadTracker.getDownloadCurrentFile());
                 downloadProgressbar.setMax(generalDownloadTracker.getDownloadTypeTotal());
@@ -125,9 +122,9 @@ public class DownloadFlagsFragment extends Fragment {
     }
 
     private void showCurrentStepInTitleView(final TextView titleView) {
-        loginViewModel.getInstallationSteps().observe(getViewLifecycleOwner(), totalInstallationSteps -> {
+        downloadsViewModel.getInstallationSteps().observe(getViewLifecycleOwner(), totalInstallationSteps -> {
             if (totalInstallationSteps != null) {
-                loginViewModel.getCurrentInstallationStep().observe(getViewLifecycleOwner(), currentInstallationStep -> {
+                downloadsViewModel.getCurrentInstallationStep().observe(getViewLifecycleOwner(), currentInstallationStep -> {
                     if (currentInstallationStep != null) {
                         titleView.setText(String.format(getString(R.string.login_proces_step_formatting), currentInstallationStep, totalInstallationSteps, titleView.getText()));
                     }

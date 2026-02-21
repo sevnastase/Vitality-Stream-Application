@@ -156,7 +156,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         //PERIODIC ACTIONS
 //        isValidAccount();
         syncMovieDatabasePeriodically();
-        checkForAppUpdatePeriodically();
+//        checkForAppUpdatePeriodically();
 
         PermissionHelper.requestPermission(getApplicationContext(), this);
 

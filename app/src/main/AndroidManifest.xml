@@ -92,7 +92,6 @@
         <!-- PLATFORM -->
         <activity
             android:name=".ui.phone.splash.SplashActivity"
-            android:label="@string/app_name"
             android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/SplashScreenTheme">
@@ -106,7 +105,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.phone.login.LoginActivity"
+            android:name=".ui.phone.downloads.DownloadsActivity"
             android:label="@string/title_activity_login"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -196,10 +195,9 @@
             android:foregroundServiceType="location|connectedDevice" />
 
         <service
-            android:name="com.videostreamtest.service.mqtt.MQTTService"
+            android:name=".service.mqtt.MQTTService"
             android:icon="@drawable/ic_launcher_background"
             android:label="MQTTService" />
-
         <service
             android:name=".service.wifi.WifiService"
             android:icon="@drawable/ic_launcher_background"

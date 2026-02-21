@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.login.fragments;
+package com.videostreamtest.ui.phone.downloads.fragments;
 
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
 
@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +25,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.videostreamtest.R;
 import com.videostreamtest.helpers.AccountHelper;
-import com.videostreamtest.ui.phone.login.LoginViewModel;
+import com.videostreamtest.ui.phone.downloads.DownloadsViewModel;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 
 import org.jetbrains.annotations.NotNull;
@@ -34,8 +33,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LoginStatusFragment extends Fragment {
-    private LoginViewModel loginViewModel;
+public class BasicPermissionsFragment extends Fragment {
+    private DownloadsViewModel downloadsViewModel;
 
     private Button nextButton;
     private TextView loginStatusTitle;
@@ -44,8 +43,8 @@ public class LoginStatusFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_login_status, container, false);
-        loginViewModel = new ViewModelProvider(requireActivity()).get(LoginViewModel.class);
+        View view = inflater.inflate(R.layout.fragment_basic_permissions, container, false);
+        downloadsViewModel = new ViewModelProvider(requireActivity()).get(DownloadsViewModel.class);
 
         loginStatusTitle = view.findViewById(R.id.login_status_title);
         loginStatusText = view.findViewById(R.id.login_status_summary);
@@ -58,7 +57,7 @@ public class LoginStatusFragment extends Fragment {
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Bundle arguments = getArguments();
-        loginViewModel.setCurrentInstallationStep(0);
+        downloadsViewModel.setCurrentInstallationStep(0);
 //        loginStatusTitle.setText(String.format(getString(R.string.login_success_summary_title), arguments.getString("username")));
 
         String accountType = AccountHelper.getAccountType(getContext());
@@ -71,7 +70,7 @@ public class LoginStatusFragment extends Fragment {
 //            logout();
 //            nextButton.setText(R.string.retry_permission_check_button);
 //            nextButton.setOnClickListener((onClickedView) -> {
-//                NavHostFragment.findNavController(LoginStatusFragment.this)
+//                NavHostFragment.findNavController(BasicPermissionsFragment.this)
 //                        .navigate(R.id.action_loginStatusFragment_to_usernameFragment);
 //            });
 //        } else {
@@ -81,69 +80,65 @@ public class LoginStatusFragment extends Fragment {
                 loginStatusText.setText(R.string.login_status_summary_standalone);
                 nextButton.setOnClickListener((onClickedView) -> {
                     if (getStoragePermissionsForRequest().size() > 0) {
-                        NavHostFragment.findNavController(LoginStatusFragment.this)
+                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
                                 .navigate(R.id.action_loginStatusFragment_to_storagePermissionFragment, arguments);
                     } else if (getLocationPermissionsForRequest().size() > 0) {
-                        NavHostFragment.findNavController(LoginStatusFragment.this)
+                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
                                 .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
                     } else {
                         startMainActivity();
                     }
-                    loginViewModel.addInstallationStep();
+                    downloadsViewModel.addInstallationStep();
                 });
-                loginViewModel.setInstallationSteps(7);
+                downloadsViewModel.setInstallationSteps(7);
                 break;
             case "streaming":
                 loginStatusText.setText(getString(R.string.login_status_summary_streaming));
 
                 nextButton.setOnClickListener((onClickedView) -> {
                     if (getLocationPermissionsForRequest().size() > 0) {
-                        NavHostFragment.findNavController(LoginStatusFragment.this)
+                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
                                 .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
                     } else {
-                        NavHostFragment.findNavController(LoginStatusFragment.this)
+                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
                                 .navigate(R.id.action_loginStatusFragment_to_downloadSoundFragment, arguments);
                     }
-                    loginViewModel.addInstallationStep();
+                    downloadsViewModel.addInstallationStep();
                 });
 
-                loginViewModel.setInstallationSteps(3);
+                downloadsViewModel.setInstallationSteps(3);
                 break;
             case "hybrid":
                 loginStatusText.setText(R.string.login_status_summary_standalone);
                 nextButton.setOnClickListener((onClickedView) -> {
                     if (getStoragePermissionsForRequest().size() > 0) {
-                        NavHostFragment.findNavController(LoginStatusFragment.this)
+                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
                                 .navigate(R.id.action_loginStatusFragment_to_storagePermissionFragment, arguments);
                     } else if (getLocationPermissionsForRequest().size() > 0) {
-                        NavHostFragment.findNavController(LoginStatusFragment.this)
+                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
                                 .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
                     } else {
                         startMainActivity();
                     }
-                    loginViewModel.addInstallationStep();
+                    downloadsViewModel.addInstallationStep();
                 });
-                loginViewModel.setInstallationSteps(7);
+                downloadsViewModel.setInstallationSteps(7);
                 break;
             default:
-                failedLogin("Account type error", "Contact your distributor.");
+                failedLogin("Account type error", "Restart your device or contact your distributor.");
         }
 //        }
         nextButton.requestFocus();
     }
 
     private void failedLogin(String title, String text) {
-        loginViewModel.setPassword("");
+        downloadsViewModel.setPassword("");
         loginStatusTitle.setTextColor(Color.RED);
         loginStatusTitle.setText(title);
 
         loginStatusText.setText(text);
         logout();
-        nextButton.setText(R.string.retry_permission_check_button);
-        nextButton.setOnClickListener((onClickedView) -> {
-            NavHostFragment.findNavController(LoginStatusFragment.this)
-                    .navigate(R.id.action_loginStatusFragment_to_usernameFragment);
-        });
+        nextButton.setVisibility(View.GONE);
     }
 
     private void startMainActivity() {
@@ -198,6 +193,6 @@ public class LoginStatusFragment extends Fragment {
         editor.clear();
         editor.commit();
 
-        loginViewModel.deleteAllKnownConfigurations();
+        downloadsViewModel.deleteAllKnownConfigurations();
     }
 }

@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.login.fragments;
+package com.videostreamtest.ui.phone.downloads.fragments;
 
 import android.Manifest;
 import android.content.Intent;
@@ -25,7 +25,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.videostreamtest.R;
-import com.videostreamtest.ui.phone.login.LoginViewModel;
+import com.videostreamtest.ui.phone.downloads.DownloadsViewModel;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +36,7 @@ import java.util.List;
 public class LocationPermissionFragment extends Fragment {
     private final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
 
-    private LoginViewModel loginViewModel;
+    private DownloadsViewModel downloadsViewModel;
 
     private Button nextButton;
     private TextView locationpermissionTitle;
@@ -46,7 +46,7 @@ public class LocationPermissionFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_location_permission, container, false);
-        loginViewModel = new ViewModelProvider(requireActivity()).get(LoginViewModel.class);
+        downloadsViewModel = new ViewModelProvider(requireActivity()).get(DownloadsViewModel.class);
 
         locationpermissionTitle = view.findViewById(R.id.login_location_permission_title);
         locationpermissionText = view.findViewById(R.id.login_location_permission_summary);
@@ -183,15 +183,15 @@ public class LocationPermissionFragment extends Fragment {
     }
 
     private void gotoNextFragment() {
-        loginViewModel.addInstallationStep();
+        downloadsViewModel.addInstallationStep();
         NavHostFragment.findNavController(LocationPermissionFragment.this)
                 .navigate(R.id.action_locationPermissionFragment_to_downloadSoundFragment, getArguments());
     }
 
     private void showCurrentStepInTitleView(final TextView titleView) {
-        loginViewModel.getInstallationSteps().observe(getViewLifecycleOwner(), totalInstallationSteps -> {
+        downloadsViewModel.getInstallationSteps().observe(getViewLifecycleOwner(), totalInstallationSteps -> {
             if (totalInstallationSteps != null) {
-                loginViewModel.getCurrentInstallationStep().observe(getViewLifecycleOwner(), currentInstallationStep -> {
+                downloadsViewModel.getCurrentInstallationStep().observe(getViewLifecycleOwner(), currentInstallationStep -> {
                     if (currentInstallationStep != null) {
                         titleView.setText(String.format(getString(R.string.login_proces_step_formatting), currentInstallationStep, totalInstallationSteps, titleView.getText()));
                     }

@@ -41,7 +41,7 @@ import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.helpers.ConfigurationHelper;
 import com.videostreamtest.helpers.LogHelper;
 import com.videostreamtest.helpers.NetworkHelper;
-import com.videostreamtest.ui.phone.login.LoginActivity;
+import com.videostreamtest.ui.phone.downloads.DownloadsActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.VideoLanLib;
@@ -138,7 +138,7 @@ public class SplashActivity extends AppCompatActivity {
                 editor.commit();
 
                 if (needToDownloadFiles()) {
-                    redirectToActivity(LoginActivity.class);
+                    redirectToActivity(DownloadsActivity.class);
                     return;
                 }
 
@@ -226,7 +226,7 @@ public class SplashActivity extends AppCompatActivity {
 //                                    config.setCurrent(false);
 //                                    splashViewModel.updateConfiguration(config);
 //                                    //Redirect to login activity
-//                                    startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+//                                    startActivity(new Intent(SplashActivity.this, DownloadsActivity.class));
 //                                    //Close this activity and release resources
 //                                    SplashActivity.this.finish();
 //                                }

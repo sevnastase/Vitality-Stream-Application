@@ -1,11 +1,9 @@
-package com.videostreamtest.ui.phone.login.fragments;
+package com.videostreamtest.ui.phone.downloads.fragments;
 
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
-import static com.videostreamtest.constants.PraxConstants.SharedPreferences.STATE_DOWNLOADS_COMPLETED;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,14 +25,15 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.videostreamtest.R;
-import com.videostreamtest.ui.phone.login.LoginViewModel;
+import com.videostreamtest.helpers.DownloadHelper;
+import com.videostreamtest.ui.phone.downloads.DownloadsViewModel;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
-import com.videostreamtest.workers.download.DownloadRoutepartsServiceWorker;
+import com.videostreamtest.workers.download.DownloadFlagsServiceWorker;
 
 import org.jetbrains.annotations.NotNull;
 
-public class DownloadRoutepartsFragment extends Fragment {
-    private LoginViewModel loginViewModel;
+public class DownloadFlagsFragment extends Fragment {
+    private DownloadsViewModel downloadsViewModel;
     private String apikey;
 
     private TextView titleView;
@@ -46,7 +45,7 @@ public class DownloadRoutepartsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_download_sound, container, false);
-        loginViewModel = new ViewModelProvider(requireActivity()).get(LoginViewModel.class);
+        downloadsViewModel = new ViewModelProvider(requireActivity()).get(DownloadsViewModel.class);
         apikey = view.getContext().getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
 
         titleView = view.findViewById(R.id.download_sound_status_title);
@@ -62,21 +61,20 @@ public class DownloadRoutepartsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        titleView.setText(R.string.download_routeparts_title);
+        titleView.setText(R.string.download_flags_title);
         showCurrentStepInTitleView(titleView);
-        if (downloadMovieRoutepartImages()) {
+        if (downloadFlags()) {
             downloadProgressbar.setVisibility(View.VISIBLE);
             listeningLiveData();
         } else {
             descriptionView.setText(R.string.downloaded_files_already_present);
             nextButton.setVisibility(View.VISIBLE);
-            startMainActivity();
         }
     }
 
     private void initButtonClickListener() {
         nextButton.setOnClickListener((onClickedView) -> {
-            startMainActivity();
+            gotoNextFragment();
         });
     }
 
@@ -88,47 +86,48 @@ public class DownloadRoutepartsFragment extends Fragment {
     }
 
     private void gotoNextFragment() {
-        NavHostFragment.findNavController(this)
-                .navigate(R.id.action_downloadSoundFragment_to_syncDatabaseFragment, getArguments());
+        downloadsViewModel.addInstallationStep();
+        NavHostFragment.findNavController(DownloadFlagsFragment.this)
+                .navigate(R.id.action_downloadFlagsFragment_to_downloadMovieSupportImagesFragment, getArguments());
     }
 
-    private boolean downloadMovieRoutepartImages() {
-        Constraints constraint = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build();
+    private boolean downloadFlags() {
+        if (!DownloadHelper.isFlagsLocalPresent(getActivity())) {
+            Constraints constraint = new Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build();
 
-        OneTimeWorkRequest downloadAllMovieRoutepartImagesWorker = new OneTimeWorkRequest.Builder(DownloadRoutepartsServiceWorker.class)
-                .setConstraints(constraint)
-                .setInputData(new Data.Builder().putString("apikey", apikey).build())
-                .build();
+            OneTimeWorkRequest downloadFlagsWorker = new OneTimeWorkRequest.Builder(DownloadFlagsServiceWorker.class)
+                    .setConstraints(constraint)
+                    .setInputData(new Data.Builder().putString("apikey", apikey).build())
+                    .build();
 
-        WorkManager.getInstance(getActivity())
-                .beginUniqueWork("login-download-movie-routepart-images", ExistingWorkPolicy.KEEP, downloadAllMovieRoutepartImagesWorker)
-                .enqueue();
-        return true;
+            WorkManager.getInstance(getActivity())
+                    .beginUniqueWork("login-download-flags", ExistingWorkPolicy.KEEP, downloadFlagsWorker)
+                    .enqueue();
+            return true;
+        }
+        return false;
     }
 
     private void listeningLiveData() {
-        loginViewModel.getCurrentDownloadTypeInformation("movie-routepart-images").observe(getViewLifecycleOwner(), generalDownloadTracker -> {
+        downloadsViewModel.getCurrentDownloadTypeInformation("flags").observe(getViewLifecycleOwner(), generalDownloadTracker -> {
             if (generalDownloadTracker != null) {
                 descriptionView.setText(getString(R.string.download_general_message)+generalDownloadTracker.getDownloadCurrentFile());
                 downloadProgressbar.setMax(generalDownloadTracker.getDownloadTypeTotal());
                 downloadProgressbar.setProgress(generalDownloadTracker.getDownloadTypeCurrent());
                 if (generalDownloadTracker.getDownloadCurrentFile().equalsIgnoreCase("done")) {
                     nextButton.setVisibility(View.VISIBLE);
-                    SharedPreferences.Editor editor = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE).edit();
-                    editor.putBoolean(STATE_DOWNLOADS_COMPLETED, true);
-                    editor.apply();
-                    startMainActivity();
+                    gotoNextFragment();
                 }
             }
         });
     }
 
     private void showCurrentStepInTitleView(final TextView titleView) {
-        loginViewModel.getInstallationSteps().observe(getViewLifecycleOwner(), totalInstallationSteps -> {
+        downloadsViewModel.getInstallationSteps().observe(getViewLifecycleOwner(), totalInstallationSteps -> {
             if (totalInstallationSteps != null) {
-                loginViewModel.getCurrentInstallationStep().observe(getViewLifecycleOwner(), currentInstallationStep -> {
+                downloadsViewModel.getCurrentInstallationStep().observe(getViewLifecycleOwner(), currentInstallationStep -> {
                     if (currentInstallationStep != null) {
                         titleView.setText(String.format(getString(R.string.login_proces_step_formatting), currentInstallationStep, totalInstallationSteps, titleView.getText()));
                     }

@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.login.fragments;
+package com.videostreamtest.ui.phone.downloads.fragments;
 
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
 
@@ -27,14 +27,14 @@ import androidx.work.WorkManager;
 
 import com.videostreamtest.R;
 import com.videostreamtest.helpers.DownloadHelper;
-import com.videostreamtest.ui.phone.login.LoginViewModel;
+import com.videostreamtest.ui.phone.downloads.DownloadsViewModel;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.workers.download.DownloadSoundServiceWorker;
 
 import org.jetbrains.annotations.NotNull;
 
 public class DownloadSoundFragment extends Fragment {
-    private LoginViewModel loginViewModel;
+    private DownloadsViewModel downloadsViewModel;
     private String apikey;
 
     private TextView titleView;
@@ -46,7 +46,7 @@ public class DownloadSoundFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_download_sound, container, false);
-        loginViewModel = new ViewModelProvider(requireActivity()).get(LoginViewModel.class);
+        downloadsViewModel = new ViewModelProvider(requireActivity()).get(DownloadsViewModel.class);
         apikey = view.getContext().getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey","");
 
         titleView = view.findViewById(R.id.download_sound_status_title);
@@ -94,7 +94,7 @@ public class DownloadSoundFragment extends Fragment {
     }
 
     private void listeningLiveData() {
-        loginViewModel.getCurrentDownloadTypeInformation("sound").observe(getViewLifecycleOwner(), generalDownloadTracker -> {
+        downloadsViewModel.getCurrentDownloadTypeInformation("sound").observe(getViewLifecycleOwner(), generalDownloadTracker -> {
             if (generalDownloadTracker != null) {
                 descriptionView.setText(getString(R.string.sound_download_informal_message)+generalDownloadTracker.getDownloadCurrentFile());
                 downloadProgressbar.setMax(generalDownloadTracker.getDownloadTypeTotal());
@@ -121,15 +121,15 @@ public class DownloadSoundFragment extends Fragment {
     }
 
     private void gotoNextFragment() {
-        loginViewModel.addInstallationStep();
+        downloadsViewModel.addInstallationStep();
         NavHostFragment.findNavController(DownloadSoundFragment.this)
                 .navigate(R.id.action_downloadSoundFragment_to_syncDatabaseFragment, getArguments());
     }
 
     private void showCurrentStepInTitleView(final TextView titleView) {
-        loginViewModel.getInstallationSteps().observe(getViewLifecycleOwner(), totalInstallationSteps -> {
+        downloadsViewModel.getInstallationSteps().observe(getViewLifecycleOwner(), totalInstallationSteps -> {
             if (totalInstallationSteps != null) {
-                loginViewModel.getCurrentInstallationStep().observe(getViewLifecycleOwner(), currentInstallationStep -> {
+                downloadsViewModel.getCurrentInstallationStep().observe(getViewLifecycleOwner(), currentInstallationStep -> {
                     if (currentInstallationStep != null) {
                         titleView.setText(String.format(getString(R.string.login_proces_step_formatting), currentInstallationStep, totalInstallationSteps, titleView.getText()));
                     }

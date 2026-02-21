@@ -7,8 +7,6 @@ import android.graphics.drawable.Drawable;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -29,7 +27,7 @@ import com.videostreamtest.R;
 import com.videostreamtest.data.model.Profile;
 import com.videostreamtest.enums.CommunicationDevice;
 import com.videostreamtest.service.ble.BleService;
-import com.videostreamtest.ui.phone.login.LoginActivity;
+import com.videostreamtest.ui.phone.downloads.DownloadsActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.ProfileServiceWorker;
 
@@ -110,7 +108,7 @@ public class ProfilesActivity extends AppCompatActivity {
 
                     });
                 } else {
-                    Intent loginActivity = new Intent(getApplicationContext(), LoginActivity.class);
+                    Intent loginActivity = new Intent(getApplicationContext(), DownloadsActivity.class);
                     startActivity(loginActivity);
                     ProfilesActivity.this.finish();
                 }

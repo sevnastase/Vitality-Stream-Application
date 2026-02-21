@@ -17,7 +17,7 @@ import com.videostreamtest.R;
 import com.videostreamtest.service.wifi.PraxWifiManager;
 import com.videostreamtest.service.wifi.WifiStrength;
 import com.videostreamtest.helpers.ViewHelper;
-import com.videostreamtest.ui.phone.login.LoginActivity;
+import com.videostreamtest.ui.phone.downloads.DownloadsActivity;
 
 import java.util.ArrayList;
 
@@ -73,7 +73,7 @@ public class WifiAdapter extends RecyclerView.Adapter<WifiViewHolder> {
             }
         });
 
-        if (activity.getClass() == LoginActivity.class) {
+        if (activity.getClass() == DownloadsActivity.class) {
             ViewHelper.setTextColorToWhiteInViewAndChildren(holder.itemView, R.color.white);
             holder.toggleCredentialsButton.setImageResource(R.drawable.closed_list_symbol_white);
         }
@@ -90,7 +90,7 @@ public class WifiAdapter extends RecyclerView.Adapter<WifiViewHolder> {
     }
 
     private void setWifiSignalImage(WifiStrength strength, WifiViewHolder holder) {
-        if (activity.getClass() != LoginActivity.class) {
+        if (activity.getClass() != DownloadsActivity.class) {
             switch (strength) {
                 case EXCELLENT:
                     holder.networkStrengthImageView.setImageResource(R.drawable.wifi_strength_4_black);
@@ -140,7 +140,7 @@ public class WifiAdapter extends RecyclerView.Adapter<WifiViewHolder> {
     }
 
     private void openToggleCredentialsButtonSymbol(WifiViewHolder holder) {
-        if (activity.getClass() == LoginActivity.class) {
+        if (activity.getClass() == DownloadsActivity.class) {
             holder.toggleCredentialsButton.setImageResource(R.drawable.opened_list_symbol_white);
         } else {
             holder.toggleCredentialsButton.setImageResource(R.drawable.opened_list_symbol_black);
@@ -148,7 +148,7 @@ public class WifiAdapter extends RecyclerView.Adapter<WifiViewHolder> {
     }
 
     private void closeToggleCredentialsButtonSymbol(WifiViewHolder holder) {
-        if (activity.getClass() == LoginActivity.class) {
+        if (activity.getClass() == DownloadsActivity.class) {
             holder.toggleCredentialsButton.setImageResource(R.drawable.closed_list_symbol_white);
         } else {
             holder.toggleCredentialsButton.setImageResource(R.drawable.closed_list_symbol_black);

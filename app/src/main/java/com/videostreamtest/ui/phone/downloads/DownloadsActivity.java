@@ -1,4 +1,4 @@
-package com.videostreamtest.ui.phone.login;
+package com.videostreamtest.ui.phone.downloads;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -7,7 +7,6 @@ import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -35,20 +34,18 @@ import com.videostreamtest.workers.ServerStatusServiceWorker;
 
 import java.util.concurrent.TimeUnit;
 
-public class LoginActivity extends AppCompatActivity {
-    private static final String TAG = LoginActivity.class.getSimpleName();
+public class DownloadsActivity extends AppCompatActivity {
+    private static final String TAG = DownloadsActivity.class.getSimpleName();
 
-    private LoginViewModel loginViewModel;
+    private DownloadsViewModel downloadsViewModel;
     private ProgressBar progressBar;
-
-    private Configuration configuration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_downloads);
 
-        loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
+        downloadsViewModel = new ViewModelProvider(this).get(DownloadsViewModel.class);
 
         Log.d(this.getClass().getSimpleName(), "Density: "+this.getResources().getDisplayMetrics());
         progressBar = findViewById(R.id.loading);
@@ -58,26 +55,16 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onPostCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        loginViewModel.getServerStatusLiveData().observe(this, serverStatus -> {
+        downloadsViewModel.getServerStatusLiveData().observe(this, serverStatus -> {
             if(serverStatus != null) {
                 final ImageView serverStatusIndicator = findViewById(R.id.server_status_indicator);
                 final TextView networkUnreachableDialog = findViewById(R.id.warning_contact_network_admin_dialog_text);
-                final View fragment = findViewById(R.id.login_form_fragment_frame);
-                final EditText usernameInput = fragment.findViewById(R.id.login_insert_username_input);
 
                 if (serverStatus.isServerOnline()) {
-                    if (usernameInput != null) {
-                        usernameInput.setEnabled(true);
-                        usernameInput.setBackgroundColor(Color.WHITE);
-                    }
                     networkUnreachableDialog.setVisibility(View.GONE);
                     serverStatusIndicator.setImageDrawable(getDrawable(R.drawable.ic_checked));
                     serverStatusIndicator.setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_ATOP);
                 } else {
-                    if (usernameInput != null) {
-                        usernameInput.setEnabled(false);
-                        usernameInput.setBackgroundColor(Color.LTGRAY);
-                    }
                     networkUnreachableDialog.setVisibility(View.VISIBLE);
                     serverStatusIndicator.setImageDrawable(getDrawable(R.drawable.ic_close));
                     serverStatusIndicator.setColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP);
@@ -157,10 +144,10 @@ public class LoginActivity extends AppCompatActivity {
                             newConfig.setPraxCloudMediaServerLocalUrl(config.getPraxCloudMediaServerLocalUrl());
                             newConfig.setPraxCloudMediaServerUrl(config.getPraxCloudMediaServerUrl());
                             newConfig.setAccountType(config.getAccountType());
-                            loginViewModel.insert(newConfig);
+                            downloadsViewModel.insert(newConfig);
                             Intent splashScreenActivity = new Intent(getApplicationContext(), SplashActivity.class);
                             startActivity(splashScreenActivity);
-                            LoginActivity.this.finish();
+                            DownloadsActivity.this.finish();
                         }
 
                     }

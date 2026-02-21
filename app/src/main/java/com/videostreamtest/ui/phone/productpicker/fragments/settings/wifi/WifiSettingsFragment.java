@@ -46,7 +46,7 @@ import com.videostreamtest.service.wifi.WifiSpeedtest;
 import com.videostreamtest.service.wifi.WifiStrength;
 import com.videostreamtest.helpers.PermissionHelper;
 import com.videostreamtest.helpers.ViewHelper;
-import com.videostreamtest.ui.phone.login.LoginActivity;
+import com.videostreamtest.ui.phone.downloads.DownloadsActivity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -216,7 +216,7 @@ public class WifiSettingsFragment extends Fragment {
      */
     private void initUi(@Nullable View view) {
         try {
-            if (getActivity().getClass() == LoginActivity.class && view != null) {
+            if (getActivity().getClass() == DownloadsActivity.class && view != null) {
                 ViewHelper.setTextColorToWhiteInViewAndChildren(view, R.color.white);
             }
         } catch (NullPointerException ignored) {}
@@ -400,7 +400,7 @@ public class WifiSettingsFragment extends Fragment {
         WifiStrength signalStrength = PraxWifiManager.getConnectedNetworkStrength(PraxtourApplication.getAppContext());
 
         try {
-            if (getActivity().getClass() != LoginActivity.class) {
+            if (getActivity().getClass() != DownloadsActivity.class) {
                 switch (signalStrength) {
                     case EXCELLENT:
                         connectedNetworkStrengthImageView.setImageResource(R.drawable.wifi_strength_4_black);

@@ -1,7 +1,6 @@
-package com.videostreamtest.ui.phone.login.fragments;
+package com.videostreamtest.ui.phone.downloads.fragments;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,8 +19,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.videostreamtest.R;
-import com.videostreamtest.ui.phone.login.LoginViewModel;
-import com.videostreamtest.ui.phone.splash.SplashActivity;
+import com.videostreamtest.ui.phone.downloads.DownloadsViewModel;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -31,7 +29,7 @@ import java.util.List;
 public class StoragePermissionFragment extends Fragment {
     private final int STORAGE_PERMISSION_REQUEST_CODE = 1234;
 
-    private LoginViewModel loginViewModel;
+    private DownloadsViewModel downloadsViewModel;
 
     private Button nextButton;
     private TextView storagepermissionText;
@@ -41,7 +39,7 @@ public class StoragePermissionFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_storage_permission, container, false);
-        loginViewModel = new ViewModelProvider(requireActivity()).get(LoginViewModel.class);
+        downloadsViewModel = new ViewModelProvider(requireActivity()).get(DownloadsViewModel.class);
 
         storagepermissionTitle = view.findViewById(R.id.login_storage_permission_title);
         storagepermissionText = view.findViewById(R.id.login_storage_permission_summary);
@@ -150,15 +148,15 @@ public class StoragePermissionFragment extends Fragment {
     }
 
     private void gotoNextFragment() {
-        loginViewModel.addInstallationStep();
+        downloadsViewModel.addInstallationStep();
         NavHostFragment.findNavController(StoragePermissionFragment.this)
                 .navigate(R.id.action_storagePermissionFragment_to_locationPermissionFragment, getArguments());
     }
 
     private void showCurrentStepInTitleView(final TextView titleView) {
-        loginViewModel.getInstallationSteps().observe(getViewLifecycleOwner(), totalInstallationSteps -> {
+        downloadsViewModel.getInstallationSteps().observe(getViewLifecycleOwner(), totalInstallationSteps -> {
             if (totalInstallationSteps != null) {
-                loginViewModel.getCurrentInstallationStep().observe(getViewLifecycleOwner(), currentInstallationStep -> {
+                downloadsViewModel.getCurrentInstallationStep().observe(getViewLifecycleOwner(), currentInstallationStep -> {
                     if (currentInstallationStep != null) {
                         titleView.setText(String.format(getString(R.string.login_proces_step_formatting), currentInstallationStep, totalInstallationSteps, titleView.getText()));
                     }
