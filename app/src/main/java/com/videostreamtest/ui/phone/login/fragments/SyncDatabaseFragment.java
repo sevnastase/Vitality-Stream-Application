@@ -1,5 +1,7 @@
 package com.videostreamtest.ui.phone.login.fragments;
 
+import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -151,6 +153,7 @@ public class SyncDatabaseFragment extends Fragment {
 
     private void startMainActivity() {
         Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
+        splashScreenActivity.putExtra(EXTRA_FROM_DOWNLOADS, true);
         startActivity(splashScreenActivity);
         getActivity().finish();
     }
