@@ -74,6 +74,17 @@ public class SplashActivity extends AppCompatActivity {
     private final Handler waitingForUpdateCheckHandler = new Handler(Looper.getMainLooper());
     private String apikey;
 
+    /**
+     * Necessary to receive intents properly.
+     */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        setIntent(intent);
+        handleIncoming(intent);
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,22 +92,9 @@ public class SplashActivity extends AppCompatActivity {
         splashViewModel = new ViewModelProvider(this).get(SplashViewModel.class);
         splashViewModel.setWorkerProgress(0);
 
-//        checkForRecommendedScreenDpi();
         requestDrawOverlayPermission();
 
-        Intent incomingIntent = getIntent();
-        apikey = incomingIntent.getStringExtra(EXTRA_ACCOUNT_TOKEN);
-
-        if (apikey == null || apikey.isBlank()) {
-            // redirect to launcher WITHOUT waiting for update.
-            Toast.makeText(this, "No apikey", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        boolean firstLogin = incomingIntent.getBooleanExtra(EXTRA_FIRST_LOGIN, false);
-        if (firstLogin) {
-            redirectToAfterUpdateCheckIsComplete(LoginActivity.class);
-        }
+        handleIncoming(getIntent());
 
         loadTimer = new Handler(Looper.getMainLooper());
 
@@ -297,6 +295,14 @@ public class SplashActivity extends AppCompatActivity {
 
     }
 
+    private void handleIncoming(Intent incomingIntent) {
+        apikey = incomingIntent.getStringExtra(EXTRA_ACCOUNT_TOKEN);
+
+        if (!incomingFromVerifiedSource(incomingIntent) || apikey == null || apikey.isBlank()) {
+            openPraxtourUpdateManager();
+        }
+    }
+
     private Configuration extractConfiguration(Configuration config) {
         Configuration newConfig = new Configuration();
         newConfig.setAccountToken(apikey);
@@ -393,6 +399,17 @@ public class SplashActivity extends AppCompatActivity {
         finish();
     }
 
+    private void openPraxtourUpdateManager() {
+        Intent installerIntent = getPackageManager().getLaunchIntentForPackage(PRAXTOUR_LAUNCHER_PACKAGE_NAME);
+        if (installerIntent != null) {
+            installerIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+            startActivity(installerIntent);
+            finishAffinity();
+        }
+    }
+
     private void refreshAccountInformation() {
         Constraints constraint = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -432,4 +449,8 @@ public class SplashActivity extends AppCompatActivity {
                 .enqueueUniqueWork("download-status-verification-worker", ExistingWorkPolicy.REPLACE, downloadStatusVerificationWorker);
     }
 
+    private boolean incomingFromVerifiedSource(Intent intent) {
+        return intent.getBooleanExtra(EXTRA_FROM_LAUNCHER, false) ||
+                intent.getBooleanExtra(EXTRA_FROM_DOWNLOADS, false);
+    }
 }
