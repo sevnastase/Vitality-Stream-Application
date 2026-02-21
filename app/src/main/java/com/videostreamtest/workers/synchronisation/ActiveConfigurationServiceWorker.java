@@ -37,7 +37,6 @@ public class ActiveConfigurationServiceWorker extends AbstractPraxtourWorker {
     protected Result doActualWork() {
         //Get Input
         final String apikey = getInputData().getString("apikey");
-        final String password = getInputData().getString("password");
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(PRAXCLOUD_API_URL)
@@ -87,7 +86,6 @@ public class ActiveConfigurationServiceWorker extends AbstractPraxtourWorker {
             //Pre-define output
             output = new Data.Builder()
                     .putString("apikey", apikey)
-                    .putString("password", password)
                     .putInt("active-products-count", activeProductsCount)
                     .putBoolean("isStreamingAccount", !accountConfiguration.isLocalPlay())
                     .putString("configurationObject", new GsonBuilder().create().toJson(accountConfiguration, Configuration.class))
@@ -95,7 +93,6 @@ public class ActiveConfigurationServiceWorker extends AbstractPraxtourWorker {
         } else {
             output = new Data.Builder()
                     .putString("apikey", apikey)
-                    .putString("password", password)
                     .putInt("active-products-count", activeProductsCount)
                     .build();
         }
