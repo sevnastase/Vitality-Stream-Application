@@ -99,7 +99,6 @@ public class SplashActivity extends AppCompatActivity {
         loadTimer = new Handler(Looper.getMainLooper());
 
         if (!NetworkHelper.isNetworkPraxtourLAN(this)) {
-//            checkForUpdates();
             checkDownloadStatusVerification();
             refreshAccountInformation();
         }
@@ -198,7 +197,7 @@ public class SplashActivity extends AppCompatActivity {
 
                                     VideoLanLib.getLibVLC(getApplicationContext());
 
-                                    redirectToAfterUpdateCheckIsComplete(ProductPickerActivity.class);
+                                    redirectToActivity(ProductPickerActivity.class);
                                 }
 //                            } else {
 //                                if (!profileViewLoaded) {
@@ -284,7 +283,7 @@ public class SplashActivity extends AppCompatActivity {
                             splashViewModel.insertConfig(newConfig);
                             splashViewModel.insertUsageTracker(apikey);
 
-                            redirectToAfterUpdateCheckIsComplete(SplashActivity.class);
+                            redirectToActivity(SplashActivity.class);
                         }
                     }
                 };
@@ -316,86 +315,13 @@ public class SplashActivity extends AppCompatActivity {
         return newConfig;
     }
 
-    private void checkForRecommendedScreenDpi(){
-        final int densityDpi = getApplicationContext().getResources().getDisplayMetrics().densityDpi;
-        if ( densityDpi < ApplicationSettings.RECOMMENDED_DENSITY_DPI) {
-//            Toast.makeText(getApplicationContext(), "The screen density is not optimal for this app. \nPlease upgrade your hardware or change device for an optimal experience.", Toast.LENGTH_LONG).show();
-            LogHelper.WriteLogRule(getApplicationContext(), getSharedPreferences("app" , Context.MODE_PRIVATE).getString("apikey", ""), "The screen density is not optimal for this app. Please upgrade your hardware or change device for an optimal experience. Client Density: "+densityDpi ,"ERROR", "");
+    private void redirectToActivity(Class<? extends Activity> destinationActivityClass) {
+        Intent intent = new Intent(this, destinationActivityClass);
+        if (destinationActivityClass.equals(SplashActivity.class)) {
+            intent.putExtra(EXTRA_ACCOUNT_TOKEN, apikey);
+            intent.putExtra(EXTRA_FROM_LAUNCHER, true);
         }
-    }
-
-    private void checkForUpdates() {
-        Constraints constraint = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build();
-
-        OneTimeWorkRequest updateServiceWorker = new OneTimeWorkRequest.Builder(UpdatePackageServiceWorker.class)
-                .setConstraints(constraint)
-                .addTag("update-checker")
-                .build();
-
-        WorkManager.getInstance(getApplicationContext()).enqueueUniqueWork(
-                "update-checker",
-                ExistingWorkPolicy.KEEP,
-                updateServiceWorker);
-
-        LiveData<List<WorkInfo>> live = WorkManager.getInstance(getApplicationContext()).getWorkInfosForUniqueWorkLiveData("update-checker");
-
-        Observer<List<WorkInfo>> observer = new Observer<>() {
-            @Override
-            public void onChanged(List<WorkInfo> workInfos) {
-                WorkInfo workInfo = workInfos.get(0);
-
-                if (!workInfo.getState().isFinished()) return;
-
-                live.removeObserver(this);
-
-                if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
-                    Data outputData = workInfo.getOutputData();
-                    boolean updateAvailable = outputData.getBoolean("updateAvailable", false);
-                    String updateFilename = outputData.getString("updateFilename");
-                    String updateVersion = outputData.getString("updateVersion");
-
-                    if (updateAvailable && updateFilename != null && !updateFilename.isBlank()) {
-                        waitingForUpdateCheckHandler.removeCallbacksAndMessages(null);
-                        openPraxtourUpdateManager(updateFilename, updateVersion);
-                    }
-                }
-            }
-        };
-
-        live.observeForever(observer);
-    }
-
-    private void redirectToAfterUpdateCheckIsComplete(Class<? extends Activity> desinationActivityClass) {
-        waitingForUpdateCheckHandler.postDelayed(new Runnable() {
-            final int WAIT_TIME_SECONDS = 5;
-            int counter = 0;
-            @Override
-            public void run() {
-                Log.d(TAG, "Greg count " + counter);
-                if (isWaitingForUpdateCheck && counter < WAIT_TIME_SECONDS) {
-                    counter++;
-                    waitingForUpdateCheckHandler.postDelayed(this, 1000);
-                } else {
-                    if (isWaitingForUpdateCheck) {
-                        // Cancel only if we exceeded the timer; not when the check completed
-                        WorkManager.getInstance(SplashActivity.this).cancelUniqueWork("update-checker");
-                    }
-                    waitingForUpdateCheckHandler.removeCallbacksAndMessages(null);
-                    startActivity(new Intent(SplashActivity.this, desinationActivityClass));
-                    SplashActivity.this.finish();
-                }
-            }
-        }, 1000);
-    }
-
-    private void openPraxtourUpdateManager(String updateFilename, String updateVersion) {
-        Intent updateIntent = new Intent(ACTION_PRAX_REMOTE_UPDATE);
-        updateIntent.putExtra(EXTRA_APK_FILENAME, updateFilename);
-        updateIntent.putExtra(EXTRA_UPDATE_VERSION, updateVersion);
-        updateIntent.putExtra(EXTRA_CURRENT_VERSION, ConfigurationHelper.getVersionNumber(this));
-        startActivity(updateIntent);
+        startActivity(intent);
         finish();
     }
 
