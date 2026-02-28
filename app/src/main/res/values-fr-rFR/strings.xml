@@ -124,7 +124,7 @@
     <string name="menu_nav_downloads_title">Téléchargements</string>
     <string name="login_success_summary_title">Connexion réussie en tant que %s</string>
     <string name="login_no_products">Il n\'y a pas d\'abonnements actifs.</string>
-    <string name="login_message_failed_description">Le nom d\'utilisateur et/ou le mot de passe sont erronés.\nRéessayer.</string>
+    <string name="login_message_failed_description">Le nom d\'utilisateur et/ou le mot de passe sont erronés. Réessayer.</string>
     <string name="login_status_summary_standalone">Pour la première utilisation, un certain nombre d\'autorisations doivent être acceptées :\n\n> Autorisation de stockage : pour pouvoir sauvegarder les fichiers sur le disque dur.\n> Autorisation de localisation : pour utiliser les capteurs Bluetooth.\n\nSuivez les étapes pour continuer.</string>
     <string name="login_status_summary_hybrid">Pour la première utilisation, un certain nombre d\'autorisations doivent être acceptées :\n\n> Autorisation de stockage : pour pouvoir sauvegarder les fichiers sur le disque dur.\n> Autorisation de localisation : pour utiliser les capteurs Bluetooth.\n\nSuivez les étapes pour continuer.</string>
     <string name="login_status_summary_streaming">Pour la première utilisation, un certain nombre d\'autorisations doivent être acceptées :\n\n> Autorisation de localisation : pour utiliser les capteurs Bluetooth.\n\nSuivez les étapes pour continuer.</string>
