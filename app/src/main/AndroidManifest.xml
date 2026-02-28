@@ -203,25 +203,6 @@
             android:icon="@drawable/ic_launcher_background"
             android:label="WifiService"
             android:foregroundServiceType="location" />
-
-        <service
-            android:name=".service.boot_on_start.BootStartupService"
-            android:foregroundServiceType="dataSync|connectedDevice"
-            android:exported="false" />
-
-        <receiver android:name=".receiver.OnBootCompletedBroadcastReceiver"
-            android:enabled="true"
-            android:exported="true"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED"
-            android:directBootAware="true">
-            <intent-filter>
-                <!-- REGISTER TO RECEIVE BOOT_COMPLETED EVENTS -->
-                <category android:name="android.intent.category.DEFAULT" />
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.REBOOT"/>
-                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>
