@@ -154,7 +154,7 @@ public class SplashActivity extends AppCompatActivity {
                     return;
                 }
 
-                /**
+                /*
                  * TODO  if accounttoken is valid (create worker)
                  *  then continue to next page which is:
                  *  based on number of products > 1 == ProductPicker
@@ -165,80 +165,49 @@ public class SplashActivity extends AppCompatActivity {
                     if (products != null) {
                         Log.d(TAG, "Current product count: "+products.size());
                         Log.d(TAG, "config.isLocalPlay() = "+savedConfig.isLocalPlay());
-                        if(products.size() > 0) {
+                        if(!products.isEmpty()) {
                             for (Product p: products) {
                                 Log.d(TAG, "P.streaming: "+p.getSupportStreaming());
                                 Log.d(TAG, "P.blocked: "+p.getBlocked());
                                 Log.d(TAG, "P.name: "+p.getProductName());
                             }
                             Log.d(TAG, "Set current configuration");
-//                            if (products.size() > 1 ) {
-                                if (!productPickerLoaded) {
-                                    productPickerLoaded = true;
-                                    Log.d(TAG, "Number of products :: " + products.size());
-                                    for (final com.videostreamtest.config.entity.Product p : products) {
-                                        Log.d(TAG, "Product ID :: " + p.getUid() + " :: Product name :: " + p.getProductName());
-                                    }
-
-                                    //SENSOR CHECK
-                                    SharedPreferences sharedPreferences = getSharedPreferences("app" , Context.MODE_PRIVATE);
-                                    String deviceAddress = sharedPreferences.getString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY,"NONE");
-
-                                    if (deviceAddress.equals("NONE") || deviceAddress.equals("")) {
-                                        BluetoothDefaultDevice bluetoothDefaultDevice = new BluetoothDefaultDevice();
-                                        bluetoothDefaultDevice.setBleId(1);
-                                        bluetoothDefaultDevice.setBleAddress("NONE");
-                                        bluetoothDefaultDevice.setBleName("");
-                                        bluetoothDefaultDevice.setBleSensorType("");
-                                        bluetoothDefaultDevice.setBleSignalStrength("--");
-                                        bluetoothDefaultDevice.setBleBatterylevel("--");
-                                        splashViewModel.insertBluetoothDefaultDevice(bluetoothDefaultDevice);
-
-                                        Log.d(TAG, "Sensor Device internal db synced with internal in-memory value");
-                                        LogHelper.WriteLogRule(getApplicationContext(), savedConfig.getAccountToken(), "Sensor device not registered in app memory." ,"DEBUG", "");
-                                    }
-
-                                    VideoLanLib.getLibVLC(getApplicationContext());
-
-                                    redirectToActivity(ProductPickerActivity.class);
+                            if (!productPickerLoaded) {
+                                productPickerLoaded = true;
+                                Log.d(TAG, "Number of products :: " + products.size());
+                                for (final com.videostreamtest.config.entity.Product p : products) {
+                                    Log.d(TAG, "Product ID :: " + p.getUid() + " :: Product name :: " + p.getProductName());
                                 }
-//                            } else {
-//                                if (!profileViewLoaded) {
-//                                    profileViewLoaded = true;
-//                                    // only one product so start product immediately based on streamingAccount
-//                                    Log.d(TAG, "Single product :: " + products.get(0).getProductName() + " standalone: "+config.isLocalPlay());
-//                                    if (config.isLocalPlay()) { //TODO: APPEND CHECK WITH: && products.get(0).getSupportStreaming().intValue()==0
-//                                        Bundle arguments = new Bundle();
-//                                        arguments.putString("product_object", new GsonBuilder().create().toJson(Product.fromProductEntity(products.get(0)), Product.class));
-//
-//                                        Intent productView = new Intent(SplashActivity.this, ProductActivity.class);
-//                                        productView.putExtras(arguments);
-//
-//                                        startActivity(productView);
-//                                    } else {
-//                                        startActivity(new Intent(SplashActivity.this, ProfilesActivity.class));
-//                                    }
-//                                    SplashActivity.this.finish();
-//                                }
-//                            }
+
+                                //SENSOR CHECK
+                                SharedPreferences sharedPreferences = getSharedPreferences("app" , Context.MODE_PRIVATE);
+                                String deviceAddress = sharedPreferences.getString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY,"NONE");
+
+                                if (deviceAddress.equals("NONE") || deviceAddress.equals("")) {
+                                    BluetoothDefaultDevice bluetoothDefaultDevice = new BluetoothDefaultDevice();
+                                    bluetoothDefaultDevice.setBleId(1);
+                                    bluetoothDefaultDevice.setBleAddress("NONE");
+                                    bluetoothDefaultDevice.setBleName("");
+                                    bluetoothDefaultDevice.setBleSensorType("");
+                                    bluetoothDefaultDevice.setBleSignalStrength("--");
+                                    bluetoothDefaultDevice.setBleBatterylevel("--");
+                                    splashViewModel.insertBluetoothDefaultDevice(bluetoothDefaultDevice);
+
+                                    Log.d(TAG, "Sensor Device internal db synced with internal in-memory value");
+                                    LogHelper.WriteLogRule(getApplicationContext(), savedConfig.getAccountToken(), "Sensor device not registered in app memory." ,"DEBUG", "");
+                                }
+
+                                VideoLanLib.getLibVLC(getApplicationContext());
+
+                                redirectToActivity(ProductPickerActivity.class);
+                            }
                         } else {
                             //Execute when number of products is 0
                             // This happens when the trial time expires
                             //Login activity will be shown
                             Log.d(TAG, "Unset current configuration when product count = 0");
                             LogHelper.WriteLogRule(getApplicationContext(), savedConfig.getAccountToken(), "WARNING! Subscriptions expired! Or closed during login process!", "ERROR", "");
-//                            Runnable showLoginScreen = new Runnable() {
-//                                public void run() {
-//                                    config.setCurrent(false);
-//                                    splashViewModel.updateConfiguration(config);
-//                                    //Redirect to login activity
-//                                    startActivity(new Intent(SplashActivity.this, DownloadsActivity.class));
-//                                    //Close this activity and release resources
-//                                    SplashActivity.this.finish();
-//                                }
-//                            };
-                            //Redirect to login activity if timer exceeds 5 seconds
-//                            loadTimer.postDelayed( showLoginScreen, 15000 );
+                            NavHelper.openPraxtourLauncher(this, true);
                         }
                     }
                 });
