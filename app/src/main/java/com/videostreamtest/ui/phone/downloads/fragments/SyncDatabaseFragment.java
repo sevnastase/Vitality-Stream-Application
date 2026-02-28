@@ -1,9 +1,11 @@
 package com.videostreamtest.ui.phone.downloads.fragments;
 
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
+import static com.videostreamtest.constants.PraxConstants.SharedPreferences.STATE_DOWNLOADS_COMPLETED;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -154,6 +156,9 @@ public class SyncDatabaseFragment extends Fragment {
     private void startMainActivity() {
         Intent splashScreenActivity = new Intent(getActivity().getApplicationContext(), SplashActivity.class);
         splashScreenActivity.putExtra(EXTRA_FROM_DOWNLOADS, true);
+        SharedPreferences.Editor editor = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE).edit();
+        editor.putBoolean(STATE_DOWNLOADS_COMPLETED, true);
+        editor.commit();
         startActivity(splashScreenActivity);
         getActivity().finish();
     }

@@ -165,4 +165,5 @@
     <string name="settings_motolife_disconnect">Disconnect</string>
     <string name="placeholder_default" translatable="false">Lorem Ipsum</string>
     <string name="android10plus_wifi_instructions">In order to manage your WiFi connections, click the button below. Once you have finished, press the &#9664; symbol to return to this screen.</string>
+    <string name="permission_required_title">Action needed</string>
 </resources>

@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BasicPermissionsFragment extends Fragment {
+    private final static String TAG = BasicPermissionsFragment.class.getSimpleName();
     private DownloadsViewModel downloadsViewModel;
 
     private Button nextButton;
@@ -46,9 +48,9 @@ public class BasicPermissionsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_basic_permissions, container, false);
         downloadsViewModel = new ViewModelProvider(requireActivity()).get(DownloadsViewModel.class);
 
-        loginStatusTitle = view.findViewById(R.id.login_status_title);
-        loginStatusText = view.findViewById(R.id.login_status_summary);
-        nextButton = view.findViewById(R.id.login_goto_permission_button);
+        loginStatusTitle = view.findViewById(R.id.title_textview);
+        loginStatusText = view.findViewById(R.id.description_textview);
+        nextButton = view.findViewById(R.id.permission_button);
 
         return view;
     }
@@ -77,6 +79,7 @@ public class BasicPermissionsFragment extends Fragment {
         switch (accountType) {
             case "standalone":
             case "motolife":
+            case "hybrid":
                 loginStatusText.setText(R.string.login_status_summary_standalone);
                 nextButton.setOnClickListener((onClickedView) -> {
                     if (getStoragePermissionsForRequest().size() > 0) {
@@ -107,22 +110,6 @@ public class BasicPermissionsFragment extends Fragment {
                 });
 
                 downloadsViewModel.setInstallationSteps(3);
-                break;
-            case "hybrid":
-                loginStatusText.setText(R.string.login_status_summary_standalone);
-                nextButton.setOnClickListener((onClickedView) -> {
-                    if (getStoragePermissionsForRequest().size() > 0) {
-                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
-                                .navigate(R.id.action_loginStatusFragment_to_storagePermissionFragment, arguments);
-                    } else if (getLocationPermissionsForRequest().size() > 0) {
-                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
-                                .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
-                    } else {
-                        startMainActivity();
-                    }
-                    downloadsViewModel.addInstallationStep();
-                });
-                downloadsViewModel.setInstallationSteps(7);
                 break;
             default:
                 failedLogin("Account type error", "Restart your device or contact your distributor.");

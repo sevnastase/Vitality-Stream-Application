@@ -54,8 +54,8 @@ import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.helpers.ConfigurationHelper;
 import com.videostreamtest.helpers.DownloadHelper;
+import com.videostreamtest.helpers.NavHelper;
 import com.videostreamtest.helpers.ViewHelper;
-import com.videostreamtest.ui.phone.login.LoginActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.workers.download.DownloadFlagsServiceWorker;
 import com.videostreamtest.workers.download.DownloadMovieImagesServiceWorker;
@@ -155,9 +155,8 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
         selectedProduct = new GsonBuilder().create().fromJson(getIntent().getExtras().getString("product_object", "{}"), Product.class);
         apikey = AccountHelper.getAccountToken(this);
         if (apikey == null) {
-            Intent loginIntent = new Intent(this, LoginActivity.class);
             Toast.makeText(this, "There was an error with your account", Toast.LENGTH_LONG).show();
-            startActivity(loginIntent);
+            NavHelper.openPraxtourLauncher(this, true);
             return;
         }
         chinesportAccount = AccountHelper.isChinesportAccount(this);

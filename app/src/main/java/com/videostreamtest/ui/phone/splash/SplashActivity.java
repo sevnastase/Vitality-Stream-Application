@@ -40,6 +40,7 @@ import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.helpers.ConfigurationHelper;
 import com.videostreamtest.helpers.LogHelper;
+import com.videostreamtest.helpers.NavHelper;
 import com.videostreamtest.helpers.NetworkHelper;
 import com.videostreamtest.ui.phone.downloads.DownloadsActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
@@ -62,7 +63,8 @@ public class SplashActivity extends AppCompatActivity {
     private Handler loadTimer;
 
     //Mutex booleans
-    private boolean profileViewLoaded = false;
+    /** For some reason, redirects fire incredibly many times, so this is the solution. */
+    private boolean isNavigating = false;
     private boolean productPickerLoaded = false;
     private String apikey;
 
@@ -101,6 +103,8 @@ public class SplashActivity extends AppCompatActivity {
 
         //New way
         splashViewModel.getCurrentConfig().observe(this, savedConfig -> {
+            if (isNavigating || isFinishing() || isDestroyed()) return;
+
             if (savedConfig != null || !getSharedPreferences("app", MODE_PRIVATE).getString("apikey","").equals("")) {
                 loadTimer.removeCallbacksAndMessages(null);
             }
@@ -115,6 +119,7 @@ public class SplashActivity extends AppCompatActivity {
                 splashViewModel.resetInterruptedDownloads();
 
                 if (AccountHelper.getAccountToken(getApplicationContext()).equalsIgnoreCase("unauthorized")) {
+                    Log.d(TAG, "Greg saving apikey!");
                     SharedPreferences.Editor editor = getSharedPreferences("app", MODE_PRIVATE).edit();
                     editor.putString("apikey",  savedConfig.getAccountToken());
                     editor.commit();
@@ -138,6 +143,7 @@ public class SplashActivity extends AppCompatActivity {
                 editor.commit();
 
                 if (needToDownloadFiles()) {
+                    Log.d(TAG, "Greg downloads activity");
                     redirectToActivity(DownloadsActivity.class);
                     return;
                 }
@@ -292,10 +298,26 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void handleIncoming(Intent incomingIntent) {
+        Log.d(TAG, "Greg incoming to SplashActivity");
         apikey = incomingIntent.getStringExtra(EXTRA_ACCOUNT_TOKEN);
 
-        if (!incomingFromVerifiedSource(incomingIntent) || apikey == null || apikey.isBlank()) {
-            openPraxtourUpdateManager();
+        if (!incomingFromVerifiedSource(incomingIntent)) {
+            Log.d(TAG, "\t greg not verified source");
+            NavHelper.openPraxtourLauncher(this, false);
+        }
+
+        // first check: might be coming from downloads, then apikey can be null indeed
+        if (apikey == null || apikey.isBlank()) {
+            Log.d(TAG, "\t greg apikey was null or blank");
+            // but in that case it should already be saved in sp
+            SharedPreferences sp = getSharedPreferences("app", Context.MODE_PRIVATE);
+            apikey = sp.getString("apikey", null);
+            if (apikey == null || apikey.isBlank()) {
+                Log.d(TAG, "\t\t greg and also wasn't saved:(");
+                NavHelper.openPraxtourLauncher(this, true);
+            } else {
+                Log.d(TAG, "\t\t greg all good");
+            }
         }
     }
 
@@ -313,6 +335,7 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void redirectToActivity(Class<? extends Activity> destinationActivityClass) {
+        isNavigating = true;
         Intent intent = new Intent(this, destinationActivityClass);
         if (destinationActivityClass.equals(SplashActivity.class)) {
             intent.putExtra(EXTRA_ACCOUNT_TOKEN, apikey);
@@ -322,20 +345,9 @@ public class SplashActivity extends AppCompatActivity {
         finish();
     }
 
-    private void openPraxtourUpdateManager() {
-        Intent installerIntent = getPackageManager().getLaunchIntentForPackage(PRAXTOUR_LAUNCHER_PACKAGE_NAME);
-        if (installerIntent != null) {
-            installerIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-            startActivity(installerIntent);
-            finishAffinity();
-        }
-    }
-
     private boolean needToDownloadFiles() {
         SharedPreferences sp = getSharedPreferences("app", Context.MODE_PRIVATE);
-        return sp.getBoolean(STATE_DOWNLOADS_COMPLETED, true);
+        return !sp.getBoolean(STATE_DOWNLOADS_COMPLETED, false);
     }
 
     private void refreshAccountInformation() {

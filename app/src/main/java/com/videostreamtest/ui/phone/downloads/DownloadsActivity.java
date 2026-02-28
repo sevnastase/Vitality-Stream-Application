@@ -42,6 +42,7 @@ public class DownloadsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "Greg in downloads activity");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_downloads);
 
@@ -72,86 +73,6 @@ public class DownloadsActivity extends AppCompatActivity {
 
             }
         });
-    }
-
-    private void login(final String username, final String password) {
-        Constraints constraint = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build();
-
-        Data.Builder networkData = new Data.Builder();
-        networkData.putString("username", username);
-        networkData.putString("password", password);
-
-        OneTimeWorkRequest loginRequest = new OneTimeWorkRequest.Builder(LoginServiceWorker.class)
-                .setConstraints(constraint)
-                .setInputData(networkData.build())
-                .addTag("login")
-                .build();
-
-        //Account Configuration
-//        Data.Builder configurationData = new Data.Builder();
-//        configurationData.putString("apikey", accountToken);
-        OneTimeWorkRequest accountConfigurationRequest = new OneTimeWorkRequest.Builder(ActiveConfigurationServiceWorker.class)
-                .setConstraints(constraint)
-                .addTag("accountconfiguration")
-                .build();
-
-        WorkManager
-                .getInstance(this)
-                .beginWith(loginRequest)
-                .then(accountConfigurationRequest)
-                .enqueue();
-
-        WorkManager.getInstance(this)
-                .getWorkInfoByIdLiveData(accountConfigurationRequest.getId())
-                .observe(this, workInfo -> {
-
-                    if( workInfo.getState() != null &&
-                            workInfo.getState() == WorkInfo.State.SUCCEEDED ) {
-
-                        progressBar.setVisibility(View.VISIBLE);
-
-                        final String accounttoken = workInfo.getOutputData().getString("apikey");
-                        final String receivedPassword = workInfo.getOutputData().getString("password");
-
-                        final boolean isStreamingAccount = workInfo.getOutputData().getBoolean("isStreamingAccount", false);
-                        final com.videostreamtest.data.model.response.Configuration config = new GsonBuilder().create().fromJson(workInfo.getOutputData().getString("configurationObject"), com.videostreamtest.data.model.response.Configuration.class);
-
-                        if (accounttoken.equalsIgnoreCase("unauthorized")) {
-                            Toast.makeText(getApplicationContext(),
-                                    getString(R.string.failed_login),
-                                    Toast.LENGTH_LONG).show();
-                            progressBar.setVisibility(View.GONE);
-                        } else {
-                            //Old way
-                            //Put ApiKey in sharedpreferences
-                            SharedPreferences myPreferences = getApplication().getSharedPreferences("app",0);
-                            SharedPreferences.Editor editor = myPreferences.edit();
-                            editor.putString("apikey", accounttoken);
-                            editor.putString("password", receivedPassword);
-                            editor.commit();
-
-                            Log.d(TAG, "Login accounttoken: "+accounttoken);
-                            Log.d(TAG, "Config not found, inserting new one.");
-
-                            Configuration newConfig = new Configuration();
-                            newConfig.setAccountToken(accounttoken);
-                            newConfig.setCurrent(true);
-                            newConfig.setLocalPlay(config.isLocalPlay());
-                            newConfig.setCommunicationDevice(config.getCommunicationDevice());
-                            newConfig.setUpdatePraxCloud(config.isUpdatePraxCloud());
-                            newConfig.setPraxCloudMediaServerLocalUrl(config.getPraxCloudMediaServerLocalUrl());
-                            newConfig.setPraxCloudMediaServerUrl(config.getPraxCloudMediaServerUrl());
-                            newConfig.setAccountType(config.getAccountType());
-                            downloadsViewModel.insert(newConfig);
-                            Intent splashScreenActivity = new Intent(getApplicationContext(), SplashActivity.class);
-                            startActivity(splashScreenActivity);
-                            DownloadsActivity.this.finish();
-                        }
-
-                    }
-                });
     }
 
     private void startPeriodicGetServerOnlineStatusWorker() {

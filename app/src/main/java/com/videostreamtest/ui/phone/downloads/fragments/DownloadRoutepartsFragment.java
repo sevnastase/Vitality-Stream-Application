@@ -34,6 +34,7 @@ import com.videostreamtest.workers.download.DownloadRoutepartsServiceWorker;
 import org.jetbrains.annotations.NotNull;
 
 public class DownloadRoutepartsFragment extends Fragment {
+    private static final String TAG = DownloadRoutepartsFragment.class.getSimpleName();
     private DownloadsViewModel downloadsViewModel;
     private String apikey;
 
@@ -118,7 +119,7 @@ public class DownloadRoutepartsFragment extends Fragment {
                     nextButton.setVisibility(View.VISIBLE);
                     SharedPreferences.Editor editor = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE).edit();
                     editor.putBoolean(STATE_DOWNLOADS_COMPLETED, true);
-                    editor.apply();
+                    editor.commit();
                     startMainActivity();
                 }
             }

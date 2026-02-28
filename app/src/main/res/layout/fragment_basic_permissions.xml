@@ -8,15 +8,15 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/login_status_title"
+        android:id="@+id/title_textview"
         android:textColor="#FFFFFF"
-        android:textSize="20sp"
+        android:textSize="24sp"
         android:textStyle="bold"
-        android:text="@string/login_proces_status_title"
+        android:text="@string/permission_required_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     <TextView
-        android:id="@+id/login_status_summary"
+        android:id="@+id/description_textview"
         android:textColor="#FFFFFF"
         android:textSize="18sp"
         android:text="@string/mr_cast_dialog_title_view_placeholder"
@@ -24,7 +24,7 @@
         android:layout_height="wrap_content" />
 
     <Button
-        android:id="@+id/login_goto_permission_button"
+        android:id="@+id/permission_button"
         android:text="@string/profile_add_form_next_button_text"
         style="@style/AppTheme.DefaultTrainingButtonBlueBorders"
         android:layout_width="wrap_content"

@@ -149,4 +149,5 @@
     <string name="settings_motolife_connect">Connecter</string>
     <string name="settings_motolife_disconnect">Déconnecter</string>
     <string name="android10plus_wifi_instructions">Pour gérer vos connexions Wi-Fi, cliquez sur le bouton ci-dessous. Une fois terminé, appuyez sur le symbole &#9664; pour revenir à cet écran.</string>
+    <string name="permission_required_title">Action nécessaire</string>
 </resources>

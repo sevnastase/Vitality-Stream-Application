@@ -149,4 +149,5 @@
     <string name="settings_motolife_connect">Verbinden</string>
     <string name="settings_motolife_disconnect">Ontkoppelen</string>
     <string name="android10plus_wifi_instructions">Om uw wifi-verbindingen te beheren, klik op de onderstaande knop. Als u klaar bent, drukt u op het symbool &#9664; om terug te keren naar dit scherm.</string>
+    <string name="permission_required_title">Actie vereist</string>
 </resources>
