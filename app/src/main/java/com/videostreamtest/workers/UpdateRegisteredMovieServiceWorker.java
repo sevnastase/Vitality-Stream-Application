@@ -35,7 +35,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class UpdateRegisteredMovieServiceWorker extends AbstractPraxtourWorker {
 
-    private final static String TAG = UpdatePackageServiceWorker.class.getSimpleName();
+    private final static String TAG = UpdateRegisteredMovieServiceWorker.class.getSimpleName();
     private DatabaseRestService databaseRestService;
     private String accountToken;
 
