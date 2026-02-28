@@ -11,6 +11,7 @@ public class PraxConstants {
          * Only the download fragments are supposed to send an intent with this name, set to true.
          */
         public static final String EXTRA_FROM_DOWNLOADS = "com.videostreamtest.EXTRA_FROM_DOWNLOADS";
+        public static final String EXTRA_LOGOUT = "com.videostreamtest.EXTRA_LOGOUT";
     }
 
     public static class SharedPreferences {
