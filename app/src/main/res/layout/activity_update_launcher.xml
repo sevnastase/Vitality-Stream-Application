@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context=".ui.phone.update.UpdateLauncherActivity"
+    android:background="@drawable/login">
+
+    <LinearLayout
+        android:background="@drawable/imagebutton_blue_border"
+        android:backgroundTint="@color/black_overlay"
+        android:layout_width="500dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center"
+            android:layout_marginBottom="20dp"
+            android:gravity="center" >
+
+            <TextView
+                android:id="@+id/title_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="6dp"
+                android:textColor="@color/colorWhite"
+                android:textStyle="bold"
+                android:textSize="24sp"
+                android:text="@string/landing_page_title" />
+
+            <ProgressBar
+                android:id="@+id/checking_for_updates_loading_wheel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/description_textview"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:textAlignment="center"
+                android:text="@string/landing_page_description" />
+
+            <SeekBar
+                android:id="@+id/download_status_progressbar"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:progressDrawable="@drawable/praxfilm_progress_drawable"
+                android:thumb="@drawable/bicycle_thumb_praxfilm"
+                android:thumbOffset="0dp"
+                android:splitTrack="false"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/installation_in_progress_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone" >
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:text="@string/install_in_progress_text" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/start_installation_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            style="@style/AppTheme.DefaultTrainingButtonBlueBorders"
+            android:text="@string/install_update_button_text"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/permission_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            style="@style/AppTheme.DefaultTrainingButtonBlueBorders"
+            android:text="@string/grant_permission_button_text"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/restart_process_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            style="@style/AppTheme.DefaultTrainingButtonBlueBorders"
+            android:text="@string/retry_button_text"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/app_account_info_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        android:layout_marginBottom="5dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

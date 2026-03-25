@@ -1,5 +1,6 @@
 package com.videostreamtest.workers.webinterface;
 
+import com.videostreamtest.config.entity.ApkDescription;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.EffectSound;
 import com.videostreamtest.config.entity.Flag;
@@ -54,4 +55,7 @@ public interface PraxCloud {
     @GET("/api/route/movies/flags")
     Call<List<MovieFlag>> getMovieFlags(@Header("api-key") String accountToken);
 
+    //LAUNCHER UPDATES
+    @GET("api/apk/launcher")
+    Call<ApkDescription> getLauncherPackageInfo(@Header("api-key") String accountToken);
 }

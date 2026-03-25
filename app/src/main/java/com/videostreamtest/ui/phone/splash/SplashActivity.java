@@ -4,6 +4,7 @@ import static com.videostreamtest.constants.PraxConstants.ApkUpdate.PRAXTOUR_LAU
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_ACCOUNT_TOKEN;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_LAUNCHER;
+import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_UPDATE_ACTIVITY;
 import static com.videostreamtest.constants.PraxConstants.SharedPreferences.STATE_DOWNLOADS_COMPLETED;
 import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
 
@@ -44,6 +45,7 @@ import com.videostreamtest.helpers.NavHelper;
 import com.videostreamtest.helpers.NetworkHelper;
 import com.videostreamtest.ui.phone.downloads.DownloadsActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
+import com.videostreamtest.ui.phone.update.UpdateLauncherActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.VideoLanLib;
 import com.videostreamtest.workers.AccountServiceWorker;
@@ -270,9 +272,17 @@ public class SplashActivity extends AppCompatActivity {
         Log.d(TAG, "Greg incoming to SplashActivity");
         apikey = incomingIntent.getStringExtra(EXTRA_ACCOUNT_TOKEN);
 
+        if (!launcherUpdateChecked(incomingIntent)) {
+            Intent updateIntent = new Intent(this, UpdateLauncherActivity.class);
+            startActivity(updateIntent);
+            finish();
+            return;
+        }
+
         if (!incomingFromVerifiedSource(incomingIntent)) {
             Log.d(TAG, "\t greg not verified source");
             NavHelper.openPraxtourLauncher(this, false);
+            return;
         }
 
         // first check: might be coming from downloads, then apikey can be null indeed
@@ -282,7 +292,7 @@ public class SplashActivity extends AppCompatActivity {
             SharedPreferences sp = getSharedPreferences("app", Context.MODE_PRIVATE);
             apikey = sp.getString("apikey", null);
             if (apikey == null || apikey.isBlank()) {
-                Log.d(TAG, "\t\t greg and also wasn't saved:(");
+                Log.d(TAG, "\t\t greg and also wasn't saved");
                 NavHelper.openPraxtourLauncher(this, true);
             } else {
                 Log.d(TAG, "\t\t greg all good");
@@ -358,8 +368,13 @@ public class SplashActivity extends AppCompatActivity {
                 .enqueueUniqueWork("download-status-verification-worker", ExistingWorkPolicy.REPLACE, downloadStatusVerificationWorker);
     }
 
+    private boolean launcherUpdateChecked(Intent intent) {
+        return intent.getBooleanExtra(EXTRA_FROM_UPDATE_ACTIVITY, false);
+    }
+
     private boolean incomingFromVerifiedSource(Intent intent) {
         return intent.getBooleanExtra(EXTRA_FROM_LAUNCHER, false) ||
-                intent.getBooleanExtra(EXTRA_FROM_DOWNLOADS, false);
+                intent.getBooleanExtra(EXTRA_FROM_DOWNLOADS, false) ||
+                intent.getBooleanExtra(EXTRA_FROM_UPDATE_ACTIVITY, false);
     }
 }

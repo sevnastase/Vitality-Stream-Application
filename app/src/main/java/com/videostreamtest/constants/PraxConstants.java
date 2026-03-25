@@ -12,6 +12,7 @@ public class PraxConstants {
          */
         public static final String EXTRA_FROM_DOWNLOADS = "com.videostreamtest.EXTRA_FROM_DOWNLOADS";
         public static final String EXTRA_LOGOUT = "com.videostreamtest.EXTRA_LOGOUT";
+        public static final String EXTRA_FROM_UPDATE_ACTIVITY = "com.videostreamtest.EXTRA_FROM_UPDATE_ACTIVITY";
     }
 
     public static class SharedPreferences {
@@ -19,8 +20,7 @@ public class PraxConstants {
     }
 
     public static class ApkUpdate {
-        public static final String ACTION_UPDATE = "com.videostreamtest.ACTION_UPDATE";
-        public static final String EXTRA_PACKAGE_NAMES = "com.videostreamtest.EXTRA_PACKAGE_NAME";
-        public static final String PRAXTOUR_LAUNCHER_PACKAGE_NAME = "com.remoteupdatemanager";
+        public static final String EVENT_INSTALL_COMPLETE = "com.videostreamtest.EVENT_INSTALL_COMPLETE";
+        public static final String PRAXTOUR_LAUNCHER_PACKAGE_NAME = "com.praxtourlauncher";
     }
 }
