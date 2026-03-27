@@ -150,4 +150,17 @@
     <string name="settings_motolife_disconnect">Ontkoppelen</string>
     <string name="android10plus_wifi_instructions">Om uw wifi-verbindingen te beheren, klik op de onderstaande knop. Als u klaar bent, drukt u op het symbool &#9664; om terug te keren naar dit scherm.</string>
     <string name="permission_required_title">Actie vereist</string>
+    <string name="retry_button_text">Opnieuw</string>
+    <string name="app_update_status_download_text">Versie %s van %s wordt nu gedownload, schakel uw apparaat alstublieft <b>niet</b> uit.</string>
+    <string name="app_update_status_install_text">Download voltooid. Door op de onderstaande knop te drukken, wordt u doorgestuurd naar de installatiepagina. Zodra de installatie is voltooid, wordt u doorgestuurd naar de app.</string>
+    <string name="install_update_button_text">Installeren</string>
+    <string name="install_in_progress_text">Aan het installeren...</string>
+    <string name="landing_page_title">Controleren op launcher updates…</string>
+    <string name="landing_page_description">Als het systeem een ​​update detecteert, wordt deze automatisch gedownload.</string>
+    <string name="permission_required_description">Actie vereist</string>
+    <string name="grant_permission_button_text">Toestaan</string>
+    <string name="recheck_permission_button_text">Controleren</string>
+    <string name="no_permission_after_interaction">Het lijkt erop dat u %s geen toestemming hebt gegeven om pakketten op dit apparaat te installeren. U kunt %s niet blijven gebruiken zolang de update niet is geïnstalleerd. Als u denkt dat u de benodigde machtigingen wel hebt verleend en dit bericht ziet, neem dan contact met ons op via service@praxtour.com.</string>
+    <string name="previous_step_button_text">Vorig</string>
+    <string name="next_step_button_text">Volgende</string>
 </resources>

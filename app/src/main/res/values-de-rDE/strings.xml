@@ -150,4 +150,17 @@
     <string name="settings_motolife_disconnect">Trennen</string>
     <string name="android10plus_wifi_instructions">Um Ihre WiFi-Verbindungen zu verwalten, klicken Sie auf die Schaltfläche unten. Wenn Sie fertig sind, drücken Sie das &#9664;-Symbol, um zu diesem Bildschirm zurückzukehren.</string>
     <string name="permission_required_title">Handlungsbedarf erforderlich</string>
+    <string name="retry_button_text">Wied</string>
+    <string name="app_update_status_download_text">Version %s von %s wird jetzt heruntergeladen, bitte schalten Sie Ihr Gerät <b>nicht</b> aus.</string>
+    <string name="app_update_status_install_text">Der Download ist abgeschlossen. Durch Klicken auf die Schaltfläche unten werden Sie zur Installationsseite weitergeleitet. Nach Abschluss der Installation werden Sie automatisch zur App weitergeleitet.</string>
+    <string name="install_update_button_text">Installieren</string>
+    <string name="install_in_progress_text">Installation...</string>
+    <string name="landing_page_title">Suche nach Launcher Updates…</string>
+    <string name="landing_page_description">Wenn vom System ein Update erkannt wird, wird es automatisch heruntergeladen.</string>
+    <string name="permission_required_description">Handlungsbedarf erforderlich</string>
+    <string name="grant_permission_button_text">Erlauben</string>
+    <string name="recheck_permission_button_text">Überprüfen</string>
+    <string name="no_permission_after_interaction">Sie haben %s anscheinend keine Berechtigung zur Installation von Paketen auf diesem Gerät erteilt. Sie können %s erst wieder verwenden, wenn das Update installiert ist. Falls Sie der Meinung sind, die erforderlichen Berechtigungen erteilt zu haben und diese Meldung dennoch sehen, kontaktieren Sie uns bitte unter service@praxtour.com.</string>
+    <string name="previous_step_button_text">Vorherige</string>
+    <string name="next_step_button_text">Nächste</string>
 </resources>

@@ -64,7 +64,9 @@ public class UpdateLauncherActivity extends AppCompatActivity {
     private final BroadcastReceiver installResultLocalReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            processPackage();
+            Log.d(TAG, "Greg installation complete");
+            deleteApkFromCache();
+            goToSplashActivity();
         }
     };
     /**
@@ -146,9 +148,6 @@ public class UpdateLauncherActivity extends AppCompatActivity {
                 installationInProgressLayout.setVisibility(View.VISIBLE);
                 boolean result = PraxPackageInstaller.installApk(this, launcherPackageInfo.getApkFilepath());
                 if (!result) throw new IOException("Unknown error:(");
-
-                deleteApkFromCache();
-                goToSplashActivity();
             } catch (IOException e) {
                 runOnUiThread(() -> displayErrorEncountered(ErrorStep.INSTALL));
                 Log.e(TAG, "Greg uh-oh " + e);
@@ -164,6 +163,10 @@ public class UpdateLauncherActivity extends AppCompatActivity {
                 throw new RuntimeException("Unexpected interrupt", e);
             };
             launcherPackageInfo = fetchLauncherPackageInfo();
+            if (launcherPackageInfo == null) {
+                goToSplashActivity();
+                return;
+            }
             runOnUiThread(() -> checkingForUpdatesLoadingWheel.setVisibility(View.GONE));
             processPackage();
         }).start();
@@ -171,13 +174,17 @@ public class UpdateLauncherActivity extends AppCompatActivity {
 
     private void processPackage() {
         new Thread(() -> {
-            if (!isUpdateAvailable()) return;
+            if (!isUpdateAvailable()) {
+                goToSplashActivity();
+                return;
+            }
 
             if (!isApkAvailableLocally()) {
                 runOnUiThread(this::showDownloadStep);
                 boolean downloaded = downloadApk();
                 if (!downloaded) {
                     runOnUiThread(() -> displayErrorEncountered(ErrorStep.DOWNLOAD));
+                    goToSplashActivity();
                     return;
                 }
             }
@@ -273,7 +280,7 @@ public class UpdateLauncherActivity extends AppCompatActivity {
     private void showDownloadStep() {
         String appName = launcherPackageInfo.getAppName();
 
-        titleTextView.setText(String.format("Downloading %s", appName));
+        titleTextView.setText(String.format("Downloading update for %s", appName));
         descriptionTextView.setText(String.format(getString(R.string.app_update_status_download_text), launcherPackageInfo.getVersion(), launcherPackageInfo.getAppName()));
         descriptionTextView.setVisibility(View.VISIBLE);
         permissionButton.setVisibility(View.GONE);
@@ -316,6 +323,7 @@ public class UpdateLauncherActivity extends AppCompatActivity {
     private void goToSplashActivity() {
         Intent intent = new Intent(this, SplashActivity.class);
         intent.putExtra(EXTRA_FROM_UPDATE_ACTIVITY, true);
+        intent.putExtra(EXTRA_ACCOUNT_TOKEN, accountToken);
         startActivity(intent);
         finish();
     }

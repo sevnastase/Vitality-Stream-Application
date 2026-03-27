@@ -34,7 +34,7 @@ public class PraxPackageInstaller {
         File apkFile = new File(context.getCacheDir(), filename);
 
         try (FileInputStream in = new FileInputStream(apkFile);
-             OutputStream out = session.openWrite("praxtour-app.apk", 0, apkFile.length())) {
+             OutputStream out = session.openWrite("praxtour-launcher.apk", 0, apkFile.length())) {
 
             byte[] buffer = new byte[64 * 1024];
             int c;
@@ -50,7 +50,7 @@ public class PraxPackageInstaller {
         }
 
         Intent resultIntent = new Intent(context, InstallResultReceiver.class)
-                .setAction("com.praxupdatemanager.ACTION_INSTALL_COMMIT")
+                .setAction("com.videostreamtest.ACTION_INSTALL_COMMIT")
                 .putExtra("sessionId", sessionId);
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(

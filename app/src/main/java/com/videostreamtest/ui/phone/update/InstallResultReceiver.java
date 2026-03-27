@@ -16,6 +16,7 @@ public class InstallResultReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         int status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE);
+        Log.d(TAG, "Greg install callback, status: " + status);
         String msg = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE);
 
         switch (status) {

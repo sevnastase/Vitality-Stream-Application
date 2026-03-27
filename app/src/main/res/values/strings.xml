@@ -26,6 +26,7 @@
     <string name="title_activity_fullscreen" translatable="false">Praxtour</string>
     <string name="title_activity_login" translatable="false">Praxtour</string>
     <string name="title_activity_login_tv" translatable="false">LoginActivityTv</string>
+    <string name="title_activity_update_launcher" translatable="false">UpdateLauncherActivity</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
     <string name="action_register_user">Register</string>
@@ -50,7 +51,7 @@
     <string name="video_screen_total_distance">%d m</string>
     <string name="videoplayer_chronometer_message">%s</string>
     <string name="catalog_selected_route_title">%s</string>
-    <string name="login_information_dialog">For more information go to our website praxcloud.eu</string>
+    <string name="login_information_dialog">For more information go to our website: <a href="https://praxcloud.eu" style="text-decoration: none">praxcloud.eu</a></string>
     <string name="catalog_no_movies_warning">No movies found for this account!</string>
     <string name="profile_add_form_warning">Form not valid!</string>
     <string name="profile_add_form_error">Failed to create profile.</string>
@@ -166,33 +167,21 @@
     <string name="placeholder_default" translatable="false">Lorem Ipsum</string>
     <string name="android10plus_wifi_instructions">In order to manage your WiFi connections, click the button below. Once you have finished, press the &#9664; symbol to return to this screen.</string>
     <string name="permission_required_title">Action needed</string>
-    <string name="app_update_title">Update available!</string>
-    <string name="login_page_title">Login</string>
-    <string name="login_failed_title">Login failed</string>
-    <string name="login_failed_description">Username and/or password are wrong.\nPlease try again.</string>
-    <string name="no_active_products_description">There are no active product subscriptions present.\nPlease register for any of our products.</string>
     <string name="retry_button_text">Retry</string>
     <!-- 1st param: The version of the app being downloaded. 2nd param: The name of the app being downloaded -->
     <string name="app_update_status_download_text">Version %s of %s is now being downloaded, please <b>do not</b> turn off your device.</string>
     <string name="app_update_status_install_text">Download finished. By pressing the button below, you will be redirected to the installation page. Once the installation has completed, you will be redirected to the app.</string>
     <string name="install_update_button_text">Install</string>
     <string name="install_in_progress_text">Installing…</string>
-    <string name="landing_page_title">Checking for updates…</string>
+    <string name="landing_page_title">Checking for launcher updates…</string>
     <string name="landing_page_description">If an update is detected by the system, it will be automatically downloaded.</string>
-    <string name="permission_required_title">Action needed</string>
     <!-- 1st param: The current package being installed. 2nd param: The app name of this app (update manager). -->
     <string name="permission_required_description">In order to install the newest version of %s, please allow %s to install packages on this device.  After pressing the button below, the system will ask you to toggle that permission. Once it is ON, you may need to press the &#9664; symbol to return to this screen.</string>
     <string name="grant_permission_button_text">Allow</string>
     <string name="recheck_permission_button_text">Check</string>
     <!-- 1st param: The app name of this app (update manager). 2nd param: The current package being installed. -->
     <string name="no_permission_after_interaction">It seems you have not granted %s the permission to install packages on this device. You will not be able to continue using %s while the update is not installed.\n\nIf you believe that you have granted the necessary permissions and are seeing this message, please contact us at service@praxtour.com.</string>
-    <string name="enter_username_text">Enter username</string>
-    <string name="enter_username_hint">Username</string>
-    <string name="enter_password_text">Enter password</string>
-    <string name="enter_password_hint">Password</string>
     <string name="previous_step_button_text">Previous</string>
     <string name="next_step_button_text">Next</string>
-    <string name="login_information_dialog">For more information go to our website: <a href="https://praxcloud.eu" style="text-decoration: none">praxcloud.eu</a></string>
-    <string name="invalid_device_uuid_description">Another device is already linked to this account. Please contact us to unlink the existing device.</string>
 
 </resources>

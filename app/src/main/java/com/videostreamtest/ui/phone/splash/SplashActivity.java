@@ -274,6 +274,7 @@ public class SplashActivity extends AppCompatActivity {
 
         if (!launcherUpdateChecked(incomingIntent)) {
             Intent updateIntent = new Intent(this, UpdateLauncherActivity.class);
+            updateIntent.putExtra(EXTRA_ACCOUNT_TOKEN, apikey);
             startActivity(updateIntent);
             finish();
             return;

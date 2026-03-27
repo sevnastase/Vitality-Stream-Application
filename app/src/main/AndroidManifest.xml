@@ -43,6 +43,7 @@
     <!-- REQUIRED FOR KEEP SCREEN ON -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <!-- REQUIRED FOR REMOTE LAUNCHER UPDATES -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- Android Features -->
@@ -186,7 +187,20 @@
             <!-- <action android:name="android.intent.action.MAIN" /> -->
             <!-- <category android:name="android.intent.category.LEANBACK_LAUNCHER" /> -->
             <!-- </intent-filter> -->
+        </activity>
+
+        <activity
+            android:name=".ui.phone.update.UpdateLauncherActivity"
+            android:label="@string/title_activity_update_launcher"
+            android:exported="false"
+            android:theme="@style/AppTheme.NoActionBar">
         </activity> <!-- END ACTIVITIES -->
+
+        <receiver
+            android:name=".ui.phone.update.InstallResultReceiver"
+            android:exported="false">
+        </receiver>
+
         <!-- SERVICES -->
         <service
             android:name=".service.ble.BleService"
