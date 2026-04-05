@@ -135,6 +135,7 @@ public class UpdateLauncherActivity extends AppCompatActivity {
                         if (appHasInstallPackagePermission()) {
                             showInstallationStep();
                         } else {
+                            showPermissionRequiredPage();
                             requestInstallPackagesPermission();
                         }
                     });
@@ -192,6 +193,8 @@ public class UpdateLauncherActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 if (appHasInstallPackagePermission()) {
                     showInstallationStep();
+                } else {
+                    showPermissionRequiredPage();
                 }
             });
         }).start();
@@ -212,9 +215,7 @@ public class UpdateLauncherActivity extends AppCompatActivity {
         String[] remoteVersionSplit = remoteVersion.split("\\.");
 
         if (installedVersionSplit.length != remoteVersionSplit.length) {
-            throw new RuntimeException("Version number patterns don't match!" +
-                    "\n\tLocal: " + installedVersion +
-                    "\n\tRemote: " + remoteVersion);
+            return false;
         }
 
         for (int i = 0; i < installedVersionSplit.length; i++) {
@@ -222,6 +223,7 @@ public class UpdateLauncherActivity extends AppCompatActivity {
             int remote = Integer.parseInt(remoteVersionSplit[i]);
 
             if (remote > local) return true;
+            if (remote < local) return false;
         }
 
         return false;
@@ -269,12 +271,7 @@ public class UpdateLauncherActivity extends AppCompatActivity {
      * false otherwise.
      */
     private boolean appHasInstallPackagePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !getPackageManager().canRequestPackageInstalls()) {
-            showPermissionRequiredPage();
-            return false;
-        }
-
-        return true;
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.O || getApplicationContext().getPackageManager().canRequestPackageInstalls();
     }
 
     private void showDownloadStep() {
