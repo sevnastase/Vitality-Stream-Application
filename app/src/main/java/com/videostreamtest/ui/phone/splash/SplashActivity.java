@@ -20,6 +20,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -211,6 +212,7 @@ public class SplashActivity extends AppCompatActivity {
                             //Login activity will be shown
                             Log.d(TAG, "Unset current configuration when product count = 0");
                             LogHelper.WriteLogRule(getApplicationContext(), savedConfig.getAccountToken(), "WARNING! Subscriptions expired! Or closed during login process!", "ERROR", "");
+                            Toast.makeText(this, "All subscriptions expired", Toast.LENGTH_LONG).show();
                             NavHelper.openPraxtourLauncher(this, true);
                         }
                     }
