@@ -1,6 +1,7 @@
 package com.videostreamtest.ui.phone.downloads.fragments;
 
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
+import static com.videostreamtest.constants.PraxConstants.SharedPreferences.STATE_DOWNLOADS_COMPLETED;
 
 import android.Manifest;
 import android.content.Context;
@@ -89,6 +90,10 @@ public class BasicPermissionsFragment extends Fragment {
                         NavHostFragment.findNavController(BasicPermissionsFragment.this)
                                 .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
                     } else {
+                        // no need for downloads when using non-streaming account
+                        SharedPreferences.Editor editor = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE).edit();
+                        editor.putBoolean(STATE_DOWNLOADS_COMPLETED, true);
+                        editor.commit();
                         startMainActivity();
                     }
                     downloadsViewModel.addInstallationStep();
