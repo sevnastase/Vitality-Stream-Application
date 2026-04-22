@@ -90,7 +90,9 @@ public class SplashActivity extends AppCompatActivity {
 
         requestDrawOverlayPermission();
 
-        handleIncoming(getIntent());
+        if (!handleIncoming(getIntent())) {
+            return;
+        }
 
         loadTimer = new Handler(Looper.getMainLooper());
 
@@ -268,7 +270,10 @@ public class SplashActivity extends AppCompatActivity {
 
     }
 
-    private void handleIncoming(Intent incomingIntent) {
+    /**
+     * @return false if this app will finish after termination of this method
+     */
+    private boolean handleIncoming(Intent incomingIntent) {
         Log.d(TAG, "Greg incoming to SplashActivity");
         apikey = incomingIntent.getStringExtra(EXTRA_ACCOUNT_TOKEN);
 
@@ -277,13 +282,13 @@ public class SplashActivity extends AppCompatActivity {
             updateIntent.putExtra(EXTRA_ACCOUNT_TOKEN, apikey);
             startActivity(updateIntent);
             finish();
-            return;
+            return false;
         }
 
         if (!incomingFromVerifiedSource(incomingIntent)) {
             Log.d(TAG, "\t greg not verified source");
             NavHelper.openPraxtourLauncher(this, false);
-            return;
+            return false;
         }
 
         // first check: might be coming from downloads, then apikey can be null indeed
@@ -295,10 +300,14 @@ public class SplashActivity extends AppCompatActivity {
             if (apikey == null || apikey.isBlank()) {
                 Log.d(TAG, "\t\t greg and also wasn't saved");
                 NavHelper.openPraxtourLauncher(this, true);
+                return false;
             } else {
                 Log.d(TAG, "\t\t greg all good");
+                return true;
             }
         }
+
+        return true;
     }
 
     private Configuration extractConfiguration(Configuration config) {

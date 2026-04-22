@@ -295,13 +295,14 @@ public class UpdateLauncherActivity extends AppCompatActivity {
     }
 
     private void showPermissionRequiredPage() {
-        String appName = launcherPackageInfo.getAppName();
+        String appName = getPackageManager().getApplicationLabel(getApplicationInfo()).toString();
+        String launcherAppName = launcherPackageInfo.getAppName();
 
         titleTextView.setText(getString(R.string.permission_required_title));
         if (manuallyRecheckedInstallPermission) {
-            descriptionTextView.setText(String.format(getString(R.string.no_permission_after_interaction), appName, getPackageName()));
+            descriptionTextView.setText(String.format(getString(R.string.no_permission_after_interaction), appName, appName));
         } else {
-            descriptionTextView.setText(String.format(getString(R.string.permission_required_description), getPackageName(), appName));
+            descriptionTextView.setText(String.format(getString(R.string.permission_required_description), launcherAppName, appName));
         }
         permissionButton.setText(getString(R.string.grant_permission_button_text));
         permissionButton.setVisibility(View.VISIBLE);
