@@ -34,6 +34,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.ApkDescription;
+import com.videostreamtest.service.wifi.WifiCallback;
+import com.videostreamtest.service.wifi.WifiSpeedtest;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.workers.download.callback.CallbackByteChannel;
 import com.videostreamtest.workers.download.callback.ProgressCallBack;
@@ -157,20 +159,30 @@ public class UpdateLauncherActivity extends AppCompatActivity {
 
         accountToken = getIntent().getStringExtra(EXTRA_ACCOUNT_TOKEN);
 
-        new Thread(() -> {
-            try {
-                Thread.sleep(MIN_WAIT_TIME_LOADING_MS);
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Unexpected interrupt", e);
-            };
-            launcherPackageInfo = fetchLauncherPackageInfo();
-            if (launcherPackageInfo == null) {
-                goToSplashActivity();
-                return;
+        WifiSpeedtest.getPingTo(PRAXCLOUD_API_URL, new WifiCallback() {
+            @Override
+            public void onSuccess(long value) {
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(MIN_WAIT_TIME_LOADING_MS);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException("Unexpected interrupt", e);
+                    }
+                    launcherPackageInfo = fetchLauncherPackageInfo();
+                    if (launcherPackageInfo == null) {
+                        goToSplashActivity();
+                        return;
+                    }
+                    runOnUiThread(() -> checkingForUpdatesLoadingWheel.setVisibility(View.GONE));
+                    processPackage();
+                }).start();
             }
-            runOnUiThread(() -> checkingForUpdatesLoadingWheel.setVisibility(View.GONE));
-            processPackage();
-        }).start();
+
+            @Override
+            public void onError(Exception e) {
+                runOnUiThread(() -> goToSplashActivity());
+            }
+        });
     }
 
     private void processPackage() {

@@ -1,25 +1,32 @@
 package com.videostreamtest.ui.phone.splash;
 
-import static com.videostreamtest.constants.PraxConstants.ApkUpdate.PRAXTOUR_LAUNCHER_PACKAGE_NAME;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_ACCOUNT_TOKEN;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_LAUNCHER;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_UPDATE_ACTIVITY;
 import static com.videostreamtest.constants.PraxConstants.SharedPreferences.STATE_DOWNLOADS_COMPLETED;
+import static com.videostreamtest.service.wifi.WifiSpeedtest.DEFAULT_NETWORK_VALUE;
+import static com.videostreamtest.service.wifi.WifiSpeedtest.ERROR_NETWORK_VALUE;
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
 import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,6 +42,7 @@ import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
 import com.google.gson.GsonBuilder;
+import com.videostreamtest.R;
 import com.videostreamtest.config.entity.BluetoothDefaultDevice;
 import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.config.entity.Product;
@@ -43,6 +51,8 @@ import com.videostreamtest.helpers.ConfigurationHelper;
 import com.videostreamtest.helpers.LogHelper;
 import com.videostreamtest.helpers.NavHelper;
 import com.videostreamtest.helpers.NetworkHelper;
+import com.videostreamtest.service.wifi.WifiCallback;
+import com.videostreamtest.service.wifi.WifiSpeedtest;
 import com.videostreamtest.ui.phone.downloads.DownloadsActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.ui.phone.update.UpdateLauncherActivity;
@@ -53,11 +63,11 @@ import com.videostreamtest.workers.download.DownloadStatusVerificationServiceWor
 import com.videostreamtest.workers.synchronisation.ActiveConfigurationServiceWorker;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SplashActivity extends AppCompatActivity {
 
     private static final String TAG = SplashActivity.class.getSimpleName();
-    private static final int MY_REQUEST_CODE = 1337;
     public static int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE= 2323;
 
     private SplashViewModel splashViewModel;
@@ -84,6 +94,14 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_splash);
+
+        networkDownloadSpeedTextView = findViewById(R.id.network_download_speed_textview);
+        networkLatencyTextView = findViewById(R.id.network_latency_textview);
+
+        getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         splashViewModel = new ViewModelProvider(this).get(SplashViewModel.class);
         splashViewModel.setWorkerProgress(0);
@@ -91,17 +109,15 @@ public class SplashActivity extends AppCompatActivity {
         requestDrawOverlayPermission();
 
         handleIncoming(getIntent());
+    }
 
+    private void setup() {
         loadTimer = new Handler(Looper.getMainLooper());
 
         if (!NetworkHelper.isNetworkPraxtourLAN(this)) {
             checkDownloadStatusVerification();
             refreshAccountInformation();
         }
-
-        getWindow().setFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         //New way
         splashViewModel.getCurrentConfig().observe(this, savedConfig -> {
@@ -209,6 +225,8 @@ public class SplashActivity extends AppCompatActivity {
                             //Login activity will be shown
                             Log.d(TAG, "Unset current configuration when product count = 0");
                             LogHelper.WriteLogRule(getApplicationContext(), savedConfig.getAccountToken(), "WARNING! Subscriptions expired! Or closed during login process!", "ERROR", "");
+                            Toast.makeText(this, "Please login again", Toast.LENGTH_LONG).show();
+                            isNavigating = true;
                             NavHelper.openPraxtourLauncher(this, true);
                         }
                     }
@@ -265,40 +283,61 @@ public class SplashActivity extends AppCompatActivity {
                 live.observeForever(observer);
             }
         });
-
     }
 
     private void handleIncoming(Intent incomingIntent) {
         Log.d(TAG, "Greg incoming to SplashActivity");
         apikey = incomingIntent.getStringExtra(EXTRA_ACCOUNT_TOKEN);
 
-        if (!launcherUpdateChecked(incomingIntent)) {
-            Intent updateIntent = new Intent(this, UpdateLauncherActivity.class);
-            updateIntent.putExtra(EXTRA_ACCOUNT_TOKEN, apikey);
-            startActivity(updateIntent);
-            finish();
-            return;
-        }
+        WifiSpeedtest.getPingTo(PRAXCLOUD_API_URL, new WifiCallback() {
+            @Override
+            public void onSuccess(long value) {
+                if (!launcherUpdateChecked(incomingIntent)) {
+                    Intent updateIntent = new Intent(SplashActivity.this, UpdateLauncherActivity.class);
+                    updateIntent.putExtra(EXTRA_ACCOUNT_TOKEN, apikey);
+                    startActivity(updateIntent);
+                    finish();
+                    return;
+                }
 
-        if (!incomingFromVerifiedSource(incomingIntent)) {
-            Log.d(TAG, "\t greg not verified source");
-            NavHelper.openPraxtourLauncher(this, false);
-            return;
-        }
+                if (!incomingFromVerifiedSource(incomingIntent)) {
+                    Log.d(TAG, "\t greg not verified source");
+                    isNavigating = true;
+                    NavHelper.openPraxtourLauncher(SplashActivity.this, false);
+                    return;
+                }
 
-        // first check: might be coming from downloads, then apikey can be null indeed
-        if (apikey == null || apikey.isBlank()) {
-            Log.d(TAG, "\t greg apikey was null or blank");
-            // but in that case it should already be saved in sp
-            SharedPreferences sp = getSharedPreferences("app", Context.MODE_PRIVATE);
-            apikey = sp.getString("apikey", null);
-            if (apikey == null || apikey.isBlank()) {
-                Log.d(TAG, "\t\t greg and also wasn't saved");
-                NavHelper.openPraxtourLauncher(this, true);
-            } else {
-                Log.d(TAG, "\t\t greg all good");
+                // first check: might be coming from downloads, then apikey can be null indeed
+                if (apikey == null || apikey.isBlank()) {
+                    Log.d(TAG, "\t greg apikey was null or blank");
+                    // but in that case it should already be saved in sp
+                    SharedPreferences sp = getSharedPreferences("app", Context.MODE_PRIVATE);
+                    apikey = sp.getString("apikey", null);
+                    if (apikey == null || apikey.isBlank()) {
+                        Log.d(TAG, "\t\t greg and also wasn't saved");
+                        isNavigating = true;
+                        NavHelper.openPraxtourLauncher(SplashActivity.this, true);
+                        return;
+                    } else {
+                        Log.d(TAG, "\t\t greg all good");
+                    }
+                }
+
+                runOnUiThread(() -> setup());
             }
-        }
+
+            @Override
+            public void onError(Exception e) {
+                if (!incomingFromVerifiedSource(incomingIntent)) {
+                    Log.d(TAG, "\t greg not verified source");
+                    isNavigating = true;
+                    NavHelper.openPraxtourLauncher(SplashActivity.this, false);
+                    return;
+                }
+
+                redirectToActivity(ProductPickerActivity.class);
+            }
+        });
     }
 
     private Configuration extractConfiguration(Configuration config) {
