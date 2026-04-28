@@ -33,6 +33,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -526,7 +527,6 @@ public class BleService extends Service {
             LogHelper.WriteLogRule(getApplicationContext(), AccountHelper.getAccountToken(getApplicationContext()),"BLE Service :: No BLE adapter", "ERROR", "");
             return;
         }
-        scanner = bluetoothAdapter.getBluetoothLeScanner();
 
         scanCallback = new ScanCallback() {
             @SuppressLint("MissingPermission")
@@ -557,7 +557,36 @@ public class BleService extends Service {
             }
         };
 
-        scanner.startScan(scanCallback);
+        new Thread(() -> {
+            // exponential backoff, in case device is slowly starting up
+            int sleepForMs = 1000;
+
+            while (scanner == null || !bluetoothAdapter.isEnabled()) {
+                Log.d(TAG, "Greg scanner is null");
+                try {
+                    Thread.sleep(sleepForMs);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                if (bluetoothAdapter.isEnabled()) {
+                    scanner = bluetoothAdapter.getBluetoothLeScanner();
+                }
+
+                sleepForMs*=2;
+                if (sleepForMs >= Math.pow(2, 5) * 1000) {
+                    break;
+                }
+            }
+
+            if (scanner == null) {
+                Log.d(TAG, "Greg could not start scan");
+                Toast.makeText(this, "Could not start scan", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Log.d(TAG, "Greg starting scan");
+            scanner.startScan(scanCallback);
+        }).start();
     }
 
     private void broadcastUpdate(final String action) {
