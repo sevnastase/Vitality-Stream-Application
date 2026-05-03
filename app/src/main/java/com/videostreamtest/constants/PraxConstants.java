@@ -23,4 +23,7 @@ public class PraxConstants {
         public static final String EVENT_INSTALL_COMPLETE = "com.videostreamtest.EVENT_INSTALL_COMPLETE";
         public static final String PRAXTOUR_LAUNCHER_PACKAGE_NAME = "com.praxtourlauncher";
     }
+    public static class DefaultValues {
+        public static final String NO_APIKEY = "unauthorized";
+    }
 }
