@@ -409,12 +409,13 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private boolean launcherUpdateChecked(Intent intent) {
-        return intent.getBooleanExtra(EXTRA_FROM_UPDATE_ACTIVITY, false);
+        return intent.getBooleanExtra(EXTRA_LAUNCHER_UPDATE_CHECKED, false);
     }
 
     private boolean incomingFromVerifiedSource(Intent intent) {
         return intent.getBooleanExtra(EXTRA_FROM_LAUNCHER, false) ||
                 intent.getBooleanExtra(EXTRA_FROM_DOWNLOADS, false) ||
                 intent.getBooleanExtra(EXTRA_FROM_UPDATE_ACTIVITY, false);
+                intent.getBooleanExtra(EXTRA_LAUNCHER_UPDATE_CHECKED, false);
     }
 }

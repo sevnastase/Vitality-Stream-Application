@@ -12,7 +12,7 @@ public class PraxConstants {
          */
         public static final String EXTRA_FROM_DOWNLOADS = "com.videostreamtest.EXTRA_FROM_DOWNLOADS";
         public static final String EXTRA_LOGOUT = "com.videostreamtest.EXTRA_LOGOUT";
-        public static final String EXTRA_FROM_UPDATE_ACTIVITY = "com.videostreamtest.EXTRA_FROM_UPDATE_ACTIVITY";
+        public static final String EXTRA_LAUNCHER_UPDATE_CHECKED = "com.videostreamtest.EXTRA_FROM_UPDATE_ACTIVITY";
     }
 
     public static class SharedPreferences {
