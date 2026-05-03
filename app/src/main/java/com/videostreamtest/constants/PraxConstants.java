@@ -23,6 +23,20 @@ public class PraxConstants {
         public static final String EVENT_INSTALL_COMPLETE = "com.videostreamtest.EVENT_INSTALL_COMPLETE";
         public static final String PRAXTOUR_LAUNCHER_PACKAGE_NAME = "com.praxtourlauncher";
     }
+
+    public static class NetworkConstants {
+        public static final int MAX_PING_TO_API = 150;
+        public static final int ACCEPTABLE_PING_TO_API = 70;
+        /** Set to be able to download a 200MB file (size of our APK) in a max of 10 minutes. */
+        public static final int MIN_DOWNLOAD_SPEED_KBPS = (200 * 1024) / (10 * 60); // speed = size / time
+        public static final int DOWNLOAD_CONNECTION_TIMEOUT_MS =
+                (int) Math.ceil(1024.0 / MIN_DOWNLOAD_SPEED_KBPS) * 1000; // time = size / speed
+        /** Mbps */
+        public static final float MIN_DOWNLOAD_SPEED_MBPS = MIN_DOWNLOAD_SPEED_KBPS / 1024f;
+        /** Mbps */
+        public static final int ACCEPTABLE_DOWNLOAD_SPEED_MBPS = 3;
+    }
+
     public static class DefaultValues {
         public static final String NO_APIKEY = "unauthorized";
     }

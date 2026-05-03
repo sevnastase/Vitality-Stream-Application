@@ -1,18 +1,21 @@
 package com.videostreamtest.ui.phone.splash;
 
+import static com.videostreamtest.constants.PraxConstants.DefaultValues.NO_APIKEY;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_ACCOUNT_TOKEN;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_LAUNCHER;
-import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_UPDATE_ACTIVITY;
+import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_LAUNCHER_UPDATE_CHECKED;
+import static com.videostreamtest.constants.PraxConstants.NetworkConstants.ACCEPTABLE_DOWNLOAD_SPEED_MBPS;
+import static com.videostreamtest.constants.PraxConstants.NetworkConstants.ACCEPTABLE_PING_TO_API;
+import static com.videostreamtest.constants.PraxConstants.NetworkConstants.DOWNLOAD_CONNECTION_TIMEOUT_MS;
+import static com.videostreamtest.constants.PraxConstants.NetworkConstants.MAX_PING_TO_API;
+import static com.videostreamtest.constants.PraxConstants.NetworkConstants.MIN_DOWNLOAD_SPEED_MBPS;
 import static com.videostreamtest.constants.PraxConstants.SharedPreferences.STATE_DOWNLOADS_COMPLETED;
-import static com.videostreamtest.service.wifi.WifiSpeedtest.DEFAULT_NETWORK_VALUE;
 import static com.videostreamtest.service.wifi.WifiSpeedtest.ERROR_NETWORK_VALUE;
-import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
 import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,6 +23,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
@@ -51,8 +55,7 @@ import com.videostreamtest.helpers.ConfigurationHelper;
 import com.videostreamtest.helpers.LogHelper;
 import com.videostreamtest.helpers.NavHelper;
 import com.videostreamtest.helpers.NetworkHelper;
-import com.videostreamtest.service.wifi.WifiCallback;
-import com.videostreamtest.service.wifi.WifiSpeedtest;
+import com.videostreamtest.helpers.PraxCallbacks;
 import com.videostreamtest.ui.phone.downloads.DownloadsActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.ui.phone.update.UpdateLauncherActivity;
@@ -63,7 +66,7 @@ import com.videostreamtest.workers.download.DownloadStatusVerificationServiceWor
 import com.videostreamtest.workers.synchronisation.ActiveConfigurationServiceWorker;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -75,21 +78,33 @@ public class SplashActivity extends AppCompatActivity {
     private Handler loadTimer;
 
     //Mutex booleans
-    /** For some reason, redirects fire incredibly many times, so this is the solution. */
+    /** For some strange Android lifecycle reasons, redirects fire multiple times, so this is the solution. */
     private boolean isNavigating = false;
     private boolean productPickerLoaded = false;
     private String apikey;
 
-    /**
-     * Necessary to receive intents properly.
-     */
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
+    private TextView networkDownloadSpeedTextView;
+    private TextView networkLatencyTextView;
+    private TextView connectingToServerTextView;
+    private final HandlerThread networkTesterThread = new HandlerThread("NetworkTesterThread");
+    private Handler networkTesterHandler;
+    private Runnable networkTesterRunnable;
+    private final Handler networkConnectionUiHandler = new Handler(Looper.getMainLooper());
+    private final Runnable networkConnectionUiRunnable = new Runnable() {
+        int nrDots = 1;
 
-        setIntent(intent);
-        handleIncoming(intent);
-    }
+        @Override
+        public void run() {
+            StringBuilder sb = new StringBuilder(getString(R.string.connecting_to_server));
+            for (int i = 0; i < nrDots; i++) {
+                sb.append(".");
+            }
+            nrDots++;
+            if (nrDots > 3) nrDots = 1;
+            connectingToServerTextView.setText(sb.toString());
+            networkConnectionUiHandler.postDelayed(this, 500);
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -98,6 +113,7 @@ public class SplashActivity extends AppCompatActivity {
 
         networkDownloadSpeedTextView = findViewById(R.id.network_download_speed_textview);
         networkLatencyTextView = findViewById(R.id.network_latency_textview);
+        connectingToServerTextView = findViewById(R.id.connecting_to_server_textview);
 
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -108,7 +124,96 @@ public class SplashActivity extends AppCompatActivity {
 
         requestDrawOverlayPermission();
 
-        handleIncoming(getIntent());
+        final Intent incomingIntent = getIntent();
+        apikey = incomingIntent.getStringExtra(EXTRA_ACCOUNT_TOKEN);
+
+        if (firstOpenedSinceRestart(incomingIntent)) {
+            connectingToServerTextView.setVisibility(View.VISIBLE);
+        }
+
+        if (!networkTesterThread.isAlive()) {
+            networkTesterThread.start();
+        }
+
+        networkTesterHandler = new Handler(networkTesterThread.getLooper());
+
+        networkTesterRunnable = NetworkHelper.getSpeedtestRunnable(networkTesterHandler, new PraxCallbacks.SpeedtestCallback() {
+            @Override
+            public void onSuccess(final long ping, final long downloadSpeedKbps) {
+                // might be coming from downloads, then apikey can be null indeed
+                if (apikey == null || apikey.isBlank()) {
+                    Log.d(TAG, "\t greg apikey was null or blank");
+                    // but in that case it should already be saved in sp
+                    apikey = AccountHelper.getAccountToken(SplashActivity.this);
+                    if (apikey == null || NO_APIKEY.equals(apikey)) {
+                        Log.d(TAG, "\t\t greg and also wasn't saved");
+                        isNavigating = true;
+                        NavHelper.openPraxtourLauncher(SplashActivity.this, true, removeCallbacksForNetworkTester());
+                        return;
+                    } else {
+                        Log.d(TAG, "\t\t greg all good");
+                    }
+                }
+
+                if (!launcherUpdateChecked(incomingIntent)) {
+                    if (isNavigating) return;
+                    isNavigating = true;
+
+                    Intent updateIntent = new Intent(SplashActivity.this, UpdateLauncherActivity.class);
+                    updateIntent.putExtra(EXTRA_ACCOUNT_TOKEN, apikey);
+                    startActivity(updateIntent);
+                    finish();
+                    return;
+                }
+
+                if (!incomingFromVerifiedSource(incomingIntent)) {
+                    Log.d(TAG, "\t greg not verified source");
+                    if (isNavigating) return;
+                    isNavigating = true;
+                    NavHelper.openPraxtourLauncher(SplashActivity.this, false, removeCallbacksForNetworkTester());
+                    return;
+                }
+
+                runOnUiThread(() -> setup());
+            }
+
+            @Override
+            public void onWarning(final long ping, final long downloadSpeedKbps) {
+                showNetworkInfos(ping, downloadSpeedKbps);
+            }
+
+            @Override
+            public void onFailure(final long ping, final long downloadSpeedKbps) {
+                runOnUiThread(() -> {
+                    networkConnectionUiHandler.removeCallbacksAndMessages(null);
+                    connectingToServerTextView.setText(getString(R.string.failed_server_connection));
+                    connectingToServerTextView.setVisibility(View.VISIBLE);
+                });
+
+                if (apikey == null || apikey.isBlank()) {
+                    apikey = AccountHelper.getAccountToken(SplashActivity.this);
+                    isNavigating = true;
+                    if (apikey == null || NO_APIKEY.equals(apikey)) {
+                        NavHelper.openPraxtourLauncher(SplashActivity.this, true, removeCallbacksForNetworkTester());
+                    } else {
+                        redirectToActivity(ProductPickerActivity.class);
+                    }
+                }
+            }
+        });
+
+        networkTesterHandler.postDelayed(networkTesterRunnable, 1000);
+        networkConnectionUiHandler.postDelayed(networkConnectionUiRunnable, 1000);
+        networkConnectionUiHandler.postDelayed(() -> {
+            connectingToServerTextView.setVisibility(View.VISIBLE);
+        }, DOWNLOAD_CONNECTION_TIMEOUT_MS);
+    }
+
+    private PraxCallbacks.OnFailureCallback removeCallbacksForNetworkTester() {
+        return () -> {
+            networkTesterHandler.removeCallbacks(networkTesterRunnable);
+            Log.d(TAG, "Greg removing network callbacks");
+        };
     }
 
     private void setup() {
@@ -161,7 +266,6 @@ public class SplashActivity extends AppCompatActivity {
                 editor.commit();
 
                 if (needToDownloadFiles()) {
-                    Log.d(TAG, "Greg downloads activity");
                     redirectToActivity(DownloadsActivity.class);
                     return;
                 }
@@ -227,7 +331,7 @@ public class SplashActivity extends AppCompatActivity {
                             LogHelper.WriteLogRule(getApplicationContext(), savedConfig.getAccountToken(), "WARNING! Subscriptions expired! Or closed during login process!", "ERROR", "");
                             Toast.makeText(this, "Please login again", Toast.LENGTH_LONG).show();
                             isNavigating = true;
-                            NavHelper.openPraxtourLauncher(this, true);
+                            NavHelper.openPraxtourLauncher(this, true, removeCallbacksForNetworkTester());
                         }
                     }
                 });
@@ -269,6 +373,10 @@ public class SplashActivity extends AppCompatActivity {
 
                         if (workInfo.getState() == WorkInfo.State.SUCCEEDED) {
                             final Configuration config = new GsonBuilder().create().fromJson(workInfo.getOutputData().getString("configurationObject"), Configuration.class);
+                            if (config == null) {
+                                NavHelper.openPraxtourLauncher(SplashActivity.this, true, removeCallbacksForNetworkTester());
+                                return;
+                            }
 
                             //UPDATE local database with new account configuration
                             Configuration newConfig = extractConfiguration(config);
@@ -281,61 +389,6 @@ public class SplashActivity extends AppCompatActivity {
                 };
 
                 live.observeForever(observer);
-            }
-        });
-    }
-
-    private void handleIncoming(Intent incomingIntent) {
-        Log.d(TAG, "Greg incoming to SplashActivity");
-        apikey = incomingIntent.getStringExtra(EXTRA_ACCOUNT_TOKEN);
-
-        WifiSpeedtest.getPingTo(PRAXCLOUD_API_URL, new WifiCallback() {
-            @Override
-            public void onSuccess(long value) {
-                if (!launcherUpdateChecked(incomingIntent)) {
-                    Intent updateIntent = new Intent(SplashActivity.this, UpdateLauncherActivity.class);
-                    updateIntent.putExtra(EXTRA_ACCOUNT_TOKEN, apikey);
-                    startActivity(updateIntent);
-                    finish();
-                    return;
-                }
-
-                if (!incomingFromVerifiedSource(incomingIntent)) {
-                    Log.d(TAG, "\t greg not verified source");
-                    isNavigating = true;
-                    NavHelper.openPraxtourLauncher(SplashActivity.this, false);
-                    return;
-                }
-
-                // first check: might be coming from downloads, then apikey can be null indeed
-                if (apikey == null || apikey.isBlank()) {
-                    Log.d(TAG, "\t greg apikey was null or blank");
-                    // but in that case it should already be saved in sp
-                    SharedPreferences sp = getSharedPreferences("app", Context.MODE_PRIVATE);
-                    apikey = sp.getString("apikey", null);
-                    if (apikey == null || apikey.isBlank()) {
-                        Log.d(TAG, "\t\t greg and also wasn't saved");
-                        isNavigating = true;
-                        NavHelper.openPraxtourLauncher(SplashActivity.this, true);
-                        return;
-                    } else {
-                        Log.d(TAG, "\t\t greg all good");
-                    }
-                }
-
-                runOnUiThread(() -> setup());
-            }
-
-            @Override
-            public void onError(Exception e) {
-                if (!incomingFromVerifiedSource(incomingIntent)) {
-                    Log.d(TAG, "\t greg not verified source");
-                    isNavigating = true;
-                    NavHelper.openPraxtourLauncher(SplashActivity.this, false);
-                    return;
-                }
-
-                redirectToActivity(ProductPickerActivity.class);
             }
         });
     }
@@ -354,14 +407,16 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void redirectToActivity(Class<? extends Activity> destinationActivityClass) {
-        isNavigating = true;
-        Intent intent = new Intent(this, destinationActivityClass);
-        if (destinationActivityClass.equals(SplashActivity.class)) {
-            intent.putExtra(EXTRA_ACCOUNT_TOKEN, apikey);
-            intent.putExtra(EXTRA_FROM_LAUNCHER, true);
-        }
-        startActivity(intent);
-        finish();
+        runOnUiThread(() -> {
+            isNavigating = true;
+            Intent intent = new Intent(this, destinationActivityClass);
+            if (destinationActivityClass.equals(SplashActivity.class)) {
+                intent.putExtra(EXTRA_ACCOUNT_TOKEN, apikey);
+                intent.putExtra(EXTRA_FROM_LAUNCHER, true);
+            }
+            startActivity(intent);
+            finish();
+        });
     }
 
     private boolean needToDownloadFiles() {
@@ -415,7 +470,59 @@ public class SplashActivity extends AppCompatActivity {
     private boolean incomingFromVerifiedSource(Intent intent) {
         return intent.getBooleanExtra(EXTRA_FROM_LAUNCHER, false) ||
                 intent.getBooleanExtra(EXTRA_FROM_DOWNLOADS, false) ||
-                intent.getBooleanExtra(EXTRA_FROM_UPDATE_ACTIVITY, false);
                 intent.getBooleanExtra(EXTRA_LAUNCHER_UPDATE_CHECKED, false);
+    }
+
+    private boolean firstOpenedSinceRestart(Intent intent) {
+        String action = intent.getAction();
+        Set<String> categories = intent.getCategories();
+
+        return intent.getBooleanExtra(EXTRA_FROM_LAUNCHER, false) ||
+                Intent.ACTION_MAIN.equals(action) ||
+                categories != null && categories.contains(Intent.CATEGORY_LAUNCHER) ||
+                categories != null && categories.contains(Intent.CATEGORY_LEANBACK_LAUNCHER);
+    }
+
+    private synchronized void showNetworkInfos(long ping, long speedKbps) {
+        final long speedMbps = speedKbps / 1000;
+
+        runOnUiThread(() -> {
+            String speedToDisplay = (speedMbps == ERROR_NETWORK_VALUE ? "-" : speedMbps) + " Mb/s";
+            int speedTextColor;
+            if (speedMbps == ERROR_NETWORK_VALUE || speedMbps < MIN_DOWNLOAD_SPEED_MBPS) {
+                speedTextColor = Color.RED;
+            } else if (speedMbps < ACCEPTABLE_DOWNLOAD_SPEED_MBPS) {
+                speedTextColor = Color.YELLOW;
+            } else {
+                speedTextColor = Color.WHITE;
+            }
+
+            String pingToDisplay = (ping == ERROR_NETWORK_VALUE ? "-" : ping) + "ms";
+            int pingTextColor;
+            if (ping == ERROR_NETWORK_VALUE || ping > MAX_PING_TO_API) {
+                pingTextColor = Color.RED;
+            } else if (ping > ACCEPTABLE_PING_TO_API) {
+                pingTextColor = Color.YELLOW;
+            } else {
+                pingTextColor = Color.WHITE;
+            }
+
+            networkLatencyTextView.setText(pingToDisplay);
+            networkLatencyTextView.setTextColor(pingTextColor);
+            networkLatencyTextView.setVisibility(View.VISIBLE);
+
+            networkDownloadSpeedTextView.setText(speedToDisplay);
+            networkDownloadSpeedTextView.setTextColor(speedTextColor);
+            networkDownloadSpeedTextView.setVisibility(View.VISIBLE);
+        });
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        networkConnectionUiHandler.removeCallbacksAndMessages(null);
+        networkTesterHandler.removeCallbacks(networkTesterRunnable);
+        networkTesterThread.quitSafely();
     }
 }

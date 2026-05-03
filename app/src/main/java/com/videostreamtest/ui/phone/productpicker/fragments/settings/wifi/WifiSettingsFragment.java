@@ -39,7 +39,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.videostreamtest.R;
 import com.videostreamtest.config.application.PraxtourApplication;
 import com.videostreamtest.constants.BroadcastConstants;
-import com.videostreamtest.service.wifi.WifiCallback;
+import com.videostreamtest.helpers.PraxCallbacks;
 import com.videostreamtest.service.wifi.PraxWifiManager;
 import com.videostreamtest.service.wifi.WifiService;
 import com.videostreamtest.service.wifi.WifiSpeedtest;
@@ -441,12 +441,12 @@ public class WifiSettingsFragment extends Fragment {
     }
 
     private void refreshConnectedNetworkDownloadSpeed() {
-        WifiSpeedtest.getDownloadSpeedMbps(new WifiCallback() {
+        WifiSpeedtest.getDownloadSpeedMbps(new PraxCallbacks.WifiCallback() {
             @Override
             public void onSuccess(long value) {
                 try {
                     getActivity().runOnUiThread(() -> {
-                        String valueToBeDisplayed = value + " Mb/s";
+                        String valueToBeDisplayed = value * 1024 + " Mb/s";
                         connectedNetworkDownloadSpeedTextView.setText(valueToBeDisplayed);
                     });
                 } catch (NullPointerException e) {
@@ -462,7 +462,7 @@ public class WifiSettingsFragment extends Fragment {
     }
 
     private void refreshConnectedNetworkLatency() {
-        WifiSpeedtest.getPingTo("praxtour.nl", new WifiCallback() {
+        WifiSpeedtest.getPingTo("praxtour.nl", new PraxCallbacks.WifiCallback() {
             @Override
             public void onSuccess(long value) {
                 try {

@@ -183,5 +183,9 @@
     <string name="no_permission_after_interaction">It seems you have not granted %s the permission to install packages on this device. You will not be able to continue using %s while the update is not installed.\n\nIf you believe that you have granted the necessary permissions and are seeing this message, please contact us at service@praxtour.com.</string>
     <string name="previous_step_button_text">Previous</string>
     <string name="next_step_button_text">Next</string>
+    <string name="connecting_to_server">Connecting to server</string>
+    <string name="failed_server_connection">Failed to connect</string>
+    <string name="open_launcher_failed_description">In order to start using Praxtour, please install Praxtour Launcher and login. For this you must have a stable internet connection.</string>
+    <string name="open_launcher_failed_title">Unauthorized</string>
 
 </resources>

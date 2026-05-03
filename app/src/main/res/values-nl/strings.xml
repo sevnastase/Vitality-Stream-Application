@@ -163,4 +163,8 @@
     <string name="no_permission_after_interaction">Het lijkt erop dat u %s geen toestemming hebt gegeven om pakketten op dit apparaat te installeren. U kunt %s niet blijven gebruiken zolang de update niet is geïnstalleerd. Als u denkt dat u de benodigde machtigingen wel hebt verleend en dit bericht ziet, neem dan contact met ons op via service@praxtour.com.</string>
     <string name="previous_step_button_text">Vorig</string>
     <string name="next_step_button_text">Volgende</string>
+    <string name="connecting_to_server">Verbinding maken met de server...</string>
+    <string name="failed_server_connection">Verbinding mislukt</string>
+    <string name="open_launcher_failed_description">Om Praxtour te kunnen gebruiken, installeer je eerst Praxtour Launcher en log je in. Hiervoor heb je een stabiele internetverbinding nodig.</string>
+    <string name="open_launcher_failed_title">Niet geautoriseerd</string>
 </resources>
