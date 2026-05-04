@@ -163,8 +163,8 @@
     <string name="no_permission_after_interaction">Sie haben %s anscheinend keine Berechtigung zur Installation von Paketen auf diesem Gerät erteilt. Sie können %s erst wieder verwenden, wenn das Update installiert ist. Falls Sie der Meinung sind, die erforderlichen Berechtigungen erteilt zu haben und diese Meldung dennoch sehen, kontaktieren Sie uns bitte unter service@praxtour.com.</string>
     <string name="previous_step_button_text">Vorherige</string>
     <string name="next_step_button_text">Nächste</string>
-    <string name="connecting_to_server">Verbindung zum Server wird hergestellt...</string>
-    <string name="failed_server_connection">Verbindung fehlgeschlagen</string>
+    <string name="connecting_to_server">Verbindung zum Server wird hergestellt</string>
+    <string name="failed_server_connection">Sie sind offline</string>
     <string name="open_launcher_failed_description">Um Praxtour nutzen zu können, installieren Sie bitte den Praxtour Launcher und melden Sie sich an. Hierfür benötigen Sie eine stabile Internetverbindung.</string>
     <string name="open_launcher_failed_title">Nicht autorisiert</string>
 </resources>

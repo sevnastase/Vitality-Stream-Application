@@ -184,7 +184,7 @@
     <string name="previous_step_button_text">Previous</string>
     <string name="next_step_button_text">Next</string>
     <string name="connecting_to_server">Connecting to server</string>
-    <string name="failed_server_connection">Failed to connect</string>
+    <string name="failed_server_connection">You are offline</string>
     <string name="open_launcher_failed_description">In order to start using Praxtour, please install Praxtour Launcher and login. For this you must have a stable internet connection.</string>
     <string name="open_launcher_failed_title">Unauthorized</string>
 

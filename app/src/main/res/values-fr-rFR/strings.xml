@@ -163,8 +163,8 @@
     <string name="no_permission_after_interaction">Il semble que vous n\'ayez pas autorisé %s à installer des paquets sur cet appareil. Vous ne pourrez pas utiliser %s tant que la mise à jour n\'est pas installée. Si vous pensez avoir accordé les autorisations nécessaires et que ce message s\'affiche, veuillez nous contacter à l\'adresse service@praxtour.com.</string>
     <string name="previous_step_button_text">Dernier</string>
     <string name="next_step_button_text">Prochain</string>
-    <string name="connecting_to_server">Connexion au serveur...</string>
-    <string name="failed_server_connection">Échec de la connexion</string>
+    <string name="connecting_to_server">Connexion au serveur</string>
+    <string name="failed_server_connection">Vous êtes hors ligne</string>
     <string name="open_launcher_failed_description">Pour commencer à utiliser Praxtour, veuillez installer Praxtour Launcher et vous connecter. Une connexion internet stable est requise.</string>
     <string name="open_launcher_failed_title">Non autorisé</string>
 </resources>
