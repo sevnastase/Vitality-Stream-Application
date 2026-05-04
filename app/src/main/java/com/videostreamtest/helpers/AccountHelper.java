@@ -1,5 +1,7 @@
 package com.videostreamtest.helpers;
 
+import static com.videostreamtest.constants.PraxConstants.DefaultValues.NO_APIKEY;
+
 import android.content.Context;
 
 import com.videostreamtest.utils.ApplicationSettings;
@@ -9,7 +11,7 @@ import javax.annotation.Nullable;
 public class AccountHelper {
     public static String getAccountToken(@Nullable final Context context) {
         if (context == null) return null;
-        return context.getApplicationContext().getSharedPreferences("app",0).getString("apikey", "unauthorized");
+        return context.getApplicationContext().getSharedPreferences("app",0).getString("apikey", NO_APIKEY);
     }
 
     @Nullable

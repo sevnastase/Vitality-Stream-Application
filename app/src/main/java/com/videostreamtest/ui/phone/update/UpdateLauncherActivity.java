@@ -2,10 +2,11 @@ package com.videostreamtest.ui.phone.update;
 
 import static com.videostreamtest.constants.PraxConstants.ApkUpdate.EVENT_INSTALL_COMPLETE;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_ACCOUNT_TOKEN;
-import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_UPDATE_ACTIVITY;
+import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_LAUNCHER_UPDATE_CHECKED;
 import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -34,6 +35,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.ApkDescription;
+import com.videostreamtest.helpers.PraxCallbacks;
+import com.videostreamtest.service.wifi.WifiSpeedtest;
 import com.videostreamtest.ui.phone.splash.SplashActivity;
 import com.videostreamtest.workers.download.callback.CallbackByteChannel;
 import com.videostreamtest.workers.download.callback.ProgressCallBack;
@@ -66,7 +69,7 @@ public class UpdateLauncherActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "Greg installation complete");
             deleteApkFromCache();
-            goToSplashActivity();
+            goToSplashActivity(true);
         }
     };
     /**
@@ -119,7 +122,7 @@ public class UpdateLauncherActivity extends AppCompatActivity {
 
         appAccountInfoTextView.setText(String.format("Version %s", getAppVersion()));
 
-        restartProcessButton.setOnClickListener(view -> restartUpdateProcess());
+        restartProcessButton.setOnClickListener(view -> goToSplashActivity(false));
         permissionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             @RequiresApi(api = Build.VERSION_CODES.O)
@@ -157,26 +160,45 @@ public class UpdateLauncherActivity extends AppCompatActivity {
 
         accountToken = getIntent().getStringExtra(EXTRA_ACCOUNT_TOKEN);
 
-        new Thread(() -> {
-            try {
-                Thread.sleep(MIN_WAIT_TIME_LOADING_MS);
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Unexpected interrupt", e);
-            };
-            launcherPackageInfo = fetchLauncherPackageInfo();
-            if (launcherPackageInfo == null) {
-                goToSplashActivity();
-                return;
+        WifiSpeedtest.getPingTo(PRAXCLOUD_API_URL, new PraxCallbacks.WifiCallback() {
+            @Override
+            public void onSuccess(long value) {
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(MIN_WAIT_TIME_LOADING_MS);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException("Unexpected interrupt", e);
+                    }
+                    launcherPackageInfo = fetchLauncherPackageInfo();
+                    if (launcherPackageInfo == null) {
+                        runOnUiThread(() -> {
+                            new AlertDialog.Builder(UpdateLauncherActivity.this)
+                                    .setTitle("You are not logged in")
+                                    .setMessage("In order to start using Praxtour, please install Praxtour Launcher and login.")
+                                    .setPositiveButton("Try again", (dialog, which) -> {
+                                        startActivity(new Intent(UpdateLauncherActivity.this, SplashActivity.class));
+                                    })
+                                    .setCancelable(false)
+                                    .create().show();
+                        });
+                        return;
+                    }
+                    runOnUiThread(() -> checkingForUpdatesLoadingWheel.setVisibility(View.GONE));
+                    processPackage();
+                }).start();
             }
-            runOnUiThread(() -> checkingForUpdatesLoadingWheel.setVisibility(View.GONE));
-            processPackage();
-        }).start();
+
+            @Override
+            public void onError(Exception e) {
+                runOnUiThread(() -> goToSplashActivity(false));
+            }
+        });
     }
 
     private void processPackage() {
         new Thread(() -> {
             if (!isUpdateAvailable()) {
-                goToSplashActivity();
+                goToSplashActivity(true);
                 return;
             }
 
@@ -185,7 +207,6 @@ public class UpdateLauncherActivity extends AppCompatActivity {
                 boolean downloaded = downloadApk();
                 if (!downloaded) {
                     runOnUiThread(() -> displayErrorEncountered(ErrorStep.DOWNLOAD));
-                    goToSplashActivity();
                     return;
                 }
             }
@@ -318,16 +339,11 @@ public class UpdateLauncherActivity extends AppCompatActivity {
         activityResultLauncher.launch(settingsIntent);
     }
 
-    private void goToSplashActivity() {
+    private void goToSplashActivity(boolean updateChecked) {
         Intent intent = new Intent(this, SplashActivity.class);
-        intent.putExtra(EXTRA_FROM_UPDATE_ACTIVITY, true);
+        intent.putExtra(EXTRA_LAUNCHER_UPDATE_CHECKED, updateChecked);
         intent.putExtra(EXTRA_ACCOUNT_TOKEN, accountToken);
         startActivity(intent);
-        finish();
-    }
-
-    private void restartUpdateProcess() {
-        startActivity(new Intent(UpdateLauncherActivity.this, UpdateLauncherActivity.class));
         finish();
     }
 

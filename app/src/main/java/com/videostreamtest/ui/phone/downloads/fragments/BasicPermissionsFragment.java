@@ -1,7 +1,6 @@
 package com.videostreamtest.ui.phone.downloads.fragments;
 
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
-import static com.videostreamtest.constants.PraxConstants.SharedPreferences.STATE_DOWNLOADS_COMPLETED;
 
 import android.Manifest;
 import android.content.Context;
@@ -66,17 +65,6 @@ public class BasicPermissionsFragment extends Fragment {
         String accountType = AccountHelper.getAccountType(getContext());
         if (accountType == null) throw new NullPointerException("How can this be null bro");
 
-        // TODO move to RUM
-//        int activeProductsCount = arguments.getInt("active-products-count", -1);
-//        if (activeProductsCount == 0 || activeProductsCount == -1) {
-//            loginStatusText.setText(R.string.login_no_products);
-//            logout();
-//            nextButton.setText(R.string.retry_permission_check_button);
-//            nextButton.setOnClickListener((onClickedView) -> {
-//                NavHostFragment.findNavController(BasicPermissionsFragment.this)
-//                        .navigate(R.id.action_loginStatusFragment_to_usernameFragment);
-//            });
-//        } else {
         switch (accountType) {
             case "standalone":
             case "motolife":
@@ -90,11 +78,8 @@ public class BasicPermissionsFragment extends Fragment {
                         NavHostFragment.findNavController(BasicPermissionsFragment.this)
                                 .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
                     } else {
-                        // no need for downloads when using non-streaming account
-                        SharedPreferences.Editor editor = getActivity().getSharedPreferences("app", Context.MODE_PRIVATE).edit();
-                        editor.putBoolean(STATE_DOWNLOADS_COMPLETED, true);
-                        editor.commit();
-                        startMainActivity();
+                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
+                                .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
                     }
                     downloadsViewModel.addInstallationStep();
                 });

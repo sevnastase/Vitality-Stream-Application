@@ -156,7 +156,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
         apikey = AccountHelper.getAccountToken(this);
         if (apikey == null) {
             Toast.makeText(this, "There was an error with your account", Toast.LENGTH_LONG).show();
-            NavHelper.openPraxtourLauncher(this, true);
+            NavHelper.openPraxtourLauncher(this, true, null);
             return;
         }
         chinesportAccount = AccountHelper.isChinesportAccount(this);

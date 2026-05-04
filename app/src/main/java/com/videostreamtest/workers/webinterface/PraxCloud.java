@@ -5,6 +5,7 @@ import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.EffectSound;
 import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.MovieFlag;
+import com.videostreamtest.data.model.response.ServerStatus;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.data.model.Profile;
@@ -58,4 +59,8 @@ public interface PraxCloud {
     //LAUNCHER UPDATES
     @GET("api/apk/launcher")
     Call<ApkDescription> getLauncherPackageInfo(@Header("api-key") String accountToken);
+
+    //SERVER STATUS CHECK
+    @GET("/api/server/status")
+    Call<ServerStatus> getServerStatus();
 }
