@@ -184,11 +184,7 @@ public class SplashActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(final long ping, final long downloadSpeedKbps) {
-                runOnUiThread(() -> {
-                    networkConnectionUiHandler.removeCallbacksAndMessages(null);
-                    connectingToServerTextView.setText(getString(R.string.failed_server_connection));
-                    connectingToServerTextView.setVisibility(View.VISIBLE);
-                });
+                networkConnectionUiHandler.removeCallbacksAndMessages(null);
 
                 if (apikey == null || apikey.isBlank()) {
                     apikey = AccountHelper.getAccountToken(SplashActivity.this);
@@ -198,7 +194,14 @@ public class SplashActivity extends AppCompatActivity {
                     } else {
                         redirectToActivity(ProductPickerActivity.class);
                     }
+                } else {
+                    redirectToActivity(ProductPickerActivity.class);
                 }
+
+                runOnUiThread(() -> {
+                    connectingToServerTextView.setText(getString(R.string.failed_server_connection));
+                    connectingToServerTextView.setVisibility(View.VISIBLE);
+                });
             }
         });
 
