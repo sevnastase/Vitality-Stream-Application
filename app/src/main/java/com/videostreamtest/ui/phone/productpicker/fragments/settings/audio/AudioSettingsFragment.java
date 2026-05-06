@@ -44,8 +44,8 @@ public class AudioSettingsFragment extends Fragment {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 int currentValue = seekBar.getProgress();
-                if (currentValue < 5) {
-                    currentValue = 5;
+                if (currentValue < 10) {
+                    currentValue = 0;
                 }
 
                 if (currentValue > 95) {
@@ -87,7 +87,7 @@ public class AudioSettingsFragment extends Fragment {
     }
 
     private void updateDefaultVolumeDisplayed() {
-        if (preferredStartVolume <= 0 || preferredStartVolume > 100) {
+        if (preferredStartVolume < 0 || preferredStartVolume > 100) {
             return;
         }
         preferredStartVolumeTextView.setText(String.valueOf(preferredStartVolume));

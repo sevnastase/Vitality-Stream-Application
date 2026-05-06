@@ -409,7 +409,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
 
         videoPlayerViewModel.getVolumeLevel().observe(this, volumeLevel -> {
-            Log.d(TAG, "volumeLevel: " + volumeLevel);
+            Log.d(TAG, "Greg volumeLevel: " + volumeLevel);
+            if (volumeLevel < 1) volumeLevel = 1;
             if (mediaPlayer!=null) {
                 mediaPlayer.setVolume(volumeLevel);
                 if (backgroundSoundTriggers!= null && !backgroundSoundTriggers.isEmpty()) {
@@ -782,9 +783,11 @@ public class VideoplayerActivity extends AppCompatActivity {
 
     public void showFinishScreen() {
         videoPlayerViewModel.setPlayerPaused(true);
-        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-        }
+        try {
+            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                mediaPlayer.pause();
+            }
+        } catch (IllegalStateException ignored) {}
         final TextView message = findViewById(R.id.status_dialog_title);
         message.setText(getString(R.string.finish_screen_title));
         final TextView pauseMessage = findViewById(R.id.status_dialog_message);
