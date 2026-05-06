@@ -15,7 +15,7 @@ public class ApplicationSettings {
     public final static String DEFAULT_BLE_DEVICE_NAME_KEY = "BLE_DEVICE_NAME";
     public static final String DEFAULT_BLE_DEVICE_CONNECTION_STRENGTH_KEY = "BLE_DEVICE_CONNECTION_STRENGTH";
 
-    public final static int DEFAULT_SOUND_VOLUME = 80;
+    public final static int DEFAULT_SOUND_VOLUME = 1;
 
     public final static float RECOMMENDED_DENSITY_DPI = 320;
 
