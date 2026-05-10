@@ -404,7 +404,7 @@ public class BleService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "BLE Service created");
+        Log.d(TAG, "BLE onCreate");
         HandlerThread thread = new HandlerThread("ServiceStartArguments",
                 Process.THREAD_PRIORITY_URGENT_DISPLAY);
         thread.start();
@@ -412,15 +412,21 @@ public class BleService extends Service {
         // Get the HandlerThread's Looper and use it for our Handler
         serviceLooper = thread.getLooper();
         serviceHandler = new ServiceHandler(serviceLooper);
+
+        promoteToForegroundService();
+
+        if (!PermissionHelper.canBleBeUsed(this)) {
+            Log.e(TAG, "BLE issues signaled by PermissionHelper.canBleBeUsed");
+            stopSelf();
+        }
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        promoteToForegroundService();
+        Log.d(TAG, "Greg onStartCommand");
 
         initialised = init();
 
-        Log.d(TAG, "BLE Service onStartCommand");
         Message msg = serviceHandler.obtainMessage();
         msg.arg1 = startId;
         serviceHandler.sendMessage(msg);
@@ -428,9 +434,7 @@ public class BleService extends Service {
         return Service.START_STICKY;
     }
 
-    private boolean promoteToForegroundService() {
-        if (!PermissionHelper.canBleBeUsed(this)) return false;
-
+    private void promoteToForegroundService() {
         createNotificationChannel();
 
         try {
@@ -448,19 +452,15 @@ public class BleService extends Service {
             } else {
                 startForeground(BLE_SERVICE_NOTIFICATION_ID_INT, notification);
             }
-
-            return true;
         } catch (Exception e) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
                     e instanceof ForegroundServiceStartNotAllowedException
             ) {
                 // App not in a valid state to start foreground service
-                // (e.g started from bg)
+                // (e.g. started from bg)
                 Log.d(TAG, "App was in background while trying to promote BLE to foreground");
             }
             Log.d(TAG, "Unknown error while promoting to foreground: " + e);
-
-            return false;
         }
     }
 
