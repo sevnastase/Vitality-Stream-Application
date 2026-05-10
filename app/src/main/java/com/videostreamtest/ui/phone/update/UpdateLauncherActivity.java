@@ -20,6 +20,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
@@ -58,9 +59,11 @@ public class UpdateLauncherActivity extends AppCompatActivity {
     private TextView titleTextView;
     private ProgressBar checkingForUpdatesLoadingWheel;
     private TextView descriptionTextView;
+    private TextView errorStacktraceTextView;
     private Button startInstallationButton;
     private Button permissionButton;
     private Button restartProcessButton;
+    private ImageButton showErrorStacktraceButton;
     private LinearLayout installationInProgressLayout;
     private SeekBar downloadStatusProgressBar;
     private TextView appAccountInfoTextView;
@@ -112,9 +115,11 @@ public class UpdateLauncherActivity extends AppCompatActivity {
         titleTextView = findViewById(R.id.title_textview);
         checkingForUpdatesLoadingWheel = findViewById(R.id.checking_for_updates_loading_wheel);
         descriptionTextView = findViewById(R.id.description_textview);
+        errorStacktraceTextView = findViewById(R.id.error_stacktrace_textview);
         startInstallationButton = findViewById(R.id.start_installation_button);
         permissionButton = findViewById(R.id.permission_button);
         restartProcessButton = findViewById(R.id.restart_process_button);
+        showErrorStacktraceButton = findViewById(R.id.show_error_stacktrace_button);
         installationInProgressLayout = findViewById(R.id.installation_in_progress_layout);
         downloadStatusProgressBar = findViewById(R.id.download_status_progressbar);
         downloadStatusProgressBar.setMax(100);
@@ -153,8 +158,16 @@ public class UpdateLauncherActivity extends AppCompatActivity {
                 boolean result = PraxPackageInstaller.installApk(this, launcherPackageInfo.getApkFilepath());
                 if (!result) throw new IOException("Unknown error:(");
             } catch (IOException e) {
-                runOnUiThread(() -> displayErrorEncountered(ErrorStep.INSTALL));
+                runOnUiThread(() -> displayErrorEncountered(ErrorStep.INSTALL, e));
                 Log.e(TAG, "Greg uh-oh " + e);
+            }
+        });
+
+        showErrorStacktraceButton.setOnClickListener(v -> {
+            if (errorStacktraceTextView.getVisibility() == View.VISIBLE) {
+                errorStacktraceTextView.setVisibility(View.GONE);
+            } else {
+                errorStacktraceTextView.setVisibility(View.VISIBLE);
             }
         });
 
@@ -206,7 +219,7 @@ public class UpdateLauncherActivity extends AppCompatActivity {
                 runOnUiThread(this::showDownloadStep);
                 boolean downloaded = downloadApk();
                 if (!downloaded) {
-                    runOnUiThread(() -> displayErrorEncountered(ErrorStep.DOWNLOAD));
+                    runOnUiThread(() -> displayErrorEncountered(ErrorStep.DOWNLOAD, null));
                     return;
                 }
             }
@@ -283,7 +296,8 @@ public class UpdateLauncherActivity extends AppCompatActivity {
         try {
             return praxCloud.getLauncherPackageInfo(accountToken).execute().body();
         } catch (IOException e) {
-            throw new RuntimeException("Problem while getting package names");
+            runOnUiThread(() -> displayErrorEncountered(ErrorStep.FETCH_INFO, e));
+            return null;
         }
     }
 
@@ -348,13 +362,20 @@ public class UpdateLauncherActivity extends AppCompatActivity {
     }
 
     enum ErrorStep {
+        FETCH_INFO,
         DOWNLOAD,
         INSTALL
     }
 
-    private void displayErrorEncountered(ErrorStep step) {
-        String titleText = "";
-        String titleDescription = "";
+    /**
+     *
+     * @param step the {@link ErrorStep} that reflects the stage of the execution the error was encountered
+     * @param e the error encountered during execution. If {@code null}, a default text will be displayed
+     *          informing the user of unknown error source.
+     */
+    private void displayErrorEncountered(ErrorStep step, Exception e) {
+        String titleText;
+        String titleDescription;
 
         switch (step) {
             case DOWNLOAD:
@@ -364,11 +385,36 @@ public class UpdateLauncherActivity extends AppCompatActivity {
             case INSTALL:
                 titleText = "Error while installing APK";
                 titleDescription = "We encountered an error while installing the update. Please try again. If the problem persists, contact us at service@praxtour.com";
+                break;
+            case FETCH_INFO:
+                titleText = "Server error";
+                titleDescription = "We encountered an error while fetching information from the database. If the problem persists, contact us at service@praxtour.com";
+                checkingForUpdatesLoadingWheel.setVisibility(View.GONE);
+                break;
+            default:
+                titleText = "Unknown error";
+                titleDescription = "We encountered an error that we could not recover from. If the problem persists, contact us at service@praxtour.com";
+        }
+
+        String errorStacktrace;
+        if (e != null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(e).append("\n");
+
+            for (StackTraceElement ste : e.getStackTrace()) {
+                sb.append(ste).append("\n");
+            }
+            errorStacktrace = sb.toString();
+        } else {
+            errorStacktrace = "No error stacktrace available";
         }
 
         titleTextView.setText(titleText);
         descriptionTextView.setText(titleDescription);
+        errorStacktraceTextView.setText(errorStacktrace);
+        showErrorStacktraceButton.setVisibility(View.VISIBLE);
         restartProcessButton.setVisibility(View.VISIBLE);
+        restartProcessButton.requestFocus();
     }
 
     private String getAppVersion() {
