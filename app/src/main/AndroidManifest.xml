@@ -56,6 +56,11 @@
     <uses-feature android:name="android.hardware.usb.host" />
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
 
+    <!-- Needed for remote updates (Android 11+ only) -->
+    <queries>
+        <package android:name="com.praxtourlauncher" />
+    </queries>
+
     <application
         android:name=".config.application.PraxtourApplication"
         android:allowBackup="true"
