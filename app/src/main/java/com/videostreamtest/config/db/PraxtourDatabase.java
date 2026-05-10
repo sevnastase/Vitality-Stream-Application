@@ -240,30 +240,30 @@ public abstract class PraxtourDatabase extends RoomDatabase {
 
 
     public static PraxtourDatabase getDatabase(final Context context) {
-        if (INSTANCE == null) {
-            synchronized (PraxtourDatabase.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
+        if (INSTANCE != null) return INSTANCE;
+
+        synchronized (PraxtourDatabase.class) {
+            if (context == null) return null;
+
+            INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             PraxtourDatabase.class,
                             "configuration_database")
-                            .addCallback(sRoomDatabaseCallback)
-                            .addMigrations(
-                                    MIGRATION_1_2,
-                                    MIGRATION_2_3,
-                                    MIGRATION_3_4,
-                                    MIGRATION_4_5,
-                                    MIGRATION_5_6,
-                                    MIGRATION_6_7,
-                                    MIGRATION_7_8,
-                                    MIGRATION_8_9,
-                                    MIGRATION_9_10,
-                                    MIGRATION_10_11,
-                                    MIGRATION_11_12,
-                                    MIGRATION_12_13)
-                            
-                            .build();
-                }
-            }
+                    .addCallback(sRoomDatabaseCallback)
+                    .addMigrations(
+                            MIGRATION_1_2,
+                            MIGRATION_2_3,
+                            MIGRATION_3_4,
+                            MIGRATION_4_5,
+                            MIGRATION_5_6,
+                            MIGRATION_6_7,
+                            MIGRATION_7_8,
+                            MIGRATION_8_9,
+                            MIGRATION_9_10,
+                            MIGRATION_10_11,
+                            MIGRATION_11_12,
+                            MIGRATION_12_13)
+
+                    .build();
         }
         return INSTANCE;
     }
