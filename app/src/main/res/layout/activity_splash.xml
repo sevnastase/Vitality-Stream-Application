@@ -36,7 +36,7 @@
         android:textStyle="bold"
         android:textSize="24sp"
         android:textColor="@color/white"
-        android:text="Connecting to server"
+        android:text="@string/connecting_to_server"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
