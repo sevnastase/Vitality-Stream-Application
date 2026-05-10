@@ -81,8 +81,8 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     private boolean chinesportAccount;
 
     // DATA FLOW
-    private final RoutefilmRepository routefilmRepository = new RoutefilmRepository(getApplication());
-    private final ConfigurationRepository configurationRepository = new ConfigurationRepository(getApplication());
+    private RoutefilmRepository routefilmRepository;
+    private ConfigurationRepository configurationRepository;
 
     // VIEWS
     private ImageView productLogoView;
@@ -151,6 +151,9 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
                 SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
                 SYSTEM_UI_FLAG_FULLSCREEN |
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+        routefilmRepository = new RoutefilmRepository(getApplication());
+        configurationRepository = new ConfigurationRepository(getApplication());
 
         selectedProduct = new GsonBuilder().create().fromJson(getIntent().getExtras().getString("product_object", "{}"), Product.class);
         apikey = AccountHelper.getAccountToken(this);
