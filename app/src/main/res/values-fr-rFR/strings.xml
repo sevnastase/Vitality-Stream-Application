@@ -101,7 +101,7 @@
     <string name="login_storage_permission_title">Autorisation de stockage</string>
     <string name="product_menu_title">Menu</string>
     <string name="logout_button_label">Se déconnecter</string>
-    <string name="logout_action_description">Saisissez le mot de passe pour vous déconnecter.</string>
+    <string name="logout_action_description">Confirmez que vous souhaitez vous déconnecter</string>
     <string name="login_proces_status_title">Statut de connexion</string>
     <string name="logout_no_password_entered_alert">Aucun mot de passe saisi.</string>
     <string name="logout_wrong_password_entered_text">Mauvais mot de passe.</string>

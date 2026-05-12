@@ -101,7 +101,7 @@
     <string name="login_storage_permission_title">Speichererlaubnis</string>
     <string name="product_menu_title">Menu</string>
     <string name="logout_button_label">Ausloggen</string>
-    <string name="logout_action_description">Geben Sie das Passwort ein, um sich abzumelden.</string>
+    <string name="logout_action_description">Bestätigen Sie, dass Sie sich abmelden möchten.</string>
     <string name="login_proces_status_title">Anmeldestatus</string>
     <string name="logout_no_password_entered_alert">Kein Passwort eingegeben.</string>
     <string name="logout_wrong_password_entered_text">Falsches Passwort.</string>

@@ -101,7 +101,7 @@
     <string name="login_storage_permission_title">Opslag permissie</string>
     <string name="product_menu_title">Menu</string>
     <string name="logout_button_label">Uitloggen</string>
-    <string name="logout_action_description">Vul het wachtwoord in om uit te loggen.</string>
+    <string name="logout_action_description">Bevestig dat u wilt uitloggen</string>
     <string name="login_proces_status_title">Login status</string>
     <string name="logout_no_password_entered_alert">Geen wachtwoord ingevuld.</string>
     <string name="logout_wrong_password_entered_text">Verkeerde wachtwoord.</string>

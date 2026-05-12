@@ -58,29 +58,6 @@
                     android:textSize="12sp"
                     android:text="@string/logout_action_description"/>
             </LinearLayout>
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-                <EditText
-                    android:id="@+id/password"
-                    android:layout_width="150dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:alpha="0.95"
-                    android:background="#ffffff"
-                    android:hint="@string/prompt_password"
-                    android:imeActionLabel="@string/action_sign_out_short"
-                    android:imeOptions="actionSend"
-                    android:inputType="textPassword"
-                    android:selectAllOnFocus="true"
-                    android:textAlignment="center"
-                    android:nextFocusDown="@id/account_logout_button"
-                    android:nextFocusRight="@id/account_logout_button" />
-            </LinearLayout>
 
         </LinearLayout>
         <Button

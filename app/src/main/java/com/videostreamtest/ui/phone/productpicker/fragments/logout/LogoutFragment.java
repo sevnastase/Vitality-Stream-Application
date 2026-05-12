@@ -3,6 +3,8 @@ package com.videostreamtest.ui.phone.productpicker.fragments.logout;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,7 +21,7 @@ import androidx.work.WorkManager;
 
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Configuration;
-import com.videostreamtest.ui.phone.listeners.PraxFormOnEditorActionListener;
+import com.videostreamtest.helpers.NavHelper;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerViewModel;
 
 import org.jetbrains.annotations.NotNull;
@@ -28,7 +30,27 @@ public class LogoutFragment extends Fragment {
     private static final String TAG = LogoutFragment.class.getSimpleName();
 
     private Button logoutButton;
-    private EditText password;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Runnable runnable = new Runnable() {
+        final int SECONDS_UNTIL_LOGOUT_AVAILABLE = 3;
+        int counter = SECONDS_UNTIL_LOGOUT_AVAILABLE;
+
+        @Override
+        public void run() {
+            if (counter <= 0) {
+                logoutButton.setEnabled(true);
+                logoutButton.setText(getString(R.string.logout_button_label));
+                handler.removeCallbacks(this);
+            } else {
+                logoutButton.setEnabled(false);
+                final String logoutButtonText = getString(R.string.logout_button_label) + String.format("(%d)", counter);
+                logoutButton.setText(logoutButtonText);
+                counter--;
+                handler.postDelayed(this, 1000);
+            }
+        }
+    };
+
     private ProductPickerViewModel productPickerViewModel;
 
     @Nullable
@@ -39,7 +61,6 @@ public class LogoutFragment extends Fragment {
         productPickerViewModel = new ViewModelProvider(requireActivity()).get(ProductPickerViewModel.class);
 
         logoutButton = view.findViewById(R.id.account_logout_button);
-        password = view.findViewById(R.id.password);
 
         logoutButton.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -53,37 +74,20 @@ public class LogoutFragment extends Fragment {
             }
         });
 
+        logoutButton.setOnClickListener(v -> {
+            productPickerViewModel.getCurrentConfig().observe(this, configuration -> {
+                logout(configuration);
+            });
+        });
+
+        handler.post(runnable);
+
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 
-        productPickerViewModel.getCurrentConfig().observe(getViewLifecycleOwner(), config -> {
-            password.setOnEditorActionListener(new PraxFormOnEditorActionListener(logoutButton));
-            logoutButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.d(TAG, "Entered password: "+password.getText().toString());
-                    if (!password.getText().toString().replace(" ","").contains("")) {
-                        Toast.makeText(view.getContext(), getString(R.string.logout_no_password_entered_alert), Toast.LENGTH_LONG).show();
-                    } else {
-                        if (checkPassword(password.getText().toString())) {
-                            logout(config);
-                        } else {
-                            Toast.makeText(view.getContext(), getString(R.string.logout_wrong_password_entered_text), Toast.LENGTH_LONG).show();
-                        }
-                    }
-                }
-            });
-        });
-
-    }
-
-    private boolean checkPassword(final String password) {
-        SharedPreferences myPreferences = getActivity().getApplication().getSharedPreferences("app",0);
-        final String appPassword = myPreferences.getString("password", "");
-        return password.equals(appPassword) || (myPreferences.getString("apikey", "").length()>0 && appPassword.equals(""));
     }
 
     private void logout(final Configuration configuration) {
@@ -100,6 +104,8 @@ public class LogoutFragment extends Fragment {
                 .getInstance(getActivity().getApplicationContext())
                 .cancelAllWork();
 
-        getActivity().finish();
+        NavHelper.openPraxtourLauncher(getActivity(), true, () -> {
+            Toast.makeText(getActivity(), "Please restart your device", Toast.LENGTH_LONG).show();
+        });
     }
 }
