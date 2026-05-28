@@ -80,6 +80,6 @@ public class ActiveProductsServiceWorker extends AbstractPraxtourWorker {
         final ConfigurationDao configurationDao = PraxtourDatabase.getDatabase(getApplicationContext()).configurationDao();
         configurationDao.updateProductCountCurrentConfiguration(activeProducts.size());
 
-        return ListenableWorker.Result.success();
+        return ListenableWorker.Result.success(new Data.Builder().putInt("nrProducts", activeProducts.size()).build());
     }
 }

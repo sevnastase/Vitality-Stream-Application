@@ -56,6 +56,7 @@ import com.videostreamtest.helpers.LogHelper;
 import com.videostreamtest.helpers.NavHelper;
 import com.videostreamtest.helpers.NetworkHelper;
 import com.videostreamtest.helpers.PraxCallbacks;
+import com.videostreamtest.helpers.WorkHelper;
 import com.videostreamtest.ui.phone.downloads.DownloadsActivity;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerActivity;
 import com.videostreamtest.ui.phone.update.UpdateLauncherActivity;
@@ -64,6 +65,7 @@ import com.videostreamtest.utils.VideoLanLib;
 import com.videostreamtest.workers.AccountServiceWorker;
 import com.videostreamtest.workers.download.DownloadStatusVerificationServiceWorker;
 import com.videostreamtest.workers.synchronisation.ActiveConfigurationServiceWorker;
+import com.videostreamtest.workers.synchronisation.ActiveProductsServiceWorker;
 
 import java.util.List;
 import java.util.Set;
@@ -327,14 +329,29 @@ public class SplashActivity extends AppCompatActivity {
                                 redirectToActivity(ProductPickerActivity.class);
                             }
                         } else {
-                            //Execute when number of products is 0
-                            // This happens when the trial time expires
-                            //Login activity will be shown
-                            Log.d(TAG, "Unset current configuration when product count = 0");
-                            LogHelper.WriteLogRule(getApplicationContext(), savedConfig.getAccountToken(), "WARNING! Subscriptions expired! Or closed during login process!", "ERROR", "");
-                            Toast.makeText(this, "Please login again", Toast.LENGTH_LONG).show();
-                            isNavigating = true;
-                            NavHelper.openPraxtourLauncher(this, true, removeCallbacksForNetworkTester());
+                            // Execute when number of products is 0
+                            Log.d(TAG, "Greg Unset current configuration when product count = 0");
+
+                            WorkHelper.enqueueWork(
+                                    ActiveProductsServiceWorker.class,
+                                    new Data.Builder().putString("apikey", apikey).build(),
+                                    SplashActivity.this,
+                                    (resultState, outputData) -> {
+                                        Log.d(TAG, "Greg work finished");
+                                        if (resultState == WorkInfo.State.SUCCEEDED) {
+                                            final int nrProducts = outputData.getInt("nrProducts", 0);
+                                            Log.d(TAG, "Greg measured nrProducts " + nrProducts);
+                                            if (nrProducts > 0) {
+                                                redirectToActivity(SplashActivity.class);
+                                                return;
+                                            }
+                                        }
+                                        LogHelper.WriteLogRule(getApplicationContext(), savedConfig.getAccountToken(), "WARNING! Subscriptions expired! Or closed during login process!", "ERROR", "");
+                                        Toast.makeText(this, "Please login again", Toast.LENGTH_LONG).show();
+                                        isNavigating = true;
+                                        NavHelper.openPraxtourLauncher(this, true, removeCallbacksForNetworkTester());
+                                    }
+                            );
                         }
                     }
                 });

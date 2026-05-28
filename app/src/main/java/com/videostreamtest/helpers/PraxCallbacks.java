@@ -1,5 +1,8 @@
 package com.videostreamtest.helpers;
 
+import androidx.work.Data;
+import androidx.work.WorkInfo;
+
 public class PraxCallbacks {
     public interface SpeedtestCallback {
         void onSuccess(final long ping, final long downloadSpeedKbps);
@@ -14,5 +17,9 @@ public class PraxCallbacks {
 
     public interface OnFailureCallback {
         void run();
+    }
+
+    public interface OnWorkerFinishedCallback {
+        void run(WorkInfo.State resultState, Data outputData);
     }
 }
