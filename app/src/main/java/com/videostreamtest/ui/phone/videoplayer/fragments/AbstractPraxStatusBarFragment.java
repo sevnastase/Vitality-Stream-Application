@@ -419,7 +419,14 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
 
             routePartsLayout.setVisibility(View.VISIBLE);
             if (routePartsLayout.getChildCount()>0) {
-                routePartsLayout.getChildAt(0).requestFocus();
+                View firstChild = routePartsLayout.getChildAt(0);
+                firstChild.post(() -> {
+                    boolean success = firstChild.requestFocus();
+                    if (!success) {
+                        // slower devices need some time
+                        firstChild.postDelayed(firstChild::requestFocus, 100);
+                    }
+                });
                 toggleRoutePartsButton.setNextFocusUpId(routePartsLayout.getId());
             }
         } else {
