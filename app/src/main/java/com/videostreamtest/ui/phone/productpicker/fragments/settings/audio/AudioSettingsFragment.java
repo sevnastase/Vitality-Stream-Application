@@ -53,8 +53,12 @@ public class AudioSettingsFragment extends Fragment {
                 }
 
                 // rounds to nearest 10
+                final int oldValue = preferredStartVolume;
                 preferredStartVolume = (int) (Math.round(currentValue / 10.0) * 10);
-                updateDefaultVolumeDisplayed();
+                if (oldValue != preferredStartVolume) {
+                    updateDefaultVolumeDisplayed();
+                    saveDefaultVolume();
+                }
             }
 
             @Override
@@ -64,7 +68,7 @@ public class AudioSettingsFragment extends Fragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                saveDefaultVolume();
+
             }
         });
     }
