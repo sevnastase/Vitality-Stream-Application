@@ -1406,7 +1406,7 @@ public class VideoplayerActivity extends AppCompatActivity {
             videoPlayer.setPlaybackParameters(playbackParameters);
 
             //Set hardware sound to maximum
-            backgroundSoundPlayer.setDeviceVolume(backgroundSoundPlayer.getDeviceInfo().maxVolume);
+//            backgroundSoundPlayer.setDeviceVolume(backgroundSoundPlayer.getDeviceInfo().maxVolume);
 
             playerView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
             //Set player on playerview
@@ -1419,7 +1419,7 @@ public class VideoplayerActivity extends AppCompatActivity {
             backgroundSoundPlayer = new ExoPlayer.Builder(this).build();
             PlaybackParameters playbackParameters  = new PlaybackParameters(1.0f, PlaybackParameters.DEFAULT.pitch);
             backgroundSoundPlayer.setPlaybackParameters(playbackParameters);
-            backgroundSoundPlayer.setDeviceVolume(backgroundSoundPlayer.getDeviceInfo().maxVolume);
+//            backgroundSoundPlayer.setDeviceVolume(backgroundSoundPlayer.getDeviceInfo().maxVolume);
             playerView.setPlayer(backgroundSoundPlayer);
         }
     }

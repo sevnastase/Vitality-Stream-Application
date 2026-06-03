@@ -1123,7 +1123,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                         float volumeLevel = ApplicationSettings.DEFAULT_SOUND_VOLUME / 100f;
                         Log.d(TAG, "VolumeLevel: "+volumeLevel);
                         mediaPlayer.setVolume(volumeLevel); //CONVERT TO float
-                        mediaPlayer.setDeviceVolume(ApplicationSettings.DEFAULT_SOUND_VOLUME);
+//                        mediaPlayer.setDeviceVolume(ApplicationSettings.DEFAULT_SOUND_VOLUME);
                     }
 
                     //check for current backgroundsound
@@ -1430,7 +1430,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             backgroundSoundPlayer = new ExoPlayer.Builder(this).build();
             PlaybackParameters playbackParameters  = new PlaybackParameters(1.0f, PlaybackParameters.DEFAULT.pitch);
             backgroundSoundPlayer.setPlaybackParameters(playbackParameters);
-            backgroundSoundPlayer.setDeviceVolume(backgroundSoundPlayer.getDeviceInfo().maxVolume);
+//            backgroundSoundPlayer.setDeviceVolume(backgroundSoundPlayer.getDeviceInfo().maxVolume);
             bgSoundPlayerView.setPlayer(backgroundSoundPlayer);
         }
     }
