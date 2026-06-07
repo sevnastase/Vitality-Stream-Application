@@ -1,6 +1,7 @@
 package com.videostreamtest.workers.webinterface;
 
 import com.videostreamtest.config.entity.ApkDescription;
+import com.videostreamtest.config.entity.Asset;
 import com.videostreamtest.config.entity.BackgroundSound;
 import com.videostreamtest.config.entity.EffectSound;
 import com.videostreamtest.config.entity.Flag;
@@ -15,6 +16,7 @@ import com.videostreamtest.data.model.response.ProductMovieRecord;
 import com.videostreamtest.data.model.response.SoundItem;
 
 import java.util.List;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -55,6 +57,10 @@ public interface PraxCloud {
     Call<List<Flag>> getFlags(@Header("api-key") String accountToken);
     @GET("/api/route/movies/flags")
     Call<List<MovieFlag>> getMovieFlags(@Header("api-key") String accountToken);
+
+    //ASSETS
+    @GET("/api/helpers/assets")
+    Call<Set<Asset>> getAssets(@Header("api-key") String accountToken);
 
     //LAUNCHER UPDATES
     @GET("api/apk/launcher")
