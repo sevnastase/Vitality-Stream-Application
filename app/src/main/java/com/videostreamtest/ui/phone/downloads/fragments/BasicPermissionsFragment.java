@@ -65,37 +65,46 @@ public class BasicPermissionsFragment extends Fragment {
         String accountType = AccountHelper.getAccountType(getContext());
         if (accountType == null) throw new NullPointerException("How can this be null bro");
 
+        final List<String> storagePermissionsToRequest = getStoragePermissionsForRequest();
+        final List<String> locationPermissionsToRequest = getLocationPermissionsForRequest();
+
         switch (accountType) {
             case "standalone":
             case "motolife":
             case "hybrid":
                 loginStatusText.setText(R.string.login_status_summary_standalone);
+
+                if (storagePermissionsToRequest.isEmpty() && locationPermissionsToRequest.isEmpty()) {
+                    NavHostFragment.findNavController(BasicPermissionsFragment.this)
+                            .navigate(R.id.action_loginStatusFragment_to_downloadSoundFragment, arguments);
+                    downloadsViewModel.addInstallationStep();
+                }
+
                 nextButton.setOnClickListener((onClickedView) -> {
-                    if (getStoragePermissionsForRequest().size() > 0) {
+                    if (!storagePermissionsToRequest.isEmpty()) {
                         NavHostFragment.findNavController(BasicPermissionsFragment.this)
                                 .navigate(R.id.action_loginStatusFragment_to_storagePermissionFragment, arguments);
-                    } else if (getLocationPermissionsForRequest().size() > 0) {
-                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
-                                .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
-                    } else {
+                    } else if (!locationPermissionsToRequest.isEmpty()) {
                         NavHostFragment.findNavController(BasicPermissionsFragment.this)
                                 .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
                     }
                     downloadsViewModel.addInstallationStep();
                 });
-                downloadsViewModel.setInstallationSteps(7);
+
+                downloadsViewModel.setInstallationSteps(9);
                 break;
             case "streaming":
                 loginStatusText.setText(getString(R.string.login_status_summary_streaming));
 
+                if (locationPermissionsToRequest.isEmpty()) {
+                    NavHostFragment.findNavController(BasicPermissionsFragment.this)
+                            .navigate(R.id.action_loginStatusFragment_to_downloadSoundFragment, arguments);
+                    downloadsViewModel.addInstallationStep();
+                }
+
                 nextButton.setOnClickListener((onClickedView) -> {
-                    if (getLocationPermissionsForRequest().size() > 0) {
-                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
-                                .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
-                    } else {
-                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
-                                .navigate(R.id.action_loginStatusFragment_to_downloadSoundFragment, arguments);
-                    }
+                    NavHostFragment.findNavController(BasicPermissionsFragment.this)
+                            .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
                     downloadsViewModel.addInstallationStep();
                 });
 
