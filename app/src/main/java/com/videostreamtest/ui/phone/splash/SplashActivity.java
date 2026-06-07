@@ -356,7 +356,8 @@ public class SplashActivity extends AppCompatActivity {
                                         Toast.makeText(this, "Please login again", Toast.LENGTH_LONG).show();
                                         isNavigating = true;
                                         NavHelper.openPraxtourLauncher(this, true, removeCallbacksForNetworkTester());
-                                    }
+                                    },
+                                    null
                             );
                         }
                     }
