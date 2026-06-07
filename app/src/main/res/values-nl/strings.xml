@@ -167,4 +167,5 @@
     <string name="failed_server_connection">Je bent offline</string>
     <string name="open_launcher_failed_description">Om Praxtour te kunnen gebruiken, installeer je eerst Praxtour Launcher en log je in. Hiervoor heb je een stabiele internetverbinding nodig.</string>
     <string name="open_launcher_failed_title">Niet geautoriseerd</string>
+    <string name="downloading_assets_title">Overige bestanden downloaden</string>
 </resources>

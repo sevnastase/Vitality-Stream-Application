@@ -187,5 +187,6 @@
     <string name="failed_server_connection">You are offline</string>
     <string name="open_launcher_failed_description">In order to start using Praxtour, please install Praxtour Launcher and login. For this you must have a stable internet connection.</string>
     <string name="open_launcher_failed_title">Unauthorized</string>
+    <string name="downloading_assets_title">Downloading assets</string>
 
 </resources>

@@ -167,4 +167,5 @@
     <string name="failed_server_connection">Vous êtes hors ligne</string>
     <string name="open_launcher_failed_description">Pour commencer à utiliser Praxtour, veuillez installer Praxtour Launcher et vous connecter. Une connexion internet stable est requise.</string>
     <string name="open_launcher_failed_title">Non autorisé</string>
+    <string name="downloading_assets_title">Téléchargement des ressources</string>
 </resources>
