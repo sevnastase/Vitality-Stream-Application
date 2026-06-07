@@ -236,10 +236,8 @@ public class SplashActivity extends AppCompatActivity {
     private void setup() {
         loadTimer = new Handler(Looper.getMainLooper());
 
-        if (!NetworkHelper.isNetworkPraxtourLAN(this)) {
-            checkDownloadStatusVerification();
-            refreshAccountInformation();
-        }
+        checkDownloadStatusVerification();
+        refreshAccountInformation();
 
         //New way
         splashViewModel.getCurrentConfig().observe(this, savedConfig -> {
@@ -250,10 +248,7 @@ public class SplashActivity extends AppCompatActivity {
             }
             if (savedConfig != null) {
                 Log.d(TAG, "Token :: " + savedConfig.getAccountToken() + " > Current =  " + savedConfig.isCurrent());
-                //If there's internet, retrieve account info and/or synchronize data
-                if (!NetworkHelper.isNetworkPraxtourLAN(this)) {
-                    ConfigurationHelper.loadExternalData(this, savedConfig.getAccountToken());
-                }
+                ConfigurationHelper.loadExternalData(this, savedConfig.getAccountToken());
 
                 splashViewModel.resetUsageTracker(savedConfig.getAccountToken());
                 splashViewModel.resetInterruptedDownloads();
@@ -286,12 +281,6 @@ public class SplashActivity extends AppCompatActivity {
 
                 if (needToDownloadFiles()) {
                     redirectToActivity(DownloadsActivity.class);
-                    return;
-                }
-
-                if (NetworkHelper.isNetworkPraxtourLAN(this)) {
-                    startActivity(new Intent(this, ProductPickerActivity.class));
-                    finish();
                     return;
                 }
 
