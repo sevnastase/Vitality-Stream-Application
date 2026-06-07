@@ -196,7 +196,17 @@ public class SplashActivity extends AppCompatActivity {
                     if (apikey == null || NO_APIKEY.equals(apikey)) {
                         NavHelper.openPraxtourLauncher(SplashActivity.this, true, removeCallbacksForNetworkTester());
                     } else {
-                        redirectToActivity(ProductPickerActivity.class);
+                        runOnUiThread(() -> {
+                            splashViewModel.getAllAccountProducts(apikey).observe(SplashActivity.this, products -> {
+                                if (products == null || products.isEmpty()) {
+                                    Toast.makeText(SplashActivity.this, "Please login again", Toast.LENGTH_LONG).show();
+                                    isNavigating = true;
+                                    NavHelper.openPraxtourLauncher(SplashActivity.this, true, removeCallbacksForNetworkTester());
+                                } else {
+                                    redirectToActivity(ProductPickerActivity.class);
+                                }
+                            });
+                        });
                     }
                 } else {
                     redirectToActivity(ProductPickerActivity.class);
