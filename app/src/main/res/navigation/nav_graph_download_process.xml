@@ -47,7 +47,15 @@
         android:name="com.videostreamtest.ui.phone.downloads.fragments.SyncDatabaseFragment"
         android:label="SyncDatabaseFragment" >
         <action
-            android:id="@+id/action_syncDatabaseFragment_to_downloadFlagsFragment"
+            android:id="@+id/action_syncDatabaseFragment_to_downloadAssetsFragment"
+            app:destination="@id/downloadAssetsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/downloadAssetsFragment"
+        android:name="com.videostreamtest.ui.phone.downloads.fragments.DownloadAssetsFragment"
+        android:label="DownloadAssetsFragment" >
+        <action
+            android:id="@+id/action_downloadAssetsFragment_to_downloadFlagsFragment"
             app:destination="@id/downloadFlagsFragment" />
     </fragment>
     <fragment

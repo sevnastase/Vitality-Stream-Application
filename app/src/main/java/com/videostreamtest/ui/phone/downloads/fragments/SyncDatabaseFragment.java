@@ -168,7 +168,7 @@ public class SyncDatabaseFragment extends Fragment {
     private void gotoNextFragment() {
         downloadsViewModel.addInstallationStep();
         NavHostFragment.findNavController(SyncDatabaseFragment.this)
-                .navigate(R.id.action_syncDatabaseFragment_to_downloadFlagsFragment, getArguments());
+                .navigate(R.id.action_syncDatabaseFragment_to_downloadAssetsFragment, getArguments());
     }
 
     private void determineNextStep() {

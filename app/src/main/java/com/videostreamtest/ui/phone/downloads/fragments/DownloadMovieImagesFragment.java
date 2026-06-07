@@ -111,7 +111,7 @@ public class DownloadMovieImagesFragment  extends Fragment {
         downloadsViewModel.getCurrentDownloadTypeInformation("movie-support-images").observe(getViewLifecycleOwner(), generalDownloadTracker -> {
             if (generalDownloadTracker != null) {
                 descriptionView.setText(getString(R.string.download_general_message)+generalDownloadTracker.getDownloadCurrentFile());
-                downloadProgressbar.setMax(generalDownloadTracker.getDownloadTypeTotal());
+                downloadProgressbar.setMax(Math.toIntExact(generalDownloadTracker.getDownloadTypeTotal()));
                 downloadProgressbar.setProgress(generalDownloadTracker.getDownloadTypeCurrent());
                 if (generalDownloadTracker.getDownloadCurrentFile().equalsIgnoreCase("done")) {
                     nextButton.setVisibility(View.VISIBLE);

@@ -148,7 +148,7 @@ public class DownloadAllMovieImagesServiceWorker extends AbstractPraxtourWorker 
         try {
             routefilms = movieListCall.execute().body();
 
-            generalDownloadTracker.setId(3);
+            generalDownloadTracker.setId(4);
             generalDownloadTracker.setDownloadType("movie-support-images");
             generalDownloadTracker.setDownloadTypeTotal(routefilms.size()*2);
             generalDownloadTracker.setDownloadTypeCurrent(0);

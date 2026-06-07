@@ -97,7 +97,7 @@ public class DownloadSoundFragment extends Fragment {
         downloadsViewModel.getCurrentDownloadTypeInformation("sound").observe(getViewLifecycleOwner(), generalDownloadTracker -> {
             if (generalDownloadTracker != null) {
                 descriptionView.setText(getString(R.string.sound_download_informal_message)+generalDownloadTracker.getDownloadCurrentFile());
-                downloadProgressbar.setMax(generalDownloadTracker.getDownloadTypeTotal());
+                downloadProgressbar.setMax(Math.toIntExact(generalDownloadTracker.getDownloadTypeTotal()));
                 downloadProgressbar.setProgress(generalDownloadTracker.getDownloadTypeCurrent());
                 if (generalDownloadTracker.getDownloadCurrentFile().equalsIgnoreCase("done")) {
                     nextButton.setVisibility(View.VISIBLE);

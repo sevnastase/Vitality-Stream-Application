@@ -89,7 +89,7 @@ public class DownloadRoutepartsServiceWorker extends AbstractPraxtourWorker impl
         List<Movie> accountMovies = getRoutefilms();
         int totalRouteparts = getAllRouteparts(accountMovies);
 
-        generalDownloadTracker.setId(4);
+        generalDownloadTracker.setId(5);
         generalDownloadTracker.setDownloadType("movie-routepart-images");
         generalDownloadTracker.setDownloadTypeTotal(totalRouteparts);
         generalDownloadTracker.setDownloadTypeCurrent(0);

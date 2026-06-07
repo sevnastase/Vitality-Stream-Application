@@ -94,7 +94,7 @@ public class DownloadFlagsServiceWorker extends AbstractPraxtourWorker implement
             flagList = callSounds.execute().body();
 
             final GeneralDownloadTracker generalDownloadTracker = new GeneralDownloadTracker();
-            generalDownloadTracker.setId(2);
+            generalDownloadTracker.setId(3);
             generalDownloadTracker.setDownloadType("flags");
             generalDownloadTracker.setDownloadTypeTotal(flagList.size());
             generalDownloadTracker.setDownloadTypeCurrent(0);
