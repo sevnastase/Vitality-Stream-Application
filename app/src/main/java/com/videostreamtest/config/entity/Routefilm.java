@@ -10,11 +10,6 @@ import com.videostreamtest.data.model.Movie;
 
 @Entity(tableName = "routefilm_table")
 public class Routefilm {
-//    @PrimaryKey(autoGenerate = true)
-//    @ColumnInfo(name = "movie_uuid")
-//    @NonNull
-//    private Integer movieUuid;
-
     @PrimaryKey
     @ColumnInfo(name = "movie_id")
     @NonNull
