@@ -83,6 +83,7 @@ import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
 import org.videolan.libvlc.util.VLCVideoLayout;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -605,7 +606,13 @@ public class VideoplayerActivity extends AppCompatActivity {
         //This loads the given videoUri to the media
         if (isLocalPlay) {
             //VIDEO
-            final Media media = new Media(VideoLanLib.getLibVLC(getApplicationContext()), videoUri);
+            final Uri movieUri = Uri.fromFile(new File(
+               DownloadHelper.selectLargestStorageVolume(this)
+                       + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER
+                       + "/" + selectedMovie.getId()
+                       + "/" + new File(selectedMovie.getMovieUrl()).getName()
+            ));
+            final Media media = new Media(VideoLanLib.getLibVLC(getApplicationContext()), movieUri);
             mediaPlayer.setMedia(media);
             media.release();
         } else {
