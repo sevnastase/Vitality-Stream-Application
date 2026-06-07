@@ -18,6 +18,8 @@ import java.net.HttpURLConnection;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -147,5 +149,31 @@ public class WifiSpeedtest {
                 }
             }
         });
+    }
+
+    public static boolean getPingTo(final String url) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+
+        getPingTo(url, new PraxCallbacks.WifiCallback() {
+            @Override
+            public void onSuccess(long value) {
+                future.complete(true);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                future.complete(false);
+            }
+        });
+
+        try {
+            return future.get();
+        } catch (ExecutionException e) {
+            Log.w(TAG, e.toString());
+            return false;
+        } catch (InterruptedException e) {
+            Log.d(TAG, e.toString());
+            return false;
+        }
     }
 }

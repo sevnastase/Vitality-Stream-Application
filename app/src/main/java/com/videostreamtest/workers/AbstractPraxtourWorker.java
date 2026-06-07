@@ -1,13 +1,14 @@
 package com.videostreamtest.workers;
 
+import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
+
 import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import com.videostreamtest.config.application.PraxtourApplication;
-import com.videostreamtest.helpers.NetworkHelper;
+import com.videostreamtest.service.wifi.WifiSpeedtest;
 
 /**
  * This class shall define the basis for all {@link Worker}s of the app. Any {@link Worker}
@@ -29,7 +30,7 @@ public abstract class AbstractPraxtourWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        if (NetworkHelper.isNetworkPraxtourLAN(PraxtourApplication.getAppContext())) return Result.failure();
+        if (!WifiSpeedtest.getPingTo(PRAXCLOUD_API_URL)) return Result.failure();
 
         return doActualWork();
     }
