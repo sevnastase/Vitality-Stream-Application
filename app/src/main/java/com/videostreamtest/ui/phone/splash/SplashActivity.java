@@ -52,6 +52,7 @@ import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.helpers.ConfigurationHelper;
+import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.helpers.LogHelper;
 import com.videostreamtest.helpers.NavHelper;
 import com.videostreamtest.helpers.NetworkHelper;
@@ -66,6 +67,7 @@ import com.videostreamtest.workers.AccountServiceWorker;
 import com.videostreamtest.workers.download.DownloadStatusVerificationServiceWorker;
 import com.videostreamtest.workers.synchronisation.ActiveConfigurationServiceWorker;
 import com.videostreamtest.workers.synchronisation.ActiveProductsServiceWorker;
+import com.videostreamtest.workers.synchronisation.SyncLocalDatabaseWorker;
 
 import java.util.List;
 import java.util.Set;
@@ -270,6 +272,8 @@ public class SplashActivity extends AppCompatActivity {
                 editor.putBoolean("bootable", savedConfig.isBootOnStart());
                 editor.commit();
 
+                refreshMovieInformation();
+
                 if (needToDownloadFiles()) {
                     redirectToActivity(DownloadsActivity.class);
                     return;
@@ -326,21 +330,23 @@ public class SplashActivity extends AppCompatActivity {
 
                                 VideoLanLib.getLibVLC(getApplicationContext());
 
-                                redirectToActivity(ProductPickerActivity.class);
+                                if (AccountHelper.isLocalPlay(this) && !allAssetsPresent()) {
+                                    redirectToActivity(DownloadsActivity.class);
+                                } else {
+                                    redirectToActivity(ProductPickerActivity.class);
+                                }
                             }
                         } else {
                             // Execute when number of products is 0
-                            Log.d(TAG, "Greg Unset current configuration when product count = 0");
+                            Log.d(TAG, "Unset current configuration when product count = 0");
 
                             WorkHelper.enqueueWork(
                                     ActiveProductsServiceWorker.class,
                                     new Data.Builder().putString("apikey", apikey).build(),
                                     SplashActivity.this,
                                     (resultState, outputData) -> {
-                                        Log.d(TAG, "Greg work finished");
                                         if (resultState == WorkInfo.State.SUCCEEDED) {
                                             final int nrProducts = outputData.getInt("nrProducts", 0);
-                                            Log.d(TAG, "Greg measured nrProducts " + nrProducts);
                                             if (nrProducts > 0) {
                                                 redirectToActivity(SplashActivity.class);
                                                 return;
@@ -413,6 +419,14 @@ public class SplashActivity extends AppCompatActivity {
         });
     }
 
+    private boolean allAssetsPresent() {
+        boolean assets = DownloadHelper.assetsAlreadyPresent(this);
+        boolean sound = DownloadHelper.isSoundPresent(this);
+        boolean flags= DownloadHelper.isFlagsLocalPresent(this);
+
+        return assets && sound && flags;
+    }
+
     private Configuration extractConfiguration(Configuration config) {
         Configuration newConfig = new Configuration();
         newConfig.setAccountToken(apikey);
@@ -457,6 +471,16 @@ public class SplashActivity extends AppCompatActivity {
         WorkManager.getInstance(this)
                 .beginWith(accountServiceWorker)
                 .enqueue();
+    }
+
+    private void refreshMovieInformation() {
+        WorkHelper.enqueueWork(
+                SyncLocalDatabaseWorker.class,
+                new Data.Builder().putString("apikey", AccountHelper.getAccountToken(this)).build(),
+                this,
+                null,
+                () -> runOnUiThread(() -> Toast.makeText(this, "Internet lol", Toast.LENGTH_LONG).show())
+        );
     }
 
     private void requestDrawOverlayPermission() {

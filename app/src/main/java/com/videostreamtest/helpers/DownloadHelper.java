@@ -114,6 +114,22 @@ public class DownloadHelper {
         return false;
     }
 
+    public static boolean assetsAlreadyPresent(final Context context) {
+        File[] externalStorageVolumes = ContextCompat.getExternalFilesDirs(context.getApplicationContext(), null);
+        for (File externalStorageVolume : externalStorageVolumes) {
+            String pathname = externalStorageVolume.getAbsolutePath() + ApplicationSettings.DEFAULT_LOCAL_ASSETS_STORAGE_FOLDER;
+            File possibleAssetsLocation = new File(pathname);
+            try {
+                if (possibleAssetsLocation.exists() && possibleAssetsLocation.listFiles().length > 0) {
+                    return true;
+                }
+            } catch (NullPointerException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     /**
      * Check if file is present on harddisk
      * @param context

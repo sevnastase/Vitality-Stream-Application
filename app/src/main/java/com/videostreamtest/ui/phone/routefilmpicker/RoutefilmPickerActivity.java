@@ -8,12 +8,15 @@ import static com.videostreamtest.ui.phone.routefilmpicker.RoutefilmAdapter.ITEM
 import static com.videostreamtest.ui.phone.routefilmpicker.RoutefilmAdapter.MAX_VISIBLE_ROWS;
 import static com.videostreamtest.ui.phone.routefilmpicker.RoutefilmAdapter.SINGLE_ITEM_HEIGHT;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -22,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +50,9 @@ import androidx.work.WorkManager;
 import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
+import com.videostreamtest.config.dao.MovieLocalInfoDao;
+import com.videostreamtest.config.db.PraxtourDatabase;
+import com.videostreamtest.config.entity.MovieLocalInfo;
 import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.config.repository.ConfigurationRepository;
 import com.videostreamtest.config.repository.RoutefilmRepository;
@@ -63,8 +70,10 @@ import com.videostreamtest.workers.download.DownloadRoutepartsServiceWorker;
 import com.videostreamtest.workers.download.DownloadSoundServiceWorker;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class RoutefilmPickerActivity extends AppCompatActivity {
     private static final String TAG = RoutefilmPickerActivity.class.getSimpleName();
@@ -76,6 +85,7 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     // DATA
     private Product selectedProduct;
     private Routefilm[] availableRoutefilms;
+    private List<MovieLocalInfo> availableRoutefilmsInfo;
     private TextView appAndAccountInfoTextView;
     private String apikey;
     private boolean chinesportAccount;
@@ -95,6 +105,8 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     private ImageButton navigationRightArrow;
     private ImageButton navigationDownArrow;
     private ImageView chinesportLogo;
+    private ConstraintLayout loadedView;
+    private ProgressBar loadingWheel;
 
     // SELECTED ROUTEFILM INFO
     private Routefilm selectedRoutefilm;
@@ -208,9 +220,14 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        loadedView = findViewById(R.id.loaded_layout);
+        loadingWheel = findViewById(R.id.loading_wheel);
+        loadedView.setVisibility(View.INVISIBLE);
+        loadedView.setVisibility(View.VISIBLE);
+
         productLogoView = findViewById(R.id.product_logo_view);
         Picasso.get()
-                .load(selectedProduct.getProductLogoButtonPath())
+                .load(selectedProduct.getAppropriateProductLogoPath(this))
                 .resize(300, 225)
                 .placeholder(R.drawable.placeholder_button)
                 .error(R.drawable.placeholder_button)
@@ -337,8 +354,8 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
                     if (routefilms != null) {
                         availableRoutefilms = new Routefilm[routefilms.size()];
                         availableRoutefilms = routefilms.toArray(availableRoutefilms);
-                        preLoadImages(routefilms);
-                        initRecyclerView();
+//                        preLoadImages(routefilms);
+                        loadAvailableRoutefilmsInfo();
                         routefilmsLiveData.removeObserver(this);
                     }
                 }
@@ -391,6 +408,9 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
                 }
             }
         });
+
+        loadingWheel.setVisibility(View.GONE);
+        loadedView.setVisibility(View.VISIBLE);
     }
 
     /** Returns an interface implementation {@link RoutefilmAdapter.SelectedRoutefilmListener}
@@ -400,44 +420,45 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
         return routefilm -> {
             selectedRoutefilm = routefilm;
             Movie movie = Movie.fromRoutefilm(routefilm);
+            MovieLocalInfo movieLocalInfo = availableRoutefilmsInfo
+                    .stream().filter(info -> info.getMovieId().equals(movie.getId()))
+                    .findFirst().orElse(null);
+            if (movieLocalInfo == null) {
+                new AlertDialog.Builder(this)
+                        .setTitle("We have run into an issue")
+                        .setMessage("Please try again. If the issue persist, contact as at service@praxtour.nl")
+                        .create().show();
+                return;
+            }
+
             // Flag
-            if (movie.getMovieFlagUrl() != null && !movie.getMovieFlagUrl().isEmpty()) {
+            final Uri flagUri = AccountHelper.isLocalPlay(this) ?
+                    Uri.fromFile(new File(movieLocalInfo.getMovieFlagPath())) :
+                    Uri.parse(movie.getMovieFlagUrl());
+
+            if (movieLocalInfo.getMovieFlagPath() != null) {
                 selectedRoutefilmCountryFlagImageView.setVisibility(View.VISIBLE);
-                if (DownloadHelper.isFlagsLocalPresent(getApplicationContext())) {
-                    Picasso.get()
-                            .load(new File(movie.getMovieFlagUrl()))
-                            .placeholder(R.drawable.flag_placeholder)
-                            .error(R.drawable.flag_placeholder)
-                            .resize(150, 100)
-                            .into(selectedRoutefilmCountryFlagImageView);
-                } else {
-                    Picasso.get()
-                            .load(movie.getMovieFlagUrl())
-                            .placeholder(R.drawable.flag_placeholder)
-                            .error(R.drawable.flag_placeholder)
-                            .resize(150, 100)
-                            .into(selectedRoutefilmCountryFlagImageView);
-                }
+                Picasso.get()
+                        .load(flagUri)
+                        .placeholder(R.drawable.flag_placeholder)
+                        .error(R.drawable.flag_placeholder)
+                        .resize(150, 100)
+                        .into(selectedRoutefilmCountryFlagImageView);
             } else {
                 selectedRoutefilmCountryFlagImageView.setVisibility(View.GONE);
             }
 
-            // Route map
-            if (selectedProduct.getSupportStreaming()==0 && performStaticChecks(movie)) {
-                Picasso.get()
-                        .load(new File(movie.getMovieRouteinfoPath()))
-                        .fit()
-                        .placeholder(R.drawable.placeholder_map)
-                        .error(R.drawable.placeholder_map)
-                        .into(selectedRoutefilmMapImageView);
-            } else {
-                Picasso.get()
-                        .load(movie.getMovieRouteinfoPath())
-                        .fit()
-                        .placeholder(R.drawable.placeholder_map)
-                        .error(R.drawable.placeholder_map)
-                        .into(selectedRoutefilmMapImageView);
-            }
+            // Map/scenery
+            final Uri mapUri = AccountHelper.isLocalPlay(this) ?
+                    Uri.fromFile(new File(movieLocalInfo.getMovieMapPath())) :
+                    Uri.parse(movie.getMovieRouteinfoPath());
+
+            Picasso.get()
+                    .load(mapUri)
+                    .fit()
+                    .placeholder(R.drawable.placeholder_map)
+                    .error(R.drawable.placeholder_map)
+                    .into(selectedRoutefilmMapImageView);
 
             // Title
             selectedRoutefilmTitleTextView.setText(routefilm.getMovieTitle());
@@ -455,6 +476,18 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
             }
             selectedRoutefilmInfoTextView.setText(info);
         };
+    }
+
+    private void loadAvailableRoutefilmsInfo() {
+        HandlerThread handlerThread = new HandlerThread("db-thread");
+        handlerThread.start();
+        Looper looper = handlerThread.getLooper();
+        new Handler(looper).post(() -> {
+            MovieLocalInfoDao movieLocalInfoDao = PraxtourDatabase.getDatabase(this).movieLocalInfoDao();
+            List<Integer> availableMovieIds = Arrays.stream(availableRoutefilms).map(Routefilm::getMovieId).collect(Collectors.toList());
+            availableRoutefilmsInfo = Arrays.asList(movieLocalInfoDao.getAllFor(availableMovieIds));
+            runOnUiThread(this::initRecyclerView);
+        });
     }
 
     private void initNavigationArrow(ImageButton arrowView, int jumpCount) {
@@ -515,35 +548,6 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
         // Streaming
         else {
             return true;
-        }
-    }
-
-    private void preLoadImages(List<Routefilm> routefilmList) {
-        for (final Routefilm routefilm: routefilmList) {
-            //Load local paths if standalone
-            if (selectedProduct!= null && selectedProduct.getSupportStreaming()==0) {
-                DownloadHelper.setLocalMedia(getApplicationContext(), routefilm);
-            }
-            //preload scenery
-            if (routefilm.getMovieRouteinfoPath().startsWith("/")) {
-                Picasso.get().load(new File(routefilm.getMovieRouteinfoPath())).fetch();
-            } else {
-                Picasso.get().load(routefilm.getMovieRouteinfoPath()).fetch();
-            }
-            //preload maps
-            if (routefilm.getMovieImagepath().startsWith("/")) {
-                Picasso.get().load(new File(routefilm.getMovieImagepath())).fetch();
-            } else {
-                Picasso.get().load(routefilm.getMovieImagepath()).fetch();
-            }
-            //preload flags
-            if (routefilm.getMovieFlagUrl() != null && !routefilm.getMovieFlagUrl().isEmpty()) {
-                if (routefilm.getMovieFlagUrl().startsWith("/")) {
-                    Picasso.get().load(new File(routefilm.getMovieFlagUrl())).fetch();
-                } else {
-                    Picasso.get().load(routefilm.getMovieFlagUrl()).fetch();
-                }
-            }
         }
     }
 

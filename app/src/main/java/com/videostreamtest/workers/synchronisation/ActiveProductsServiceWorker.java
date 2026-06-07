@@ -14,9 +14,12 @@ import com.videostreamtest.config.dao.ConfigurationDao;
 import com.videostreamtest.config.dao.ProductDao;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.data.model.response.Product;
+import com.videostreamtest.helpers.DownloadHelper;
+import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.workers.AbstractPraxtourWorker;
 import com.videostreamtest.workers.webinterface.PraxCloud;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +75,7 @@ public class ActiveProductsServiceWorker extends AbstractPraxtourWorker {
                 tmpProduct.setBlocked(externalProduct.getBlocked());
                 tmpProduct.setCommunicationType(externalProduct.getCommunicationType());
                 tmpProduct.setProductType(externalProduct.getProductType());
+                tmpProduct.setProductLogoLocalPath(DownloadHelper.selectLargestStorageVolume(getApplicationContext()) + ApplicationSettings.DEFAULT_LOCAL_ASSETS_STORAGE_FOLDER + "/" + new File(externalProduct.getProductLogoButtonPath()).getName());
                 productDao.insert(tmpProduct);
             }
         }

@@ -18,6 +18,7 @@ import com.videostreamtest.config.dao.DownloadStatusDao;
 import com.videostreamtest.config.dao.EffectSoundDao;
 import com.videostreamtest.config.dao.FlagDao;
 import com.videostreamtest.config.dao.MovieFlagDao;
+import com.videostreamtest.config.dao.MovieLocalInfoDao;
 import com.videostreamtest.config.dao.ProductDao;
 import com.videostreamtest.config.dao.ProductMovieDao;
 import com.videostreamtest.config.dao.ProfileDao;
@@ -32,6 +33,7 @@ import com.videostreamtest.config.entity.Configuration;
 import com.videostreamtest.config.entity.EffectSound;
 import com.videostreamtest.config.entity.Flag;
 import com.videostreamtest.config.entity.MovieFlag;
+import com.videostreamtest.config.entity.MovieLocalInfo;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.config.entity.ProductMovie;
 import com.videostreamtest.config.entity.Profile;
@@ -61,8 +63,9 @@ import java.util.concurrent.Executors;
         Flag.class,
         MovieFlag.class,
         UsageTracker.class,
-        GeneralDownloadTracker.class
-}, version = 13, exportSchema = true)
+        GeneralDownloadTracker.class,
+        MovieLocalInfo.class
+}, version = 14, exportSchema = true)
 @TypeConverters({Converters.class})
 public abstract class PraxtourDatabase extends RoomDatabase {
     private final static String TAG = PraxtourDatabase.class.getSimpleName();
@@ -86,6 +89,7 @@ public abstract class PraxtourDatabase extends RoomDatabase {
     public abstract UsageTrackerDao usageTrackerDao();
     public abstract BluetoothDefaultDeviceDao bluetoothDefaultDeviceDao();
     public abstract GeneralDownloadTrackerDao generalDownloadTrackerDao();
+    public abstract MovieLocalInfoDao movieLocalInfoDao();
 
     static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
@@ -238,6 +242,20 @@ public abstract class PraxtourDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_13_14 = new Migration(13, 14) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE product_table ADD COLUMN `product_logo_local_path` TEXT");
+
+            database.execSQL("CREATE TABLE movie_local_info_table (" +
+                    "id INTEGER, " +
+                    "movie_id INTEGER, " +
+                    "movie_scenery_path TEXT, " +
+                    "movie_map_path TEXT, " +
+                    "PRIMARY KEY(id))");
+        }
+    };
+
 
     public static PraxtourDatabase getDatabase(final Context context) {
         if (INSTANCE != null) return INSTANCE;
@@ -261,7 +279,8 @@ public abstract class PraxtourDatabase extends RoomDatabase {
                             MIGRATION_9_10,
                             MIGRATION_10_11,
                             MIGRATION_11_12,
-                            MIGRATION_12_13)
+                            MIGRATION_12_13,
+                            MIGRATION_13_14)
 
                     .build();
         }

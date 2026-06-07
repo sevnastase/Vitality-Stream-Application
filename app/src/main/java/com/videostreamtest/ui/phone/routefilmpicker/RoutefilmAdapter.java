@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -25,6 +26,7 @@ import com.videostreamtest.constants.SharedPreferencesConstants;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.helpers.AccountHelper;
+import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -99,9 +101,16 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
 
         // Set product image in button
         Movie movie = Movie.fromRoutefilm(routefilms.get(position));
-        if(movie.getMovieImagepath().startsWith("/")) {
+
+        if (AccountHelper.isLocalPlay(hostActivity)) {
+            Uri movieLocalImagePath = Uri.fromFile(new File(
+                    DownloadHelper.selectLargestStorageVolume(hostActivity).getAbsolutePath()
+                            + ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER
+                            + "/" + movie.getId()
+                            + "/" + new File(movie.getMovieImagepath()).getName()
+            ));
             Picasso.get()
-                    .load(new File(movie.getMovieImagepath()))
+                    .load(movieLocalImagePath)
                     .resize(SINGLE_ITEM_WIDTH, SINGLE_ITEM_HEIGHT)
                     .into(holder.routefilmCoverPhotoImageButton, favoriteButtonCallback);
         } else {

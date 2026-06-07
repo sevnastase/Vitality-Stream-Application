@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.GsonBuilder;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
@@ -34,12 +34,12 @@ public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
     public void bind(Product product, int position) {
         productButton = itemView.findViewById(R.id.product_avatar);
 
+        final Uri productLogoPath = product.getAppropriateProductLogoPath(itemView.getContext());
         Picasso.get()
-                .load(product.getProductLogoButtonPath())
-                .resize(300, 225)
-                .networkPolicy(NetworkPolicy.NO_CACHE)
+                .load(productLogoPath)
                 .placeholder(R.drawable.placeholder_button)
                 .error(R.drawable.placeholder_button)
+                .resize(300, 225)
                 .into(productButton);
 
         if (!isTouchScreen()) {

@@ -10,6 +10,7 @@ import androidx.work.Data;
 import androidx.work.WorkerParameters;
 
 import com.videostreamtest.config.db.PraxtourDatabase;
+import com.videostreamtest.config.entity.MovieLocalInfo;
 import com.videostreamtest.config.entity.tracker.GeneralDownloadTracker;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.service.database.DatabaseRestService;
@@ -181,6 +182,8 @@ public class DownloadAllMovieImagesServiceWorker extends AbstractPraxtourWorker 
                 generalDownloadTracker.setDownloadTypeCurrent(generalDownloadTracker.getDownloadTypeCurrent()+1);
                 PraxtourDatabase.getDatabase(getApplicationContext()).generalDownloadTrackerDao().insert(generalDownloadTracker);
                 download(routefilm.getMovieRouteinfoPath(), Long.MAX_VALUE, String.valueOf(routefilm.getId()));
+
+                saveLocalPaths(routefilm);
             } catch (IOException ioException) {
                 Log.e(TAG, ioException.getLocalizedMessage());
                 Log.e(TAG, String.format("Error downloading for routefilm %s", routefilm.getMovieTitle()));
@@ -190,5 +193,22 @@ public class DownloadAllMovieImagesServiceWorker extends AbstractPraxtourWorker 
             Log.e(TAG, String.format("Cant copy routefilm image files for movie: %s", routefilm.getMovieTitle()));
             databaseRestService.writeLog(apikey, String.format("Cant copy routefilm image files for movie: %s", routefilm.getMovieTitle()), "ERROR", "");
         }
+    }
+
+    private void saveLocalPaths(final Movie movie) {
+        MovieLocalInfo info = new MovieLocalInfo();
+        info.setMovieId(movie.getId());
+        info.setMovieSceneryPath(
+                selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER +
+                "/" + movie.getId() +
+                "/" + new File(movie.getMovieImagepath()).getName()
+        );
+        info.setMovieMapPath(
+                selectedVolume.getAbsolutePath()+ApplicationSettings.DEFAULT_LOCAL_MOVIE_STORAGE_FOLDER +
+                "/" + movie.getId() +
+                "/" + new File(movie.getMovieRouteinfoPath()).getName()
+        );
+
+        PraxtourDatabase.getDatabase(getApplicationContext()).movieLocalInfoDao().insert(info);
     }
 }

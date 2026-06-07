@@ -1,6 +1,14 @@
 package com.videostreamtest.data.model.response;
 
+import android.content.Context;
+import android.net.Uri;
+
+import androidx.annotation.NonNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.videostreamtest.helpers.AccountHelper;
+
+import java.io.File;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Product {
@@ -12,6 +20,9 @@ public class Product {
     private Integer supportStreaming =0;
     private String communicationType = "RPM";
     private String productType;
+
+    /** Added to use for LocalPlay accounts, instead of relying on Picasso caching. */
+    private String productLogoLocalPath;
 
     public Integer getId() {
         return id;
@@ -77,6 +88,14 @@ public class Product {
         this.productType = productType;
     }
 
+    public String getProductLogoLocalPath() {
+        return productLogoLocalPath;
+    }
+
+    public void setProductLogoLocalPath(String productLogoLocalPath) {
+        this.productLogoLocalPath = productLogoLocalPath;
+    }
+
     public static Product fromProductEntity(final com.videostreamtest.config.entity.Product productEntity) {
         Product product = new Product();
         product.setId(productEntity.getUid());
@@ -87,6 +106,16 @@ public class Product {
         product.setSupportStreaming(productEntity.getSupportStreaming());
         product.setDefaultSettingsId(productEntity.getDefaultSettingsId());
         product.setProductType(productEntity.getProductType());
+        product.setProductLogoLocalPath(productEntity.getProductLogoLocalPath());
         return product;
+    }
+
+    /** @return local path if the account is local play, cloud URL otherwise. */
+    public Uri getAppropriateProductLogoPath(@NonNull Context context) {
+        if (AccountHelper.isLocalPlay(context)) {
+            return Uri.fromFile(new File(getProductLogoLocalPath()));
+        } else {
+            return Uri.parse(getProductLogoButtonPath());
+        }
     }
 }

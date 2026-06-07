@@ -33,9 +33,12 @@ public class Product {
     @ColumnInfo(name = "product_type")
     private String productType;
 
-    @ColumnInfo(name= "product_raw_id", defaultValue = "0")
+    @ColumnInfo(name = "product_raw_id", defaultValue = "0")
     @NonNull
     private Integer productRawId;
+
+    @ColumnInfo(name = "product_logo_local_path")
+    private String productLogoLocalPath;
 
     public int getUid() {
         return uid;
@@ -115,5 +118,13 @@ public class Product {
 
     public void setProductRawId(Integer productRawId) {
         this.productRawId = productRawId;
+    }
+
+    public String getProductLogoLocalPath() {
+        return productLogoLocalPath;
+    }
+
+    public void setProductLogoLocalPath(String productLogoLocalPath) {
+        this.productLogoLocalPath = productLogoLocalPath;
     }
 }
