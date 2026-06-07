@@ -52,7 +52,7 @@ public class NetworkHelper {
              * A fault is either a call to onError, or a measurement lower than MIN_NETWORK_SPEED_KBPS.
              * When {@code faults} passes this value, the network error text will be shown.
              */
-            final long MAX_FAULTS = 10;
+            final long MAX_FAULTS = 6;
             final AtomicInteger faults = new AtomicInteger(0);
             long currentPing = DEFAULT_NETWORK_VALUE;
             long currentDownloadSpeedKbps = DEFAULT_NETWORK_VALUE;
