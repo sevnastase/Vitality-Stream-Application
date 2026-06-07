@@ -107,9 +107,7 @@ public class DownloadFlagsServiceWorker extends AbstractPraxtourWorker implement
                     generalDownloadTracker.setDownloadTypeCurrent(generalDownloadTracker.getDownloadTypeCurrent()+1);
                     PraxtourDatabase.getDatabase(getApplicationContext()).generalDownloadTrackerDao().insert(generalDownloadTracker);
 
-                    if (DownloadHelper.isFlagsLocalPresent(getApplicationContext())) {
-                        download(flag.getFlagUrl(), Long.MAX_VALUE);
-                    }
+                    download(flag.getFlagUrl(), Long.MAX_VALUE);
                 }
             }
             generalDownloadTracker.setDownloadCurrentFile("done");

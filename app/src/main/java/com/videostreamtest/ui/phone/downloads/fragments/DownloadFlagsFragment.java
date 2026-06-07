@@ -69,6 +69,7 @@ public class DownloadFlagsFragment extends Fragment {
         } else {
             descriptionView.setText(R.string.downloaded_files_already_present);
             nextButton.setVisibility(View.VISIBLE);
+            gotoNextFragment();
         }
     }
 
