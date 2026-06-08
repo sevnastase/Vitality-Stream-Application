@@ -208,6 +208,7 @@ public class DownloadMovieServiceWorker extends AbstractPraxtourWorker implement
      * @param downloadProgress
      */
     private void insertDownloadStatus(int movieId, int downloadProgress) {
+        if (downloadProgress % 5 != 0) return;
         if (downloadProgress > currentDownloadProgress || downloadProgress == 0) {
             if (downloadProgress > 0) {
                 Log.d(TAG, String.format("Movie %s is for %d percent ready.", routefilm.getMovieTitle(), downloadProgress));
@@ -217,11 +218,9 @@ public class DownloadMovieServiceWorker extends AbstractPraxtourWorker implement
             localMoviesDownloadTable.setMovieId(movieId);
             localMoviesDownloadTable.setDownloadStatus(downloadProgress);
 
-            if (downloadProgress%5 ==0) {
-                PraxtourDatabase.databaseWriterExecutor.execute(() -> {
-                    PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(localMoviesDownloadTable);
-                });
-            }
+            PraxtourDatabase.databaseWriterExecutor.execute(() -> {
+                PraxtourDatabase.getDatabase(getApplicationContext()).downloadStatusDao().insert(localMoviesDownloadTable);
+            });
 
             currentDownloadProgress = downloadProgress;
         }
