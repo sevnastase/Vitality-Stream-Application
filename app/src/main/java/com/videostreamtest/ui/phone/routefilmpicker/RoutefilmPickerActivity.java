@@ -432,11 +432,11 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
             }
 
             // Flag
-            final Uri flagUri = AccountHelper.isLocalPlay(this) ?
-                    Uri.fromFile(new File(movieLocalInfo.getMovieFlagPath())) :
-                    Uri.parse(movie.getMovieFlagUrl());
-
             if (movieLocalInfo.getMovieFlagPath() != null) {
+                final Uri flagUri = AccountHelper.isLocalPlay(this) ?
+                        Uri.fromFile(new File(movieLocalInfo.getMovieFlagPath())) :
+                        Uri.parse(movie.getMovieFlagUrl());
+
                 selectedRoutefilmCountryFlagImageView.setVisibility(View.VISIBLE);
                 Picasso.get()
                         .load(flagUri)
