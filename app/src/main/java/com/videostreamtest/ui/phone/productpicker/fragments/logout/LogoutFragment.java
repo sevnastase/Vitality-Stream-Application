@@ -1,16 +1,15 @@
 package com.videostreamtest.ui.phone.productpicker.fragments.logout;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -96,16 +95,27 @@ public class LogoutFragment extends Fragment {
         editor.clear();
         editor.commit();
 
-        configuration.setCurrent(false);
-        productPickerViewModel.updateConfiguration(configuration);
+        if (configuration != null) {
+            configuration.setCurrent(false);
+            productPickerViewModel.updateConfiguration(configuration);
+        }
 
         //Cancel all workers (in case of downloading or syncing actions)
         WorkManager
                 .getInstance(getActivity().getApplicationContext())
                 .cancelAllWork();
 
-        NavHelper.openPraxtourLauncher(getActivity(), true, () -> {
-            Toast.makeText(getActivity(), "Please restart your device", Toast.LENGTH_LONG).show();
+        Activity activity = getActivity();
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+            return; // Activity is gone, nothing safe to do
+        }
+
+        NavHelper.openPraxtourLauncher(activity, true, () -> {
+            // Re-check inside the callback — state may have changed by the time this runs
+            Activity callbackActivity = getActivity();
+            if (callbackActivity != null && !callbackActivity.isFinishing()) {
+                Toast.makeText(callbackActivity, "Please restart your device", Toast.LENGTH_LONG).show();
+            }
         });
     }
 }
