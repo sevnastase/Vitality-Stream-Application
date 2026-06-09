@@ -1428,6 +1428,7 @@ public class VideoplayerActivity extends AppCompatActivity {
             backgroundSoundPlayer.setPlaybackParameters(playbackParameters);
 //            backgroundSoundPlayer.setDeviceVolume(backgroundSoundPlayer.getDeviceInfo().maxVolume);
             playerView.setPlayer(backgroundSoundPlayer);
+            backgroundSoundPlayer.setDeviceMuted(false);
         }
     }
 
