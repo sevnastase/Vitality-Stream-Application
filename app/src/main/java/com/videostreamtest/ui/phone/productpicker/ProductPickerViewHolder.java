@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -21,11 +22,14 @@ import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.ui.phone.routefilmpicker.RoutefilmPickerActivity;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
 
     final static String TAG = ProductPickerViewHolder.class.getSimpleName();
 
     private ImageButton productButton;
+    private AtomicBoolean isNavigating = new AtomicBoolean(false);
 
     public ProductPickerViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -91,6 +95,8 @@ public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
         productButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (!isNavigating.compareAndSet(false, true)) return;
+
                 productButton.requestFocus();
 
                 Bundle arguments = new Bundle();
@@ -108,6 +114,11 @@ public class ProductPickerViewHolder extends RecyclerView.ViewHolder {
                 });
 
                 view.getContext().startActivity(productView);
+                new Handler().postDelayed(() -> {
+                    if (isNavigating != null) {
+                        isNavigating.set(false);
+                    }
+                }, 250);
             }
         });
     }

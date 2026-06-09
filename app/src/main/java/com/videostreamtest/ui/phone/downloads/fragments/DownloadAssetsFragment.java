@@ -35,6 +35,8 @@ import com.videostreamtest.workers.download.DownloadAssetsServiceWorker;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class DownloadAssetsFragment extends Fragment {
     private final static String TAG = DownloadAssetsFragment.class.getSimpleName();
     private DownloadsViewModel downloadsViewModel;
@@ -43,6 +45,8 @@ public class DownloadAssetsFragment extends Fragment {
     private TextView titleTextView;
     private TextView descriptionTextView;
     private SeekBar progressBar;
+
+    private AtomicBoolean isNavigating = new AtomicBoolean(false);
 
     private String apikey;
 
@@ -81,12 +85,14 @@ public class DownloadAssetsFragment extends Fragment {
     }
 
     private void gotoNextFragment() {
+        if (!isNavigating.compareAndSet(false, true)) return;
         try {
             downloadsViewModel.addInstallationStep();
             NavHostFragment.findNavController(this)
                     .navigate(R.id.action_downloadAssetsFragment_to_downloadFlagsFragment, getArguments());
         } catch (IllegalArgumentException e) {
             Log.w(TAG, e.toString());
+            isNavigating.set(false);
         }
     }
 
@@ -103,13 +109,13 @@ public class DownloadAssetsFragment extends Fragment {
 
                         if (resultState.equals(WorkInfo.State.FAILED) || resultState.equals(WorkInfo.State.CANCELLED)) {
                             activity.runOnUiThread(() -> {
-                                Toast.makeText(activity, "Download failed", Toast.LENGTH_LONG).show();
+                                descriptionTextView.setText("Download failed. Please restart your device. If the issue persists, contact us at service@praxtour.nl");
                             });
                         }
 
                         if (resultState.equals(WorkInfo.State.SUCCEEDED)) {
                             activity.runOnUiThread(() -> {
-
+                                gotoNextFragment();
                             });
                         }
                     }
