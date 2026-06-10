@@ -248,11 +248,11 @@ public abstract class PraxtourDatabase extends RoomDatabase {
             database.execSQL("ALTER TABLE product_table ADD COLUMN `product_logo_local_path` TEXT");
 
             database.execSQL("CREATE TABLE movie_local_info_table (" +
-                    "id INTEGER, " +
                     "movie_id INTEGER, " +
                     "movie_scenery_path TEXT, " +
                     "movie_map_path TEXT, " +
-                    "PRIMARY KEY(id))");
+                    "movie_flag_path TEXT, " +
+                    "PRIMARY KEY(movie_id))");
         }
     };
 
