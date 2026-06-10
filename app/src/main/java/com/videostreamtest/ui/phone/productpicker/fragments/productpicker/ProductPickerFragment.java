@@ -15,9 +15,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.videostreamtest.R;
 import com.videostreamtest.data.model.response.Product;
 import com.videostreamtest.helpers.AccountHelper;
+import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerAdapter;
 import com.videostreamtest.ui.phone.productpicker.ProductPickerViewModel;
+import com.videostreamtest.utils.ApplicationSettings;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,7 +62,7 @@ public class ProductPickerFragment extends Fragment {
                     addProd.setBlocked(extProd.getBlocked());
                     addProd.setCommunicationType(extProd.getCommunicationType());
                     addProd.setProductType(extProd.getProductType());
-                    addProd.setProductLogoLocalPath(extProd.getProductLogoLocalPath());
+                    addProd.setProductLogoLocalPath(getLocalButtonPath(extProd));
                     productList.add(addProd);
                 }
             }
@@ -84,5 +87,17 @@ public class ProductPickerFragment extends Fragment {
             productOverview.setLayoutManager(gridLayoutManager);
         });
 
+    }
+
+    /**
+     * Since an old system might not have the local path saved, we set it here manually.
+     */
+    private String getLocalButtonPath(com.videostreamtest.config.entity.Product extProd) {
+        String result = extProd.getProductLogoLocalPath();
+        if (result != null) return result;
+
+        return DownloadHelper.selectLargestStorageVolume(getActivity())
+                + ApplicationSettings.DEFAULT_LOCAL_ASSETS_STORAGE_FOLDER
+                + "/" + new File(extProd.getProductLogoButtonPath()).getName();
     }
 }
