@@ -7,7 +7,6 @@ import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_LAUNCHER_UPDATE_CHECKED;
 import static com.videostreamtest.constants.PraxConstants.NetworkConstants.ACCEPTABLE_DOWNLOAD_SPEED_MBPS;
 import static com.videostreamtest.constants.PraxConstants.NetworkConstants.ACCEPTABLE_PING_TO_API;
-import static com.videostreamtest.constants.PraxConstants.NetworkConstants.DOWNLOAD_CONNECTION_TIMEOUT_MS;
 import static com.videostreamtest.constants.PraxConstants.NetworkConstants.MAX_PING_TO_API;
 import static com.videostreamtest.constants.PraxConstants.NetworkConstants.MIN_DOWNLOAD_SPEED_MBPS;
 import static com.videostreamtest.constants.PraxConstants.SharedPreferences.STATE_DOWNLOADS_COMPLETED;
@@ -29,6 +28,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -89,26 +89,35 @@ public class SplashActivity extends AppCompatActivity {
 
     private TextView networkDownloadSpeedTextView;
     private TextView networkLatencyTextView;
-    private TextView connectingToServerTextView;
+    private TextView loadingStageDescriptionTextView;
+    private SeekBar loadingProgressBar;
     private final HandlerThread networkTesterThread = new HandlerThread("NetworkTesterThread");
     private Handler networkTesterHandler;
     private Runnable networkTesterRunnable;
+    /** Must only have 1 runnable assigned, which is responsible for the number of dots after the
+     * loading stage description text (below the loading bar).
+     */
     private final Handler networkConnectionUiHandler = new Handler(Looper.getMainLooper());
-    private final Runnable networkConnectionUiRunnable = new Runnable() {
-        int nrDots = 1;
 
-        @Override
-        public void run() {
-            StringBuilder sb = new StringBuilder(getString(R.string.connecting_to_server));
-            for (int i = 0; i < nrDots; i++) {
-                sb.append(".");
-            }
-            nrDots++;
-            if (nrDots > 3) nrDots = 1;
-            connectingToServerTextView.setText(sb.toString());
-            networkConnectionUiHandler.postDelayed(this, 500);
+    private enum ProgressStages {
+        SETTING_UP("Setting up", 0),
+        CONNECTING_TO_SERVER("Connecting to server", 20),
+        CONNECTED_TO_SERVER("Connected", 30),
+        OFFLINE("You are offline", 30),
+        CHECKING_ACCOUNT_INFO("Checking account info", 40),
+        FETCHING_ACCOUNT_INFO("Fetching account info", 50),
+        CHECKING_PRODUCTS("Checking products", 70),
+        UPDATING_PRODUCTS("Updating products", 80),
+        DONE("Done!", 100);
+
+        public final String description;
+        public final int progress;
+
+        ProgressStages(String description, int progress) {
+            this.description = description;
+            this.progress = progress;
         }
-    };
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -117,7 +126,10 @@ public class SplashActivity extends AppCompatActivity {
 
         networkDownloadSpeedTextView = findViewById(R.id.network_download_speed_textview);
         networkLatencyTextView = findViewById(R.id.network_latency_textview);
-        connectingToServerTextView = findViewById(R.id.connecting_to_server_textview);
+        loadingStageDescriptionTextView = findViewById(R.id.loading_stage_description_textview);
+        loadingProgressBar = findViewById(R.id.loading_progress_bar);
+        loadingProgressBar.setMax(100);
+        setLoadingProgress(ProgressStages.SETTING_UP);
 
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -132,7 +144,7 @@ public class SplashActivity extends AppCompatActivity {
         apikey = incomingIntent.getStringExtra(EXTRA_ACCOUNT_TOKEN);
 
         if (firstOpenedSinceRestart(incomingIntent)) {
-            connectingToServerTextView.setVisibility(View.VISIBLE);
+            loadingStageDescriptionTextView.setVisibility(View.VISIBLE);
         }
 
         if (!networkTesterThread.isAlive()) {
@@ -145,11 +157,15 @@ public class SplashActivity extends AppCompatActivity {
             @Override
             public void onSuccess(final long ping, final long downloadSpeedKbps) {
                 // might be coming from downloads, then apikey can be null indeed
+                runOnUiThread(() -> setLoadingProgress(ProgressStages.CONNECTED_TO_SERVER));
+
                 if (apikey == null || apikey.isBlank()) {
+                    runOnUiThread(() -> setLoadingProgress(ProgressStages.CHECKING_ACCOUNT_INFO));
                     Log.d(TAG, "\t greg apikey was null or blank");
                     // but in that case it should already be saved in sp
                     apikey = AccountHelper.getAccountToken(SplashActivity.this);
                     if (apikey == null || NO_APIKEY.equals(apikey)) {
+                        runOnUiThread(() -> setLoadingProgress(ProgressStages.FETCHING_ACCOUNT_INFO));
                         Log.d(TAG, "\t\t greg and also wasn't saved");
                         isNavigating = true;
                         NavHelper.openPraxtourLauncher(SplashActivity.this, true, removeCallbacksForNetworkTester());
@@ -174,6 +190,7 @@ public class SplashActivity extends AppCompatActivity {
                     Log.d(TAG, "\t greg not verified source");
                     if (isNavigating) return;
                     isNavigating = true;
+                    runOnUiThread(() -> setLoadingProgress(ProgressStages.FETCHING_ACCOUNT_INFO));
                     NavHelper.openPraxtourLauncher(SplashActivity.this, false, removeCallbacksForNetworkTester());
                     return;
                 }
@@ -188,9 +205,10 @@ public class SplashActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(final long ping, final long downloadSpeedKbps) {
-                networkConnectionUiHandler.removeCallbacksAndMessages(null);
+                runOnUiThread(() -> setLoadingProgress(ProgressStages.OFFLINE));
 
                 if (apikey == null || apikey.isBlank()) {
+                    runOnUiThread(() -> setLoadingProgress(ProgressStages.CHECKING_ACCOUNT_INFO));
                     apikey = AccountHelper.getAccountToken(SplashActivity.this);
                     isNavigating = true;
                     if (apikey == null || NO_APIKEY.equals(apikey)) {
@@ -213,17 +231,14 @@ public class SplashActivity extends AppCompatActivity {
                 }
 
                 runOnUiThread(() -> {
-                    connectingToServerTextView.setText(getString(R.string.failed_server_connection));
-                    connectingToServerTextView.setVisibility(View.VISIBLE);
+                    loadingStageDescriptionTextView.setText(getString(R.string.failed_server_connection));
+                    loadingStageDescriptionTextView.setVisibility(View.VISIBLE);
                 });
             }
         });
 
+        setLoadingProgress(ProgressStages.CONNECTING_TO_SERVER);
         networkTesterHandler.postDelayed(networkTesterRunnable, 1000);
-        networkConnectionUiHandler.postDelayed(networkConnectionUiRunnable, 1000);
-        networkConnectionUiHandler.postDelayed(() -> {
-            connectingToServerTextView.setVisibility(View.VISIBLE);
-        }, DOWNLOAD_CONNECTION_TIMEOUT_MS);
     }
 
     private PraxCallbacks.OnFailureCallback removeCallbacksForNetworkTester() {
@@ -291,6 +306,8 @@ public class SplashActivity extends AppCompatActivity {
                  *  based on number of products == 1 > Load product
                  *  based on number of products == 0 > login activity
                  */
+
+                setLoadingProgress(ProgressStages.CHECKING_PRODUCTS);
                 splashViewModel.getAllAccountProducts(savedConfig.getAccountToken()).observe(this, products -> {
                     if (products != null) {
                         Log.d(TAG, "Current product count: "+products.size());
@@ -338,6 +355,7 @@ public class SplashActivity extends AppCompatActivity {
                         } else {
                             // Execute when number of products is 0
                             Log.d(TAG, "Unset current configuration when product count = 0");
+                            setLoadingProgress(ProgressStages.UPDATING_PRODUCTS);
 
                             WorkHelper.enqueueWork(
                                     ActiveProductsServiceWorker.class,
@@ -448,9 +466,39 @@ public class SplashActivity extends AppCompatActivity {
                 intent.putExtra(EXTRA_ACCOUNT_TOKEN, apikey);
                 intent.putExtra(EXTRA_FROM_LAUNCHER, true);
             }
+            if (destinationActivityClass.equals(ProductPickerActivity.class)) {
+                setLoadingProgress(ProgressStages.DONE);
+            }
             startActivity(intent);
             finish();
         });
+    }
+
+    private void setLoadingProgress(final ProgressStages stage) {
+        loadingProgressBar.setProgress(stage.progress);
+        loadingStageDescriptionTextView.setText(stage.description);
+
+        networkConnectionUiHandler.removeCallbacksAndMessages(null);
+
+        if (stage.equals(ProgressStages.DONE)) return; // no dots needed
+
+        final Runnable networkConnectionUiRunnable = new Runnable() {
+            int nrDots = 1;
+
+            @Override
+            public void run() {
+                StringBuilder sb = new StringBuilder(stage.description);
+                for (int i = 0; i < nrDots; i++) {
+                    sb.append(".");
+                }
+                nrDots++;
+                if (nrDots > 3) nrDots = 1;
+                loadingStageDescriptionTextView.setText(sb.toString());
+                networkConnectionUiHandler.postDelayed(this, 500);
+            }
+        };
+
+        networkConnectionUiHandler.post(networkConnectionUiRunnable);
     }
 
     private boolean needToDownloadFiles() {
