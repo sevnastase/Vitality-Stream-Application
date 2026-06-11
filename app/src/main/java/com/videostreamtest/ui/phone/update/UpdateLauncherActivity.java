@@ -1,6 +1,7 @@
 package com.videostreamtest.ui.phone.update;
 
 import static com.videostreamtest.constants.PraxConstants.ApkUpdate.EVENT_INSTALL_COMPLETE;
+import static com.videostreamtest.constants.PraxConstants.ApkUpdate.EVENT_INSTALL_FAILED;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_ACCOUNT_TOKEN;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_LAUNCHER_UPDATE_CHECKED;
 import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
@@ -70,9 +71,20 @@ public class UpdateLauncherActivity extends AppCompatActivity {
     private final BroadcastReceiver installResultLocalReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "Greg installation complete");
-            deleteApkFromCache();
-            goToSplashActivity(true);
+            String action = intent.getAction();
+            if (action == null) return;
+
+            switch (action) {
+                case EVENT_INSTALL_COMPLETE:
+                    Log.d(TAG, "Greg installation complete");
+                    deleteApkFromCache();
+                    goToSplashActivity(true);
+                    break;
+                case EVENT_INSTALL_FAILED:
+                    Log.w(TAG, "Greg installation failed");
+                    startInstallationButton.setVisibility(View.VISIBLE);
+                    installationInProgressLayout.setVisibility(View.GONE);
+            }
         }
     };
     /**
@@ -434,7 +446,12 @@ public class UpdateLauncherActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        LocalBroadcastManager.getInstance(this).registerReceiver(installResultLocalReceiver, new IntentFilter(EVENT_INSTALL_COMPLETE));
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(EVENT_INSTALL_COMPLETE);
+        intentFilter.addAction(EVENT_INSTALL_FAILED);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(installResultLocalReceiver, intentFilter);
     }
 
     @Override

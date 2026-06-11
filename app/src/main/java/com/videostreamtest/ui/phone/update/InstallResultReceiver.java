@@ -1,6 +1,7 @@
 package com.videostreamtest.ui.phone.update;
 
 import static com.videostreamtest.constants.PraxConstants.ApkUpdate.EVENT_INSTALL_COMPLETE;
+import static com.videostreamtest.constants.PraxConstants.ApkUpdate.EVENT_INSTALL_FAILED;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -29,6 +30,10 @@ public class InstallResultReceiver extends BroadcastReceiver {
                     confirmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(confirmIntent);
                 }
+                break;
+            case PackageInstaller.STATUS_FAILURE:
+            case PackageInstaller.STATUS_FAILURE_ABORTED:
+                LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(EVENT_INSTALL_FAILED));
                 break;
             default:
                 Log.e(TAG, "Error during installation\n\tstatus: " + status + "\n\tmsg: " + msg);

@@ -21,6 +21,7 @@ public class PraxConstants {
 
     public static class ApkUpdate {
         public static final String EVENT_INSTALL_COMPLETE = "com.videostreamtest.EVENT_INSTALL_COMPLETE";
+        public static final String EVENT_INSTALL_FAILED = "com.videostreamtest.EVENT_INSTALL_FAILED";
         public static final String PRAXTOUR_LAUNCHER_PACKAGE_NAME = "com.praxtourlauncher";
     }
 
