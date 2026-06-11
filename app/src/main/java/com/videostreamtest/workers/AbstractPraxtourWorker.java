@@ -3,6 +3,7 @@ package com.videostreamtest.workers;
 import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_API_URL;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
@@ -16,6 +17,8 @@ import com.videostreamtest.service.wifi.WifiSpeedtest;
  * end, calls the abstract {@link this#doActualWork()}, which extending classes must override.
  */
 public abstract class AbstractPraxtourWorker extends Worker {
+    private static final String TAG = AbstractPraxtourWorker.class.getSimpleName();
+
     public AbstractPraxtourWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
@@ -30,7 +33,14 @@ public abstract class AbstractPraxtourWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        if (!WifiSpeedtest.getPingTo(PRAXCLOUD_API_URL)) return Result.failure();
+        if (!WifiSpeedtest.getPingTo(PRAXCLOUD_API_URL)) {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                Log.w(TAG, "Thread was interrupted: " + e);
+            }
+            return Result.retry();
+        }
 
         return doActualWork();
     }
