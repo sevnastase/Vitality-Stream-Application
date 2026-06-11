@@ -8,6 +8,9 @@ import androidx.work.Data;
 import androidx.work.WorkerParameters;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.videostreamtest.config.db.PraxtourDatabase;
+import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -51,6 +54,22 @@ public class DownloadMovieImagesServiceWorker extends AbstractPraxtourWorker imp
         //Create movie object from json string
         routefilm = new Gson().fromJson(inputDataString, Movie.class);
 
+        if (routefilm == null) {
+            int inputMovieId = inputData.getInt("movie-id", -1);
+            if (inputMovieId == -1) {
+                return Result.success();
+            }
+
+            Routefilm dbRoutefilm = PraxtourDatabase.getDatabase(getApplicationContext()).routefilmDao().getRoutefilm(inputMovieId);
+
+            if (dbRoutefilm == null) {
+                Log.e(TAG, "No routefilm in DB for id: " + inputMovieId);
+                return Result.retry();
+            }
+
+            routefilm = Movie.fromRoutefilm(dbRoutefilm);
+        }
+
         //CHECK IF MOVIE IMAGES ARE ALREADY PRESENT
         if (DownloadHelper.isMovieImagesPresent(getApplicationContext(), routefilm)) {
             return Result.success();
@@ -76,22 +95,25 @@ public class DownloadMovieImagesServiceWorker extends AbstractPraxtourWorker imp
             try {
                 //Scenery
                 download(routefilm.getMovieImagepath(), routefilm.getSceneryFileSize(), String.valueOf(routefilm.getId()));
+                Log.d(TAG, "Downloaded scenery for " + routefilm.getMovieTitle());
                 //Map
                 download(routefilm.getMovieRouteinfoPath(), routefilm.getMapFileSize(), String.valueOf(routefilm.getId()));
+                Log.d(TAG, "Downloaded map for " + routefilm.getMovieTitle());
             } catch (IOException ioException) {
                 Log.e(TAG, ioException.getLocalizedMessage());
                 Log.e(TAG, "Error downloading");
-                return Result.failure();
+                return Result.retry();
             }
         } else {
             Log.e(TAG, "Cant copy file");
-            return Result.failure();
+            return Result.retry();
         }
 
         //BUILD OUTPUT DATA
         Data outputData = new Data.Builder()
                 .putString("apikey", apikey)
-                .putInt("movie-id", routefilm.getId()).build();
+                .putString(INPUT_ROUTEFILM_JSON_STRING, new GsonBuilder().create().toJson(routefilm, Movie.class))
+                .build();
         return Result.success(outputData);
     }
 

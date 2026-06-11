@@ -27,6 +27,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.ExistingPeriodicWorkPolicy;
@@ -34,6 +35,7 @@ import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkContinuation;
 import androidx.work.WorkManager;
 
 import com.google.android.material.navigation.NavigationView;
@@ -41,7 +43,6 @@ import com.google.gson.GsonBuilder;
 import com.videostreamtest.R;
 import com.videostreamtest.config.entity.Product;
 import com.videostreamtest.config.entity.Routefilm;
-import com.videostreamtest.config.repository.RoutefilmRepository;
 import com.videostreamtest.data.model.Movie;
 import com.videostreamtest.data.model.log.DeviceInformation;
 import com.videostreamtest.helpers.DataHolder;
@@ -73,6 +74,8 @@ import com.videostreamtest.workers.synchronisation.SyncMovieFlagsServiceWorker;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static android.view.View.SYSTEM_UI_FLAG_FULLSCREEN;
@@ -374,34 +377,88 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
     }
 
     private void downloadLocalMovies() {
-            if (isStoragePermissionGranted(AccountHelper.isLocalPlay(getApplicationContext()))) {
-                productPickerViewModel.getRoutefilms(AccountHelper.getAccountToken(getApplicationContext())).observe(this, routefilms -> {
-                    if (routefilms.size()>0) {
-                        //CHECK IF ALL MOVIES FIT TO DISK
-                        // Accumulate size of movies
-                        long totalDownloadableMovieFileSizeOnDisk = 0L;
-                        for (Routefilm routefilm: routefilms) {
-                            if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
-                                totalDownloadableMovieFileSizeOnDisk += routefilm.getMovieFileSize();
-                            }
-                        }
-                        // FIXME: this does not consider the size of supporting files (T1-T6, Scenery.jpg, sounds)
-                        if (DownloadHelper.canFileBeCopiedToLargestVolume(getApplicationContext(), totalDownloadableMovieFileSizeOnDisk)) {
-                            for (final Routefilm routefilm: routefilms) {
-                                if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
-                                    startDownloadWorker(routefilm.getMovieId(), AccountHelper.getAccountMediaServerUrl(getApplicationContext()));
-                                }
-                            }
+        if (isStoragePermissionGranted(AccountHelper.isLocalPlay(getApplicationContext()))) {
+            productPickerViewModel.getRoutefilms(AccountHelper.getAccountToken(getApplicationContext())).observe(this, routefilms -> {
+                List<Routefilm> routefilmsToDownload = new ArrayList<>();
+                long totalDownloadableMovieFileSizeOnDisk = 0L;
 
-                            downloadSound();
-                            downloadFlags();
-                            downloadMovieSupportImages();
-                            periodicSyncDownloadMovieRouteParts(AccountHelper.getAccountToken(this));
-                        } else {
-                            Log.d(TAG, "Movies do not fit on disk, DownloadRunners not started.");
-                            LogHelper.WriteLogRule(getApplicationContext(), AccountHelper.getAccountToken(getApplicationContext()), "Movies do not fit on disk, DownloadRunners aborted.","DEBUG", "");
-                        }
+                for (Routefilm routefilm : routefilms) {
+                    if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
+                        totalDownloadableMovieFileSizeOnDisk += routefilm.getMovieFileSize();
+                        routefilmsToDownload.add(routefilm);
                     }
+                }
+
+                if (!DownloadHelper.canFileBeCopiedToLargestVolume(getApplicationContext(), totalDownloadableMovieFileSizeOnDisk)) {
+                    Log.d(TAG, "Movies do not fit on disk, DownloadRunners not started.");
+                    LogHelper.WriteLogRule(getApplicationContext(), AccountHelper.getAccountToken(getApplicationContext()), "Movies do not fit on disk, DownloadRunners aborted.","DEBUG", "");
+                    return;
+                }
+
+                final int[] movieIds = routefilmsToDownload.stream().mapToInt(Routefilm::getMovieId).toArray();
+                WorkContinuation chain = null;
+
+                /* Idea: queue in batches of size n.
+                 * For now, we start a batch of size n every t seconds.
+                 * In the future we could wait for the batch to finish running, before running the next.
+                 */
+                for (int i = 0; i < routefilmsToDownload.size(); i++) {
+                    Data inputData = new Data.Builder()
+                            .putInt("movie-id", movieIds[i])
+                            .build();
+
+                    OneTimeWorkRequest movieRequest = new OneTimeWorkRequest.Builder(DownloadMovieServiceWorker.class)
+                            .setInputData(inputData)
+                            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
+                            .build();
+
+                    OneTimeWorkRequest movieImagesRequest = new OneTimeWorkRequest.Builder(DownloadMovieImagesServiceWorker.class)
+                            .setInputData(inputData)
+                            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
+                            .build();
+
+                    List<OneTimeWorkRequest> batch = Arrays.asList(movieRequest, movieImagesRequest);
+
+                    WorkManager wm = WorkManager.getInstance(this);
+                    if (chain == null) { // before the first batch is queued chain is init as null
+                        Log.d(TAG, "Start with batch " + i);
+                        chain = wm.beginUniqueWork("download-movies-new", ExistingWorkPolicy.KEEP, batch);
+                    } else {
+                        Log.d(TAG, "Then batch " + i);
+                        chain = chain.then(batch);
+                    }
+                }
+
+                if (chain != null) {
+                    chain.enqueue();
+                }
+
+//                    if (routefilms.size()>0) {
+//                        //CHECK IF ALL MOVIES FIT TO DISK
+//                        // Accumulate size of movies
+//                        long totalDownloadableMovieFileSizeOnDisk = 0L;
+//                        for (Routefilm routefilm: routefilms) {
+//                            if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
+//                                totalDownloadableMovieFileSizeOnDisk += routefilm.getMovieFileSize();
+//                            }
+//                        }
+//                        // FIXME: this does not consider the size of supporting files (T1-T6, Scenery.jpg, sounds)
+//                        if (DownloadHelper.canFileBeCopiedToLargestVolume(getApplicationContext(), totalDownloadableMovieFileSizeOnDisk)) {
+//                            for (final Routefilm routefilm: routefilms) {
+//                                if (!DownloadHelper.isMoviePresent(getApplicationContext(), Movie.fromRoutefilm(routefilm))) {
+//                                    startDownloadWorker(routefilm.getMovieId(), AccountHelper.getAccountMediaServerUrl(getApplicationContext()));
+//                                }
+//                            }
+//
+//                            downloadSound();
+//                            downloadFlags();
+//                            downloadMovieSupportImages();
+//                            periodicSyncDownloadMovieRouteParts(AccountHelper.getAccountToken(this));
+//                        } else {
+//                            Log.d(TAG, "Movies do not fit on disk, DownloadRunners not started.");
+//                            LogHelper.WriteLogRule(getApplicationContext(), AccountHelper.getAccountToken(getApplicationContext()), "Movies do not fit on disk, DownloadRunners aborted.","DEBUG", "");
+//                        }
+//                    }
                 });
             }
     }

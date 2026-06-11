@@ -23,6 +23,7 @@ import com.videostreamtest.R;
 import com.videostreamtest.config.db.PraxtourDatabase;
 import com.videostreamtest.config.entity.LocalMoviesDownloadTable;
 import com.videostreamtest.data.model.Movie;
+import com.videostreamtest.helpers.AccountHelper;
 import com.videostreamtest.service.database.DatabaseRestService;
 import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.utils.ApplicationSettings;
@@ -74,8 +75,11 @@ public class DownloadMovieServiceWorker extends AbstractPraxtourWorker implement
     @NonNull
     @Override
     protected Result doActualWork() {
-        localMediaServerUrl = getInputData().getString("localMediaServer");
+        localMediaServerUrl = AccountHelper.getAccountMediaServerUrl(getApplicationContext());
         movieId = getInputData().getInt("movie-id", -1);
+        if (movieId == -1) {
+            return Result.success();
+        }
 
         final String apikey = getApplicationContext().getSharedPreferences("app", Context.MODE_PRIVATE).getString("apikey", "");
 
@@ -101,9 +105,7 @@ public class DownloadMovieServiceWorker extends AbstractPraxtourWorker implement
         setForegroundAsync(createForegroundInfo(progress));
 
         if (movieId > 0 && !isAlreadyDownloaded(getRoutefilm(movieId))) {
-            THREAD_POOL_EXECUTOR.execute(() -> {
-                startDownload(movieId);
-            });
+            startDownload(movieId);
         }
 
         Log.d(getClass().getSimpleName(), "ActiveCount: "+THREAD_POOL_EXECUTOR.getActiveCount());
