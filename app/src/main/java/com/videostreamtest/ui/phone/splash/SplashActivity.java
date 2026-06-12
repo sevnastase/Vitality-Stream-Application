@@ -2,6 +2,7 @@ package com.videostreamtest.ui.phone.splash;
 
 import static com.videostreamtest.constants.PraxConstants.DefaultValues.NO_APIKEY;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_ACCOUNT_TOKEN;
+import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_BOOT;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_DOWNLOADS;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_FROM_LAUNCHER;
 import static com.videostreamtest.constants.PraxConstants.IntentExtra.EXTRA_LAUNCHER_UPDATE_CHECKED;
@@ -10,6 +11,7 @@ import static com.videostreamtest.constants.PraxConstants.NetworkConstants.ACCEP
 import static com.videostreamtest.constants.PraxConstants.NetworkConstants.MAX_PING_TO_API;
 import static com.videostreamtest.constants.PraxConstants.NetworkConstants.MIN_DOWNLOAD_SPEED_MBPS;
 import static com.videostreamtest.constants.PraxConstants.SharedPreferences.STATE_DOWNLOADS_COMPLETED;
+import static com.videostreamtest.constants.PraxConstants.Timings.WAIT_BEFORE_STARTUP_MS;
 import static com.videostreamtest.service.wifi.WifiSpeedtest.ERROR_NETWORK_VALUE;
 import static com.videostreamtest.utils.ApplicationSettings.PRAXCLOUD_MEDIA_URL;
 
@@ -28,6 +30,8 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -100,9 +104,10 @@ public class SplashActivity extends AppCompatActivity {
     private final Handler networkConnectionUiHandler = new Handler(Looper.getMainLooper());
 
     private enum ProgressStages {
-        SETTING_UP("Setting up", 0),
+        DEVICE_BOOTING("Waiting for system startup", 0),
+        SETTING_UP("Setting up", 10),
         CONNECTING_TO_SERVER("Connecting to server", 20),
-        CONNECTED_TO_SERVER("Connected", 30),
+        CONNECTED_TO_SERVER("Connected!", 30),
         OFFLINE("You are offline", 30),
         CHECKING_ACCOUNT_INFO("Checking account info", 40),
         FETCHING_ACCOUNT_INFO("Fetching account info", 50),
@@ -142,10 +147,6 @@ public class SplashActivity extends AppCompatActivity {
 
         final Intent incomingIntent = getIntent();
         apikey = incomingIntent.getStringExtra(EXTRA_ACCOUNT_TOKEN);
-
-        if (firstOpenedSinceRestart(incomingIntent)) {
-            loadingStageDescriptionTextView.setVisibility(View.VISIBLE);
-        }
 
         if (!networkTesterThread.isAlive()) {
             networkTesterThread.start();
@@ -237,8 +238,21 @@ public class SplashActivity extends AppCompatActivity {
             }
         });
 
-        setLoadingProgress(ProgressStages.CONNECTING_TO_SERVER);
-        networkTesterHandler.postDelayed(networkTesterRunnable, 1000);
+
+        final Bundle extras = getIntent().getExtras();
+        boolean isFromBoot = false;
+        if (extras != null) {
+            isFromBoot = extras.getBoolean(EXTRA_FROM_BOOT, false);
+        }
+
+        if (isFromBoot) {
+            setLoadingProgress(ProgressStages.DEVICE_BOOTING);
+        }
+
+        networkTesterHandler.postDelayed(() -> {
+            runOnUiThread(() -> setLoadingProgress(ProgressStages.CONNECTING_TO_SERVER));
+            networkTesterRunnable.run();
+        }, isFromBoot ? WAIT_BEFORE_STARTUP_MS : 1000);
     }
 
     private PraxCallbacks.OnFailureCallback removeCallbacksForNetworkTester() {
@@ -480,7 +494,18 @@ public class SplashActivity extends AppCompatActivity {
 
         networkConnectionUiHandler.removeCallbacksAndMessages(null);
 
-        if (stage.equals(ProgressStages.DONE)) return; // no dots needed
+        if (stage.equals(ProgressStages.DEVICE_BOOTING)) {
+            AlphaAnimation anim = new AlphaAnimation(1.0f, 0.0f);
+            anim.setDuration(1000);
+            anim.setRepeatMode(AlphaAnimation.REVERSE);
+            anim.setRepeatCount(Animation.INFINITE);
+            loadingStageDescriptionTextView.setAnimation(anim);
+            return;
+        } else {
+            loadingStageDescriptionTextView.setAnimation(null);
+        }
+
+        if (stage.description.matches(".*[!.]$")) return; // no dots needed
 
         final Runnable networkConnectionUiRunnable = new Runnable() {
             int nrDots = 1;
@@ -563,16 +588,6 @@ public class SplashActivity extends AppCompatActivity {
         return intent.getBooleanExtra(EXTRA_FROM_LAUNCHER, false) ||
                 intent.getBooleanExtra(EXTRA_FROM_DOWNLOADS, false) ||
                 intent.getBooleanExtra(EXTRA_LAUNCHER_UPDATE_CHECKED, false);
-    }
-
-    private boolean firstOpenedSinceRestart(Intent intent) {
-        String action = intent.getAction();
-        Set<String> categories = intent.getCategories();
-
-        return intent.getBooleanExtra(EXTRA_FROM_LAUNCHER, false) ||
-                Intent.ACTION_MAIN.equals(action) ||
-                categories != null && categories.contains(Intent.CATEGORY_LAUNCHER) ||
-                categories != null && categories.contains(Intent.CATEGORY_LEANBACK_LAUNCHER);
     }
 
     private synchronized void showNetworkInfos(long ping, long speedKbps) {

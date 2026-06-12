@@ -1,5 +1,7 @@
 package com.videostreamtest.constants;
 
+import android.os.Build;
+
 public class PraxConstants {
     public static class IntentExtra {
         public static final String EXTRA_ACCOUNT_TOKEN = "com.videostreamtest.EXTRA_ACCOUNT_TOKEN";
@@ -13,6 +15,7 @@ public class PraxConstants {
         public static final String EXTRA_FROM_DOWNLOADS = "com.videostreamtest.EXTRA_FROM_DOWNLOADS";
         public static final String EXTRA_LOGOUT = "com.videostreamtest.EXTRA_LOGOUT";
         public static final String EXTRA_LAUNCHER_UPDATE_CHECKED = "com.videostreamtest.EXTRA_FROM_UPDATE_ACTIVITY";
+        public static final String EXTRA_FROM_BOOT = "com.videostreamtest.EXTRA_FROM_BOOT";
     }
 
     public static class SharedPreferences {
@@ -40,5 +43,12 @@ public class PraxConstants {
 
     public static class DefaultValues {
         public static final String NO_APIKEY = "unauthorized";
+    }
+
+    public static class Timings {
+        /** Amount of time to idle before executing any action after device startup (boot).
+         * If not enough time is given, crashes may occur due to early access to system resources.
+         */
+        public static final int WAIT_BEFORE_STARTUP_MS = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ? 15000 : 10000;
     }
 }
