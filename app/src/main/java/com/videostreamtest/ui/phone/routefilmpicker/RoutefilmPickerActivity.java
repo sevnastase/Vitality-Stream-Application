@@ -279,8 +279,6 @@ public class RoutefilmPickerActivity extends AppCompatActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (ViewHelper.isTouchScreen(this)) return false;
-
         // NB: The OK/SELECT button has to be handled in RoutefilmAdapter. If defined here,
         // it will not work as expected.
         switch (keyCode) {

@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 
 import com.videostreamtest.R;
 import com.videostreamtest.ui.phone.productpicker.fragments.settings.audio.AudioSettingsFragment;
+import com.videostreamtest.ui.phone.productpicker.fragments.settings.preferences.AppPreferencesFragment;
 import com.videostreamtest.ui.phone.productpicker.fragments.settings.privacypolicy.PrivacyPolicyFragment;
 import com.videostreamtest.ui.phone.productpicker.fragments.settings.wifi.WifiSettingsFragment;
 
@@ -23,7 +24,10 @@ public class SettingsFragment extends Fragment {
     private Button audioButton;
     private Button privacyPolicyButton;
     private Button wifiButton;
+    private Button appPreferencesButton;
     private final Class<? extends Fragment> DEFAULT_SETTINGS_SCREEN = AudioSettingsFragment.class;
+
+    private Button[] allButtons;
 
 
     @Override
@@ -34,6 +38,9 @@ public class SettingsFragment extends Fragment {
         audioButton = view.findViewById(R.id.audio_button);
         privacyPolicyButton = view.findViewById(R.id.privacy_policy_button);
         wifiButton = view.findViewById(R.id.wifi_button);
+        appPreferencesButton = view.findViewById(R.id.app_preferences_button);
+
+        allButtons = new Button[]{audioButton, privacyPolicyButton, wifiButton, appPreferencesButton};
 
         return view;
     }
@@ -45,19 +52,20 @@ public class SettingsFragment extends Fragment {
         focus(audioButton);
 
         audioButton.setOnClickListener(v -> {
-            unfocus(new Button[]{privacyPolicyButton, wifiButton});
             focus(audioButton);
             goToFragment(AudioSettingsFragment.class);
         });
         privacyPolicyButton.setOnClickListener(v -> {
-            unfocus(new Button[]{audioButton, wifiButton});
             focus(privacyPolicyButton);
             goToFragment(PrivacyPolicyFragment.class);
         });
         wifiButton.setOnClickListener(v -> {
-            unfocus(new Button[]{audioButton, privacyPolicyButton});
             focus(wifiButton);
             goToFragment(WifiSettingsFragment.class);
+        });
+        appPreferencesButton.setOnClickListener(v -> {
+            focus(appPreferencesButton);
+            goToFragment(AppPreferencesFragment.class);
         });
 
         super.onViewCreated(view, savedInstanceState);
@@ -66,16 +74,14 @@ public class SettingsFragment extends Fragment {
     private void focus(Button button) {
         button.requestFocus();
         button.setPaintFlags(button.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        for (Button b : allButtons) {
+            if (button.equals(b)) continue;
+            unfocus(b);
+        }
     }
 
     private void unfocus(Button button) {
         button.setPaintFlags(button.getPaintFlags() & ~Paint.UNDERLINE_TEXT_FLAG);
-    }
-
-    private void unfocus(Button[] buttons) {
-        for (Button button : buttons) {
-            unfocus(button);
-        }
     }
 
     /**

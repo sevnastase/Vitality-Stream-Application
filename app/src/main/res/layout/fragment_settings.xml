@@ -72,6 +72,18 @@
                         android:background="@color/light_blue_600"
                         android:text="Privacy Policy"
                         android:nextFocusLeft="@id/wifi_button"
+                        android:nextFocusRight="@id/app_preferences_button"
+                        android:paddingHorizontal="10dp"
+                        style="@style/AppTheme.DefaultMenuButton" />
+
+                    <Button
+                        android:id="@+id/app_preferences_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:background="@color/light_blue_600"
+                        android:text="Preferences"
+                        android:nextFocusLeft="@id/privacy_policy_button"
+                        android:paddingHorizontal="10dp"
                         style="@style/AppTheme.DefaultMenuButton" />
 
                 </LinearLayout>

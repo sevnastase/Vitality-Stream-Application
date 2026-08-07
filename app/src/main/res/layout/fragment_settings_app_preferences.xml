@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="500dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="15dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/touchscreen_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Using TV Remote"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent" />
+
+        <ImageButton
+            android:id="@+id/tv_remote_help_button"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:scaleType="fitCenter"
+            android:contentDescription="Help"
+            android:background="@null"
+            android:src="@drawable/help_question_mark"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/touchscreen_textview"
+            android:layout_marginLeft="10dp"/>
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/tv_remote_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>

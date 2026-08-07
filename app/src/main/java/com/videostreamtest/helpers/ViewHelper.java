@@ -1,5 +1,7 @@
 package com.videostreamtest.helpers;
 
+import static com.videostreamtest.constants.PraxConstants.UserPreferences.PRIMARY_INPUT_REMOTE;
+
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.BitmapFactory;
@@ -65,7 +67,7 @@ public class ViewHelper {
                 InputDevice device = inputManager.getInputDevice(id);
                 if (device != null && !device.isVirtual()) {
                     if ((device.getSources() & InputDevice.SOURCE_TOUCHSCREEN) == InputDevice.SOURCE_TOUCHSCREEN) {
-                        return true;
+                        return context.getSharedPreferences("app", Context.MODE_PRIVATE).getBoolean(PRIMARY_INPUT_REMOTE, false);
                     }
                 }
             }

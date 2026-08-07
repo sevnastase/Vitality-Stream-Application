@@ -51,4 +51,8 @@ public class PraxConstants {
          */
         public static final int WAIT_BEFORE_STARTUP_MS = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ? 15000 : 10000;
     }
+
+    public static class UserPreferences {
+        public static final String PRIMARY_INPUT_REMOTE = "com.videostreamtest.PRIMARY_INPUT_REMOTE";
+    }
 }
