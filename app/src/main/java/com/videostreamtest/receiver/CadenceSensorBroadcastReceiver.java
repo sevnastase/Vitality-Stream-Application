@@ -19,15 +19,18 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
     private static final String TAG = CadenceSensorBroadcastReceiver.class.getSimpleName();
     private static long lastUpdateTime = 0L; // static so it persists across onReceive calls
     private static final long MIN_UPDATE_INTERVAL_MS_DEFAULT = 1000;
-    private static final long MIN_UPDATE_INTERVAL_MS_GIADA = 1000;
+    /**
+     * E.g. the old Giada DN74 and X96 Max+ are weaker devices that cannot take that much info
+     * over a long period of time. They will start lagging as they run out of resources.
+     */
+    private static final long MIN_UPDATE_INTERVAL_MS_LOW_RESOURCES = 2000;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         long now = System.currentTimeMillis();
         long timePassed = now - lastUpdateTime;
-        // Giada computers that we use are weaker, so they need more time to process one request (only BLE)
         if (!AccountHelper.isChinesportAccount(PraxtourApplication.getAppContext())) {
-            if (Build.BRAND.toLowerCase().contains("giada") && timePassed < MIN_UPDATE_INTERVAL_MS_GIADA) {
+            if (isHostDeviceWeak() && timePassed < MIN_UPDATE_INTERVAL_MS_LOW_RESOURCES) {
                 return;
             } else if (timePassed < MIN_UPDATE_INTERVAL_MS_DEFAULT) {
                 return;
@@ -64,5 +67,9 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
             legacyInstance.updateVideoPlayerScreen(rpmReceived);
             legacyInstance.updateVideoPlayerParams(rpmReceived);
         }
+    }
+
+    private boolean isHostDeviceWeak() {
+        return Build.BRAND.toLowerCase().contains("giada") || Build.MODEL.toLowerCase().contains("x96");
     }
 }

@@ -68,7 +68,6 @@ import com.videostreamtest.helpers.ConfigurationHelper;
 import com.videostreamtest.helpers.DownloadHelper;
 import com.videostreamtest.helpers.LogHelper;
 import com.videostreamtest.helpers.ProductHelper;
-import com.videostreamtest.helpers.SoundHelper;
 import com.videostreamtest.ui.phone.result.ResultActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFilmStatusBarFragment;
 import com.videostreamtest.ui.phone.videoplayer.fragments.PraxFitStatusBarFragment;
@@ -142,6 +141,18 @@ public class VideoplayerActivity extends AppCompatActivity {
     private boolean isLoading = true;
     private boolean sensorConnected = false;
 
+    /** The minimum amount by which the video player should be updated.
+     * This exists so the host device does not get overwhelmed over a long session. */
+    private final float SPEED_EPSILON = 0.1f;
+
+    /** Last playback rate that was actually sent to update to video player. */
+    private float lastRateSet = -1f;
+
+    /** Last RPM that was actually sent to update to video player. */
+    private int lastRpmSet = -1;
+
+    /** Last RPM measurements that were received. Not every value here was necessarily
+     * sent to update the video player's playback rate. */
     private int[] lastRpmMeasurements = new int[5];
     private int currentMeasurementIteration = 0;
     private int numberOfFalsePositives = 0;
@@ -190,9 +201,26 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
     };
 
-    //CHROMECAST
-//    List<RendererDiscoverer> rendererDiscovererList = new ArrayList<>();
-//    List<RendererItem> rendererItemList = new ArrayList<>();
+    /** IMPORTANT: Only to be posted on {@link this#praxHandler} due to tight coupling. */
+    private final Runnable movieStopwatchRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (mediaPlayer != null && !routeFinished) {
+                Log.d(TAG, "TIME "+mediaPlayer.getTime());
+                videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getTime());
+                if (mediaPlayer.getMedia()!= null && mediaPlayer.getMedia().getDuration() != -1) {
+                    Log.d(TAG, "DURATION "+mediaPlayer.getMedia().getDuration());
+                    videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getMedia().getDuration());
+                }
+
+            }
+
+            // tightly coupled to praxHandler
+            if (!(routePaused || routeFinished)) {
+                praxHandler.postDelayed(this, 1000);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -273,27 +301,6 @@ public class VideoplayerActivity extends AppCompatActivity {
                         .replace(R.id.videoplayer_framelayout_statusbar, PraxFilmStatusBarFragment.class, arguments)
                         .commit();
 
-//                //Pass movie details with a second based timer TODO:move to setTimeLineEvent method in this class
-//                Handler praxHandler = new Handler();
-//                Runnable runnableMovieDetails = new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        if (mediaPlayer != null && !routeFinished) {
-//                            Log.d(TAG, "TIME "+mediaPlayer.getTime());
-//                            videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getTime());
-//                            if (mediaPlayer.getMedia()!= null && mediaPlayer.getMedia().getDuration() != -1) {
-//                                Log.d(TAG, "DURATION "+mediaPlayer.getMedia().getDuration());
-//                                videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getMedia().getDuration());
-//                            }
-//
-//                        }
-//                        if (!routeFinished) {
-//                            praxHandler.postDelayed(this::run, 1000);
-//                        }
-//                    }
-//                };
-//                praxHandler.post(runnableMovieDetails);
-
             }
             if (selectedProduct.getProductName().contains("PraxView")) {
                 this.communicationType = ProductHelper.getCommunicationType(selectedProduct.getCommunicationType());
@@ -306,25 +313,8 @@ public class VideoplayerActivity extends AppCompatActivity {
                         .commit();
 
                 videoPlayerViewModel.setMovieTotalDurationSeconds(selectedMovie.getMovieLength());
-                //Pass movie details with a second based timer TODO:move to setTimeLineEvent method in this class
-                Runnable runnableMovieDetails = new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mediaPlayer != null && !routeFinished) {
-                            Log.d(TAG, "TIME "+mediaPlayer.getTime());
-                            videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getTime());
-                            if (mediaPlayer.getMedia()!= null && mediaPlayer.getMedia().getDuration() != -1) {
-                                Log.d(TAG, "DURATION "+mediaPlayer.getMedia().getDuration());
-                                videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getMedia().getDuration());
-                            }
 
-                        }
-                        if (!routeFinished) {
-                            praxHandler.postDelayed(this, 1000);
-                        }
-                    }
-                };
-                praxHandler.post(runnableMovieDetails);
+                startStopwatch();
             }
             if (selectedProduct.getProductName().contains("PraxSpin")) {
                 /*
@@ -347,26 +337,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                         .replace(R.id.videoplayer_framelayout_statusbar, PraxSpinStatusBarFragment.class, arguments)
                         .commit();
 
-                //Pass movie details with a second based timer TODO:move to setTimeLineEvent method in this class
-
-                Runnable runnableMovieDetails = new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mediaPlayer != null && !routeFinished) {
-                            Log.d(TAG, "TIME "+mediaPlayer.getTime());
-                            videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getTime());
-                            if (mediaPlayer.getMedia()!= null && mediaPlayer.getMedia().getDuration() != -1) {
-                                Log.d(TAG, "DURATION "+mediaPlayer.getMedia().getDuration());
-                                videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getMedia().getDuration());
-                            }
-
-                        }
-                        if (!routeFinished) {
-                            praxHandler.postDelayed(this, 1000);
-                        }
-                    }
-                };
-                praxHandler.post(runnableMovieDetails);
+                startStopwatch();
 
                 videoPlayerViewModel.getKmhData().observe(this, kmhData ->{
                     if (kmhData != null && mediaPlayer != null) {
@@ -468,8 +439,8 @@ public class VideoplayerActivity extends AppCompatActivity {
             @Override
             public void run() {
                 sensorConnected = true;
-                updateVideoPlayerParams(35);
-                updateVideoPlayerScreen(35);
+                updateVideoPlayerParams(95);
+                updateVideoPlayerScreen(95);
             }
         };
         Runnable r2 = new Runnable() {
@@ -480,6 +451,14 @@ public class VideoplayerActivity extends AppCompatActivity {
                 updateVideoPlayerScreen(25);
             }
         };
+        Runnable r3 = new Runnable() {
+            @Override
+            public void run() {
+                sensorConnected = true;
+                updateVideoPlayerParams(51);
+                updateVideoPlayerScreen(51);
+            }
+        };
 
         return new Runnable() {
             int secondsPassed = 0;
@@ -488,8 +467,10 @@ public class VideoplayerActivity extends AppCompatActivity {
                 if (secondsPassed > 20) secondsPassed = 0;
                 if (secondsPassed < 10) {
                     autoRunnerHandler.post(r1);
-                } else {
+                } else if (secondsPassed < 15) {
                     autoRunnerHandler.post(r2);
+                } else {
+                    autoRunnerHandler.post(r3);
                 }
                 secondsPassed++;
                 autoRunnerHandler.postDelayed(this, 1000);
@@ -635,52 +616,37 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         final int clampedRpm = clampRpm(rpm);
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                //First update the measurements with the latest sensor data
-                updateLastCadenceMeasurement(clampedRpm);
+        runOnUiThread(() -> {
+            // First update the measurements with the latest sensor data
+            updateLastCadenceMeasurement(clampedRpm);
 
-                if (mediaPlayer!=null) {
-                    Log.d(TAG, "TIME "+mediaPlayer.getTime());
-                    videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getTime());
-                    if (mediaPlayer.getMedia().getDuration() != -1) {
-                        Log.d(TAG, "DURATION "+mediaPlayer.getMedia().getDuration());
-                        videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getMedia().getDuration());
-                    }
-                }
+            // Update the on-screen data based on CommunicationType
+            switch (communicationType) {
+                case RPM:
+                case ACTIVE:
+                    if (clampedRpm == lastRpmSet) break;
 
-                /* Update the on-screen data based on CommunicationType */
-                switch (communicationType) {
-                    case RPM:
-                        //Boolean to unlock video because sensor is connected
-                        sensorConnected = clampedRpm>0;
-                        //Update RPM
-                        videoPlayerViewModel.setRpmData(clampedRpm);
-                        break;
-                    case ACTIVE:
-                        //Boolean to unlock video because sensor is connected
-                        sensorConnected = clampedRpm>0;
-                        //Update RPM
-                        videoPlayerViewModel.setRpmData(clampedRpm);
-                        break;
-                    case NONE:
-                        sensorConnected = true;
-                        break;
-                    default:
-                }
-                Log.d(TAG, "RPM: "+clampedRpm+" sensorConnected: "+sensorConnected);
-                /* Pause mechanism  */
-                //Only show pause screen while the video is not in loading state
-                if (!isLoading) {
-                    //If the average measurement is 0 and the route is not paused then pause and show pause screen
-                    if (clampedRpm == 0 && !routePaused && !(communicationType == CommunicationType.NONE)) {
+                    //Boolean to unlock video because sensor is connected
+                    sensorConnected = clampedRpm>0;
+                    videoPlayerViewModel.setRpmData(clampedRpm);
+                    break;
+                //Update RPM
+                case NONE:
+                    sensorConnected = true;
+                    break;
+                default:
+            }
+            Log.d(TAG, "RPM: "+clampedRpm+" sensorConnected: "+sensorConnected);
+            /* Pause mechanism  */
+            //Only show pause screen while the video is not in loading state
+            if (!isLoading) {
+                //If the average measurement is 0 and the route is not paused then pause and show pause screen
+                if (clampedRpm == 0 && !routePaused && !(communicationType == CommunicationType.NONE)) {
+                    togglePauseScreen();
+                } else {
+                    //If the route is paused and the average measurement is higher then 0 then unpause en remove pause screen
+                    if (routePaused && clampedRpm > 0) {
                         togglePauseScreen();
-                    } else {
-                        //If the route is paused and the average measurement is higher then 0 then unpause en remove pause screen
-                        if (routePaused && clampedRpm > 0) {
-                            togglePauseScreen();
-                        }
                     }
                 }
             }
@@ -694,29 +660,23 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         final int clampedRpm = clampRpm(rpm);
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                //If the route is not paused then pass params to the videoplayer
-                if(!routePaused) {
-                    /* Update the video player */
-                    switch (communicationType) {
-                        case RPM:
-                            if (mediaPlayer!= null) {
-                                mediaPlayer.setRate(RpmVectorLookupTable.getPlaybackspeed(clampedRpm));
-                            }
-                            break;
-                        case ACTIVE:
-                            if (mediaPlayer!= null) {
-                                mediaPlayer.setRate(1.0f);
-                            }
-                            break;
-                        case NONE:
-                            // This clause will never be executed as there is no rpm data
-                            break;
-                        default:
-                    }
-                }
+        runOnUiThread(() -> {
+            // If the route is not paused then pass params to the videoplayer
+            if (routePaused || mediaPlayer == null) return;
+            /* Update the video player */
+            switch (communicationType) {
+                case RPM:
+                    float newSpeed = RpmVectorLookupTable.getPlaybackspeed(clampedRpm);
+                    if (Math.abs(newSpeed - lastRateSet) < SPEED_EPSILON) return;
+
+                    lastRateSet = newSpeed;
+                    lastRpmSet = clampedRpm;
+                    mediaPlayer.setRate(RpmVectorLookupTable.getPlaybackspeed(clampedRpm));
+                    break;
+                case ACTIVE:
+                case NONE:
+                    // no action
+                    break;
             }
         });
     }
@@ -1278,14 +1238,11 @@ public class VideoplayerActivity extends AppCompatActivity {
     }
 
     private void updateMeasurementList(final int rpm) {
-        if (currentMeasurementIteration < lastRpmMeasurements.length) {
-            lastRpmMeasurements[currentMeasurementIteration] = rpm;
-            currentMeasurementIteration++;
-        } else {
+        if (currentMeasurementIteration >= lastRpmMeasurements.length) {
             currentMeasurementIteration = 0;
-            lastRpmMeasurements[currentMeasurementIteration] = rpm;
-            currentMeasurementIteration++;
         }
+        lastRpmMeasurements[currentMeasurementIteration] = rpm;
+        currentMeasurementIteration++;
     }
 
     private int getAverageCadenceMeasurements() {
@@ -1575,26 +1532,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         }
     }
 
-    private boolean hasSound() {
-        boolean backgroundPlayer = backgroundSoundPlayer != null;
-        boolean backgroundItemLoaded = true;
-        boolean videoVolume = true;
-        if (backgroundSoundTriggers.size()>0) {
-            backgroundPlayer = backgroundSoundPlayer != null && backgroundSoundPlayer.isPlaying();
-            backgroundItemLoaded = backgroundSoundPlayer.getCurrentMediaItem() != null && !backgroundSoundPlayer.getCurrentMediaItem().playbackProperties.uri.toString().isEmpty();
-            videoVolume = true;
-        }
-        boolean backgroundSoundPlayerVolume = backgroundSoundPlayer.getVolume()>0;
-        boolean backgroundSoundDeviceMuted = backgroundSoundPlayer.isDeviceMuted();
-
-        boolean video = mediaPlayer!=null && mediaPlayer.isPlaying();
-
-        boolean systemSoundMode = SoundHelper.hasSystemSound(getApplicationContext());
-
-        return backgroundPlayer && backgroundSoundPlayerVolume
-                && !backgroundSoundDeviceMuted && backgroundItemLoaded
-                && video && videoVolume
-                && systemSoundMode;
+    private void startStopwatch() {
+        praxHandler.post(movieStopwatchRunnable);
     }
 
 }

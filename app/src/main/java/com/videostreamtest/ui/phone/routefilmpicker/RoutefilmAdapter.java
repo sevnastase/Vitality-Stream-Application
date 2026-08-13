@@ -126,7 +126,7 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
         holder.routefilmCoverPhotoImageButton.setOnClickListener(view -> {
             // Re-initialize the video player intent
             if (selectedRoutefilmPosition == position) {
-                startVideoPlayer(ApplicationSettings.DEVELOPER_MODE);
+                startVideoPlayer(false);
             } else {
                 final int prevPosition = selectedRoutefilmPosition;
                 setSelectedRoutefilmPosition(position);
@@ -137,7 +137,7 @@ public class RoutefilmAdapter extends RecyclerView.Adapter<RoutefilmViewHolder> 
         holder.routefilmCoverPhotoImageButton.setOnKeyListener((v, keyCode, event) -> {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 if (isSelectButton(keyCode)) {
-                    startVideoPlayer(ApplicationSettings.DEVELOPER_MODE);
+                    startVideoPlayer(false);
                     return true;
                 }
             }
