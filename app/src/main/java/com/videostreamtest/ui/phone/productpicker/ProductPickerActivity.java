@@ -130,7 +130,6 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         requestAppPermissions();
 
         initScreensaverHandler();
-        startScreensaverHandler();
 
         settingsButton = findViewById(R.id.productpicker_settings_button);
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -244,6 +243,17 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
     @Override
     protected void onResume() {
         super.onResume();
+
+        Log.d(TAG, "Starting screensaverhandler greg");
+        startScreensaverHandler();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        Log.d(TAG, "Stopping screensaverhandler greg");
+        screensaverhandler.removeCallbacksAndMessages(null);
     }
 
     @Override
@@ -266,14 +276,11 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         screensaverRunnable = new Runnable() {
             @Override
             public void run() {
-                if (VideoplayerActivity.getInstance() != null && !VideoplayerActivity.getInstance().isActive()) {
-                    //Start Screensaver service to show screensaver after predetermined user inactivity
-                    Intent screensaverActivity = new Intent(getApplicationContext(), ScreensaverActivity.class);
-                    startActivity(screensaverActivity);
-                    ApplicationSettings.setScreensaverActive(true);
-                } else {
-                    resetScreensaverTimer();
-                }
+                Log.d(TAG, "Greg running screensaver");
+
+                Intent screensaverActivity = new Intent(getApplicationContext(), ScreensaverActivity.class);
+                startActivity(screensaverActivity);
+                ApplicationSettings.setScreensaverActive(true);
             }
         };
     }
@@ -289,7 +296,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         }
         screensaverhandler = new Handler(screensaverLooper);
         Log.d(TAG, "call postDelayed with delay of "+ApplicationSettings.SCREENSAVER_TRIGGER_SECONDS*1000+" ms");
-        screensaverhandler.postDelayed(screensaverRunnable, ApplicationSettings.SCREENSAVER_TRIGGER_SECONDS*1000);
+        screensaverhandler.postDelayed(screensaverRunnable, ApplicationSettings.SCREENSAVER_TRIGGER_SECONDS*10);
     }
 
     private void resetScreensaverTimer() {
