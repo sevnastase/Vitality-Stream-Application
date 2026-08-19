@@ -22,9 +22,11 @@ public class AccountHelper {
 
     public static boolean isLocalPlay(final Context context) {
         String accountType = getAccountType(context);
-        return "standalone".equalsIgnoreCase(accountType)
-                || "hybrid".equalsIgnoreCase(accountType)
-                || "motolife".equalsIgnoreCase(accountType);
+        if (accountType == null) return false;
+
+        return accountType.toLowerCase().contains("standalone")
+                || accountType.toLowerCase().contains("hybrid")
+                || accountType.toLowerCase().contains("motolife");
     }
 
     public static String getAccountMediaServerUrl(final Context context) {
