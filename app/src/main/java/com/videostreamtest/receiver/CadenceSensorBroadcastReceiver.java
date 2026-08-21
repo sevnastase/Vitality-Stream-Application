@@ -23,7 +23,7 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
      * E.g. the old Giada DN74 and X96 Max+ are weaker devices that cannot take that much info
      * over a long period of time. They will start lagging as they run out of resources.
      */
-    private static final long MIN_UPDATE_INTERVAL_MS_LOW_RESOURCES = 2000;
+    private static final long MIN_UPDATE_INTERVAL_MS_LOW_RESOURCES = 1000;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -58,14 +58,12 @@ public class CadenceSensorBroadcastReceiver extends BroadcastReceiver {
 
         VideoplayerExoActivity exoInstance = VideoplayerExoActivity.getInstance();
         if (exoInstance != null) {
-            exoInstance.updateVideoPlayerScreen(rpmReceived);
-            exoInstance.updateVideoPlayerParams(rpmReceived);
+            exoInstance.updateVideoPlayer(rpmReceived);
         }
 
         VideoplayerActivity legacyInstance = VideoplayerActivity.getInstance();
         if (legacyInstance != null) {
-            legacyInstance.updateVideoPlayerScreen(rpmReceived);
-            legacyInstance.updateVideoPlayerParams(rpmReceived);
+            legacyInstance.updateVideoPlayer(rpmReceived);
         }
     }
 

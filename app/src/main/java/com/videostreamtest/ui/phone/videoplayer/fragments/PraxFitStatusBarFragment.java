@@ -9,12 +9,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.videostreamtest.R;
+import com.videostreamtest.config.entity.Routefilm;
 import com.videostreamtest.constants.TrainingConstants;
 import com.videostreamtest.data.model.MoviePart;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
@@ -22,6 +26,7 @@ import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 import com.videostreamtest.ui.phone.videoplayer.fragments.routeparts.RoutePartsAdapter;
 import com.videostreamtest.ui.phone.videoplayer.viewmodel.VideoPlayerViewModel;
 
+import java.util.List;
 import java.util.Locale;
 
 public class PraxFitStatusBarFragment extends AbstractPraxStatusBarFragment {
@@ -43,10 +48,8 @@ public class PraxFitStatusBarFragment extends AbstractPraxStatusBarFragment {
     private ImageButton seekBarT4;
     private ImageButton seekBarT5;
     private ImageButton seekBarT6;
-    private int seekBarWidth;
     private ImageButton[] seekBarButtons;
     private MoviePart[] movieParts;
-    private int frameNumber;
     private int finalFrame;
     private float position;
 
@@ -54,6 +57,8 @@ public class PraxFitStatusBarFragment extends AbstractPraxStatusBarFragment {
     private int distanceOffset;
 
     private AlertDialog resumeOrStopDialog;
+
+    private final Handler uiSetupHandler = new Handler(Looper.getMainLooper());
 
 
     @Override
@@ -193,42 +198,7 @@ public class PraxFitStatusBarFragment extends AbstractPraxStatusBarFragment {
             if (selectedMovie!= null) {
 
                 setupSeekbarButtonsFunctionality();
-
-                //set distance text values
-                //PLAYER TIME AND DISTANCE related
-                videoPlayerViewModel.getMovieTotalDurationSeconds().observe(getViewLifecycleOwner(), movieTotalDurationSeconds ->{
-                    if (movieTotalDurationSeconds!=null) {
-                        videoPlayerViewModel.getMovieSpendDurationSeconds().observe(getViewLifecycleOwner(), movieSpendDurationSeconds -> {
-                            if (movieSpendDurationSeconds!=null) {
-
-                                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Log.d(TAG, "finalFrame = " + finalFrame);
-                                        Log.d(TAG, "seekBarWidth = " + seekBarWidth);
-                                        Log.d(TAG,"progressBar.getWidth() = " + movieProgressBar.getWidth());
-                                        Log.d(TAG, "progressBar.getPaddingStart()" + movieProgressBar.getPaddingStart());
-                                        Log.d(TAG, "progressBar.getPaddingEnd()" + movieProgressBar.getPaddingEnd());
-                                        seekBarWidth = movieProgressBar.getWidth() - movieProgressBar.getPaddingStart() - movieProgressBar.getPaddingEnd();
-                                        if (movieParts != null) {
-                                            for (int i = 0; i < movieParts.length; i++) {
-                                                frameNumber = movieParts[i].getFrameNumber().intValue();
-                                                Log.d(TAG, "movieParts[" + i + "] frameNumber = " + frameNumber);
-                                                position = ((float) frameNumber / finalFrame) * seekBarWidth;
-                                                Log.d(TAG, "position of movieParts[" + i + "] = " + position);
-                                                if (seekBarButtons[i] != null) {
-                                                    seekBarButtons[i].setX(movieProgressBar.getX() + movieProgressBar.getPaddingStart() + position);
-                                                    Log.d(TAG, "seekBarButtons[" + i + "] position = " +
-                                                            movieProgressBar.getX() + movieProgressBar.getPaddingStart() + position);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }, 5500);
-                            }
-                        });
-                    }
-                });
+                setupSeekbarButtonsLayout();
 
                 //LOAD ROUTEPARTS IF AVAILABLE
                 videoPlayerViewModel.getRoutePartsOfMovieId(selectedMovie.getId()).observe(getViewLifecycleOwner(), routeparts -> {
@@ -301,6 +271,37 @@ public class PraxFitStatusBarFragment extends AbstractPraxStatusBarFragment {
 
             h++;
         }
+    }
+
+    private void setupSeekbarButtonsLayout() {
+        uiSetupHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (movieParts == null) {
+                    uiSetupHandler.postDelayed(this, 500);
+                    return;
+                }
+
+                int seekBarWidth = movieProgressBar.getWidth() - movieProgressBar.getPaddingStart() - movieProgressBar.getPaddingEnd();
+                if (seekBarWidth <= 0) {
+                    uiSetupHandler.postDelayed(this, 500);
+                    return;
+                }
+
+                for (int i = 0; i < movieParts.length; i++) {
+                    if (seekBarButtons[i] == null) {
+                        uiSetupHandler.postDelayed(this, 500);
+                        return;
+                    }
+
+                    int frameNumber = movieParts[i].getFrameNumber().intValue();
+                    position = ((float) frameNumber / finalFrame) * seekBarWidth;
+                    seekBarButtons[i].setX(movieProgressBar.getX() + movieProgressBar.getPaddingStart() + position);
+
+                    Log.d(TAG, String.format("seekbarWidth=%d, finalFrame=%d, frameNumber[%d]=%d", seekBarWidth, finalFrame, i, frameNumber));
+                }
+            }
+        }, 5500);
     }
 
     private MoviePart[] getMovieParts(VideoPlayerViewModel videoPlayerViewModel) {

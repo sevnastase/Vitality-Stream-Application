@@ -42,7 +42,7 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
     private MoviePart[] movieParts;
     private int finalFrame;
     private float position;
-    private final Handler setupHandler = new Handler(Looper.getMainLooper());
+    private final Handler uiSetupHandler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void initializeLayout(View view) {
@@ -152,7 +152,7 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
 
     @Override
     public void onDestroy() {
-        setupHandler.removeCallbacksAndMessages(null);
+        uiSetupHandler.removeCallbacksAndMessages(null);
         super.onDestroy();
     }
 
@@ -259,15 +259,31 @@ public class PraxSpinStatusBarFragment extends AbstractPraxStatusBarFragment {
     }
 
     private void setupSeekbarButtonsLayout() {
-        setupHandler.postDelayed(() -> {
-            int seekBarWidth = movieProgressBar.getWidth() - movieProgressBar.getPaddingStart() - movieProgressBar.getPaddingEnd();
-            if (movieParts != null) {
+        uiSetupHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (movieParts == null) {
+                    uiSetupHandler.postDelayed(this, 500);
+                    return;
+                }
+
+                int seekBarWidth = movieProgressBar.getWidth() - movieProgressBar.getPaddingStart() - movieProgressBar.getPaddingEnd();
+                if (seekBarWidth <= 0) {
+                    uiSetupHandler.postDelayed(this, 500);
+                    return;
+                }
+
                 for (int i = 0; i < movieParts.length; i++) {
+                    if (seekBarButtons[i] == null) {
+                        uiSetupHandler.postDelayed(this, 500);
+                        return;
+                    }
+
                     int frameNumber = movieParts[i].getFrameNumber().intValue();
                     position = ((float) frameNumber / finalFrame) * seekBarWidth;
-                    if (seekBarButtons[i] != null) {
-                        seekBarButtons[i].setX(movieProgressBar.getX() + movieProgressBar.getPaddingStart() + position);
-                    }
+                    seekBarButtons[i].setX(movieProgressBar.getX() + movieProgressBar.getPaddingStart() + position);
+
+                    Log.d(TAG, String.format("seekbarWidth=%d, finalFrame=%d, frameNumber[%d]=%d", seekBarWidth, finalFrame, i, frameNumber));
                 }
             }
         }, 5500);

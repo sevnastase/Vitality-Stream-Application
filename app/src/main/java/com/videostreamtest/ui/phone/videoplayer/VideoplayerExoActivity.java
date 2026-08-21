@@ -390,7 +390,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         updateLastCadenceMeasurement(66);
         updateLastCadenceMeasurement(66);
 
-        updateVideoPlayerScreen(0);
+        updateVideoPlayer(0);
 
         setUp();
 
@@ -431,32 +431,28 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             @Override
             public void run() {
                 sensorConnected = true;
-                updateVideoPlayerParams(20);
-                updateVideoPlayerScreen(20);
+                updateVideoPlayer(20);
             }
         };
         Runnable r2 = new Runnable() {
             @Override
             public void run() {
                 sensorConnected = true;
-                updateVideoPlayerParams(120);
-                updateVideoPlayerScreen(120);
+                updateVideoPlayer(120);
             }
         };
         Runnable r3 = new Runnable() {
             @Override
             public void run() {
                 sensorConnected = true;
-                updateVideoPlayerParams(42);
-                updateVideoPlayerScreen(42);
+                updateVideoPlayer(42);
             }
         };
         Runnable r4 = new Runnable() {
             @Override
             public void run() {
                 sensorConnected = true;
-                updateVideoPlayerParams(0);
-                updateVideoPlayerScreen(0);
+                updateVideoPlayer(0);
             }
         };
 
@@ -492,8 +488,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
             public void run() {
                 Log.d(TAG, "Gregrpm70");
                 sensorConnected = true;
-                updateVideoPlayerParams(70);
-                updateVideoPlayerScreen(70);
+                updateVideoPlayer(70);
             }
         };
 
@@ -595,31 +590,32 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         mediaPlayer.play();
     }
 
-    public void updateVideoPlayerScreen(int rpm) {
-        if (routeFinished) {
-            return;
-        }
+    public void updateVideoPlayer(int rpm) {
+        if (routeFinished || mediaPlayer == null) return;
 
         final int clampedRpm = clampRpm(rpm);
 
         runOnUiThread(() -> {
-            //First update the measurements with the latest sensor data
+            // First update the measurements with the latest sensor data
             updateLastCadenceMeasurement(clampedRpm);
 
-            if (mediaPlayer!=null) {
-                Log.d(TAG, "TIME "+mediaPlayer.getDuration());
-                videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getCurrentPosition());
-                if (mediaPlayer.getDuration() != -1) {
-                    Log.d(TAG, "DURATION "+mediaPlayer.getDuration());
-                    videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getDuration());
-                }
+            videoPlayerViewModel.setMovieSpendDurationSeconds(mediaPlayer.getCurrentPosition());
+            if (mediaPlayer.getDuration() != -1) {
+                videoPlayerViewModel.setMovieTotalDurationSeconds(mediaPlayer.getDuration());
             }
 
-            /* Update the on-screen data based on CommunicationType */
+            // Update the on-screen data based on CommunicationType
             switch (communicationType) {
                 case RPM:
+                    float newSpeed = RpmVectorLookupTable.getPlaybackspeed(clampedRpm);
+                    if (Math.abs(newSpeed - lastRateSet) >= SPEED_EPSILON) {
+                        lastRateSet = newSpeed;
+                        mediaPlayer.setPlaybackSpeed(RpmVectorLookupTable.getPlaybackspeed(clampedRpm));
+                    }
+                    // fallthrough
                 case ACTIVE:
                     if (clampedRpm == lastRpmSet) break;
+                    lastRpmSet = clampedRpm;
 
                     //Boolean to unlock video because sensor is connected
                     sensorConnected = clampedRpm>0;
@@ -631,7 +627,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                     break;
                 default:
             }
-            Log.d(TAG, "RPM: "+clampedRpm+" sensorConnected: "+sensorConnected);
+
             /* Pause mechanism  */
             //Only show pause screen while the video is not in loading state
             if (!isLoading) {
@@ -644,38 +640,6 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                         togglePauseScreen();
                     }
                 }
-            }
-        });
-    }
-
-    /**
-     * This method is called as public method from bleService for updating the UI
-     * @param rpm
-     */
-    public void updateVideoPlayerParams(int rpm) {
-        if (routeFinished) {
-            return;
-        }
-
-        final int clampedRpm = clampRpm(rpm);
-
-        runOnUiThread(() -> {
-            // If the route is not paused then pass params to the videoplayer
-            if (routePaused || mediaPlayer == null) return;
-            /* Update the video player */
-            switch (communicationType) {
-                case RPM:
-                    float newSpeed = RpmVectorLookupTable.getPlaybackspeed(clampedRpm);
-                    if (Math.abs(newSpeed - lastRateSet) < SPEED_EPSILON) return;
-
-                    lastRateSet = newSpeed;
-                    lastRpmSet = clampedRpm;
-                    mediaPlayer.setPlaybackSpeed(RpmVectorLookupTable.getPlaybackspeed(clampedRpm));
-                    break;
-                case ACTIVE:
-                case NONE:
-                    // no action
-                    break;
             }
         });
     }
@@ -697,15 +661,12 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         Integer seconds = videoPlayerViewModel.getMovieElapsedSeconds().getValue();
         int secondsSpentInMovie = seconds != null ? seconds : 0;
 
-        Log.d(TAG, "Clamping RPM " + rpm + " at " + secondsSpentInMovie + "s");
         if (rpm > TrainingConstants.MAX_RPM) {
-            Log.d(TAG, "Too big");
             rpm = TrainingConstants.MAX_RPM;
         }
 
         if (secondsSpentInMovie < TrainingConstants.Beginning.CLAMP_MIN_RPM_UNTIL_SECONDS
                 && rpm < TrainingConstants.Beginning.MIN_RPM && rpm > 0) {
-            Log.d(TAG, "Too small beginning");
             rpm = TrainingConstants.Beginning.MIN_RPM;
         }
 
@@ -1277,8 +1238,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
         Log.d(TAG, "rpmMqtt: " + rpmMqtt);
         runOnUiThread(() -> {
-            updateVideoPlayerParams(rpmMqtt);
-            updateVideoPlayerScreen(rpmMqtt);
+            updateVideoPlayer(rpmMqtt);
         });
     }
 

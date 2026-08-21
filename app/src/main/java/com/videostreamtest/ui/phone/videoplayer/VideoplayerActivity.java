@@ -398,7 +398,7 @@ public class VideoplayerActivity extends AppCompatActivity {
         updateLastCadenceMeasurement(66);
         updateLastCadenceMeasurement(66);
 
-        updateVideoPlayerScreen(0);
+        updateVideoPlayer(0);
 
         setUp();
 
@@ -439,24 +439,21 @@ public class VideoplayerActivity extends AppCompatActivity {
             @Override
             public void run() {
                 sensorConnected = true;
-                updateVideoPlayerParams(95);
-                updateVideoPlayerScreen(95);
+                updateVideoPlayer(95);
             }
         };
         Runnable r2 = new Runnable() {
             @Override
             public void run() {
                 sensorConnected = true;
-                updateVideoPlayerParams(25);
-                updateVideoPlayerScreen(25);
+                updateVideoPlayer(25);
             }
         };
         Runnable r3 = new Runnable() {
             @Override
             public void run() {
                 sensorConnected = true;
-                updateVideoPlayerParams(51);
-                updateVideoPlayerScreen(51);
+                updateVideoPlayer(51);
             }
         };
 
@@ -489,8 +486,7 @@ public class VideoplayerActivity extends AppCompatActivity {
             @Override
             public void run() {
                 sensorConnected = true;
-                updateVideoPlayerParams(70);
-                updateVideoPlayerScreen(70);
+                updateVideoPlayer(70);
             }
         };
 
@@ -609,10 +605,8 @@ public class VideoplayerActivity extends AppCompatActivity {
         mediaPlayer.play();
     }
 
-    public void updateVideoPlayerScreen(int rpm) {
-        if (routeFinished) {
-            return;
-        }
+    public void updateVideoPlayer(int rpm) {
+        if (routeFinished || mediaPlayer == null) return;
 
         final int clampedRpm = clampRpm(rpm);
 
@@ -620,11 +614,20 @@ public class VideoplayerActivity extends AppCompatActivity {
             // First update the measurements with the latest sensor data
             updateLastCadenceMeasurement(clampedRpm);
 
+
+
             // Update the on-screen data based on CommunicationType
             switch (communicationType) {
                 case RPM:
+                    float newSpeed = RpmVectorLookupTable.getPlaybackspeed(clampedRpm);
+                    if (Math.abs(newSpeed - lastRateSet) >= SPEED_EPSILON) {
+                        lastRateSet = newSpeed;
+                        mediaPlayer.setRate(RpmVectorLookupTable.getPlaybackspeed(clampedRpm));
+                    }
+                    // fallthrough
                 case ACTIVE:
                     if (clampedRpm == lastRpmSet) break;
+                    lastRpmSet = clampedRpm;
 
                     //Boolean to unlock video because sensor is connected
                     sensorConnected = clampedRpm>0;
@@ -636,7 +639,7 @@ public class VideoplayerActivity extends AppCompatActivity {
                     break;
                 default:
             }
-            Log.d(TAG, "RPM: "+clampedRpm+" sensorConnected: "+sensorConnected);
+
             /* Pause mechanism  */
             //Only show pause screen while the video is not in loading state
             if (!isLoading) {
@@ -649,34 +652,6 @@ public class VideoplayerActivity extends AppCompatActivity {
                         togglePauseScreen();
                     }
                 }
-            }
-        });
-    }
-
-    public void updateVideoPlayerParams(int rpm) {
-        if (routeFinished) {
-            return;
-        }
-
-        final int clampedRpm = clampRpm(rpm);
-
-        runOnUiThread(() -> {
-            // If the route is not paused then pass params to the videoplayer
-            if (routePaused || mediaPlayer == null) return;
-            /* Update the video player */
-            switch (communicationType) {
-                case RPM:
-                    float newSpeed = RpmVectorLookupTable.getPlaybackspeed(clampedRpm);
-                    if (Math.abs(newSpeed - lastRateSet) < SPEED_EPSILON) return;
-
-                    lastRateSet = newSpeed;
-                    lastRpmSet = clampedRpm;
-                    mediaPlayer.setRate(RpmVectorLookupTable.getPlaybackspeed(clampedRpm));
-                    break;
-                case ACTIVE:
-                case NONE:
-                    // no action
-                    break;
             }
         });
     }
@@ -1272,8 +1247,7 @@ public class VideoplayerActivity extends AppCompatActivity {
 
         Log.d(TAG, "rpmMqtt: " + rpmMqtt);
         runOnUiThread(() -> {
-            updateVideoPlayerParams(rpmMqtt);
-            updateVideoPlayerScreen(rpmMqtt);
+            updateVideoPlayer(rpmMqtt);
         });
     }
 
