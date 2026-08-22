@@ -123,6 +123,7 @@
     <string name="product_menu_title">Menu</string>
     <string name="login_storage_permission_title">Storage permission</string>
     <string name="login_location_permission_title">Location permission</string>
+    <string name="login_manage_overlay_permission_title">Auto-start permission</string>
     <string name="videoplayer_no_audio_alert_title">No Audio possible</string>
     <string name="videoplayer_no_audio_alert_content">Audio is not detected, this are the most likely reasons:\n- Device muted\n- No file loaded\n- Volume too low\n- Android system settings not properly set</string>
     <string name="videoplayer_no_audio_alert_button_confirm_text">Confirm</string>
@@ -143,13 +144,14 @@
     <string name="login_success_summary_title">Succesfully logged in as %s</string>
     <string name="login_no_products">There are no active product subscriptions present.\nPlease register for any of our products.</string>
     <string name="login_message_failed_description">Username and/or password are wrong.\nPlease try again.</string>
-    <string name="login_status_summary_standalone">Before first time use you need to accept the following permissions:\n\n> Storage permission: for saving movies on the harddisk.\n> Location permission: for Bluetooth sensors.\n\nPlease proceed to accept the permissions.</string>
-    <string name="login_status_summary_hybrid">Before first time use you need to accept the following permissions:\n\n> Storage permission: for saving movies on the harddisk.\n> Location permission: for Bluetooth sensors.\n\nPlease proceed to accept the permissions.</string>
-    <string name="login_status_summary_streaming">Before first time use you need to accept the following permissions:  \n\n> Location permission: for Bluetooth sensors.  \n\nPlease proceed to accept the permissions.</string>
+    <string name="login_status_summary_standalone">Before continuing you need to accept the following permissions:\n> \"Manage overlay\" permission: to start Praxtour automatically.\n> Storage permission: for saving movies on the harddisk.\n> Location permission: for Bluetooth sensors.\n\nPlease proceed to accept the permissions.</string>
+    <string name="login_status_summary_hybrid">Before continuing you need to accept the following permissions:\n> \"Manage overlay\" permission: to start Praxtour automatically.\n> Storage permission: for saving movies on the harddisk.\n> Location permission: for Bluetooth sensors.\n\nPlease proceed to accept the permissions.</string>
+    <string name="login_status_summary_streaming">Before continuing you need to accept the following permissions:  \n\n> \"Manage overlay\" permission: to start Praxtour automatically.\n> Location permission: for Bluetooth sensors.  \n\nPlease proceed to accept the permissions.</string>
     <string name="download_speed_ok">Internet speed OK.</string>
     <string name="download_speed_connection_issues">Internet connection issues, please consult an IT-expert.</string>
     <string name="login_location_permission_summary">Click next to allow PraxCloud to access this device\'s location.\n\nPraxCloud collects location data to enable PraxFit, PraxFilm, and BLE Settings even when the app is closed or not in use.\n\nIf the location permission is denied Praxtour is not allowed to use BLE functionality, e.g. the cadence sensor, and therefore the user can\'t use all functionalities like exercising.</string>
     <string name="login_storage_permission_summary">Click next to allow Praxtour to access photos and media on your device.\nPraxCloud uses storage to enable the downloading and storing of movie files even when the app is closed or not in use.\nIf the storage permission is denied Praxtour is not allowed to store media on your device, therefore the app cannot be used.</string>
+    <string name="manage_overlay_permission_summary">Click next to allow Praxtour to start as soon as your device does. This makes it easier to start your training whenever you want. After pressing the button below, the system will ask you to toggle that permission for Praxtour. Once it is ON, you may need to press the &#9664; symbol to return to this screen.</string>
     <string name="downloads_fragment_title">Downloads</string>
     <string name="downloads_fragment_subtitle">Download overview of the new routefilms.</string>
     <string name="download_information_overlay_main_title">Download Information</string>

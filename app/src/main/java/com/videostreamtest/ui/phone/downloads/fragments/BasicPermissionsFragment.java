@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -60,7 +61,6 @@ public class BasicPermissionsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         Bundle arguments = getArguments();
         downloadsViewModel.setCurrentInstallationStep(0);
-//        loginStatusTitle.setText(String.format(getString(R.string.login_success_summary_title), arguments.getString("username")));
 
         String accountType = AccountHelper.getAccountType(getContext());
         if (accountType == null) throw new NullPointerException("How can this be null bro");
@@ -74,14 +74,17 @@ public class BasicPermissionsFragment extends Fragment {
             case "hybrid":
                 loginStatusText.setText(R.string.login_status_summary_standalone);
 
-                if (storagePermissionsToRequest.isEmpty() && locationPermissionsToRequest.isEmpty()) {
+                if (Settings.canDrawOverlays(getContext()) && storagePermissionsToRequest.isEmpty() && locationPermissionsToRequest.isEmpty()) {
                     NavHostFragment.findNavController(BasicPermissionsFragment.this)
                             .navigate(R.id.action_loginStatusFragment_to_downloadSoundFragment, arguments);
                     downloadsViewModel.addInstallationStep();
                 }
 
                 nextButton.setOnClickListener((onClickedView) -> {
-                    if (!storagePermissionsToRequest.isEmpty()) {
+                    if (!Settings.canDrawOverlays(getContext())) {
+                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
+                                .navigate(R.id.action_loginStatusFragment_to_manageOverlayPermissionFragment, arguments);
+                    } else if (!storagePermissionsToRequest.isEmpty()) {
                         NavHostFragment.findNavController(BasicPermissionsFragment.this)
                                 .navigate(R.id.action_loginStatusFragment_to_storagePermissionFragment, arguments);
                     } else if (!locationPermissionsToRequest.isEmpty()) {
@@ -91,29 +94,34 @@ public class BasicPermissionsFragment extends Fragment {
                     downloadsViewModel.addInstallationStep();
                 });
 
-                downloadsViewModel.setInstallationSteps(9);
+                downloadsViewModel.setInstallationSteps(10);
                 break;
             case "streaming":
                 loginStatusText.setText(getString(R.string.login_status_summary_streaming));
 
-                if (locationPermissionsToRequest.isEmpty()) {
+                if (Settings.canDrawOverlays(getContext()) && locationPermissionsToRequest.isEmpty()) {
                     NavHostFragment.findNavController(BasicPermissionsFragment.this)
                             .navigate(R.id.action_loginStatusFragment_to_downloadSoundFragment, arguments);
                     downloadsViewModel.addInstallationStep();
                 }
 
                 nextButton.setOnClickListener((onClickedView) -> {
-                    NavHostFragment.findNavController(BasicPermissionsFragment.this)
-                            .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
+                    if (!Settings.canDrawOverlays(getContext())) {
+                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
+                                .navigate(R.id.action_loginStatusFragment_to_manageOverlayPermissionFragment, arguments);
+                    } else if (!locationPermissionsToRequest.isEmpty()) {
+                        NavHostFragment.findNavController(BasicPermissionsFragment.this)
+                                .navigate(R.id.action_loginStatusFragment_to_locationPermissionFragment, arguments);
+                    }
                     downloadsViewModel.addInstallationStep();
                 });
 
-                downloadsViewModel.setInstallationSteps(3);
+                downloadsViewModel.setInstallationSteps(4);
                 break;
             default:
                 failedLogin("Account type error", "Restart your device or contact your distributor.");
         }
-//        }
+
         nextButton.requestFocus();
     }
 

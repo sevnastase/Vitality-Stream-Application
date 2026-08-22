@@ -38,6 +38,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -308,7 +309,7 @@ public class SplashActivity extends AppCompatActivity {
 
                 refreshMovieInformation();
 
-                if (needToDownloadFiles()) {
+                if (needToDownloadFiles() || needPermissions()) {
                     redirectToActivity(DownloadsActivity.class);
                     return;
                 }
@@ -531,6 +532,13 @@ public class SplashActivity extends AppCompatActivity {
         return !sp.getBoolean(STATE_DOWNLOADS_COMPLETED, false);
     }
 
+    /**
+     * IMPORTANT: this method currently only checks for manage overlay permission.
+     */
+    private boolean needPermissions() {
+        return !Settings.canDrawOverlays(this);
+    }
+
     private void refreshAccountInformation() {
         Constraints constraint = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -557,13 +565,10 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void requestDrawOverlayPermission() {
-        // Check if Android M or higher
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // Show alert dialog to the user saying a separate permission is needed
-            requestPermissions(new String[]{Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Manifest.permission.INSTALL_PACKAGES, Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE}, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE);
-            if(!Settings.canDrawOverlays(this)) {
-               Log.d(TAG, "checkpermission "+getPackageManager().checkPermission(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, getPackageName())) ;
-            }
+        // Show alert dialog to the user saying a separate permission is needed
+        requestPermissions(new String[]{Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Manifest.permission.INSTALL_PACKAGES, Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE}, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE);
+        if(!Settings.canDrawOverlays(this)) {
+           Log.d(TAG, "checkpermission "+getPackageManager().checkPermission(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, getPackageName())) ;
         }
     }
 

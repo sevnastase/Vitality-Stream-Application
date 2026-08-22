@@ -12,11 +12,22 @@
             android:id="@+id/action_loginStatusFragment_to_storagePermissionFragment"
             app:destination="@id/storagePermissionFragment" />
         <action
+            android:id="@+id/action_loginStatusFragment_to_manageOverlayPermissionFragment"
+            app:destination="@id/manageOverlayPermissionFragment" />
+        <action
             android:id="@+id/action_loginStatusFragment_to_locationPermissionFragment"
             app:destination="@id/locationPermissionFragment" />
         <action
             android:id="@+id/action_loginStatusFragment_to_downloadSoundFragment"
             app:destination="@id/downloadSoundFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/manageOverlayPermissionFragment"
+        android:name="com.videostreamtest.ui.phone.downloads.fragments.ManageOverlayPermissionFragment"
+        android:label="ManageOverlayPermissionFragment" >
+        <action
+            android:id="@+id/action_manageOverlayPermissionFragment_to_storagePermissionFragment"
+            app:destination="@id/storagePermissionFragment" />
     </fragment>
     <fragment
         android:id="@+id/storagePermissionFragment"

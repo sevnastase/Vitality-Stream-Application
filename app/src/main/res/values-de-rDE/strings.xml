@@ -96,6 +96,7 @@
     <string name="downloading_sound_files">Sounddateien herunterladen</string>
     <string name="downloaded_files_already_present">Dateien sind bereits vorhanden.</string>
     <string name="videoplayer_no_audio_alert_button_confirm_text">Bestätigen Sie</string>
+    <string name="login_manage_overlay_permission_title">Autostart-Berechtigung</string>
     <string name="videoplayer_no_audio_alert_title">Kein Ton möglich</string>
     <string name="login_location_permission_title">Standorterlaubnis</string>
     <string name="login_storage_permission_title">Speichererlaubnis</string>
@@ -125,9 +126,9 @@
     <string name="login_success_summary_title">Erfolgreich als %s angemeldet</string>
     <string name="login_no_products">Es gibt keine aktiven Abonnements.</string>
     <string name="login_message_failed_description">Benutzername und/oder Passwort sind falsch. Versuchen Sie es nochmal.</string>
-    <string name="login_status_summary_standalone">Bei der ersten Verwendung müssen einige Berechtigungen akzeptiert werden:\n\n> Speichererlaubnis: um die Dateien auf der Festplatte speichern zu können.\n> Standorterlaubnis: um die Bluetooth-Sensoren zu verwenden.\n\nBefolgen Sie die Schritte, um fortzufahren.</string>
-    <string name="login_status_summary_hybrid">Bei der ersten Verwendung müssen einige Berechtigungen akzeptiert werden:\n\n> Speichererlaubnis: um die Dateien auf der Festplatte speichern zu können.\n> Standorterlaubnis: um die Bluetooth-Sensoren zu verwenden.\n\nBefolgen Sie die Schritte, um fortzufahren.</string>
-    <string name="login_status_summary_streaming">Bei der ersten Verwendung müssen einige Berechtigungen akzeptiert werden:\n\n> Standorterlaubnis: um die Bluetooth-Sensoren zu verwenden.\n\nBefolgen Sie die Schritte, um fortzufahren.</string>
+    <string name="login_status_summary_standalone">Bevor Sie fortfahren, müssen Sie die folgenden Berechtigungen erteilen:\n\n> Berechtigung „Overlay verwalten“: zum automatischen Starten von Praxtour.\n> Speicherberechtigung: zum Speichern von Videos auf der Festplatte.\n> Standortberechtigung: für Bluetooth-Sensoren.\n\nBitte erteilen Sie die Berechtigungen.</string>
+    <string name="login_status_summary_hybrid">Bevor Sie fortfahren, müssen Sie die folgenden Berechtigungen erteilen:\n\n> Berechtigung „Overlay verwalten“: zum automatischen Starten von Praxtour.\n> Speicherberechtigung: zum Speichern von Videos auf der Festplatte.\n> Standortberechtigung: für Bluetooth-Sensoren.\n\nBitte erteilen Sie die Berechtigungen.</string>
+    <string name="login_status_summary_streaming">Bevor Sie fortfahren, müssen Sie die folgenden Berechtigungen erteilen:\n\n> Berechtigung „Overlay verwalten“: zum automatischen Starten von Praxtour.\n> Standortberechtigung: für Bluetooth-Sensoren.\n\nBitte erteilen Sie die Berechtigungen.</string>
     <string name="download_speed_ok">Internetgeschwindigkeit ist OK.</string>
     <string name="download_speed_connection_issues">Es gibt Internetprobleme, wenden Sie sich an einen IT-Experten.</string>
     <string name="login_location_permission_summary">Klicken Sie auf Weiter, um Ortungsdienste zuzulassen.\n\nWird diese Berechtigung nicht erteilt, können die Bluetooth-Sensoren nicht verwendet werden und somit die App nicht vollständig nutzen.</string>
@@ -137,6 +138,7 @@
     <string name="menu_nav_routes_title">Routen</string>
     <string name="ble_connectivity_problems_alert">Schalten Sie bei Problemen mit BLE das Bluetooth und/oder den Standort aus und wieder ein.</string>
     <string name="videoplayer_no_audio_alert_content">Audio wird nicht erkannt, dies sind die wahrscheinlichsten Gründe:\n- Gerät stummgeschaltet\n- Keine Datei geladen\n- Lautstärke zu gering\n- Android-Systemeinstellungen nicht richtig eingestellt</string>
+    <string name="manage_overlay_permission_summary">Klicken Sie auf „Weiter“, damit Praxtour automatisch startet, sobald Ihr Gerät hochfährt. So können Sie Ihr Training ganz einfach starten, wann immer Sie möchten. Nach dem Drücken der Schaltfläche unten werden Sie vom System aufgefordert, diese Berechtigung zu aktivieren oder zu deaktivieren. Sobald sie aktiviert ist, müssen Sie möglicherweise das Symbol &#9664; drücken, um zu diesem Bildschirm zurückzukehren.</string>
     <string name="downloads_fragment_title">Downloads</string>
     <string name="downloads_fragment_subtitle">Download Übersicht der neuen Streckenfilme.</string>
     <string name="download_information_overlay_main_title">Download-Information</string>

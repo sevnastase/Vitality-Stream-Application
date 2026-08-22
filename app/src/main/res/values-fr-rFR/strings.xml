@@ -96,6 +96,7 @@
     <string name="downloading_sound_files">Télécharger des fichiers son</string>
     <string name="downloaded_files_already_present">Les fichiers sont déjà là.</string>
     <string name="videoplayer_no_audio_alert_button_confirm_text">Confirmer</string>
+    <string name="login_manage_overlay_permission_title">Autorisation de démarrage automatique</string>
     <string name="videoplayer_no_audio_alert_title">Pas de son possible</string>
     <string name="login_location_permission_title">Autorisation de localisation</string>
     <string name="login_storage_permission_title">Autorisation de stockage</string>
@@ -125,9 +126,9 @@
     <string name="login_success_summary_title">Connexion réussie en tant que %s</string>
     <string name="login_no_products">Il n\'y a pas d\'abonnements actifs.</string>
     <string name="login_message_failed_description">Le nom d\'utilisateur et/ou le mot de passe sont erronés. Réessayer.</string>
-    <string name="login_status_summary_standalone">Pour la première utilisation, un certain nombre d\'autorisations doivent être acceptées :\n\n> Autorisation de stockage : pour pouvoir sauvegarder les fichiers sur le disque dur.\n> Autorisation de localisation : pour utiliser les capteurs Bluetooth.\n\nSuivez les étapes pour continuer.</string>
-    <string name="login_status_summary_hybrid">Pour la première utilisation, un certain nombre d\'autorisations doivent être acceptées :\n\n> Autorisation de stockage : pour pouvoir sauvegarder les fichiers sur le disque dur.\n> Autorisation de localisation : pour utiliser les capteurs Bluetooth.\n\nSuivez les étapes pour continuer.</string>
-    <string name="login_status_summary_streaming">Pour la première utilisation, un certain nombre d\'autorisations doivent être acceptées :\n\n> Autorisation de localisation : pour utiliser les capteurs Bluetooth.\n\nSuivez les étapes pour continuer.</string>
+    <string name="login_status_summary_standalone">Avant de continuer, vous devez accepter les autorisations suivantes:\n\n> Autorisation «Gérer la superposition»: pour démarrer Praxtour automatiquement.\n> Autorisation de stockage: pour enregistrer les vidéos sur le disque dur.\n> Autorisation de localisation: pour les capteurs Bluetooth.\n\nVeuillez accepter les autorisations.</string>
+    <string name="login_status_summary_hybrid">Avant de continuer, vous devez accepter les autorisations suivantes:\n\n> Autorisation «Gérer la superposition»: pour démarrer Praxtour automatiquement.\n> Autorisation de stockage: pour enregistrer les vidéos sur le disque dur.\n> Autorisation de localisation: pour les capteurs Bluetooth.\n\nVeuillez accepter les autorisations.</string>
+    <string name="login_status_summary_streaming">Avant de continuer, vous devez accepter les autorisations suivantes:\n\n> Autorisation «Gérer la superposition»: pour démarrer Praxtour automatiquement.\n> Autorisation de localisation: pour les capteurs Bluetooth.\n\nVeuillez accepter les autorisations.</string>
     <string name="download_speed_ok">La vitesse d\'Internet est correcte.</string>
     <string name="download_speed_connection_issues">Il y a des problèmes d\'Internet, consultez un expert en informatique.</string>
     <string name="login_location_permission_summary">Cliquez sur suivant pour autoriser les services de localisation.\n\nSi cette autorisation n\'est pas donnée, les capteurs Bluetooth ne peuvent pas être utilisés et ne peuvent donc pas utiliser pleinement l\'application.</string>
@@ -137,6 +138,7 @@
     <string name="menu_nav_routes_title">Itinéraires</string>
     <string name="ble_connectivity_problems_alert">En cas de problème avec le BLE, éteignez et rallumez le bluetooth et/ou la localisation.</string>
     <string name="videoplayer_no_audio_alert_content">L\'audio n\'est pas détecté, voici les raisons les plus probables :\n- Appareil en sourdine\n- Aucun fichier chargé\n- Volume trop faible\n- Les paramètres du système Android ne sont pas correctement définis</string>
+    <string name="manage_overlay_permission_summary">Cliquez sur Suivant pour autoriser Praxtour à démarrer dès que votre appareil est opérationnel. Vous pourrez ainsi commencer votre entraînement quand vous le souhaitez. Après avoir appuyé sur le bouton ci-dessous, le système vous demandera de confirmer ou d\'infirmer cette autorisation. Une fois activée, vous devrez peut-être appuyer sur le symbole &#9664; pour revenir à cet écran.</string>
     <string name="downloads_fragment_title">Téléchargements</string>
     <string name="downloads_fragment_subtitle">Téléchargez l\'aperçu des nouveaux films sur le parcours.</string>
     <string name="download_information_overlay_main_title">Télécharger l\'information</string>

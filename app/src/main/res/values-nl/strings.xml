@@ -96,6 +96,7 @@
     <string name="downloading_sound_files">Geluidsbestanden downloaden</string>
     <string name="downloaded_files_already_present">Bestanden zijn al aanwezig.</string>
     <string name="videoplayer_no_audio_alert_button_confirm_text">Bevestigen</string>
+    <string name="login_manage_overlay_permission_title">Auto-start permissie</string>
     <string name="videoplayer_no_audio_alert_title">Geen geluid mogelijk</string>
     <string name="login_location_permission_title">Locatie permissie</string>
     <string name="login_storage_permission_title">Opslag permissie</string>
@@ -125,13 +126,14 @@
     <string name="login_success_summary_title">Succesvol ingelogd als %s</string>
     <string name="login_no_products">Er zijn geen actieve abonnementen.</string>
     <string name="login_message_failed_description">Gebruikersnaam en/of wachtwoord zijn verkeerd. Probeer het nogmaals.</string>
-    <string name="login_status_summary_standalone">Voor het eerste gebruik moeten er een aantal permissies worden geaccepteerd:\n\n> Opslag permissie: om de fillms op de harde schijf te kunnen opslaan.\n> Locatie permissie: om de Bluetooth sensoren te gebruiken.\n\nVervolg de stappen om verder te gaan.</string>
-    <string name="login_status_summary_hybrid">Voor het eerste gebruik moeten er een aantal permissies worden geaccepteerd:\n\n> Opslag permissie: om de fillms op de harde schijf te kunnen opslaan.\n> Locatie permissie: om de Bluetooth sensoren te gebruiken.\n\nVervolg de stappen om verder te gaan.</string>
-    <string name="login_status_summary_streaming">Voor het eerste gebruik moeten er een aantal permissies worden geaccepteerd:\n\n> Locatie permissie: om de Bluetooth sensoren te gebruiken.\n\nVervolg de stappen om verder te gaan.</string>
+    <string name="login_status_summary_standalone">Voordat u verdergaat, moet u de volgende machtigingen accepteren:\n> Machtiging \"Overlay beheren\": om Praxtour automatisch te starten.\n> Opslagmachtiging: voor het opslaan van video\'s op de harde schijf.\n> Locatiemachtiging: voor Bluetooth-sensoren.\n\nGa verder en accepteer de machtigingen.</string>
+    <string name="login_status_summary_hybrid">Voordat u verdergaat, moet u de volgende machtigingen accepteren:\n> Machtiging \"Overlay beheren\": om Praxtour automatisch te starten.\n> Opslagmachtiging: voor het opslaan van video\'s op de harde schijf.\n> Locatiemachtiging: voor Bluetooth-sensoren.\n\nGa verder en accepteer de machtigingen.</string>
+    <string name="login_status_summary_streaming">Voordat u verdergaat, moet u de volgende machtigingen accepteren:\n\n> Machtiging \"Overlay beheren\": om Praxtour automatisch te starten.\n> Locatiemachtiging: voor Bluetooth-sensoren.\n\nGa verder en accepteer de machtigingen.</string>
     <string name="download_speed_ok">Internetsnelheid is OK.</string>
     <string name="download_speed_connection_issues">Er zijn internetproblemen, raadpleeg een IT-expert.</string>
     <string name="login_location_permission_summary">Klik op volgende om locatievoorzieningen toe te staan.\n\nAls deze permissie niet wordt gegeven dan kan de Bluetooth sensoriek niet gebruikt worden en daarom de app niet volledig gebruiken.</string>
     <string name="login_storage_permission_summary">Klik op volgende om toegang te verlenen tot de media op de harde schijf.\n\nAls de opslag permissie niet wordt gegeven dan kunnen de films niet worden opgeslagen op de harde schijf en kan de app niet gebruikt worden.</string>
+    <string name="manage_overlay_permission_summary">Klik op \'Volgende\' om Praxtour te laten starten zodra uw apparaat opstart. Zo kunt u gemakkelijker beginnen met trainen wanneer u maar wilt. Nadat u op de onderstaande knop hebt gedrukt, zal het systeem u vragen om deze toestemming in of uit te schakelen. Zodra deze is ingeschakeld, moet u mogelijk op het symbool &#9664; drukken om naar dit scherm terug te keren.</string>
     <string name="downloads_fragment_title">Downloads</string>
     <string name="downloads_fragment_subtitle">Download overzicht van de nieuwe routefilms.</string>
     <string name="download_information_overlay_main_title">Download informatie</string>
