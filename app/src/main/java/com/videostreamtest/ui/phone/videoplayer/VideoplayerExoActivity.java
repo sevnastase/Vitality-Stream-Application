@@ -260,6 +260,8 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
             Log.d(TAG, "productObject :: " + selectedProduct.getProductName());
 
+            startStopwatch();
+
             if (selectedProduct.getProductName().contains("PraxFit")) {
                 /*
                 //INPUT SETTINGS
@@ -318,8 +320,6 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                         .replace(R.id.videoplayer_framelayout_statusbar, PraxSpinStatusBarFragment.class, arguments)
                         .commit();
 
-                startStopwatch();
-
                 videoPlayerViewModel.getKmhData().observe(this, kmhData ->{
                     if (kmhData != null && mediaPlayer != null) {
                         // Set speed of the video (hence buffering /streaming speed )
@@ -339,8 +339,6 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                         .setReorderingAllowed(true)
                         .replace(R.id.videoplayer_framelayout_statusbar, PraxViewStatusBarFragment.class, arguments)
                         .commit();
-
-                startStopwatch();
             }
         } else {
             //INCOMING FROM CatalogActivity
@@ -359,9 +357,8 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         }
 
         if (!communicationType.equals(CommunicationType.RPM)) {
-            View statusbarContainer = findViewById(R.id.videoplayer_framelayout_statusbar);
-            statusbarContainer.setVisibility(View.INVISIBLE);
-            praxHandler.postDelayed(() -> statusbarContainer.setVisibility(View.VISIBLE), MIN_LOADING_VIEW_SECONDS * 1000L);
+            videoPlayerViewModel.setStatusbarVisible(false);
+            praxHandler.postDelayed(() -> videoPlayerViewModel.setStatusbarVisible(true), MIN_LOADING_VIEW_SECONDS * 1000L);
         }
 
         if (AccountHelper.isChinesportAccount(this)) {
@@ -724,8 +721,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         finishFlag.setBackground(getDrawable(R.drawable.finish_alpha));
         finishFlag.setVisibility(View.VISIBLE);
 
-        FrameLayout statusbar = findViewById(R.id.videoplayer_framelayout_statusbar);
-        statusbar.setVisibility(View.GONE);
+        videoPlayerViewModel.setStatusbarVisible(false);
 
         backToOverview.requestFocus();
 

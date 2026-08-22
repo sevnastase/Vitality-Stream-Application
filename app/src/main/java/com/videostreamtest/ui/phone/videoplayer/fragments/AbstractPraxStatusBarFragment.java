@@ -26,6 +26,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
@@ -121,21 +122,23 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
         }
     };
 
+    private ConstraintLayout entireStatusbarLayout;
+
     protected void onMqttMessageReceived(Intent intent) {
         if (intent == null || intent.getAction() == null) {
             return;
         }
 
-        Log.d(TAG, "MQTT broadcast received: " + intent.getAction());
+        final Boolean isPlayerPaused = videoPlayerViewModel.getPlayerPaused().getValue();
 
         switch (intent.getAction()) {
             case "com.videostreamtest.ACTION_PAUSE_FILM":
+                if (Boolean.TRUE.equals(isPlayerPaused)) return;
                 videoPlayerViewModel.setPlayerPaused(true);
-                Log.d(TAG, "Film Paused");
                 showPausedDialog();
                 break;
             case "com.videostreamtest.ACTION_RESUME_FILM":
-                Log.d(TAG, "Resume selected.");
+                if (Boolean.FALSE.equals(isPlayerPaused)) return;
                 hidePausedDialog();
                 videoPlayerViewModel.setPlayerPaused(false);
                 break;
@@ -180,6 +183,7 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
      */
     protected void initializeLayout(View view) {
         statusbar = view.findViewById(R.id.statusbar);
+        entireStatusbarLayout = view.findViewById(R.id.route_content_overview);
         toggleStatusbarButton = view.findViewById(R.id.toggle_statusbar_button);
 
         toggleStatusbarButton.setOnFocusChangeListener((view2, hasFocus) -> repaintToggleStatusbarButton(hasFocus));
@@ -368,6 +372,12 @@ public abstract class AbstractPraxStatusBarFragment extends Fragment {
                     videoPlayerViewModel.setResetChronometer(false);
                 }
             }
+        });
+
+        videoPlayerViewModel.getStatusbarVisible().observe(getViewLifecycleOwner(), isStatusbarVisible -> {
+            if (isStatusbarVisible == null) return;
+
+            entireStatusbarLayout.setVisibility(isStatusbarVisible ? View.VISIBLE : View.INVISIBLE);
         });
     }
 
