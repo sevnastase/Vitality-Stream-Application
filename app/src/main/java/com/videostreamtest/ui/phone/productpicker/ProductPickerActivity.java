@@ -296,7 +296,7 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
         }
         screensaverhandler = new Handler(screensaverLooper);
         Log.d(TAG, "call postDelayed with delay of "+ApplicationSettings.SCREENSAVER_TRIGGER_SECONDS*1000+" ms");
-        screensaverhandler.postDelayed(screensaverRunnable, ApplicationSettings.SCREENSAVER_TRIGGER_SECONDS*10);
+        screensaverhandler.postDelayed(screensaverRunnable, ApplicationSettings.SCREENSAVER_TRIGGER_SECONDS*1000);
     }
 
     private void resetScreensaverTimer() {
