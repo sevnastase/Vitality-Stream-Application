@@ -560,7 +560,7 @@ public class SplashActivity extends AppCompatActivity {
                 new Data.Builder().putString("apikey", AccountHelper.getAccountToken(this)).build(),
                 this,
                 null,
-                () -> runOnUiThread(() -> Toast.makeText(this, "Internet lol", Toast.LENGTH_LONG).show())
+                () -> runOnUiThread(() -> Log.w(TAG, "SyncLocalDatabase failed: no internet"))
         );
     }
 
