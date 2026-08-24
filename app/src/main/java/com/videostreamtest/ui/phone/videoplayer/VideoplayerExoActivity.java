@@ -372,10 +372,12 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         }
 
         videoPlayerViewModel.getVolumeLevel().observe(this, volumeLevel -> {
-            if (mediaPlayer!=null && volumeLevel != null) {
-                final float bgVolumeLevel = volumeLevel / 100f;
-                mediaPlayer.setVolume(bgVolumeLevel);
+            Log.d(TAG, "Greg volumeLevel: " + volumeLevel);
+            if (volumeLevel < 1) volumeLevel = 1;
+            if (mediaPlayer!=null) {
+                mediaPlayer.setVolume(volumeLevel);
                 if (backgroundSoundTriggers!= null && !backgroundSoundTriggers.isEmpty()) {
+                    final float bgVolumeLevel = volumeLevel / 100f;
                     backgroundSoundPlayer.setVolume(bgVolumeLevel);
                 }
             }
