@@ -1039,7 +1039,7 @@ public class VideoplayerActivity extends AppCompatActivity {
     private boolean mediaPlayerShouldBeStarted(int currentSecond) {
         return currentSecond >= MIN_LOADING_VIEW_SECONDS &&
                 isPraxtourMediaPlayerReady() &&
-                (sensorConnected || ApplicationSettings.DEVELOPER_MODE || AccountHelper.isChinesportAccount(this));
+                (!communicationType.equals(CommunicationType.RPM) || sensorConnected || ApplicationSettings.DEVELOPER_MODE || AccountHelper.isChinesportAccount(this));
     }
 
     private void setTimeLineEventVideoPlayer() {
