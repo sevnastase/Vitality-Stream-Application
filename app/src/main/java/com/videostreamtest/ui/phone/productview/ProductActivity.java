@@ -47,6 +47,7 @@ import com.videostreamtest.helpers.PermissionHelper;
 import com.videostreamtest.ui.phone.productview.viewmodel.ProductViewModel;
 import com.videostreamtest.ui.phone.screensaver.ScreensaverActivity;
 import com.videostreamtest.ui.phone.videoplayer.VideoplayerActivity;
+import com.videostreamtest.ui.phone.videoplayer.VideoplayerExoActivity;
 import com.videostreamtest.utils.ApplicationSettings;
 import com.videostreamtest.utils.VideoLanLib;
 import com.videostreamtest.workers.DataIntegrityCheckServiceWorker;
@@ -177,6 +178,16 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
         downloadFlags();
         downloadMovieSupportImages();
         downloadSound();
+
+        startScreensaverHandler();
+        resetScreensaverTimer();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        screensaverhandler.removeCallbacksAndMessages(null);
     }
 
     @Override
@@ -333,7 +344,9 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
         screensaverRunnable = new Runnable() {
             @Override
             public void run() {
-                if (VideoplayerActivity.getInstance() != null && !VideoplayerActivity.getInstance().isActive()) {
+                if (!(VideoplayerActivity.getInstance() == null || VideoplayerActivity.getInstance().isActive() ||
+                        VideoplayerExoActivity.getInstance() == null || VideoplayerExoActivity.getInstance().isActive())
+                ) {
                     //Start Screensaver service to show screensaver after predetermined user inactivity
                     Intent screensaverActivity = new Intent(getApplicationContext(), ScreensaverActivity.class);
                     startActivity(screensaverActivity);
@@ -355,8 +368,8 @@ public class ProductActivity extends AppCompatActivity implements NavigationView
             screensaverLooper = thread.getLooper();
         }
         screensaverhandler = new Handler(screensaverLooper);
-        Log.d(TAG, "call postDelayed with delay of "+ApplicationSettings.SCREENSAVER_TRIGGER_SECONDS*1000+" ms");
-        screensaverhandler.postDelayed(screensaverRunnable, ApplicationSettings.SCREENSAVER_TRIGGER_SECONDS*1000);
+        Log.d(TAG, "call postDelayed with delay of "+ApplicationSettings.SCREENSAVER_TRIGGER_MINUTES *1000*60+" ms");
+        screensaverhandler.postDelayed(screensaverRunnable, ApplicationSettings.SCREENSAVER_TRIGGER_MINUTES *1000*60);
     }
 
     private void resetScreensaverTimer() {

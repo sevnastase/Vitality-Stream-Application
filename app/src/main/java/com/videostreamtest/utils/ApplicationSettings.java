@@ -58,7 +58,7 @@ public class ApplicationSettings {
     public static final ThreadPoolExecutor THREAD_POOL_EXECUTOR = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
     public static final ThreadPoolExecutor THREAD_POOL_LOG_EXECUTOR = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
 
-    public static final int SCREENSAVER_TRIGGER_SECONDS = 30*60;
+    public static final int SCREENSAVER_TRIGGER_MINUTES = 30;
     public static boolean SCREENSAVER_ACTIVE = false;
 
     public static void setScreensaverActive(final boolean screensaverState) {
