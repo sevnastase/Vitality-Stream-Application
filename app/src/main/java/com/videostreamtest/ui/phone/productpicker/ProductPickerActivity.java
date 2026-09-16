@@ -170,8 +170,9 @@ public class ProductPickerActivity extends AppCompatActivity implements Navigati
             if (products!=null && products.size()>0) {
                 boolean sensorNeeded = false;
                 for (final Product product: products) {
-                    if (!product.getCommunicationType().equals("NONE")) {
+                    if (!"NONE".equals(product.getCommunicationType())) {
                         sensorNeeded = true;
+                        break;
                     }
                 }
                 if (sensorNeeded && !AccountHelper.isChinesportAccount(this)) {
