@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -74,8 +75,8 @@ import com.videostreamtest.workers.synchronisation.ActiveConfigurationServiceWor
 import com.videostreamtest.workers.synchronisation.ActiveProductsServiceWorker;
 import com.videostreamtest.workers.synchronisation.SyncLocalDatabaseWorker;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -536,7 +537,26 @@ public class SplashActivity extends AppCompatActivity {
      * IMPORTANT: this method currently only checks for manage overlay permission.
      */
     private boolean needPermissions() {
-        return !Settings.canDrawOverlays(this);
+        List<String> bluetoothPermissionsNeeded = new ArrayList<>();
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
+        ) {
+            Log.d(TAG, "No ACCES_COARSE_LOCATION permission.");
+            bluetoothPermissionsNeeded.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        }
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        ) {
+            Log.d(TAG, "No ACCESS_FINE_LOCATION permission then ASK, otherwise no popup is shown.");
+            bluetoothPermissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
+        return !Settings.canDrawOverlays(this) || bluetoothPermissionsNeeded.size() > 1;
     }
 
     private void refreshAccountInformation() {

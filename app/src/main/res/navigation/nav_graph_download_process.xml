@@ -42,7 +42,15 @@
         android:name="com.videostreamtest.ui.phone.downloads.fragments.LocationPermissionFragment"
         android:label="LocationPermissionFragment" >
         <action
-            android:id="@+id/action_locationPermissionFragment_to_downloadSoundFragment"
+            android:id="@+id/action_locationPermissionFragment_to_bluetoothPermissionFragment"
+            app:destination="@id/bluetoothPermissionFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/bluetoothPermissionFragment"
+        android:name="com.videostreamtest.ui.phone.downloads.fragments.BluetoothPermissionFragment"
+        android:label="BluetoothermissionFragment" >
+        <action
+            android:id="@+id/action_bluetoothPermissionFragment_to_downloadSoundFragment"
             app:destination="@id/downloadSoundFragment" />
     </fragment>
     <fragment

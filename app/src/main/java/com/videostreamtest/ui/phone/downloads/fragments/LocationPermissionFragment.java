@@ -185,7 +185,7 @@ public class LocationPermissionFragment extends Fragment {
     private void gotoNextFragment() {
         downloadsViewModel.addInstallationStep();
         NavHostFragment.findNavController(LocationPermissionFragment.this)
-                .navigate(R.id.action_locationPermissionFragment_to_downloadSoundFragment, getArguments());
+                .navigate(R.id.action_locationPermissionFragment_to_bluetoothPermissionFragment, getArguments());
     }
 
     private void showCurrentStepInTitleView(final TextView titleView) {
