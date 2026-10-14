@@ -69,12 +69,6 @@ public class BleService extends Service {
         }
     }
 
-//    private static final int ONGOING_NOTIFICATION_ID = 9999;
-//    private static final String CHANNEL_DEFAULT_IMPORTANCE = "csc_ble_channel";
-//    private static final String MAIN_CHANNEL_NAME = "CscService";
-
-    private List<BluetoothDefaultDevice> bluetoothDefaultDeviceList;
-
     // bluetooth API
     private BluetoothManager bluetoothManager;
     private BluetoothAdapter bluetoothAdapter;
@@ -83,7 +77,6 @@ public class BleService extends Service {
     private int connectionState = STATE_DISCONNECTED;
 
     private static final int STATE_DISCONNECTED = 0;
-    private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
 
     public final static String ACTION_GATT_CONNECTED =
@@ -98,33 +91,18 @@ public class BleService extends Service {
             "com.example.bluetooth.le.EXTRA_DATA";
     // notification subscribers
     private List<BluetoothGattService> mRegisteredServices = new ArrayList<>();
-    private List<BluetoothGattCharacteristic> mRegisteredCharacteristics = new ArrayList<>();
 
     private BluetoothLeScanner scanner;
     private ScanCallback scanCallback;
 
     // last wheel and crank (speed/cadence) information to send to CSCProfile
-    private long cumulativeWheelRevolution = 0;
-    private long cumulativeCrankRevolution = 0;
     private float crankRevolution = 0;
 
-    private int lastWheelEventTime = 0;
     private int lastCrankEventTime = 0;
     private int lastCumCrankEventTime = 0;
 
     // for UI updates
-    private long lastSpeedTimestamp = 0;
-    private long lastCadenceTimestamp = 0;
-    private long lastHRTimestamp = 0;
-    private long lastSSDistanceTimestamp = 0;
-    private long lastSSSpeedTimestamp = 0;
-    private long lastSSStrideCountTimestamp = 0;
-    private float lastSpeed = 0;
     private int lastCadence = 0;
-    private int lastHR = 0;
-    private long lastSSDistance = 0;
-    private float lastSSSpeed = 0;
-    private long lastStridePerMinute = 0;
 
     // for onCreate() failure case
     private boolean initialised = false;
@@ -589,9 +567,6 @@ public class BleService extends Service {
         }).start();
     }
 
-    private void broadcastUpdate(final String action) {
-        final Intent intent = new Intent(action);
-        sendBroadcast(intent);
     }
 
     private void broadcastUpdate(final String action,
@@ -649,24 +624,6 @@ public class BleService extends Service {
             }
         }
         return (cumulativeMeasurements < 2);
-    }
-
-    private int getMeasuredCadence() {
-        int cadence = 0;
-        int cumulativeMeasurements = 0;
-
-        for (int measurement: cadenceMeasurements) {
-            if (measurement > 0) {
-                cadence += measurement;
-                cumulativeMeasurements++;
-            }
-        }
-
-        if (cumulativeMeasurements < 2) {
-            return 0;
-        }
-
-        return cadence / cumulativeMeasurements;
     }
 
     private int getLastMeasuredCadenceValue() {
