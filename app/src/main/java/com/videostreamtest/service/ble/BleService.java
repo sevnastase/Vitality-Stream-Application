@@ -73,7 +73,7 @@ public class BleService extends Service {
     private BluetoothManager bluetoothManager;
     private BluetoothAdapter bluetoothAdapter;
     private String bluetoothDeviceAddress;
-    private BluetoothGatt bluetoothGatt;
+    private volatile BluetoothGatt bluetoothGatt;
     private int connectionState = STATE_DISCONNECTED;
 
     private static final int STATE_DISCONNECTED = 0;
@@ -112,6 +112,20 @@ public class BleService extends Service {
 
     private Looper serviceLooper;
     private ServiceHandler serviceHandler;
+    private static final long RETRY_BASE_DELAY_MS = 1_000;
+    private static final long RETRY_MAX_DELAY_MS  = 30_000;
+    private static final long SCAN_TIMEOUT_MS     = 15_000;
+
+    private int retryAttempt = 0;
+    private volatile boolean stopping = false;
+    private volatile boolean scanning = false;
+
+    private final Runnable startScanRunnable = this::startScan;
+    private final Runnable scanTimeoutRunnable = () -> {
+        Log.d(TAG, "Scan timed out");
+        stopScanQuietly();
+        scheduleRetry("scan timeout");
+    };
 
     // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler {
@@ -121,6 +135,9 @@ public class BleService extends Service {
 
         @Override
         public void handleMessage(Message msg) {
+            retryAttempt = 0;
+            serviceHandler.removeCallbacks(startScanRunnable);
+
             Log.d(TAG, "msg startId: " + msg.arg1);
             bluetoothDeviceAddress = getSharedPreferences("app", MODE_PRIVATE).getString(ApplicationSettings.DEFAULT_BLE_DEVICE_KEY, "NONE");
             Log.d(TAG, "device addr: " + bluetoothDeviceAddress);
@@ -163,28 +180,30 @@ public class BleService extends Service {
                 private BluetoothGattCharacteristic mbatteryCharacteristic;
 
                 @Override
-                public void onConnectionStateChange(BluetoothGatt gatt, int status,
-                                                    int newState) {
-                    if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        connectionState = STATE_CONNECTED;
-                        Log.i(TAG, "Connected to GATT server.");
-                        if (gatt.getDevice() != null) {
-                            Log.i(TAG, "Connected to GATT server {" + gatt.getDevice().getName() + "}");
-                        }
-                        Log.i(TAG, "Attempting to start service discovery:" +
-                                gatt.discoverServices());
+                public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+                    Log.i(TAG, "onConnectionStateChange status=" + status + " newState=" + newState);
 
-                    } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    if (newState == BluetoothProfile.STATE_CONNECTED && status == BluetoothGatt.GATT_SUCCESS) {
+                        connectionState = STATE_CONNECTED;
+                        gatt.discoverServices();
+                    } else {
                         connectionState = STATE_DISCONNECTED;
-                        Log.i(TAG, "Disconnected from GATT server.");
                         gatt.close();
-                        bluetoothGatt = null;
+                        if (bluetoothGatt == gatt) bluetoothGatt = null;
+                        scheduleRetry("disconnected, status=" + status);
                     }
                 }
 
                 @Override
                 // New services discovered
                 public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                    if (status != BluetoothGatt.GATT_SUCCESS) {
+                        Log.w(TAG, "Service discovery failed: " + status);
+                        gatt.disconnect();
+                        return;
+                    }
+                    retryAttempt = 0;
+
                     Log.d(TAG, "onServicesDiscovered received: " + status);
                     Log.d(TAG, "Services Discovered: " + gatt.getServices().size());
 
@@ -467,7 +486,10 @@ public class BleService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "Service stopped/destroyed.");
+
+        stopping = true;
+        serviceHandler.removeCallbacksAndMessages(null);
+
         if (initialised) {
             // stop BLE
             BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
@@ -475,10 +497,11 @@ public class BleService extends Service {
                 bluetoothGatt.disconnect();
             }
             if (scanner != null) {
-                scanner.stopScan(scanCallback);
+                stopScanQuietly();
             }
-//            stopForeground(true);
         }
+
+        serviceLooper.quitSafely();
     }
 
     private boolean init() {
@@ -500,73 +523,87 @@ public class BleService extends Service {
         return true;
     }
 
+    @SuppressLint("MissingPermission")
     private void startScan() {
+        if (stopping) return;
         if (bluetoothAdapter == null) {
-            LogHelper.WriteLogRule(getApplicationContext(), AccountHelper.getAccountToken(getApplicationContext()),"BLE Service :: No BLE adapter", "ERROR", "");
+            LogHelper.WriteLogRule(getApplicationContext(), AccountHelper.getAccountToken(getApplicationContext()),
+                    "BLE Service :: No BLE adapter", "ERROR", "");
+            return;
+        }
+        if (bluetoothGatt != null) return;            // already connected or connecting
+
+        if (!bluetoothAdapter.isEnabled()) {
+            scheduleRetry("adapter not enabled");
             return;
         }
 
+        // Always get a fresh scanner; a cached one can go stale if the BT stack restarted
+        BluetoothLeScanner freshScanner = bluetoothAdapter.getBluetoothLeScanner();
+        if (freshScanner == null) {
+            scheduleRetry("no scanner");
+            return;
+        }
+
+        stopScanQuietly();                            // never leave an old scan running
+        scanner = freshScanner;
+
         scanCallback = new ScanCallback() {
-            @SuppressLint("MissingPermission")
             @Override
             public void onScanResult(int callbackType, ScanResult result) {
+                if (result == null || result.getDevice() == null) return;
+                if (!result.getDevice().getAddress().equals(bluetoothDeviceAddress)) return;
 
-                if(result != null && result.getDevice()!= null && result.getDevice().getAddress() != null) {
-                    if (bluetoothDeviceAddress.equals(result.getDevice().getAddress())) {
-                        if (bluetoothGatt == null) {
-                            bluetoothGatt = result.getDevice().connectGatt(getApplicationContext(), true, gattCallback, BluetoothDevice.TRANSPORT_LE);
-                            bluetoothGatt.discoverServices();
-                            scanner.stopScan(this);
-                        } else {
-                            scanner.stopScan(this);
-                        }
-                    }
+                stopScanQuietly();
+                if (bluetoothGatt == null) {
+                    bluetoothGatt = result.getDevice().connectGatt(
+                            getApplicationContext(), false, gattCallback, BluetoothDevice.TRANSPORT_LE);
                 }
-            }
-
-            @Override
-            public void onBatchScanResults(List<ScanResult> results) {
-                Log.d(TAG, "ScanBatchResult :: "+results.size());
             }
 
             @Override
             public void onScanFailed(int errorCode) {
-                Log.d(TAG, "ScanFailedResult :: "+errorCode);
+                Log.w(TAG, "ScanFailedResult :: " + errorCode);
+                scanning = false;
+                serviceHandler.removeCallbacks(scanTimeoutRunnable);
+                scheduleRetry("scan failed, code=" + errorCode);
             }
         };
 
-        new Thread(() -> {
-            // exponential backoff, in case device is slowly starting up
-            int sleepForMs = 1000;
-
-            while (scanner == null || !bluetoothAdapter.isEnabled()) {
-                Log.d(TAG, "Greg scanner is null");
-                try {
-                    Thread.sleep(sleepForMs);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                if (bluetoothAdapter.isEnabled()) {
-                    scanner = bluetoothAdapter.getBluetoothLeScanner();
-                }
-
-                sleepForMs*=2;
-                if (sleepForMs >= Math.pow(2, 5) * 1000) {
-                    break;
-                }
-            }
-
-            if (scanner == null) {
-                Log.d(TAG, "Greg could not start scan");
-                Toast.makeText(this, "Could not start scan", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            Log.d(TAG, "Greg starting scan");
+        try {
             scanner.startScan(scanCallback);
-        }).start();
+            scanning = true;
+            serviceHandler.postDelayed(scanTimeoutRunnable, SCAN_TIMEOUT_MS);
+        } catch (Exception e) {
+            scheduleRetry("startScan threw " + e);
+        }
     }
 
+    private void scheduleRetry(String reason) {
+        if (stopping) return;
+
+        if (bluetoothDeviceAddress == null || bluetoothDeviceAddress.isEmpty() || bluetoothDeviceAddress.equals("NONE")) return;
+
+        long delay = Math.min(RETRY_MAX_DELAY_MS, RETRY_BASE_DELAY_MS << Math.min(retryAttempt, 5));
+        delay += (long) (Math.random() * delay * 0.2);
+        retryAttempt++;
+
+        Log.d(TAG, "Retry #" + retryAttempt + " in " + delay + " ms (" + reason + ")");
+        serviceHandler.removeCallbacks(startScanRunnable);
+        serviceHandler.postDelayed(startScanRunnable, delay);
+    }
+
+    @SuppressLint("MissingPermission")
+    private void stopScanQuietly() {
+        serviceHandler.removeCallbacks(scanTimeoutRunnable);
+        if (scanning && scanner != null && scanCallback != null) {
+            try {
+                scanner.stopScan(scanCallback);
+            } catch (Exception e) {
+                Log.w(TAG, "stopScan failed: " + e);
+            }
+        }
+        scanning = false;
     }
 
     private void broadcastUpdate(final String action,
