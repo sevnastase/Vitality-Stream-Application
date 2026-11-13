@@ -556,8 +556,9 @@ public class BleService extends Service {
 
                 stopScanQuietly();
                 if (bluetoothGatt == null) {
+                    // autoConnect=true: keeps waiting for the sensor instead of failing fast (status 133) right after boot
                     bluetoothGatt = result.getDevice().connectGatt(
-                            getApplicationContext(), false, gattCallback, BluetoothDevice.TRANSPORT_LE);
+                            getApplicationContext(), true, gattCallback, BluetoothDevice.TRANSPORT_LE);
                 }
             }
 

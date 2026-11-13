@@ -140,35 +140,43 @@ public class PermissionHelper {
         return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
     }
 
+    /**
+     * Returns true when the app has all permissions needed to scan for and connect to a BLE sensor.
+     * <p>
+     * Requirements per version:
+         * API 31+: BLUETOOTH_SCAN/BLUETOOTH_CONNECT
+         * API 30-: location permission on every Android version, otherwise scans silently fail
+     * Location Services being switched off is only logged, not treated as fatal
+     */
     public static boolean canBleBeUsed(Context context) {
-        boolean basicFeaturesrequired = false;
-        boolean belowVersion10Features = false;
-        boolean higherThanVersion10Features = false;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            basicFeaturesrequired = (ContextCompat.checkSelfPermission(context,
-                    Manifest.permission.BLUETOOTH)
-                    != PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(context,
-                    Manifest.permission.BLUETOOTH_ADMIN)
-                    != PackageManager.PERMISSION_GRANTED);
+        if (!isBleFeatureSupported(context)) {
+            Log.w(TAG, "canBleBeUsed: FEATURE_BLUETOOTH_LE missing");
+            return false;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            belowVersion10Features = ContextCompat.checkSelfPermission(context,
-                    Manifest.permission.ACCESS_COARSE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED;
+        final int targetSdk = context.getApplicationInfo().targetSdkVersion;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && targetSdk >= Build.VERSION_CODES.S) {
+            boolean granted = hasBluetoothPermissions(context);
+            if (!granted) Log.w(TAG, "canBleBeUsed: BLUETOOTH_SCAN/CONNECT not granted");
+            return granted;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        boolean locationGranted =
+                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)  == PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        if (!locationGranted) {
+            Log.w(TAG, "canBleBeUsed: no location permission, BLE scans would return nothing");
+            return false;
+        }
+
+        try {
             LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-            boolean locationServicesActive = LocationManagerCompat.isLocationEnabled(locationManager);
-
-            higherThanVersion10Features = (ContextCompat.checkSelfPermission(context,
-                    Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) && locationServicesActive;
-
+            if (locationManager != null && !LocationManagerCompat.isLocationEnabled(locationManager)) {
+                Log.w(TAG, "canBleBeUsed: Location Services are off, scan results may be empty");
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "canBleBeUsed: could not check Location Services: " + e);
         }
-
-        return basicFeaturesrequired && belowVersion10Features && higherThanVersion10Features;
+        return true;
     }
 }

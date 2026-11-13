@@ -556,7 +556,7 @@ public class SplashActivity extends AppCompatActivity {
             bluetoothPermissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
 
-        return !Settings.canDrawOverlays(this) || bluetoothPermissionsNeeded.size() > 1;
+        return !Settings.canDrawOverlays(this) || !bluetoothPermissionsNeeded.isEmpty();
     }
 
     private void refreshAccountInformation() {
