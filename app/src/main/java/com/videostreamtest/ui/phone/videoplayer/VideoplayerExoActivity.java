@@ -135,6 +135,8 @@ public class VideoplayerExoActivity extends AppCompatActivity {
                     2 : 7;
     private boolean isLoading = true;
     private boolean sensorConnected = false;
+    // Latched once the video has been seen playing; the readiness check pauses it, so isPlaying() turns false afterwards
+    private boolean videoReadyLatched = false;
 
     /** The minimum amount by which the video player should be updated.
      * This exists so the host device does not get overwhelmed over a long session. */
@@ -987,6 +989,7 @@ public class VideoplayerExoActivity extends AppCompatActivity {
 
     private void waitUntilVideoIsReady() {
         this.pauseTimer = 0;
+        this.videoReadyLatched = false;
 
         Runnable runnable = new Runnable() {
             int currentSecond = 0;
@@ -1176,10 +1179,11 @@ public class VideoplayerExoActivity extends AppCompatActivity {
         boolean soundReady = backgroundSoundTriggers.size()>0;
 
 //        videoPlayerReady = (mediaPlayer.isSeekable() && mediaPlayer.getLength() != -1 && mediaPlayer.getVideoTrack()>2);
-        videoPlayerReady = (mediaPlayer.isPlaying() && mediaPlayer.getContentDuration() != -1);
-        if (videoPlayerReady) {
+        if (!videoReadyLatched && mediaPlayer.isPlaying() && mediaPlayer.getContentDuration() != -1) {
+            videoReadyLatched = true;
             mediaPlayer.pause();
         }
+        videoPlayerReady = videoReadyLatched;
 
         if (backgroundSoundPlayer.getMediaItemCount()>0) {
             backgroundPlayerReady = (backgroundSoundPlayer.getPlaybackState() == Player.STATE_READY);
